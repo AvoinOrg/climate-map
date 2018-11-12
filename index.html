@@ -424,14 +424,14 @@
                     // "text-field": '{co2} t CO2/a',
 
                     // WTF were they thinking. Use Lisp or JS or go home.
-                    // NB: 1000t CO2eq/ha/20yrs -> 0.1t/m2/20yrs
-                    // round(0.01*total_area) -> reduce precision -> *10 -> 0.1t/m2
+                    // NB: 400t CO2eq/ha/20yrs -> 0.04t/m2/20yrs
+                    // round(0.004*total_area) -> reduce precision -> *10 -> 0.04t/m2
                     "text-field":
                         ["let", "suffix", " tons CO2eq in 20yrs",
                             ["concat",
                                 ["to-string",
                                     ["*", 10,
-                                        ["round", ["*", 0.01, ["get", "total_area"]]],
+                                        ["round", ["*", 0.004, ["get", "total_area"]]],
                                     ]],
                                 ["var", "suffix"]]],
 
