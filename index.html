@@ -493,7 +493,7 @@
             }
         }
 
-        map.on('mousemove', function (e) {
+        const updateNO2Reading = function (e) {
             if (toggles['no2-raster']===false) return
             const x = e.lngLat
             const lat = x.lat.toFixed(2)
@@ -508,7 +508,10 @@
             // console.log(e.point.x, e.point.y, e.lngLat.lat, e.lngLat.lng)
             // var features = map.queryRenderedFeatures(e.point);
             // console.log(features)
-        });
+        }
+
+        map.on('mousemove', updateNO2Reading);
+        map.on('click', updateNO2Reading); // for mobile devices etc.
 
     </script>
 
