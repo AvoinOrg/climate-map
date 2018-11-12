@@ -473,7 +473,7 @@
         let lastRequestSeen = 0
         window.setNO2 = function(currentRequestNum, e, lat, lon) {
             const elem = document.getElementById('no2')
-            if (!toggles['no2-raster'] || !currentRequestNum) {
+            if (toggles['no2-raster']===false || !currentRequestNum) {
                 elem.innerHTML = ''
                 return
             }
@@ -494,7 +494,7 @@
         }
 
         map.on('mousemove', function (e) {
-            if (!toggles['no2-raster']) return
+            if (toggles['no2-raster']===false) return
             const x = e.lngLat
             const lat = x.lat.toFixed(2)
             const lon = x.lng.toFixed(2)
