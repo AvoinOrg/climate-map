@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <meta charset='utf-8' />
+    <title>Button Climate Map</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/0.50.0/mapbox-gl.js" integrity="sha256-lt9+iIQZba05r6TN/Z7hzHD+QOWXdlzgARKHfA0U3ks=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/0.50.0/mapbox-gl.css" integrity="sha256-coh6R3HyiYSLAbMk4lZIr5txQq3BdbN0nKl1U4iioNU=" crossorigin="anonymous" />
+
+    <!-- plus.codes: -->
+    <!-- <script async defer src="https://cdnjs.cloudflare.com/ajax/libs/openlocationcode/1.0.3/openlocationcode.min.js" integrity="sha256-cN2Y69HQRLjefvPHJKXQ9Dgkfug2odevw9BBdiyVExQ=" crossorigin="anonymous"></script> -->
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .hide {
+            visibility: hidden;
+        }
+
+        .map-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            padding-bottom: 30px;
+            background: rgba(255, 255, 255, 0.8);
+            margin-right: 20px;
+            overflow: auto;
+            border-radius: 3px;
+        }
+
+        .toggle-legend {
+            font-size: 1.4rem;
+            padding: 0;
+            margin-bottom: 2.5rem;
+            background-color: rgba(42, 49, 67, 0.4);
+            color: white;
+            cursor: pointer;
+        }
+
+        #legend {
+            max-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        #legend ul {
+            list-style: none;
+        }
+
+        #no2 {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: white;
+            color: black;
+            font-family: Arial, sans-serif;
+        }
+
+        .buttonbg h1 {
+            font-size: 20px
+        }
+
+        .buttonbg {
+            cursor: pointer;
+            color: white;
+            background: no-repeat left/90px url("button_logo.png");
+            /* background-color: rgb(37, 39, 65); */
+            background-color: rgb(42, 49, 67);
+            font-family: sans-serif;
+            padding-top: 10px;
+            padding-left: 120px;
+            min-height: 90px;
+        }
+
+        .logo {
+            max-width: 10vw;
+        }
+
+        .peat {
+            border: 15px solid #FFF;
+            border-radius: 90px;
+            height: 20px;
+            width: 20px;
+        }
+
+        .peat1 {
+            background-color: rgb(245, 17, 72);
+        }
+
+        .peat2 {
+            background-color: rgb(252, 113, 34);
+        }
+
+        .peat3 {
+            background-color: rgb(218, 248, 85);
+        }
+
+        .peat-natural {
+            background-color: rgb(67, 213, 43);
+
+        }
+
+        .peat-recovering {
+            box-shadow: 0 0 0 2px green;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='map'></div>
+
+    <output id='no2'></output>
+    <div class='map-overlay toggle-legend' onclick='toggleLegend()'>
+        Show info
+    </div>
+    <div class='map-overlay' id='legend'>
+        <header class='buttonbg' onclick='toggleLegend()'>
+            <h1>Climate Map</h1>
+            How are the emissions calculated?
+        </header>
+        <main>
+            The demo calculations and scientific citations will be shown here.
+
+            <ul>
+                <li>Wet ditched peatland = remarkable emissions</li>
+                <li>Dry ditched peatland = small emissions</li>
+                <li>Very dry ditched peatland = usually not suitable for forestry</li>
+            </ul>
+
+            <table>
+                <tr>
+                    <td>
+                        <div class='peat peat1'></div>
+                    </td>
+                    <td>
+                        Wet ditched peatland with annual emissions over
+                        <br /> 5,000 kg CO2/ha
+                        <br /> 10 kg humus
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <div class='peat peat2'></div>
+                    </td>
+                    <td>
+                        Dry ditched peatland with annual emissions under
+                        <br /> 5,000 kg CO2/ha
+                        <br /> 10 kg humus
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <div class='peat peat3'></div>
+                    </td>
+                    <td>
+                        Very dry ditched peatland with annual emissions under
+                        <br /> 1,000 kg CO2/ha
+                        <br /> 2 kg humus
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <div class='peat peat1 peat-recovering'></div>
+                    </td>
+                    <td>
+                        Recovering peatland with annual emissions savings over
+                        <br /> 1,000 kg CO2/ha
+                        <br /> 2 kg humus
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <div class='peat peat2 peat-recovering'></div>
+                    </td>
+                    <td>
+                        Recovering peatland with annual emissions savings under
+                        <br /> 1,000 kg CO2/ha
+                        <br /> 2 kg humus
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class='peat peat3 peat-recovering'></div>
+                    </td>
+                    <td>
+                        Recovering peatland with annual emissions savings under
+                        <br /> 500 kg CO2/ha
+                        <br /> 0.5 kg humus
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <div class='peat peat-natural'></div>
+                    </td>
+                    <td>
+                        Natural state peatland with annually growing carbon sink
+                        <br /> over 100 kg CO2/ha
+                        <br />
+                    </td>
+                </tr>
+            </table>
+        </main>
+
+        <ul>
+            <li><button onclick="toggle('no2-raster')">Show/Hide NO2</button></li>
+            <li><button onclick="toggle('terramonitor')">Show/Hide Terramonitor map</button></li>
+            <li><button onclick="toggle('swamp-co2');toggle('swamp-co2-sym');toggle('swamp-outline')">Show/Hide Peatland CO2</button></li>
+            <li><button onclick="toggle('plohko-fill');toggle('plohko-co2-sym');toggle('plohko-outline')">Show/Hide Histosol Field CO2</button></li>
+        </ul>
+        <button style='font-weight:800; font-size:1.2em' onclick='toggleLegend()'>Hide info</button>
+        <hr />
+        <img alt="Metsäkeskus" src="metsakeskus_logo.jpg" class="logo">
+        <img alt="Terramonitor" src="terramonitor_logo.jpg" class="logo">
+        <br/>
+        <img alt="Copernicus" src="copernicus_logo.jpg" class="logo">
+        <img alt="ESA, European Space Agency" src="esa_logo.jpg" class="logo">
+        <br/>
+        <img alt="Mavi" src="mavi_logo.jpg" class="logo">
+        <img alt="Luke" src="luke_logo.jpg" class="logo">
+    </div>
+
+    <script>
+        window.changeMapStyle = function () {
+            // map.setStyle(''); TODO
+        }
+        window.toggleLegend = function () {
+            document.getElementById('legend').classList.toggle('hide')
+        }
+        const toggleableLayerIds = ['no2', 'swamp-co2-sym', 'swamp-co2', 'swamp-outline']
+        const toggles = {}
+        window.t = toggles
+        window.toggle = function (id) {
+            const state = toggles[id] = (toggles[id] === undefined ? false : !toggles[id])
+            map.setLayoutProperty(id, 'visibility', state ? 'visible' : 'none')
+            if (id === 'no2-raster') window.setNO2()
+        }
+
+        // This must be set, but the value is not needed here.
+        mapboxgl.accessToken = 'not-needed';
+
+        const style = {
+            "version": 8,
+            "sources": {
+                "swamps": {
+                    "type": "vector",
+                    "tiles": ["https://vs.kunnas.com/button/suot/swamp2-co2/{z}/{x}/{y}.pbf"],
+                    "maxzoom": 12,
+                }
+            },
+            "glyphs": "https://vs.kunnas.com/button/suot/font/{fontstack}/{range}.pbf",
+            "layers": [
+                {
+                    "id": "background",
+                    "type": "background",
+                    "paint": {
+                        "background-color": "#ddeeff"
+                    }
+                },
+            ]
+        }
+
+        const map = new mapboxgl.Map({
+            container: 'map', // container id
+            // style,
+            style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
+            center: [28, 65], // starting position [lng, lat]
+            zoom: 5, // starting zoom
+            attributionControl: false,
+        });
+
+
+        map.on('load', function () {
+
+            // Custom attribution for Terramonitor since the WMS source doesn't present show one automatically.
+            map.addControl(new mapboxgl.AttributionControl({
+                customAttribution: '<a href="https://www.terramonitor.com">© Terramonitor</a>'
+            }));
+
+            map.addSource('swamps', {
+                "type": "vector",
+                "tiles": ["https://vs.kunnas.com/button/suot/swamp2-co2/{z}/{x}/{y}.pbf"],
+                "maxzoom": 12,
+            });
+
+            map.addSource('histosol_plohko', {
+                "type": "vector",
+                "tiles": ["https://vs.kunnas.com/button/peltolohko/histosol_plohko/{z}/{x}/{y}.pbf"],
+                "maxzoom": 11,
+            });
+
+            map.addLayer({
+                'id': 'terramonitor',
+                'type': 'raster',
+                'source': {
+                    'type': 'raster',
+                    'tiles': [
+                        'https://maps.terramonitor.com/9c2040ec0fb91cfdfd723496515d759a77b363ee/pro/wms?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=rgb&styles=',
+                    ],
+                    'tileSize': 256,
+                    // "maxzoom": 16, // After zoom level 16 the images (used to) get blurrier
+                },
+                'paint': {},
+            });
+
+
+            map.addLayer({
+                'id': 'plohko-outline',
+                'source': 'histosol_plohko',
+                'source-layer': 'suopellot',
+                // 'maxzoom': zoomThreshold,
+                'type': 'fill',
+                // 'filter': ['==', 'isState', true],
+                'paint': {
+                    'fill-outline-color': 'purple', 
+                    // [ 
+                    //     'interpolate',
+                    //     ['linear'],
+                    //     ['get', 'drainagestate'],
+                    //     6, 'rgb(89, 122, 155)',
+                    //     // 7, 'rgb(252,113,34)',
+                    //     // 8, 'rgb(218,248,85)',
+                    //     9, 'rgb(0, 77, 153)',
+                    // ],
+                    'fill-opacity': 1
+                }
+            })
+
+            map.addLayer({
+                'id': 'plohko-fill',
+                'source': 'histosol_plohko',
+                'source-layer': 'suopellot',
+                'type': 'fill',
+                'paint': {
+                    'fill-color': 'red', 
+                    'fill-opacity': 1
+                }
+            })
+
+            map.addLayer({
+                'id': 'swamp-co2',
+                'source': 'swamps',
+                'source-layer': 'swamp',
+                // 'maxzoom': zoomThreshold,
+                'type': 'fill',
+                // 'filter': ['==', 'isState', true],
+                'paint': {
+                    'fill-color': [
+                        'interpolate',
+                        ['linear'],
+                        ['get', 'fertilityclass'],
+                        1, 'rgb(245,17,72)', // red
+                        4, 'rgb(252,113,34)', // orange
+                        // 8, 'rgb(218,248,85)',
+                        6, 'rgb(218,248,85)', // green
+                    ],
+                    // 'fill-outline-color': [
+                    //     'interpolate',
+                    //     ['linear'],
+                    //     ['get', 'drainagestate'],
+                    //     6, 'rgb(89, 122, 155)',
+                    //     // 7, 'rgb(252,113,34)',
+                    //     // 8, 'rgb(218,248,85)',
+                    //     9, 'rgb(0, 77, 153)',
+                    // ],
+                    'fill-opacity': 0.9
+                },
+            })
+
+            map.addLayer({
+                'id': 'swamp-co2-sym',
+                'source': 'swamps',
+                'source-layer': 'swamp',
+                'type': 'symbol',
+                "minzoom": 12,
+                // 'maxzoom': zoomThreshold,
+                "paint": {},
+                "layout": {
+                    "symbol-placement": "point",
+                    "text-font": ["Open Sans Regular"],
+                    // "text-field": '{co2} t CO2/a',
+
+                    // WTF were they thinking. Use Lisp or JS or go home.
+                    "text-field":
+                    ["let", "suffix", " tons CO2eq in 20yrs",
+                            ["concat",
+                                ["to-string",
+                                    ["/",
+                                        ["round",
+                                            ["*", 30,
+                                                ["get", "co2"]]], 10]],
+                                ["var", "suffix"]]],
+
+                    "text-size": 20,
+                }
+            })
+
+            map.addLayer({
+                'id': 'plohko-co2-sym',
+                'source': 'histosol_plohko',
+                'source-layer': 'suopellot',
+                'type': 'symbol',
+                "minzoom": 12,
+                // 'maxzoom': zoomThreshold,
+                "paint": {},
+                "layout": {
+                    "symbol-placement": "point",
+                    "text-font": ["Open Sans Regular"],
+                    // "text-field": '{co2} t CO2/a',
+
+                    // WTF were they thinking. Use Lisp or JS or go home.
+                    // NB: 1000t CO2eq/ha/20yrs -> 0.1t/m2/20yrs
+                    // round(0.01*total_area) -> reduce precision -> *10 -> 0.1t/m2
+                    "text-field":
+                        ["let", "suffix", " tons CO2eq in 20yrs",
+                            ["concat",
+                                ["to-string",
+                                    ["*", 10,
+                                        ["round", ["*", 0.01, ["get", "total_area"]]],
+                                    ]],
+                                ["var", "suffix"]]],
+
+                    "text-size": 20,
+                }
+            })
+
+
+            let no2Tileset = Number.parseInt( window.location.search.substring(1) ) || 0
+            const timestampHour = Math.round(+new Date() / 1e6)
+            map.addSource('no2-tiles', {
+                "type": "raster",
+                "tiles": ["https://vs.kunnas.com/button/atmoshack/mbtiles-dump/" + no2Tileset + "/{z}/{x}/{y}.png?v=5&_=" + timestampHour],
+                "maxzoom": 5,
+            });
+            
+            map.addLayer({
+                'id': 'no2-raster',
+                'source': 'no2-tiles',
+                'type': 'raster',
+                'minzoom': 0,
+                'maxzoom': 10,
+            })
+
+
+            // The NO2 layer is off by default, but it can be enabled
+            // on page load with a URL parameter string like "?0".
+            if (!window.location.search.substring(1)) {
+                toggle('no2-raster')
+            }
+
+            map.setPaintProperty('no2-raster', 'raster-opacity', 0.7)
+            map.setPaintProperty('terramonitor', 'raster-opacity', 0.6)
+            // map.setPaintProperty('swamp-co2', 'opacity', 0.6)
+
+        });  // /map onload
+
+        let reqCounter = 0
+        let lastRequestSeen = 0
+        window.setNO2 = function(currentRequestNum, e, lat, lon) {
+            const elem = document.getElementById('no2')
+            if (!toggles['no2-raster'] || !currentRequestNum) {
+                elem.innerHTML = ''
+                return
+            }
+
+            // A quick and dirty mechanism to monotonically show only latest entries in spite of AJAX non-determinism.
+            if (lastRequestSeen > currentRequestNum) return
+            lastRequestSeen = Math.max(lastRequestSeen, currentRequestNum)
+
+            const plusCode = '' // !OpenLocationCode ? '' : `, ${OpenLocationCode.encode(lat, lon, 6)}`
+            const coords = ` at Latitude:${lat}, Longitude:${lon}${plusCode}`
+
+            if (e.error || e.no2_concentration === null || e.no2_concentration === undefined) {
+                elem.innerHTML = `NO2: ${e.error}${coords}`
+            } else {
+                const n = e.no2_concentration
+                elem.innerHTML = `NO2: ${(n*1e6).toFixed(1)} µmol/m<sup>2</sup>${coords}`
+            }
+        }
+
+        map.on('mousemove', function (e) {
+            if (!toggles['no2-raster']) return
+            const x = e.lngLat
+            const lat = x.lat.toFixed(2)
+            const lon = x.lng.toFixed(2)
+            const url = `https://button.kunnas.com/query_no2?latitude=${lat}&longitude=${lon}&v=9`
+            const currentRequestNum = ++reqCounter
+            fetch(url)
+              .then(function(response) {
+                response.json().then(e => window.setNO2(currentRequestNum, e, lat, lon))
+              })
+
+            // console.log(e.point.x, e.point.y, e.lngLat.lat, e.lngLat.lng)
+            // var features = map.queryRenderedFeatures(e.point);
+            // console.log(features)
+        });
+
+    </script>
+
+</body>
+
+</html>
