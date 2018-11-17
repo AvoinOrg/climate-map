@@ -259,11 +259,11 @@
             "sources": {
                 "swamps": {
                     "type": "vector",
-                    "tiles": ["https://vs.kunnas.com/button/suot/swamp2-co2/{z}/{x}/{y}.pbf"],
+                    "tiles": ["https://button.kunnas.com/suot/swamp2-co2/{z}/{x}/{y}.pbf"],
                     "maxzoom": 12,
                 }
             },
-            "glyphs": "https://vs.kunnas.com/button/suot/font/{fontstack}/{range}.pbf",
+            "glyphs": "https://button.kunnas.com/suot/font/{fontstack}/{range}.pbf",
             "layers": [
                 {
                     "id": "background",
@@ -294,13 +294,13 @@
 
             map.addSource('swamps', {
                 "type": "vector",
-                "tiles": ["https://vs.kunnas.com/button/suot/swamp2-co2/{z}/{x}/{y}.pbf"],
+                "tiles": ["https://button.kunnas.com/suot/swamp2-co2/{z}/{x}/{y}.pbf"],
                 "maxzoom": 12,
             });
 
             map.addSource('histosol_plohko', {
                 "type": "vector",
-                "tiles": ["https://vs.kunnas.com/button/peltolohko/histosol_plohko/{z}/{x}/{y}.pbf"],
+                "tiles": ["https://button.kunnas.com/peltolohko/histosol_plohko/{z}/{x}/{y}.pbf"],
                 "maxzoom": 11,
             });
 
@@ -444,7 +444,7 @@
             const timestampHour = Math.round(+new Date() / 1e6)
             map.addSource('no2-tiles', {
                 "type": "raster",
-                "tiles": ["https://vs.kunnas.com/button/atmoshack/mbtiles-dump/" + no2Tileset + "/{z}/{x}/{y}.png?v=5&_=" + timestampHour],
+                "tiles": ["https://button.kunnas.com/atmoshack/mbtiles-dump/" + no2Tileset + "/{z}/{x}/{y}.png?v=5&_=" + timestampHour],
                 "maxzoom": 5,
             });
             
