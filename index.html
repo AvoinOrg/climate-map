@@ -463,6 +463,20 @@
             })
 
 
+            map.addLayer({
+                'id': 'mangrove-wms',
+                'type': 'raster',
+                'source': {
+                    'type': 'raster',
+                    'tiles': [
+                        'https://gis.unep-wcmc.org/arcgis/services/marine/GMW_001_MangroveDistribition_2010/MapServer/WMSServer?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=0&styles=default',
+                    ],
+                    'tileSize': 256
+                },
+                'paint': {}
+            })
+
+
             // The NO2 layer is off by default, but it can be enabled
             // on page load with a URL parameter string like "?0".
             if (!window.location.search.substring(1)) {
