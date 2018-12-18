@@ -220,7 +220,7 @@
         <ul>
             <li><button onclick="toggle('no2-raster')">Show/Hide NO2</button></li>
             <li><button onclick="toggle('terramonitor')">Show/Hide Terramonitor map</button></li>
-            <li><button onclick="toggle('swamp-co2');toggle('swamp-co2-sym');toggle('swamp-outline')">Show/Hide Peatland CO2</button></li>
+            <li><button onclick="toggle('peatland-co2');toggle('peatland-co2-sym');toggle('peatland-outline')">Show/Hide Peatland CO2</button></li>
             <li><button onclick="toggle('plohko-fill');toggle('plohko-co2-sym');toggle('plohko-outline')">Show/Hide Histosol Field CO2</button></li>
         </ul>
         <button style='font-weight:800; font-size:1.2em' onclick='toggleLegend()'>Hide info</button>
@@ -242,7 +242,7 @@
         window.toggleLegend = function () {
             document.getElementById('legend').classList.toggle('hide')
         }
-        const toggleableLayerIds = ['no2', 'swamp-co2-sym', 'swamp-co2', 'swamp-outline']
+        const toggleableLayerIds = ['no2', 'peatland-co2-sym', 'peatland-co2', 'peatland-outline']
         const toggles = {}
         window.t = toggles
         window.toggle = function (id) {
@@ -256,13 +256,13 @@
 
         const style = {
             "version": 8,
-            "sources": {
-                "swamps": {
-                    "type": "vector",
-                    "tiles": ["https://button.kunnas.com/suot/swamp2-co2/{z}/{x}/{y}.pbf"],
-                    "maxzoom": 12,
-                }
-            },
+            // "sources": {
+            //     "stand-suot": {
+            //         "type": "vector",
+            //         "tiles": ["https://button.kunnas.com/stand-suot/{z}/{x}/{y}.pbf"],
+            //         "maxzoom": 12,
+            //     }
+            // },
             "glyphs": "https://button.kunnas.com/suot/font/{fontstack}/{range}.pbf",
             "layers": [
                 {
@@ -292,9 +292,15 @@
                 customAttribution: '<a href="https://www.terramonitor.com">© Terramonitor</a> | <a href="http://mavi.fi">© Maaseutuvirasto 2018</a>'
             }));
 
-            map.addSource('swamps', {
+            map.addSource('stand-suot', {
                 "type": "vector",
-                "tiles": ["https://button.kunnas.com/suot/swamp2-co2/{z}/{x}/{y}.pbf"],
+                "tiles": ["https://button.kunnas.com/stand-suot/{z}/{x}/{y}.pbf"],
+                "maxzoom": 12,
+            });
+
+            map.addSource('metsadata-other', {
+                "type": "vector",
+                "tiles": ["https://button.kunnas.com/stand-others/{z}/{x}/{y}.pbf"],
                 "maxzoom": 12,
             });
 
@@ -353,9 +359,9 @@
             })
 
             map.addLayer({
-                'id': 'swamp-co2',
-                'source': 'swamps',
-                'source-layer': 'swamp',
+                'id': 'peatland-co2',
+                'source': 'stand-suot',
+                'source-layer': 'stand-suot',
                 // 'maxzoom': zoomThreshold,
                 'type': 'fill',
                 // 'filter': ['==', 'isState', true],
@@ -383,9 +389,9 @@
             })
 
             map.addLayer({
-                'id': 'swamp-co2-sym',
-                'source': 'swamps',
-                'source-layer': 'swamp',
+                'id': 'peatland-co2-sym',
+                'source': 'stand-suot',
+                'source-layer': 'stand-suot',
                 'type': 'symbol',
                 "minzoom": 12,
                 // 'maxzoom': zoomThreshold,
@@ -465,7 +471,7 @@
 
             map.setPaintProperty('no2-raster', 'raster-opacity', 0.7)
             map.setPaintProperty('terramonitor', 'raster-opacity', 0.6)
-            // map.setPaintProperty('swamp-co2', 'opacity', 0.6)
+            // map.setPaintProperty('peatland-co2', 'opacity', 0.6)
 
         });  // /map onload
 
