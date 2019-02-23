@@ -259,11 +259,11 @@
             // "sources": {
             //     "stand-suot": {
             //         "type": "vector",
-            //         "tiles": ["https://button.kunnas.com/stand-suot/{z}/{x}/{y}.pbf"],
+            //         "tiles": ["https://map.buttonprogram.org/stand-suot/{z}/{x}/{y}.pbf"],
             //         "maxzoom": 12,
             //     }
             // },
-            "glyphs": "https://button.kunnas.com/suot/font/{fontstack}/{range}.pbf",
+            "glyphs": "https://map.buttonprogram.org/suot/font/{fontstack}/{range}.pbf",
             "layers": [
                 {
                     "id": "background",
@@ -294,19 +294,19 @@
 
             map.addSource('stand-suot', {
                 "type": "vector",
-                "tiles": ["https://button.kunnas.com/stand-suot/{z}/{x}/{y}.pbf"],
+                "tiles": ["https://map.buttonprogram.org/stand-suot/{z}/{x}/{y}.pbf"],
                 "maxzoom": 12,
             });
 
             map.addSource('metsadata-other', {
                 "type": "vector",
-                "tiles": ["https://button.kunnas.com/stand-others/{z}/{x}/{y}.pbf"],
+                "tiles": ["https://map.buttonprogram.org/stand-others/{z}/{x}/{y}.pbf"],
                 "maxzoom": 12,
             });
 
             map.addSource('histosol_plohko', {
                 "type": "vector",
-                "tiles": ["https://button.kunnas.com/peltolohko/histosol_plohko/{z}/{x}/{y}.pbf"],
+                "tiles": ["https://map.buttonprogram.org/peltolohko/histosol_plohko/{z}/{x}/{y}.pbf"],
                 "maxzoom": 11,
             });
 
@@ -450,7 +450,7 @@
             const timestampHour = Math.round(+new Date() / 1e6)
             map.addSource('no2-tiles', {
                 "type": "raster",
-                "tiles": ["https://button.kunnas.com/atmoshack/mbtiles-dump/" + no2Tileset + "/{z}/{x}/{y}.png?v=5&_=" + timestampHour],
+                "tiles": ["https://map.buttonprogram.org/atmoshack/mbtiles-dump/" + no2Tileset + "/{z}/{x}/{y}.png?v=5&_=" + timestampHour],
                 "maxzoom": 5,
             });
             
@@ -518,7 +518,7 @@
             const x = e.lngLat
             const lat = x.lat.toFixed(2)
             const lon = x.lng.toFixed(2)
-            const url = `https://button.kunnas.com/query_no2?latitude=${lat}&longitude=${lon}&v=9`
+            const url = `https://map.buttonprogram.org/query_no2?latitude=${lat}&longitude=${lon}&v=9`
             const currentRequestNum = ++reqCounter
             fetch(url)
               .then(function(response) {
