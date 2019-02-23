@@ -218,10 +218,11 @@
         </main>
 
         <ul>
-            <li><button onclick="toggle('no2-raster')">Show/Hide NO2</button></li>
-            <li><button onclick="toggle('terramonitor')">Show/Hide Terramonitor map</button></li>
-            <li><button onclick="toggle('peatland-co2');toggle('peatland-co2-sym');toggle('peatland-outline')">Show/Hide Peatland CO2</button></li>
-            <li><button onclick="toggle('plohko-fill');toggle('plohko-co2-sym');toggle('plohko-outline')">Show/Hide Histosol Field CO2</button></li>
+            <li><button onclick="toggle('no2-raster')">NO2</button></li>
+            <li><button onclick="toggle('terramonitor')">Terramonitor map</button></li>
+            <li><button onclick="toggle('peatland-co2');toggle('peatland-co2-sym');">Peatland CO2</button></li>
+            <li><button onclick="toggle('plohko-fill');toggle('plohko-co2-sym');toggle('plohko-outline')">Histosol Field CO2</button></li>
+            <li><button onclick="hideAll(x=>x.indexOf('valio')===-1);toggle('valio-fields-boundary');toggle('valio-fields-fill');toggle('valio-plohko-co2-sym')">Valio</button></li>
         </ul>
         <button style='font-weight:800; font-size:1.2em' onclick='toggleLegend()'>Hide info</button>
         <hr />
@@ -243,12 +244,27 @@
             document.getElementById('legend').classList.toggle('hide')
         }
         const toggleableLayerIds = ['no2', 'peatland-co2-sym', 'peatland-co2', 'peatland-outline']
-        const toggles = {}
+        const toggles = {
+            'peatland-co2': true,
+            'peatland-co2-sym': true,
+            'plohko-fill': true,
+            'plohko-co2-sym': true,
+            'plohko-outline': true,
+        }
         window.t = toggles
         window.toggle = function (id) {
             const state = toggles[id] = (toggles[id] === undefined ? false : !toggles[id])
             map.setLayoutProperty(id, 'visibility', state ? 'visible' : 'none')
             if (id === 'no2-raster') window.setNO2()
+        }
+        window.hideAll = function (filterFn) {
+            for (const id in toggles) {
+                if (filterFn && !filterFn(id)) continue;
+                if (toggles[id]) {
+                    map.setLayoutProperty(id, 'visibility', 'none')
+                    toggles[id] = false
+                }
+            }
         }
 
         // This must be set, but the value is not needed here.
@@ -446,6 +462,72 @@
             })
 
 
+
+            map.addSource('valio_centroids', {
+                "type": "geojson",
+                "data": "https://map.buttonprogram.org/suot/valio_centroids.geojson",
+            });
+            map.addSource('valio_hulls', {
+                "type": "geojson",
+                "data": "https://map.buttonprogram.org/suot/valio_hulls.geojson",
+            });
+            map.addSource('valio_fields', {
+                "type": "geojson",
+                "data": "https://map.buttonprogram.org/suot/valio_fields.geojson?v=2",
+            });
+
+            map.addLayer({
+                'id': 'valio-fields-fill',
+                'source': 'valio_fields',
+                'type': 'fill',
+                'paint': {
+                    'fill-color': [
+                        'interpolate',
+                        ['linear'],
+                        ['to-number', ['get', 'histosol_ratio'], 0],
+                        0, 'yellow',
+                        1, 'red',
+                    ],
+                }
+            })
+            map.addLayer({
+                'id': 'valio-fields-boundary',
+                'source': 'valio_fields',
+                'type': 'line',
+                'paint': {
+                    'line-opacity': 0.75,
+                }
+            })
+            map.addLayer({
+                'id': 'valio-plohko-co2-sym',
+                'source': 'valio_fields',
+                // 'source-layer': 'suopellot',
+                'type': 'symbol',
+                "minzoom": 12,
+                // 'maxzoom': zoomThreshold,
+                "paint": {},
+                "layout": {
+                    "symbol-placement": "point",
+                    "text-font": ["Open Sans Regular"],
+                    // "text-field": '{co2} t CO2/a',
+
+                    // WTF were they thinking. Use Lisp or JS or go home.
+                    // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
+                    // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
+                    "text-field":
+                        ["let", "suffix", " tons CO2eq/y",
+                            ["concat",
+                                ["to-string",
+                                    ["*", 10,
+                                        ["round", ["*", 0.0002, ["get", "total_area"]]],
+                                    ]],
+                                ["var", "suffix"]]],
+
+                    "text-size": 20,
+                }
+            })
+
+
             let no2Tileset = Number.parseInt( window.location.search.substring(1) ) || 0
             const timestampHour = Math.round(+new Date() / 1e6)
             map.addSource('no2-tiles', {
@@ -482,6 +564,10 @@
             if (!window.location.search.substring(1)) {
                 toggle('no2-raster')
             }
+
+            toggle('valio-fields-boundary')
+            toggle('valio-fields-fill')
+            toggle('valio-plohko-co2-sym')
 
             map.setPaintProperty('no2-raster', 'raster-opacity', 0.7)
             map.setPaintProperty('terramonitor', 'raster-opacity', 0.6)
