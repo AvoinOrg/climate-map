@@ -403,12 +403,12 @@
 
                     // WTF were they thinking. Use Lisp or JS or go home.
                     "text-field":
-                    ["let", "suffix", " tons CO2eq in 20yrs",
+                    ["let", "suffix", " tons CO2eq/y",
                             ["concat",
                                 ["to-string",
                                     ["/",
                                         ["round",
-                                            ["*", 30,
+                                            ["*", 1.5,
                                                 ["get", "co2"]]], 10]],
                                 ["var", "suffix"]]],
 
@@ -430,14 +430,14 @@
                     // "text-field": '{co2} t CO2/a',
 
                     // WTF were they thinking. Use Lisp or JS or go home.
-                    // NB: 400t CO2eq/ha/20yrs -> 0.04t/m2/20yrs
-                    // round(0.004*total_area) -> reduce precision -> *10 -> 0.04t/m2
+                    // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
+                    // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
                     "text-field":
-                        ["let", "suffix", " tons CO2eq in 20yrs",
+                        ["let", "suffix", " tons CO2eq/y",
                             ["concat",
                                 ["to-string",
                                     ["*", 10,
-                                        ["round", ["*", 0.004, ["get", "total_area"]]],
+                                        ["round", ["*", 0.0002, ["get", "total_area"]]],
                                     ]],
                                 ["var", "suffix"]]],
 
