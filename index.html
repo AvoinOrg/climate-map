@@ -220,7 +220,7 @@
         <ul>
             <li><button onclick="toggle('no2-raster')">NO2</button></li>
             <li><button onclick="toggle('terramonitor')">Terramonitor map</button></li>
-            <li><button onclick="toggle('peatland-co2');toggle('peatland-co2-sym');">Peatland CO2</button></li>
+            <li><button onclick="toggle('peatland-co2');toggle('peatland-co2-sym');toggle('peatland-outline');">Peatland CO2</button></li>
             <li><button onclick="toggle('plohko-fill');toggle('plohko-co2-sym');toggle('plohko-outline')">Histosol Field CO2</button></li>
             <li><button onclick="hideAll(x=>x.indexOf('valio')===-1);toggle('valio-fields-boundary');toggle('valio-fields-fill');toggle('valio-plohko-co2-sym')">Valio</button></li>
         </ul>
@@ -250,6 +250,7 @@
             'plohko-fill': true,
             'plohko-co2-sym': true,
             'plohko-outline': true,
+            'peatland-outline': true,
         }
         window.t = toggles
         window.toggle = function (id) {
@@ -342,35 +343,22 @@
 
 
             map.addLayer({
-                'id': 'plohko-outline',
-                'source': 'histosol_plohko',
-                'source-layer': 'suopellot',
-                // 'maxzoom': zoomThreshold,
-                'type': 'fill',
-                // 'filter': ['==', 'isState', true],
-                'paint': {
-                    'fill-outline-color': 'purple', 
-                    // [ 
-                    //     'interpolate',
-                    //     ['linear'],
-                    //     ['get', 'drainagestate'],
-                    //     6, 'rgb(89, 122, 155)',
-                    //     // 7, 'rgb(252,113,34)',
-                    //     // 8, 'rgb(218,248,85)',
-                    //     9, 'rgb(0, 77, 153)',
-                    // ],
-                    'fill-opacity': 1
-                }
-            })
-
-            map.addLayer({
                 'id': 'plohko-fill',
                 'source': 'histosol_plohko',
                 'source-layer': 'suopellot',
                 'type': 'fill',
                 'paint': {
-                    'fill-color': 'red', 
+                    'fill-color': 'red',
                     'fill-opacity': 1
+                }
+            })
+            map.addLayer({
+                'id': 'plohko-outline',
+                'source': 'histosol_plohko',
+                'source-layer': 'suopellot',
+                'type': 'line',
+                'paint': {
+                    'line-opacity': 0.75,
                 }
             })
 
@@ -402,6 +390,15 @@
                     // ],
                     'fill-opacity': 0.9
                 },
+            })
+            map.addLayer({
+                'id': 'peatland-outline',
+                'source': 'stand-suot',
+                'source-layer': 'stand-suot',
+                'type': 'line',
+                'paint': {
+                    'line-opacity': 0.75,
+                }
             })
 
             map.addLayer({
