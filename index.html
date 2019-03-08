@@ -248,7 +248,6 @@
 
         window.enableDefaultLayers = function() {
             Object.entries(layerGroupState).forEach(([group, enabled]) => {
-                console.log('ENABLE', group, enabled, layerGroups[group]);
                 enabled && layerGroups[group].forEach(layer => {
                     typeof layer === 'string' &&
                         map.setLayoutProperty(layer, 'visibility', 'visible');
@@ -905,7 +904,6 @@
 
             map.getStyle().layers.map(layer => {
                 const isOldLayer = layer.id in originalMapLayerIds
-                console.log('LAYER', layer.id, isOldLayer)
                 if (!isOldLayer)
                     map.setLayoutProperty(layer.id, 'visibility', 'none')
             })
