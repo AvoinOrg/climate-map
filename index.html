@@ -121,6 +121,7 @@
     <div id='map'></div>
 
     <output id='no2'></output>
+
     <div class='map-overlay toggle-legend' onclick='toggleLegend()'>
         Show info
     </div>
@@ -219,10 +220,31 @@
 
         <ul>
             <li><button onclick="toggle('no2-raster')">Air pollution indicator NO2</button></li>
-            <li><button onclick="toggle('terramonitor')">Terramonitor satellite map</button></li>
+            <li><button onclick="toggle('terramonitor');toggleBaseMapSymbols()">Terramonitor satellite map</button></li>
             <li><button onclick="toggle('peatland-co2');toggle('peatland-co2-sym');toggle('peatland-outline');">Peatland forests CO2</button></li>
-            <li><button onclick="toggle('plohko-fill');toggle('plohko-co2-sym');toggle('plohko-outline')">fields fields CO2</button></li>
-            <li><button onclick="hideAll(x=>x.indexOf('valio')===-1);toggle('valio-fields-boundary');toggle('valio-fields-fill');toggle('valio-plohko-co2-sym')">Valio supply chain fields CO2</button></li>
+            <li><button onclick="toggle('plohko-fill');toggle('plohko-co2-sym');toggle('plohko-outline')">Peatland fields CO2</button></li>
+            <li><button onclick="toggle('metsaan-hila-c');toggle('metsaan-hila-sym');toggle('metsaan-hila-outline')">Grid cell forest data</button></li>
+            <li><button onclick="hideAll(x=>!/valio/.test(x));toggle('valio-fields-boundary');toggle('valio-fields-fill');toggle('valio-plohko-co2-sym')">Valio supply chain fields CO2</button></li>
+
+            <li><button onclick="toggle('metsaan-stand-others-c')">All privately owned forests</button></li>
+
+            <hr/>
+            <li><button onclick="toggle('metsaan-ete-all-c');toggle('metsaan-ete-all-outline');toggle('metsaan-ete-all-sym');">All Especially Important Habitats (incl. METSO)</button></li>
+
+            <!-- <li><button onclick="toggle('metsaan-ete-gamekeeping-area-c');">Gamekeeping areas</button></li> -->
+            <!-- <li><button onclick="toggle('metsaan-ete-riistatiheikko');">Riistatiheikkö</button></li> -->
+            <!-- <li><button onclick="toggle('metsaan-ete-possibly-metso-c');">Possibly a METSO program target</button></li>
+            <li><button onclick="toggle('metsaan-ete-metso-c');">METSO habitat</button></li> -->
+            <!-- <li><button onclick="toggle('metsaan-ete-metso2');">Metso II-program</button></li> -->
+
+            <hr/>
+            <!-- <li><button onclick="zonation(1);">Areas important to diversity - Zonation v1</button></li>
+            <li><button onclick="zonation(2);">Areas important to diversity - Zonation v2</button></li>
+            <li><button onclick="zonation(3);">Areas important to diversity - Zonation v3</button></li>
+            <li><button onclick="zonation(4);">Areas important to diversity - Zonation v4</button></li>
+            <li><button onclick="zonation(5);">Areas important to diversity - Zonation v5</button></li> -->
+            <li><button onclick="zonation(6);">Areas important to diversity (Zonation)</button></li>
+
         </ul>
         <button style='font-weight:800; font-size:1.2em' onclick='toggleLegend()'>Hide info</button>
         <hr />
@@ -252,6 +274,7 @@
             'plohko-outline': true,
             'peatland-outline': true,
         }
+
         window.t = toggles
         window.toggle = function (id) {
             const state = toggles[id] = (toggles[id] === undefined ? false : !toggles[id])
@@ -268,11 +291,53 @@
             }
         }
 
+        window.invertLayerTextHalo = function(layer) {
+            layer.paint = {...layer.paint}
+            if (layer.paint && layer.paint["text-halo-width"]) {
+                // Original style is something like:
+                // text-color: "#999"
+                // text-halo-blur: 1
+                // text-halo-color: "rgb(242,243,240)"
+                // text-halo-width: 2
+                layer.paint['text-halo-blur'] = 1
+                layer.paint['text-halo-width'] = 2.5
+                layer.paint['text-color'] = '#fff'
+                layer.paint['text-halo-color'] = '#000'
+            }
+        }
+
+        window.layerOriginalPaint = {}
+        window.toggleBaseMapSymbols = function() {
+            const id = 'terramonitor'
+            const isSatelliteVisible = (toggles[id] === undefined ? false : !toggles[id])
+
+            map.getStyle().layers.filter(x => x.type === 'symbol').forEach(layer => {
+                if (isSatelliteVisible) {
+                    layer.paint = window.layerOriginalPaint[layer.id];
+                } else {
+                    window.invertLayerTextHalo(layer);
+                }
+                map.removeLayer(layer.id);
+                map.addLayer(layer);
+                // map.moveLayer(layer.id)
+            })
+        }
+
+        const zonation_versions = [1,2,3,4,5,6]
+        window.zonation = function (v) {
+            const id = `zonation-v${v}-raster`
+            window.hideAll(x => /zonation/.test(x) && x !== id)
+            const state = toggles[id] = (toggles[id] === undefined ? false : !toggles[id])
+            map.setLayoutProperty(id, 'visibility', state ? 'visible' : 'none')
+        }
+
+
         // This must be set, but the value is not needed here.
         mapboxgl.accessToken = 'not-needed';
 
         const style = {
             "version": 8,
+            // "sprite": "https://map.buttonprogram.org/sprites",
             // "sources": {
             //     "stand-suot": {
             //         "type": "vector",
@@ -301,31 +366,9 @@
             attributionControl: false,
         });
 
+        map.addControl(new mapboxgl.NavigationControl());
 
         map.on('load', function () {
-
-            // Custom attribution for Terramonitor since the WMS source doesn't present show one automatically.
-            map.addControl(new mapboxgl.AttributionControl({
-                customAttribution: '<a href="https://www.terramonitor.com">© Terramonitor</a> | <a href="http://mavi.fi">© Maaseutuvirasto 2018</a>'
-            }));
-
-            map.addSource('stand-suot', {
-                "type": "vector",
-                "tiles": ["https://map.buttonprogram.org/stand-suot/{z}/{x}/{y}.pbf"],
-                "maxzoom": 12,
-            });
-
-            map.addSource('metsadata-other', {
-                "type": "vector",
-                "tiles": ["https://map.buttonprogram.org/stand-others/{z}/{x}/{y}.pbf"],
-                "maxzoom": 12,
-            });
-
-            map.addSource('histosol_plohko', {
-                "type": "vector",
-                "tiles": ["https://map.buttonprogram.org/peltolohko/histosol_plohko/{z}/{x}/{y}.pbf"],
-                "maxzoom": 11,
-            });
 
             map.addLayer({
                 'id': 'terramonitor',
@@ -340,6 +383,226 @@
                 },
                 'paint': {},
             });
+
+
+            // Custom attribution for Terramonitor since the WMS source doesn't present show one automatically.
+            map.addControl(new mapboxgl.AttributionControl({
+                customAttribution: '<a href="https://www.terramonitor.com">© Terramonitor</a> | <a href="http://mavi.fi">© Maaseutuvirasto 2018</a>'
+            }));
+
+            map.addSource('stand-suot', {
+                "type": "vector",
+                "tiles": ["https://map.buttonprogram.org/stand-suot/{z}/{x}/{y}.pbf"],
+                "maxzoom": 12,
+            });
+
+            map.addSource('metsaan-stand-others', {
+                "type": "vector",
+                "tiles": ["https://map.buttonprogram.org/stand-others/{z}/{x}/{y}.pbf"],
+                "maxzoom": 13,
+            });
+
+            map.addSource('metsaan-hila', {
+                "type": "vector",
+                "tiles": ["https://map.buttonprogram.org/metsaan-hila/{z}/{x}/{y}.pbf"],
+                "maxzoom": 15,
+            });
+
+            map.addSource('metsaan-ete', {
+                "type": "vector",
+                "tiles": ["https://map.buttonprogram.org/metsaan-ete/{z}/{x}/{y}.pbf"],
+                "maxzoom": 12,
+            });
+
+            map.addSource('histosol_plohko', {
+                "type": "vector",
+                "tiles": ["https://map.buttonprogram.org/peltolohko/histosol_plohko/{z}/{x}/{y}.pbf"],
+                "maxzoom": 11,
+            });
+
+            map.addLayer({
+                'id': 'metsaan-stand-others-c',
+                'source': 'metsaan-stand-others',
+                'source-layer': 'stand-others',
+                'type': 'fill',
+                'paint': {
+                    'fill-color': 'brown',
+                    'fill-opacity': 0.5
+                },
+            })
+
+
+
+            map.addLayer({
+                'id': 'metsaan-hila-c',
+                'source': 'metsaan-hila',
+                'source-layer': 'metsaan-hila',
+                'type': 'fill',
+                'paint': {
+                    'fill-color': [
+                        'interpolate',
+                        ['linear'],
+                        ['get', 'age'],
+                        0, 'rgb(218,248,85)', // green
+                        70, 'rgb(252,113,34)', // orange
+                        100, 'rgb(245,17,72)', // red
+                    ],
+                    'fill-opacity': 0.9
+                },
+            })
+            map.addLayer({
+                'id': 'metsaan-hila-outline',
+                'source': 'metsaan-hila',
+                'source-layer': 'metsaan-hila',
+                'type': 'line',
+                "minzoom": 14,
+                'paint': {
+                    'line-opacity': 0.75,
+                }
+            })
+            map.addLayer({
+                'id': 'metsaan-hila-sym',
+                'source': 'metsaan-hila',
+                'source-layer': 'metsaan-hila',
+                'type': 'symbol',
+                "minzoom": 15,
+                // 'maxzoom': zoomThreshold,
+                "paint": {},
+                "layout": {
+                    "symbol-placement": "point",
+                    "text-font": ["Open Sans Regular"],
+                    "text-field": 'Age:{age} Avg.Diameter:{meandiameter}',
+                    "text-size": 10,
+                }
+            })
+
+
+            map.addSource('metsaan-ete-gamekeeping-area', {
+                "type": "geojson",
+                "data": "https://map.buttonprogram.org/suot/ete_gamekeeping_area.geojson?v=1",
+            });
+            map.addSource('metsaan-ete-possibly-metso', {
+                "type": "geojson",
+                "data": "https://map.buttonprogram.org/suot/ete_possibly_metso.geojson?v=1",
+            });
+            map.addSource('metsaan-ete-metso', {
+                "type": "geojson",
+                "data": "https://map.buttonprogram.org/suot/ete_metso.geojson?v=1",
+            });
+            // map.addSource('metsaan-ete-riistatiheikko', {
+            //     "type": "geojson",
+            //     "data": "https://map.buttonprogram.org/suot/ete_riistatiheikko.geojson?v=1",
+            // });
+            // map.addSource('metsaan-ete-metso2', {
+            //     "type": "geojson",
+            //     "data": "https://map.buttonprogram.org/suot/ete_metso2.geojson?v=1",
+            // });
+
+            map.addLayer({
+                'id': 'metsaan-ete-gamekeeping-area-c',
+                'source': 'metsaan-ete-gamekeeping-area',
+                'type': 'fill',
+                'paint': {
+                    'fill-color': '#40d040',
+                    'fill-opacity': 0.7,
+                },
+            })
+            map.addLayer({
+                'id': 'metsaan-ete-possibly-metso-c',
+                'source': 'metsaan-ete-possibly-metso',
+                'type': 'fill',
+                'paint': {
+                    'fill-color': '#40d040',
+                    'fill-opacity': 0.7,
+                },
+            })
+            map.addLayer({
+                'id': 'metsaan-ete-metso-c',
+                'source': 'metsaan-ete-metso',
+                'type': 'fill',
+                'paint': {
+                    'fill-color': '#40d040',
+                    'fill-opacity': 0.7,
+                },
+            })
+
+            // map.addLayer({
+            //     'id': 'metsaan-ete-riistatiheikko',
+            //     'source': 'metsaan-ete-riistatiheikko',
+            //     'type': 'fill',
+            //     'paint': {
+            //         'fill-color': 'cyan',
+            //         'fill-opacity': 0.7,
+            //     },
+            // })
+            // map.addLayer({
+            //     'id': 'metsaan-ete-metso2',
+            //     'source': 'metsaan-ete-metso2',
+            //     'type': 'fill',
+            //     'paint': {
+            //         'fill-color': 'cyan',
+            //         'fill-opacity': 0.7,
+            //     },
+            // })
+
+
+            map.addLayer({
+                'id': 'metsaan-ete-all-c',
+                'source': 'metsaan-ete',
+                'source-layer': 'metsaan-ete',
+                'type': 'fill',
+                'paint': {
+                    'fill-color': 'cyan',
+                    'fill-opacity': 0.7,
+                },
+            })
+            map.addLayer({
+                'id': 'metsaan-ete-all-outline',
+                'source': 'metsaan-ete',
+                'source-layer': 'metsaan-ete',
+                'type': 'line',
+                "minzoom": 12,
+                'paint': {
+                    'line-opacity': 1,
+                }
+            })
+            map.addLayer({
+                'id': 'metsaan-ete-all-sym',
+                'source': 'metsaan-ete',
+                'source-layer': 'metsaan-ete',
+                'type': 'symbol',
+                "layout": {
+                    "text-font": ["Open Sans Regular"],
+                    "text-field": [
+                        "match",
+                        ["get","featurecode"],
+                        70, "Gamekeeping area",
+                        95, "METSO",
+                        98, "Possibly METSO",
+                        10120, "Gamekeeping area",
+                        15150, "METSO II",
+                        "",
+                    ],
+                    // "icon-image": "https://example.com/METSO_logo08_FI.gif",
+                    //  [
+                    //     // "step",
+                    //     // [
+                    //     //     "zoom"
+                    //     // ],
+                    //     // [
+                    //         "match", ["get","featurecode"],
+                    //         "95", "METSO_logo08_FI.gif",
+                    //         null
+                    // ],
+                    // "text-field": ["get", "featurecode"],
+                },
+                paint: {
+                    'text-color': "#999",
+                    'text-halo-blur': 1,
+                    'text-halo-color': "rgb(242,243,240)",
+                    'text-halo-width': 2,
+                },
+            })
 
 
             map.addLayer({
@@ -357,6 +620,7 @@
                 'source': 'histosol_plohko',
                 'source-layer': 'suopellot',
                 'type': 'line',
+                "minzoom": 11,
                 'paint': {
                     'line-opacity': 0.75,
                 }
@@ -396,6 +660,7 @@
                 'source': 'stand-suot',
                 'source-layer': 'stand-suot',
                 'type': 'line',
+                "minzoom": 11,
                 'paint': {
                     'line-opacity': 0.75,
                 }
@@ -412,11 +677,8 @@
                 "layout": {
                     "symbol-placement": "point",
                     "text-font": ["Open Sans Regular"],
-                    // "text-field": '{co2} t CO2/a',
-
-                    // WTF were they thinking. Use Lisp or JS or go home.
                     "text-field":
-                    ["let", "suffix", " tons CO2eq/y",
+                    ["let", "suffix", "t CO2e/y",
                             ["concat",
                                 ["to-string",
                                     ["/",
@@ -440,13 +702,10 @@
                 "layout": {
                     "symbol-placement": "point",
                     "text-font": ["Open Sans Regular"],
-                    // "text-field": '{co2} t CO2/a',
-
-                    // WTF were they thinking. Use Lisp or JS or go home.
                     // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
                     // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
                     "text-field":
-                        ["let", "suffix", " tons CO2eq/y",
+                        ["let", "suffix", "t CO2e/y",
                             ["concat",
                                 ["to-string",
                                     ["*", 10,
@@ -459,19 +718,11 @@
             })
 
 
-
-            map.addSource('valio_centroids', {
-                "type": "geojson",
-                "data": "https://map.buttonprogram.org/suot/valio_centroids.geojson",
-            });
-            map.addSource('valio_hulls', {
-                "type": "geojson",
-                "data": "https://map.buttonprogram.org/suot/valio_hulls.geojson",
-            });
             map.addSource('valio_fields', {
                 "type": "geojson",
                 "data": "https://map.buttonprogram.org/suot/valio_fields.geojson?v=2",
             });
+
 
             map.addLayer({
                 'id': 'valio-fields-fill',
@@ -493,7 +744,8 @@
                 'type': 'line',
                 'paint': {
                     'line-opacity': 0.75,
-                }
+                },
+                "minzoom": 11,
             })
             map.addLayer({
                 'id': 'valio-plohko-co2-sym',
@@ -506,19 +758,20 @@
                 "layout": {
                     "symbol-placement": "point",
                     "text-font": ["Open Sans Regular"],
-                    // "text-field": '{co2} t CO2/a',
-
-                    // WTF were they thinking. Use Lisp or JS or go home.
                     // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
                     // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
                     "text-field":
-                        ["let", "suffix", " tons CO2eq/y",
+                        ["let", "suffix", "t CO2e/y",
                             ["concat",
                                 ["to-string",
                                     ["*", 10,
                                         ["round", ["*", 0.0002, ["get", "total_area"]]],
                                     ]],
-                                ["var", "suffix"]]],
+                                ["var", "suffix"],
+                                "\npeat:",["/",["round",['*', 0.001, ['to-number',["get", "histosol_area"],0]]],10],
+                                "ha\ntotal:",["/",["round",['*', 0.001, ["get", "total_area"]]],10],"ha",
+                            ]
+                        ],
 
                     "text-size": 20,
                 }
@@ -555,6 +808,25 @@
                 'paint': {}
             })
 
+            zonation_versions.map(v => {
+                const sourceName = `zonation-v${v}`
+                const id = `${sourceName}-raster`
+                map.addSource(sourceName, {
+                    "type": "raster",
+                    "tiles": [`https://map.buttonprogram.org/suot/zonation/MetZa2018_VMA0${v}/{z}/{x}/{y}.png?v=5`],
+                    "minzoom": 5,
+                    "maxzoom": 9,
+                });
+                map.addLayer({
+                    id,
+                    'source': sourceName,
+                    'type': 'raster',
+                    'minzoom': 0,
+                    // 'maxzoom': 10,
+                })
+                toggle(id)
+                map.setPaintProperty(id, 'raster-opacity', 0.6)
+            })
 
             // The NO2 layer is off by default, but it can be enabled
             // on page load with a URL parameter string like "?0".
@@ -562,14 +834,41 @@
                 toggle('no2-raster')
             }
 
+            toggle('metsaan-stand-others-c')
+
+            toggle('metsaan-hila-c')
+            toggle('metsaan-hila-outline')
+            toggle('metsaan-hila-sym')
+
+            toggle('metsaan-ete-all-c')
+            toggle('metsaan-ete-all-outline')
+            toggle('metsaan-ete-all-sym')
+
             toggle('valio-fields-boundary')
             toggle('valio-fields-fill')
             toggle('valio-plohko-co2-sym')
 
+            toggle('metsaan-ete-gamekeeping-area-c')
+            // toggle('metsaan-ete-riistatiheikko');
+            toggle('metsaan-ete-possibly-metso-c');
+            toggle('metsaan-ete-metso-c');
+            // toggle('metsaan-ete-metso2');
+
+
             map.setPaintProperty('no2-raster', 'raster-opacity', 0.7)
-            map.setPaintProperty('terramonitor', 'raster-opacity', 0.6)
+            // map.setPaintProperty('terramonitor', 'raster-opacity', 0.6)
             // map.setPaintProperty('peatland-co2', 'opacity', 0.6)
 
+
+            // Ensure all symbol layers appear on top of satellite imagery.
+            map.getStyle().layers.filter(x => x.type === 'symbol').forEach(layer => {
+                // Rework Stadia default style to look nicer on top of satellite imagery
+                window.layerOriginalPaint[layer.id] = {...layer.paint}
+                window.invertLayerTextHalo(layer)
+                map.removeLayer(layer.id)
+                map.addLayer(layer)
+                // map.moveLayer(layer.id)
+            })
         });  // /map onload
 
         let reqCounter = 0
