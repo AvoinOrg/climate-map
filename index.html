@@ -174,7 +174,7 @@
         const layerGroups = {
             'peatland-co2': ['peatland-co2', 'peatland-co2-sym', 'peatland-outline'],
             'valio-supply-chain-fields': [
-            () => hideAll(x=>!/valio/.test(x)),
+            () => window.hideAll(x=>!/valio/.test(x)),
             'valio-fields-boundary', 'valio-fields-fill', 'valio-plohko-co2-sym',
             ],
             'histosol-field-co2': ['plohko-fill', 'plohko-co2-sym', 'plohko-outline'],
@@ -182,9 +182,9 @@
             'privately-owned-forests': ['metsaan-stand-others-c'],
             'zonation6': ['zonation-v6-raster'],
             'ete': ['metsaan-ete-all-c', 'metsaan-ete-all-outline', 'metsaan-ete-all-sym'],
-            'ete-all-labels': [window.useAllEteCodes],
-            'terramonitor': ['terramonitor', window.toggleBaseMapSymbols],
-            'no2-raster': ['no2-raster', window.setNO2],
+            'ete-all-labels': [() => window.useAllEteCodes()],
+            'terramonitor': ['terramonitor', () => window.toggleBaseMapSymbols()],
+            'no2-raster': ['no2-raster', () => window.setNO2()],
             'mangrove-forests': ['mangrove-wms'],
         };
         window.toggleSatellite = function() {
