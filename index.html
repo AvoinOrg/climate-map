@@ -229,7 +229,8 @@
             <li><button onclick="toggle('metsaan-stand-others-c')">All privately owned forests</button></li>
 
             <hr/>
-            <li><button onclick="toggle('metsaan-ete-all-c');toggle('metsaan-ete-all-outline');toggle('metsaan-ete-all-sym');">All Especially Important Habitats (incl. METSO)</button></li>
+            <li><button onclick="toggleEte()">All Especially Important Habitats (incl. METSO)</button></li>
+            <li><button onclick="window.enableAllEteCodes()">Display ALL Habitat Descriptions</button></li>
 
             <!-- <li><button onclick="toggle('metsaan-ete-gamekeeping-area-c');">Gamekeeping areas</button></li> -->
             <!-- <li><button onclick="toggle('metsaan-ete-riistatiheikko');">Riistatiheikkö</button></li> -->
@@ -869,7 +870,40 @@
                 map.addLayer(layer)
                 // map.moveLayer(layer.id)
             })
+
         });  // /map onload
+
+
+        window.useAllEteCodes = function(codes) {
+            const id = 'metsaan-ete-all-sym'
+            const isVisible = (toggles[id] === undefined ? false : !toggles[id])
+            const layer = map.getStyle().layers.filter(x => x.id ===id)[0]
+            layer.layout['text-field'] = [
+                "match",
+                ["get","featurecode"],
+                ...codes,
+                "",
+            ];
+            map.removeLayer(id)
+            map.addLayer(layer)
+            toggle(id); toggle(id);
+        }
+
+        // NB: Use with caution. Very heavy.
+        window.toggleEte = function() {
+            toggle('metsaan-ete-all-c');
+            toggle('metsaan-ete-all-outline');
+            toggle('metsaan-ete-all-sym');
+        }
+        window.enableAllEteCodes = function() {
+            fetch('ete_codes.json').then(function(response) {
+                response.json().then(e => {
+                    window.useAllEteCodes(e);
+                    window.toggleEte();
+                })
+            })
+        }
+
 
         let reqCounter = 0
         let lastRequestSeen = 0
@@ -894,6 +928,8 @@
                 elem.innerHTML = `NO2: ${(n*1e6).toFixed(1)} µmol/m<sup>2</sup>${coords}`
             }
         }
+
+
 
         const updateNO2Reading = function (e) {
             if (toggles['no2-raster']===false) return
