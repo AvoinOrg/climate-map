@@ -25,39 +25,6 @@
             width: 100%;
         }
 
-        .hide {
-            visibility: hidden;
-        }
-
-        .map-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            padding-bottom: 30px;
-            background: rgba(255, 255, 255, 0.8);
-            margin-right: 20px;
-            overflow: auto;
-            border-radius: 3px;
-        }
-
-        .toggle-legend {
-            font-size: 1.4rem;
-            padding: 0;
-            margin-bottom: 2.5rem;
-            background-color: rgba(42, 49, 67, 0.4);
-            color: white;
-            cursor: pointer;
-        }
-
-        #legend {
-            max-height: 100vh;
-            font-family: Arial, sans-serif;
-        }
-
-        #legend ul {
-            list-style: none;
-        }
-
         #no2 {
             position: absolute;
             top: 1rem;
@@ -67,229 +34,201 @@
             font-family: Arial, sans-serif;
         }
 
-        .buttonbg h1 {
-            font-size: 20px
-        }
-
-        .buttonbg {
-            cursor: pointer;
-            color: white;
-            background: no-repeat left/90px url("button_logo.png");
-            /* background-color: rgb(37, 39, 65); */
-            background-color: rgb(42, 49, 67);
-            font-family: sans-serif;
-            padding-top: 10px;
-            padding-left: 120px;
-            min-height: 90px;
-        }
-
         .logo {
             max-width: 10vw;
         }
 
-        .peat {
-            border: 15px solid #FFF;
-            border-radius: 90px;
-            height: 20px;
-            width: 20px;
+        .circle-icon:hover {
+            cursor: pointer;
+        }
+        .circle-icon {
+            background: #ffffff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 50px;
+            vertical-align: middle;
+            padding: 15px;
+        }
+        #menu-container{
+            font-size: 30px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 500px;
+            height: 100%;
+            padding: 0 30px;
+            background: #ffffff;
+        }
+        #menu-container .ui-button {
+            left: 550px;
+        }
+        .menu-button-container{
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding-top: 50px;
+            padding-left: 50px;
+        }
+        .satellite-button-container{
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            padding-bottom: 50px;
+            padding-left: 50px;
+            /* background: rgba(255, 255, 255, 0.8); */
+            /* margin-right: 20px; */
+            /* overflow: auto; */
+            border-radius: 3px;
         }
 
-        .peat1 {
-            background-color: rgb(245, 17, 72);
+        .layer-card {
+            margin-bottom: 30px;
+            font-size: 20px;
+        }
+        .layer-card .title {
+            font-size: 30px;
+            display: inline-block;
+        }
+        .layer-card p {
+            color: #404040;
+        }
+        .layer-disabled {
+            color: #969696;
         }
 
-        .peat2 {
-            background-color: rgb(252, 113, 34);
+        .onoffswitch {
+            position: relative; width: 48px;
+            -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+            float: right;
+        }
+        .onoffswitch-checkbox {
+            display: none;
+        }
+        .onoffswitch-label {
+            display: block; overflow: hidden; cursor: pointer;
+            height: 20px; padding: 0; line-height: 20px;
+            border: 2px solid #FFFFFF; border-radius: 20px;
+            background-color: #A8A8A8;
+            transition: background-color 0.15s ease-in;
+        }
+        .onoffswitch-label:before {
+            content: "";
+            display: block; width: 20px; margin: 0px;
+            background: #FFFFFF;
+            position: absolute; top: 0; bottom: 0;
+            right: 26px;
+            border: 2px solid #FFFFFF; border-radius: 20px;
+            transition: all 0.15s ease-in 0s;
+        }
+        .onoffswitch-checkbox:checked + .onoffswitch-label {
+            background-color: #191C1F;
+        }
+        .onoffswitch-checkbox:checked + .onoffswitch-label, .onoffswitch-checkbox:checked + .onoffswitch-label:before {
+            border-color: #191C1F;
+        }
+        .onoffswitch-checkbox:checked + .onoffswitch-label:before {
+            right: 0px;
         }
 
-        .peat3 {
-            background-color: rgb(218, 248, 85);
-        }
-
-        .peat-natural {
-            background-color: rgb(67, 213, 43);
-
-        }
-
-        .peat-recovering {
-            box-shadow: 0 0 0 2px green;
-        }
+        *[hidden] { display: none; }
     </style>
 </head>
 
-<body>
-    <div id='map'></div>
-
-    <output id='no2'></output>
-
-    <div class='map-overlay toggle-legend' onclick='toggleLegend()'>
-        Show info
-    </div>
-    <div class='map-overlay' id='legend'>
-        <header class='buttonbg' onclick='toggleLegend()'>
-            <h1>Climate Map</h1>
-            How are the emissions calculated?
-        </header>
-        <main>
-            The demo calculations and scientific citations will be shown here.
-
-            <ul>
-                <li>Wet ditched peatland = remarkable emissions</li>
-                <li>Dry ditched peatland = small emissions</li>
-                <li>Very dry ditched peatland = usually not suitable for forestry</li>
-            </ul>
-
-            <table>
-                <tr>
-                    <td>
-                        <div class='peat peat1'></div>
-                    </td>
-                    <td>
-                        Wet ditched peatland with annual emissions over
-                        <br /> 5,000 kg CO2/ha
-                        <br /> 10 kg humus
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>
-                        <div class='peat peat2'></div>
-                    </td>
-                    <td>
-                        Dry ditched peatland with annual emissions under
-                        <br /> 5,000 kg CO2/ha
-                        <br /> 10 kg humus
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>
-                        <div class='peat peat3'></div>
-                    </td>
-                    <td>
-                        Very dry ditched peatland with annual emissions under
-                        <br /> 1,000 kg CO2/ha
-                        <br /> 2 kg humus
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>
-                        <div class='peat peat1 peat-recovering'></div>
-                    </td>
-                    <td>
-                        Recovering peatland with annual emissions savings over
-                        <br /> 1,000 kg CO2/ha
-                        <br /> 2 kg humus
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>
-                        <div class='peat peat2 peat-recovering'></div>
-                    </td>
-                    <td>
-                        Recovering peatland with annual emissions savings under
-                        <br /> 1,000 kg CO2/ha
-                        <br /> 2 kg humus
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class='peat peat3 peat-recovering'></div>
-                    </td>
-                    <td>
-                        Recovering peatland with annual emissions savings under
-                        <br /> 500 kg CO2/ha
-                        <br /> 0.5 kg humus
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>
-                        <div class='peat peat-natural'></div>
-                    </td>
-                    <td>
-                        Natural state peatland with annually growing carbon sink
-                        <br /> over 100 kg CO2/ha
-                        <br />
-                    </td>
-                </tr>
-            </table>
-        </main>
-
-        <ul>
-            <li><button onclick="toggle('no2-raster')">Air pollution indicator NO2</button></li>
-            <li><button onclick="toggle('terramonitor');toggleBaseMapSymbols()">Terramonitor satellite map</button></li>
-            <li><button onclick="toggle('peatland-co2');toggle('peatland-co2-sym');toggle('peatland-outline');">Peatland forests CO2</button></li>
-            <li><button onclick="toggle('plohko-fill');toggle('plohko-co2-sym');toggle('plohko-outline')">Peatland fields CO2</button></li>
-            <li><button onclick="toggle('metsaan-hila-c');toggle('metsaan-hila-sym');toggle('metsaan-hila-outline')">Grid cell forest data</button></li>
-            <li><button onclick="hideAll(x=>!/valio/.test(x));toggle('valio-fields-boundary');toggle('valio-fields-fill');toggle('valio-plohko-co2-sym')">Valio supply chain fields CO2</button></li>
-
-            <li><button onclick="toggle('metsaan-stand-others-c')">All privately owned forests</button></li>
-
-            <hr/>
-            <li><button onclick="toggleEte()">All Especially Important Habitats (incl. METSO)</button></li>
-            <li><button onclick="window.enableAllEteCodes()">Display ALL Habitat Descriptions</button></li>
-
-            <!-- <li><button onclick="toggle('metsaan-ete-gamekeeping-area-c');">Gamekeeping areas</button></li> -->
-            <!-- <li><button onclick="toggle('metsaan-ete-riistatiheikko');">Riistatiheikkö</button></li> -->
-            <!-- <li><button onclick="toggle('metsaan-ete-possibly-metso-c');">Possibly a METSO program target</button></li>
-            <li><button onclick="toggle('metsaan-ete-metso-c');">METSO habitat</button></li> -->
-            <!-- <li><button onclick="toggle('metsaan-ete-metso2');">Metso II-program</button></li> -->
-
-            <hr/>
-            <!-- <li><button onclick="zonation(1);">Areas important to diversity - Zonation v1</button></li>
-            <li><button onclick="zonation(2);">Areas important to diversity - Zonation v2</button></li>
-            <li><button onclick="zonation(3);">Areas important to diversity - Zonation v3</button></li>
-            <li><button onclick="zonation(4);">Areas important to diversity - Zonation v4</button></li>
-            <li><button onclick="zonation(5);">Areas important to diversity - Zonation v5</button></li> -->
-            <li><button onclick="zonation(6);">Areas important to diversity (Zonation)</button></li>
-
-        </ul>
-        <button style='font-weight:800; font-size:1.2em' onclick='toggleLegend()'>Hide info</button>
-        <hr />
-        <img alt="Metsäkeskus" src="metsakeskus_logo.jpg" class="logo">
-        <img alt="Terramonitor" src="terramonitor_logo.jpg" class="logo">
-        <br/>
-        <img alt="Copernicus" src="copernicus_logo.jpg" class="logo">
-        <img alt="ESA, European Space Agency" src="esa_logo.jpg" class="logo">
-        <br/>
-        <img alt="Mavi" src="mavi_logo.jpg" class="logo">
-        <img alt="Luke" src="luke_logo.jpg" class="logo">
-    </div>
-
+<body onload='onload()'>
     <script>
-        window.changeMapStyle = function () {
-            // map.setStyle(''); TODO
+        const backgroundLayerGroups = { 'terramonitor': true }
+        const layerGroupState = {
+            'terramonitor': true,
         }
-        window.toggleLegend = function () {
-            document.getElementById('legend').classList.toggle('hide')
-        }
-        const toggleableLayerIds = ['no2', 'peatland-co2-sym', 'peatland-co2', 'peatland-outline']
-        const toggles = {
-            'peatland-co2': true,
-            'peatland-co2-sym': true,
-            'plohko-fill': true,
-            'plohko-co2-sym': true,
-            'plohko-outline': true,
-            'peatland-outline': true,
+        // Set up event handlers for layer toggles, etc.
+        window.onload = function() {
+            document.querySelectorAll('.layer-card input').forEach(el => {
+                if (el.disabled) return;
+
+                el.addEventListener('change', () => window.toggleGroup(el.id));
+
+                // Populate layer state from DOM.
+                layerGroupState[el.id] = el.checked;
+                const known = el.id in layerGroups;
+                if (!known) {
+                    console.log('ERROR: Unknown layer in menu .layer-cards:', el.id, el);
+                }
+            })
         }
 
-        window.t = toggles
-        window.toggle = function (id) {
-            const state = toggles[id] = (toggles[id] === undefined ? false : !toggles[id])
-            map.setLayoutProperty(id, 'visibility', state ? 'visible' : 'none')
-            if (id === 'no2-raster') window.setNO2()
-        }
-        window.hideAll = function (filterFn) {
-            for (const id in toggles) {
-                if (filterFn && !filterFn(id)) continue;
-                if (toggles[id]) {
-                    map.setLayoutProperty(id, 'visibility', 'none')
-                    toggles[id] = false
+        window.layerOriginalPaint = {}
+        window.toggleBaseMapSymbols = function() {
+            map.getStyle().layers.filter(x => x.type === 'symbol').forEach(layer => {
+                if (layerGroupState.terramonitor) {
+                    layer.paint = window.layerOriginalPaint[layer.id];
+                } else {
+                    window.invertLayerTextHalo(layer);
                 }
-            }
+                map.removeLayer(layer.id);
+                map.addLayer(layer);
+            })
+        }
+
+        const layerGroups = {
+            'peatland-co2': ['peatland-co2', 'peatland-co2-sym', 'peatland-outline'],
+            'valio-supply-chain-fields': [
+            () => hideAll(x=>!/valio/.test(x)),
+            'valio-fields-boundary', 'valio-fields-fill', 'valio-plohko-co2-sym',
+            ],
+            'histosol-field-co2': ['plohko-fill', 'plohko-co2-sym', 'plohko-outline'],
+            'forest-grid': ['metsaan-hila-c', 'metsaan-hila-sym', 'metsaan-hila-outline'],
+            'privately-owned-forests': ['metsaan-stand-others-c'],
+            'zonation6': ['zonation-v6-raster'],
+            'ete': ['metsaan-ete-all-c', 'metsaan-ete-all-outline', 'metsaan-ete-all-sym'],
+            'ete-all-labels': [window.useAllEteCodes],
+            'terramonitor': ['terramonitor', window.toggleBaseMapSymbols],
+            'no2-raster': ['no2-raster', window.setNO2],
+            'mangrove-forests': ['mangrove-wms'],
+        };
+        window.toggleSatellite = function() {
+            document.querySelectorAll('.satellite-button-container img').forEach(x => x.toggleAttribute('hidden'));
+            window.toggleGroup('terramonitor')
+        }
+        window.toggleMenu = function() {
+            document.querySelectorAll('.menu-toggle').forEach(x => x.toggleAttribute('hidden'))
+        }
+
+        window.toggleGroup = function(group, forcedState=undefined) {
+            const oldState = layerGroupState[group];
+            const newState = forcedState === undefined ? !oldState : forcedState;
+            if (oldState === newState) return;
+
+            const el = document.querySelector(`.layer-card input#${group}`)
+            if (el) el.checked = newState
+
+            layerGroups[group].forEach(layer => {
+                if (typeof layer === 'function') {
+                    layer();
+                } else {
+                    map.setLayoutProperty(layer, 'visibility', newState ? 'visible' : 'none')
+                }
+            })
+            layerGroupState[group] = newState;
+        }
+        // NB: Use with caution. Very heavy.
+        window.enableAllEteCodes = function() {
+            fetch('ete_codes.json').then(function(response) {
+                response.json().then(e => {
+                    window.useAllEteCodes(e);
+                    window.toggleGroup('ete');
+                })
+            })
+        }
+
+        window.hideAll = function (filterFn) {
+            Object.keys(layerGroupState).forEach(group => {
+                const layerIsInBackground = group in backgroundLayerGroups;
+                if (layerIsInBackground) return;
+                if (filterFn && !filterFn(group)) return;
+                window.toggleGroup(group, forcedState=false);
+            })
         }
 
         window.invertLayerTextHalo = function(layer) {
@@ -307,54 +246,213 @@
             }
         }
 
-        window.layerOriginalPaint = {}
-        window.toggleBaseMapSymbols = function() {
-            const id = 'terramonitor'
-            const isSatelliteVisible = (toggles[id] === undefined ? false : !toggles[id])
-
-            map.getStyle().layers.filter(x => x.type === 'symbol').forEach(layer => {
-                if (isSatelliteVisible) {
-                    layer.paint = window.layerOriginalPaint[layer.id];
-                } else {
-                    window.invertLayerTextHalo(layer);
-                }
-                map.removeLayer(layer.id);
-                map.addLayer(layer);
-                // map.moveLayer(layer.id)
+        window.enableDefaultLayers = function() {
+            Object.entries(layerGroupState).forEach(([group, enabled]) => {
+                console.log('ENABLE', group, enabled, layerGroups[group]);
+                enabled && layerGroups[group].forEach(layer => {
+                    typeof layer === 'string' &&
+                        map.setLayoutProperty(layer, 'visibility', 'visible');
+                });
             })
         }
 
-        const zonation_versions = [1,2,3,4,5,6]
-        window.zonation = function (v) {
-            const id = `zonation-v${v}-raster`
-            window.hideAll(x => /zonation/.test(x) && x !== id)
-            const state = toggles[id] = (toggles[id] === undefined ? false : !toggles[id])
-            map.setLayoutProperty(id, 'visibility', state ? 'visible' : 'none')
-        }
+    </script>
+    <div id='map'></div>
+
+    <div class='menu-button-container menu-toggle' onclick="toggleMenu();">
+        <img class='circle-icon menu' src='outline-menu-24px.svg'/>
+    </div>
+
+    <div class='satellite-button-container' onclick="toggleSatellite();">
+        <img class='circle-icon' src='outline-terrain-24px.svg'/>
+        <img class='circle-icon' src='outline-satellite-24px.svg' hidden />
+    </div>
+
+    <div id='menu-container' class='menu-toggle' hidden>
+        <div class='menu-button-container ui-button' onclick="toggleMenu();">
+            <img class='circle-icon close' src='outline-close-24px.svg'/>
+        </div>
+
+        <div class='satellite-button-container ui-button' onclick="toggleSatellite();">
+            <img class='circle-icon' src='outline-terrain-24px.svg'/>
+            <img class='circle-icon' src='outline-satellite-24px.svg' hidden />
+        </div>
+
+        <h1>Sustainability Map</h1>
+
+        <p>
+            Map displaying areas where actions are required in order to save environmental resources
+        </p>
+
+        <div class='layer-card'>
+            <div class='title'>Peatland CO2</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="peatland-co2" checked>
+                <label class="onoffswitch-label" for="peatland-co2"></label>
+            </div>
+        </div>
+
+        <div class='layer-card'>
+            <div class='title'>Mangrove forests</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="mangrove-forests" checked>
+                <label class="onoffswitch-label" for="mangrove-forests"></label>
+            </div>
+        </div>
+
+        <div class='layer-card'>
+            <div class='title'>Air pollution indicator NO2</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="no2-raster">
+                <label class="onoffswitch-label" for="no2-raster"></label>
+            </div>
+            <p>
+                Burning of fossil fuel creates oir pollutants such as NO2 and small particles.
+            </p>
+            <strong>Air cleanliness</strong>
+            <p>
+                The satellite NO2 data is based on Sentinel 5P measurements and is updated approximately once per 24 hours for any given location.
+
+                A healthy threshold of NO2 is around 50 umol/m<sup>2</sup>.
+            </p>
+        </div>
+
+        <div class='layer-card'>
+            <div class='title'>Histosol Field CO2</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="histosol-field-co2" checked>
+                <label class="onoffswitch-label" for="histosol-field-co2"></label>
+            </div>
+        </div>
 
 
+        <div class='layer-card'>
+            <div class='title'>Forest Grid Measurements</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="forest-grid">
+                <label class="onoffswitch-label" for="forest-grid"></label>
+            </div>
+        </div>
+
+
+
+        <div class='layer-card'>
+            <div class='title'>Privately owned forests</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="privately-owned-forests">
+                <label class="onoffswitch-label" for="privately-owned-forests"></label>
+            </div>
+        </div>
+
+
+        <div class='layer-card'>
+            <div class='title'>Valio Supply Chain Fields</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="valio-supply-chain-fields">
+                <label class="onoffswitch-label" for="valio-supply-chain-fields"></label>
+            </div>
+        </div>
+
+        <hr/>
+
+        <div class='layer-card'>
+            <div class='title'>Areas important to diversity</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="zonation6">
+                <label class="onoffswitch-label" for="zonation6"></label>
+            </div>
+            <p>
+                This layer comprises of the Zonation MetZa2018 data.
+                The top 5 and top 10% most important habitats in Finland, coded dark green and light green, respectively.
+            </p>
+        </div>
+
+        <div class='layer-card'>
+            <div class='title'>Especially Important Habitats</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="ete">
+                <label class="onoffswitch-label" for="ete"></label>
+            </div>
+        </div>
+
+
+        <div class='layer-card'>
+            <div class='title'>Display ALL Habitat Descriptions</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="ete-all-labels" onchange="window.enableAllEteCodes();">
+                <label class="onoffswitch-label" for="ete-all-labels"></label>
+            </div>
+        </div>
+
+        <hr/>
+
+
+        <div class='layer-card layer-disabled'>
+            <div class='title'>Mature forests</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="mature-forests" disabled>
+                <label class="onoffswitch-label" for="mature-forests"></label>
+            </div>
+        </div>
+
+
+        <div class='layer-card layer-disabled'>
+            <div class='title'>Municipal forests</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="municipal-forests" disabled>
+                <label class="onoffswitch-label" for="municipal-forests"></label>
+            </div>
+        </div>
+
+
+        <div class='layer-card layer-disabled'>
+            <div class='title'>Wetlands</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="wetlands" disabled>
+                <label class="onoffswitch-label" for="wetlands"></label>
+            </div>
+        </div>
+
+
+        <div class='layer-card layer-disabled'>
+            <div class='title'>Pasture fields</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="pasture-fields" disabled>
+                <label class="onoffswitch-label" for="pasture-fields"></label>
+            </div>
+        </div>
+
+
+        <hr /><br/>
+        <img alt="Metsäkeskus" src="metsakeskus_logo.jpg" class="logo">
+        <img alt="Terramonitor" src="terramonitor_logo.jpg" class="logo">
+        <br/>
+        <img alt="Copernicus" src="copernicus_logo.jpg" class="logo">
+        <img alt="ESA, European Space Agency" src="esa_logo.jpg" class="logo">
+        <br/>
+        <img alt="Mavi" src="mavi_logo.jpg" class="logo">
+        <img alt="Luke" src="luke_logo.jpg" class="logo">
+
+    </div>
+
+
+    <output id='no2'></output>
+
+    <script>
         // This must be set, but the value is not needed here.
         mapboxgl.accessToken = 'not-needed';
 
         const style = {
             "version": 8,
-            // "sprite": "https://map.buttonprogram.org/sprites",
-            // "sources": {
-            //     "stand-suot": {
-            //         "type": "vector",
-            //         "tiles": ["https://map.buttonprogram.org/stand-suot/{z}/{x}/{y}.pbf"],
-            //         "maxzoom": 12,
-            //     }
-            // },
             "glyphs": "https://map.buttonprogram.org/suot/font/{fontstack}/{range}.pbf",
             "layers": [
-                {
-                    "id": "background",
-                    "type": "background",
-                    "paint": {
-                        "background-color": "#ddeeff"
-                    }
-                },
+            {
+                "id": "background",
+                "type": "background",
+                "paint": {
+                    "background-color": "#ddeeff"
+                }
+            },
             ]
         }
 
@@ -377,7 +475,7 @@
                 'source': {
                     'type': 'raster',
                     'tiles': [
-                        'https://maps.terramonitor.com/9c2040ec0fb91cfdfd723496515d759a77b363ee/pro/wms?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=rgb&styles=',
+                    'https://maps.terramonitor.com/9c2040ec0fb91cfdfd723496515d759a77b363ee/pro/wms?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=rgb&styles=',
                     ],
                     'tileSize': 256,
                     // "maxzoom": 16, // After zoom level 16 the images (used to) get blurrier
@@ -385,6 +483,8 @@
                 'paint': {},
             });
 
+            const originalMapLayerIds = {}
+            map.getStyle().layers.forEach(x => originalMapLayerIds[x.id] = true)
 
             // Custom attribution for Terramonitor since the WMS source doesn't present show one automatically.
             map.addControl(new mapboxgl.AttributionControl({
@@ -441,12 +541,12 @@
                 'type': 'fill',
                 'paint': {
                     'fill-color': [
-                        'interpolate',
-                        ['linear'],
-                        ['get', 'age'],
-                        0, 'rgb(218,248,85)', // green
-                        70, 'rgb(252,113,34)', // orange
-                        100, 'rgb(245,17,72)', // red
+                    'interpolate',
+                    ['linear'],
+                    ['get', 'age'],
+                    0, 'rgb(218,248,85)', // green
+                    70, 'rgb(252,113,34)', // orange
+                    100, 'rgb(245,17,72)', // red
                     ],
                     'fill-opacity': 0.9
                 },
@@ -490,14 +590,7 @@
                 "type": "geojson",
                 "data": "https://map.buttonprogram.org/suot/ete_metso.geojson?v=1",
             });
-            // map.addSource('metsaan-ete-riistatiheikko', {
-            //     "type": "geojson",
-            //     "data": "https://map.buttonprogram.org/suot/ete_riistatiheikko.geojson?v=1",
-            // });
-            // map.addSource('metsaan-ete-metso2', {
-            //     "type": "geojson",
-            //     "data": "https://map.buttonprogram.org/suot/ete_metso2.geojson?v=1",
-            // });
+
 
             map.addLayer({
                 'id': 'metsaan-ete-gamekeeping-area-c',
@@ -526,25 +619,6 @@
                     'fill-opacity': 0.7,
                 },
             })
-
-            // map.addLayer({
-            //     'id': 'metsaan-ete-riistatiheikko',
-            //     'source': 'metsaan-ete-riistatiheikko',
-            //     'type': 'fill',
-            //     'paint': {
-            //         'fill-color': 'cyan',
-            //         'fill-opacity': 0.7,
-            //     },
-            // })
-            // map.addLayer({
-            //     'id': 'metsaan-ete-metso2',
-            //     'source': 'metsaan-ete-metso2',
-            //     'type': 'fill',
-            //     'paint': {
-            //         'fill-color': 'cyan',
-            //         'fill-opacity': 0.7,
-            //     },
-            // })
 
 
             map.addLayer({
@@ -575,14 +649,14 @@
                 "layout": {
                     "text-font": ["Open Sans Regular"],
                     "text-field": [
-                        "match",
-                        ["get","featurecode"],
-                        70, "Gamekeeping area",
-                        95, "Potential METSO Habitat",
-                        98, "METSO Habitat",
-                        10120, "Gamekeeping area",
-                        15150, "METSO II",
-                        "",
+                    "match",
+                    ["get","featurecode"],
+                    70, "Gamekeeping area",
+                    95, "Potential METSO Habitat",
+                    98, "METSO Habitat",
+                    10120, "Gamekeeping area",
+                    15150, "METSO II",
+                    "",
                     ],
                     // "icon-image": "https://example.com/METSO_logo08_FI.gif",
                     //  [
@@ -636,13 +710,13 @@
                 // 'filter': ['==', 'isState', true],
                 'paint': {
                     'fill-color': [
-                        'interpolate',
-                        ['linear'],
-                        ['get', 'fertilityclass'],
-                        1, 'rgb(245,17,72)', // red
-                        4, 'rgb(252,113,34)', // orange
-                        // 8, 'rgb(218,248,85)',
-                        6, 'rgb(218,248,85)', // green
+                    'interpolate',
+                    ['linear'],
+                    ['get', 'fertilityclass'],
+                    1, 'rgb(245,17,72)', // red
+                    4, 'rgb(252,113,34)', // orange
+                    // 8, 'rgb(218,248,85)',
+                    6, 'rgb(218,248,85)', // green
                     ],
                     // 'fill-outline-color': [
                     //     'interpolate',
@@ -680,13 +754,13 @@
                     "text-font": ["Open Sans Regular"],
                     "text-field":
                     ["let", "suffix", "t CO2e/y",
-                            ["concat",
-                                ["to-string",
-                                    ["/",
-                                        ["round",
-                                            ["*", 1.5,
-                                                ["get", "co2"]]], 10]],
-                                ["var", "suffix"]]],
+                    ["concat",
+                    ["to-string",
+                    ["/",
+                    ["round",
+                    ["*", 1.5,
+                    ["get", "co2"]]], 10]],
+                    ["var", "suffix"]]],
 
                     "text-size": 20,
                 }
@@ -706,13 +780,13 @@
                     // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
                     // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
                     "text-field":
-                        ["let", "suffix", "t CO2e/y",
-                            ["concat",
-                                ["to-string",
-                                    ["*", 10,
-                                        ["round", ["*", 0.0002, ["get", "total_area"]]],
-                                    ]],
-                                ["var", "suffix"]]],
+                    ["let", "suffix", "t CO2e/y",
+                    ["concat",
+                    ["to-string",
+                    ["*", 10,
+                    ["round", ["*", 0.0002, ["get", "total_area"]]],
+                    ]],
+                    ["var", "suffix"]]],
 
                     "text-size": 20,
                 }
@@ -731,11 +805,11 @@
                 'type': 'fill',
                 'paint': {
                     'fill-color': [
-                        'interpolate',
-                        ['linear'],
-                        ['to-number', ['get', 'histosol_ratio'], 0],
-                        0, 'yellow',
-                        1, 'red',
+                    'interpolate',
+                    ['linear'],
+                    ['to-number', ['get', 'histosol_ratio'], 0],
+                    0, 'yellow',
+                    1, 'red',
                     ],
                 }
             })
@@ -762,17 +836,17 @@
                     // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
                     // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
                     "text-field":
-                        ["let", "suffix", "t CO2e/y",
-                            ["concat",
-                                ["to-string",
-                                    ["*", 10,
-                                        ["round", ["*", 0.0002, ["get", "total_area"]]],
-                                    ]],
-                                ["var", "suffix"],
-                                "\npeat:",["/",["round",['*', 0.001, ['to-number',["get", "histosol_area"],0]]],10],
-                                "ha\ntotal:",["/",["round",['*', 0.001, ["get", "total_area"]]],10],"ha",
-                            ]
-                        ],
+                    ["let", "suffix", "t CO2e/y",
+                    ["concat",
+                    ["to-string",
+                    ["*", 10,
+                    ["round", ["*", 0.0002, ["get", "total_area"]]],
+                    ]],
+                    ["var", "suffix"],
+                    "\npeat:",["/",["round",['*', 0.001, ['to-number',["get", "histosol_area"],0]]],10],
+                    "ha\ntotal:",["/",["round",['*', 0.001, ["get", "total_area"]]],10],"ha",
+                    ]
+                    ],
 
                     "text-size": 20,
                 }
@@ -786,7 +860,7 @@
                 "tiles": ["https://map.buttonprogram.org/atmoshack/mbtiles-dump/" + no2Tileset + "/{z}/{x}/{y}.png?v=5&_=" + timestampHour],
                 "maxzoom": 5,
             });
-            
+
             map.addLayer({
                 'id': 'no2-raster',
                 'source': 'no2-tiles',
@@ -802,14 +876,15 @@
                 'source': {
                     'type': 'raster',
                     'tiles': [
-                        'https://gis.unep-wcmc.org/arcgis/services/marine/GMW_001_MangroveDistribition_2010/MapServer/WMSServer?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=0&styles=default',
+                    'https://gis.unep-wcmc.org/arcgis/services/marine/GMW_001_MangroveDistribition_2010/MapServer/WMSServer?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=0&styles=default',
                     ],
                     'tileSize': 256
                 },
                 'paint': {}
             })
 
-            zonation_versions.map(v => {
+            const zonationVersions = [1,2,3,4,5,6]
+            zonationVersions.map(v => {
                 const sourceName = `zonation-v${v}`
                 const id = `${sourceName}-raster`
                 map.addSource(sourceName, {
@@ -825,36 +900,17 @@
                     'minzoom': 0,
                     // 'maxzoom': 10,
                 })
-                toggle(id)
                 map.setPaintProperty(id, 'raster-opacity', 0.6)
             })
 
-            // The NO2 layer is off by default, but it can be enabled
-            // on page load with a URL parameter string like "?0".
-            if (!window.location.search.substring(1)) {
-                toggle('no2-raster')
-            }
+            map.getStyle().layers.map(layer => {
+                const isOldLayer = layer.id in originalMapLayerIds
+                console.log('LAYER', layer.id, isOldLayer)
+                if (!isOldLayer)
+                    map.setLayoutProperty(layer.id, 'visibility', 'none')
+            })
 
-            toggle('metsaan-stand-others-c')
-
-            toggle('metsaan-hila-c')
-            toggle('metsaan-hila-outline')
-            toggle('metsaan-hila-sym')
-
-            toggle('metsaan-ete-all-c')
-            toggle('metsaan-ete-all-outline')
-            toggle('metsaan-ete-all-sym')
-
-            toggle('valio-fields-boundary')
-            toggle('valio-fields-fill')
-            toggle('valio-plohko-co2-sym')
-
-            toggle('metsaan-ete-gamekeeping-area-c')
-            // toggle('metsaan-ete-riistatiheikko');
-            toggle('metsaan-ete-possibly-metso-c');
-            toggle('metsaan-ete-metso-c');
-            // toggle('metsaan-ete-metso2');
-
+            window.enableDefaultLayers();
 
             map.setPaintProperty('no2-raster', 'raster-opacity', 0.7)
             // map.setPaintProperty('terramonitor', 'raster-opacity', 0.6)
@@ -876,40 +932,24 @@
 
         window.useAllEteCodes = function(codes) {
             const id = 'metsaan-ete-all-sym'
-            const isVisible = (toggles[id] === undefined ? false : !toggles[id])
+            const isVisible = layerGroupState.ete
             const layer = map.getStyle().layers.filter(x => x.id ===id)[0]
             layer.layout['text-field'] = [
-                "match",
-                ["get","featurecode"],
-                ...codes,
-                "<Unknown important habitat type>",
+            "match",
+            ["get","featurecode"],
+            ...codes,
+            "UNKNOWN habitat type",
             ];
             map.removeLayer(id)
             map.addLayer(layer)
-            toggle(id); toggle(id);
+            toggleGroup('ete'); toggleGroup('ete');
         }
-
-        // NB: Use with caution. Very heavy.
-        window.toggleEte = function() {
-            toggle('metsaan-ete-all-c');
-            toggle('metsaan-ete-all-outline');
-            toggle('metsaan-ete-all-sym');
-        }
-        window.enableAllEteCodes = function() {
-            fetch('ete_codes.json').then(function(response) {
-                response.json().then(e => {
-                    window.useAllEteCodes(e);
-                    window.toggleEte();
-                })
-            })
-        }
-
 
         let reqCounter = 0
         let lastRequestSeen = 0
         window.setNO2 = function(currentRequestNum, e, lat, lon) {
             const elem = document.getElementById('no2')
-            if (toggles['no2-raster']===false || !currentRequestNum) {
+            if (!layerGroupState['no2-raster'] || !currentRequestNum) {
                 elem.innerHTML = ''
                 return
             }
@@ -930,18 +970,17 @@
         }
 
 
-
         const updateNO2Reading = function (e) {
-            if (toggles['no2-raster']===false) return
+            if (!layerGroupState['no2-raster']) return
             const x = e.lngLat
             const lat = x.lat.toFixed(2)
             const lon = x.lng.toFixed(2)
             const url = `https://map.buttonprogram.org/query_no2?latitude=${lat}&longitude=${lon}&v=9`
             const currentRequestNum = ++reqCounter
             fetch(url)
-              .then(function(response) {
+            .then(function(response) {
                 response.json().then(e => window.setNO2(currentRequestNum, e, lat, lon))
-              })
+            })
 
             // console.log(e.point.x, e.point.y, e.lngLat.lat, e.lngLat.lng)
             // var features = map.queryRenderedFeatures(e.point);
