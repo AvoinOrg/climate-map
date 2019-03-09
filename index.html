@@ -4,13 +4,21 @@
 <head>
     <meta charset='utf-8' />
     <title>Button Climate Map</title>
-    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <meta name='viewport' content='initial-scale=1,width=device-width,maximum-scale=1,user-scalable=no' />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/0.50.0/mapbox-gl.js" integrity="sha256-lt9+iIQZba05r6TN/Z7hzHD+QOWXdlzgARKHfA0U3ks=" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/0.50.0/mapbox-gl.css" integrity="sha256-coh6R3HyiYSLAbMk4lZIr5txQq3BdbN0nKl1U4iioNU=" crossorigin="anonymous" />
 
     <!-- plus.codes: -->
     <!-- <script async defer src="https://cdnjs.cloudflare.com/ajax/libs/openlocationcode/1.0.3/openlocationcode.min.js" integrity="sha256-cN2Y69HQRLjefvPHJKXQ9Dgkfug2odevw9BBdiyVExQ=" crossorigin="anonymous"></script> -->
+
+    <script src="https://cdn.auth0.com/js/auth0/9.10/auth0.min.js"></script>
+    <script src="auth.js"></script>
+    <script type="text/javascript">
+        const AUTH0_CLIENT_ID = "It20v2Ec7GO3lJ57uWRSItK5WsWVODhc";
+        const AUTH0_DOMAIN = "button.eu.auth0.com";
+        window.addEventListener('load', window.initAuthWithClaims);
+    </script>
 
     <style>
         body {
@@ -133,6 +141,18 @@
         }
 
         *[hidden] { display: none; }
+
+        #btn-logout:hover, #btn-login:hover {
+            cursor: pointer;
+        }
+        #btn-logout, #btn-login {
+            background: #333;
+            color: #eee;
+            font-size: 24px;
+            position: absolute;
+            top:15px;
+            right: 60px;
+        }
     </style>
 </head>
 
@@ -156,7 +176,7 @@
                     console.log('ERROR: Unknown layer in menu .layer-cards:', el.id, el);
                 }
             })
-        }
+        };
 
         window.layerOriginalPaint = {}
         window.toggleBaseMapSymbols = function() {
@@ -173,7 +193,7 @@
 
         const layerGroups = {
             'peatland-co2': ['peatland-co2', 'peatland-co2-sym', 'peatland-outline'],
-            'valio-supply-chain-fields': [
+            'valio': [
             () => window.hideAll(x=>!/valio/.test(x)),
             'valio-fields-boundary', 'valio-fields-fill', 'valio-plohko-co2-sym',
             ],
@@ -250,13 +270,16 @@
             Object.entries(layerGroupState).forEach(([group, enabled]) => {
                 enabled && layerGroups[group].forEach(layer => {
                     typeof layer === 'string' &&
-                        map.setLayoutProperty(layer, 'visibility', 'visible');
+                    map.setLayoutProperty(layer, 'visibility', 'visible');
                 });
             })
         }
 
     </script>
     <div id='map'></div>
+
+    <div id='btn-logout' hidden>Logout</div>
+    <div id='btn-login'>Login</div>
 
     <div class='menu-button-container menu-toggle' onclick="toggleMenu();">
         <img class='circle-icon menu' src='outline-menu-24px.svg'/>
@@ -344,11 +367,11 @@
         </div>
 
 
-        <div class='layer-card'>
+        <div class='layer-card' hidden id='layer-card-valio'>
             <div class='title'>Valio Supply Chain Fields</div>
             <div class="onoffswitch">
-                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="valio-supply-chain-fields">
-                <label class="onoffswitch-label" for="valio-supply-chain-fields"></label>
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="valio">
+                <label class="onoffswitch-label" for="valio"></label>
             </div>
         </div>
 
@@ -463,8 +486,11 @@
             zoom: 5, // starting zoom
             attributionControl: false,
         });
+        window.map = map;
 
         map.addControl(new mapboxgl.NavigationControl());
+
+        const originalMapLayerIds = {}
 
         map.on('load', function () {
 
@@ -482,13 +508,12 @@
                 'paint': {},
             });
 
-            const originalMapLayerIds = {}
-            map.getStyle().layers.forEach(x => originalMapLayerIds[x.id] = true)
-
             // Custom attribution for Terramonitor since the WMS source doesn't present show one automatically.
             map.addControl(new mapboxgl.AttributionControl({
                 customAttribution: '<a href="https://www.terramonitor.com">© Terramonitor</a> | <a href="http://mavi.fi">© Maaseutuvirasto 2018</a>'
             }));
+
+            map.getStyle().layers.forEach(x => originalMapLayerIds[x.id] = true)
 
             map.addSource('stand-suot', {
                 "type": "vector",
@@ -792,11 +817,89 @@
             })
 
 
-            map.addSource('valio_fields', {
-                "type": "geojson",
-                "data": "https://map.buttonprogram.org/suot/valio_fields.geojson?v=2",
+            let no2Tileset = Number.parseInt( window.location.search.substring(1) ) || 0
+            const timestampHour = Math.round(+new Date() / 1e6)
+            map.addSource('no2-tiles', {
+                "type": "raster",
+                "tiles": ["https://map.buttonprogram.org/atmoshack/mbtiles-dump/" + no2Tileset + "/{z}/{x}/{y}.png?v=5&_=" + timestampHour],
+                "maxzoom": 5,
             });
 
+            map.addLayer({
+                'id': 'no2-raster',
+                'source': 'no2-tiles',
+                'type': 'raster',
+                'minzoom': 0,
+                'maxzoom': 10,
+            })
+
+
+            map.addLayer({
+                'id': 'mangrove-wms',
+                'type': 'raster',
+                'source': {
+                    'type': 'raster',
+                    'tiles': [
+                    'https://gis.unep-wcmc.org/arcgis/services/marine/GMW_001_MangroveDistribition_2010/MapServer/WMSServer?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=0&styles=default',
+                    ],
+                    'tileSize': 256
+                },
+                'paint': {}
+            })
+
+            const zonationVersions = [1,2,3,4,5,6]
+            zonationVersions.map(v => {
+                const sourceName = `zonation-v${v}`
+                const id = `${sourceName}-raster`
+                map.addSource(sourceName, {
+                    "type": "raster",
+                    "tiles": [`https://map.buttonprogram.org/suot/zonation/MetZa2018_VMA0${v}/{z}/{x}/{y}.png?v=5`],
+                    "minzoom": 5,
+                    "maxzoom": 9,
+                });
+                map.addLayer({
+                    id,
+                    'source': sourceName,
+                    'type': 'raster',
+                    'minzoom': 0,
+                    // 'maxzoom': 10,
+                })
+                map.setPaintProperty(id, 'raster-opacity', 0.6)
+            })
+
+            // Hide new layers by default.
+            map.getStyle().layers.map(layer => {
+                const isOldLayer = layer.id in originalMapLayerIds
+                isOldLayer || map.setLayoutProperty(layer.id, 'visibility', 'none')
+            })
+
+            window.enableDefaultLayers();
+
+            map.setPaintProperty('no2-raster', 'raster-opacity', 0.7)
+            // map.setPaintProperty('terramonitor', 'raster-opacity', 0.6)
+            // map.setPaintProperty('peatland-co2', 'opacity', 0.6)
+
+
+            // Ensure all symbol layers appear on top of satellite imagery.
+            map.getStyle().layers.filter(x => x.type === 'symbol').forEach(layer => {
+                // Rework Stadia default style to look nicer on top of satellite imagery
+                window.layerOriginalPaint[layer.id] = {...layer.paint}
+                window.invertLayerTextHalo(layer)
+                map.removeLayer(layer.id)
+                map.addLayer(layer)
+                // map.moveLayer(layer.id)
+            })
+
+        });  // /map onload
+
+
+        const privateDatasets = {}
+
+        privateDatasets.valio = (map, secret) => {
+            map.addSource('valio_fields', {
+                "type": "geojson",
+                "data": `https://map.buttonprogram.org/private/${secret}/valio_fields.geojson`,
+            });
 
             map.addLayer({
                 'id': 'valio-fields-fill',
@@ -850,82 +953,30 @@
                     "text-size": 20,
                 }
             })
+        };
 
 
-            let no2Tileset = Number.parseInt( window.location.search.substring(1) ) || 0
-            const timestampHour = Math.round(+new Date() / 1e6)
-            map.addSource('no2-tiles', {
-                "type": "raster",
-                "tiles": ["https://map.buttonprogram.org/atmoshack/mbtiles-dump/" + no2Tileset + "/{z}/{x}/{y}.png?v=5&_=" + timestampHour],
-                "maxzoom": 5,
-            });
+        window.enablePrivateDatasets = function(secrets) {
+            console.log('ENABLE SECRETS', secrets)
+            window.map.on('load', () => {
+                const originalMapLayerIds = {}
+                map.getStyle().layers.forEach(x => originalMapLayerIds[x.id] = true)
 
-            map.addLayer({
-                'id': 'no2-raster',
-                'source': 'no2-tiles',
-                'type': 'raster',
-                'minzoom': 0,
-                'maxzoom': 10,
-            })
-
-
-            map.addLayer({
-                'id': 'mangrove-wms',
-                'type': 'raster',
-                'source': {
-                    'type': 'raster',
-                    'tiles': [
-                    'https://gis.unep-wcmc.org/arcgis/services/marine/GMW_001_MangroveDistribition_2010/MapServer/WMSServer?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=0&styles=default',
-                    ],
-                    'tileSize': 256
-                },
-                'paint': {}
-            })
-
-            const zonationVersions = [1,2,3,4,5,6]
-            zonationVersions.map(v => {
-                const sourceName = `zonation-v${v}`
-                const id = `${sourceName}-raster`
-                map.addSource(sourceName, {
-                    "type": "raster",
-                    "tiles": [`https://map.buttonprogram.org/suot/zonation/MetZa2018_VMA0${v}/{z}/{x}/{y}.png?v=5`],
-                    "minzoom": 5,
-                    "maxzoom": 9,
-                });
-                map.addLayer({
-                    id,
-                    'source': sourceName,
-                    'type': 'raster',
-                    'minzoom': 0,
-                    // 'maxzoom': 10,
+                secrets.forEach(secret => {
+                    const name = secret.split('-')[0];
+                    const addLayerFn = privateDatasets[name];
+                    console.log('ENABLE SECRETS', secrets, secret, name, addLayerFn)
+                    addLayerFn(map, secret);
+                    document.querySelector(`#layer-card-${name}`).removeAttribute('hidden');
                 })
-                map.setPaintProperty(id, 'raster-opacity', 0.6)
+
+                // Hide new layers by default.
+                map.getStyle().layers.map(layer => {
+                    const isOldLayer = layer.id in originalMapLayerIds
+                    isOldLayer || map.setLayoutProperty(layer.id, 'visibility', 'none')
+                })
             })
-
-            map.getStyle().layers.map(layer => {
-                const isOldLayer = layer.id in originalMapLayerIds
-                if (!isOldLayer)
-                    map.setLayoutProperty(layer.id, 'visibility', 'none')
-            })
-
-            window.enableDefaultLayers();
-
-            map.setPaintProperty('no2-raster', 'raster-opacity', 0.7)
-            // map.setPaintProperty('terramonitor', 'raster-opacity', 0.6)
-            // map.setPaintProperty('peatland-co2', 'opacity', 0.6)
-
-
-            // Ensure all symbol layers appear on top of satellite imagery.
-            map.getStyle().layers.filter(x => x.type === 'symbol').forEach(layer => {
-                // Rework Stadia default style to look nicer on top of satellite imagery
-                window.layerOriginalPaint[layer.id] = {...layer.paint}
-                window.invertLayerTextHalo(layer)
-                map.removeLayer(layer.id)
-                map.addLayer(layer)
-                // map.moveLayer(layer.id)
-            })
-
-        });  // /map onload
+        }
 
 
         window.useAllEteCodes = function(codes) {
