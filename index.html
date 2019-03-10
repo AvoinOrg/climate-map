@@ -942,16 +942,19 @@
                     // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
                     // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
                     "text-field":
-                    ["let", "suffix", "t CO2e/y",
-                    ["concat",
-                    ["to-string",
-                    ["*", 10,
-                    ["round", ["*", 0.0002, ["get", "total_area"]]],
-                    ]],
-                    ["var", "suffix"],
-                    "\npeat:",["/",["round",['*', 0.001, ['to-number',["get", "histosol_area"],0]]],10],
-                    "ha\ntotal:",["/",["round",['*', 0.001, ["get", "total_area"]]],10],"ha",
-                    ]
+                    ["case", ["has", "histosol_area"],
+                        ["let", "suffix", "t CO2e/y",
+                            ["concat",
+                                ["to-string",
+                                    ["*", 10,
+                                        ["round", ["*", 0.0002, ["get", "total_area"]]],
+                                    ]],
+                                ["var", "suffix"],
+                                "\npeat:", ["/",["round",['*', 0.001, ['to-number',["get", "histosol_area"],0]]],10],
+                                "ha\ntotal:", ["/",["round",['*', 0.001, ["get", "total_area"]]],10],"ha",
+                            ],
+                        ],
+                        "",
                     ],
 
                     "text-size": 20,
