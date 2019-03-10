@@ -70,9 +70,10 @@ window.initAuth = function(claims) {
     const loginBtn = document.getElementById('btn-login');
     const logoutBtn = document.getElementById('btn-logout');
 
+    const authorizeParams = {roleclaims: claims};
     loginBtn.addEventListener('click', function(e) {
         e.preventDefault();
-        webAuth.authorize({roleclaims: claims});
+        webAuth.authorize(authorizeParams);
     });
 
     logoutBtn.addEventListener('click', logout);
@@ -103,10 +104,20 @@ window.initAuth = function(claims) {
         );
         accessToken = authResult.accessToken;
         idToken = authResult.idToken;
+
+        localStorage.setItem('authResult', JSON.stringify(authResult));
     }
 
     function renewTokens() {
-        webAuth.checkSession({}, (err, authResult) => {
+        const authResult = JSON.parse(localStorage.getItem('authResult'));
+
+        if (authResult) {
+            localLogin(authResult);
+            displayButtons();
+            if (isAuthenticated()) return;
+        }
+
+        webAuth.checkSession(authorizeParams, (err, authResult) => {
             if (authResult && authResult.accessToken && authResult.idToken) {
                 localLogin(authResult);
             } else if (err) {
@@ -119,6 +130,7 @@ window.initAuth = function(claims) {
 
     function logout() {
         // Remove isLoggedIn flag from localStorage
+        localStorage.removeItem('authResult');
         localStorage.removeItem('isLoggedIn');
         // Remove tokens and expiry time
         accessToken = '';
