@@ -897,13 +897,15 @@
 
         privateDatasets.valio = (map, secret) => {
             map.addSource('valio_fields', {
-                "type": "geojson",
-                "data": `https://map.buttonprogram.org/private/${secret}/valio_fields.geojson`,
+                "type": "vector",
+                "tiles": [`https://map.buttonprogram.org/private/${secret}/valio_fields/{z}/{x}/{y}.pbf`],
+                "maxzoom": 11,
             });
 
             map.addLayer({
                 'id': 'valio-fields-fill',
                 'source': 'valio_fields',
+                'source-layer': 'valio_fields',
                 'type': 'fill',
                 'paint': {
                     'fill-color': [
@@ -918,6 +920,7 @@
             map.addLayer({
                 'id': 'valio-fields-boundary',
                 'source': 'valio_fields',
+                'source-layer': 'valio_fields',
                 'type': 'line',
                 'paint': {
                     'line-opacity': 0.75,
@@ -927,6 +930,7 @@
             map.addLayer({
                 'id': 'valio-plohko-co2-sym',
                 'source': 'valio_fields',
+                'source-layer': 'valio_fields',
                 // 'source-layer': 'suopellot',
                 'type': 'symbol',
                 "minzoom": 12,
