@@ -191,6 +191,15 @@
             })
         }
 
+        const natura2000_mappings = {
+            "natura2000-sac": {layer:"NaturaSAC_alueet", color: 'cyan'},
+            "natura2000-sac-lines": {layer:"NaturaSAC_viivat", color: 'gray'},
+            "natura2000-sci": {layer:"NaturaSCI_alueet", color: 'purple'},
+            "natura2000-spa": {layer:"NaturaSPA_alueet", color: 'magenta'},
+            "natura2000-impl-ma": {layer:"NaturaTotTapa_ma", color: '#ca9f74'},
+            "natura2000-impl-r": {layer:"NaturaTotTapa_r", color: 'brown'},
+        }
+
         const layerGroups = {
             'peatland-co2': ['peatland-co2', 'peatland-co2-sym', 'peatland-outline'],
             'valio': [
@@ -206,6 +215,10 @@
             'terramonitor': ['terramonitor', () => window.toggleBaseMapSymbols()],
             'no2-raster': ['no2-raster', () => window.setNO2()],
             'mangrove-forests': ['mangrove-wms'],
+            'natura2000': [
+                ...Object.keys(natura2000_mappings).map(x => x),
+                ...Object.keys(natura2000_mappings).map(x => `${x}-sym`),
+            ],
         };
         window.toggleSatellite = function() {
             document.querySelectorAll('.satellite-button-container img').forEach(x => x.toggleAttribute('hidden'));
@@ -419,6 +432,14 @@
             </div>
         </div>
 
+        <div class='layer-card'>
+            <div class='title'>Natura 2000</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="natura2000">
+                <label class="onoffswitch-label" for="natura2000"></label>
+            </div>
+        </div>
+
         <hr/>
 
 
@@ -552,6 +573,12 @@
                 "maxzoom": 12,
             });
 
+            map.addSource('natura2000', {
+                "type": "vector",
+                "tiles": ["https://map.buttonprogram.org/natura2000/{z}/{x}/{y}.pbf"],
+                "maxzoom": 11,
+            });
+
             map.addSource('histosol_plohko', {
                 "type": "vector",
                 "tiles": ["https://map.buttonprogram.org/peltolohko/histosol_plohko/{z}/{x}/{y}.pbf"],
@@ -615,46 +642,39 @@
             })
 
 
-            map.addSource('metsaan-ete-gamekeeping-area', {
-                "type": "geojson",
-                "data": "https://map.buttonprogram.org/suot/ete_gamekeeping_area.geojson?v=1",
-            });
-            map.addSource('metsaan-ete-possibly-metso', {
-                "type": "geojson",
-                "data": "https://map.buttonprogram.org/suot/ete_possibly_metso.geojson?v=1",
-            });
-            map.addSource('metsaan-ete-metso', {
-                "type": "geojson",
-                "data": "https://map.buttonprogram.org/suot/ete_metso.geojson?v=1",
-            });
-
-
-            map.addLayer({
-                'id': 'metsaan-ete-gamekeeping-area-c',
-                'source': 'metsaan-ete-gamekeeping-area',
-                'type': 'fill',
-                'paint': {
-                    'fill-color': '#40d040',
-                    'fill-opacity': 0.7,
-                },
-            })
-            map.addLayer({
-                'id': 'metsaan-ete-possibly-metso-c',
-                'source': 'metsaan-ete-possibly-metso',
-                'type': 'fill',
-                'paint': {
-                    'fill-color': '#40d040',
-                    'fill-opacity': 0.7,
-                },
-            })
-            map.addLayer({
-                'id': 'metsaan-ete-metso-c',
-                'source': 'metsaan-ete-metso',
-                'type': 'fill',
-                'paint': {
-                    'fill-color': '#40d040',
-                    'fill-opacity': 0.7,
-                },
+            Object.entries(natura2000_mappings).map(([baseName, x]) => {
+                map.addLayer({
+                    'id': baseName,
+                    'source': 'natura2000',
+                    'source-layer': x.layer,
+                    'type': 'fill',
+                    'paint': {
+                        'fill-color': x.color,
+                        'fill-opacity': 0.45,
+                    },
+                })
+                map.addLayer({
+                    'id': `${baseName}-sym`,
+                    'source': 'natura2000',
+                    'source-layer': x.layer,
+                    'type': 'symbol',
+                        "layout": {
+                        "text-font": ["Open Sans Regular"],
+                        "text-field": [
+                            "case",
+                            ["has", "nimiSuomi"], ["coalesce", ["get", "nimiSuomi"], ""],
+                            ["has", "nimiRuotsi"], ["coalesce", ["get", "nimiRuotsi"], ""],
+                            ["has", "nimi"], ["coalesce", ["get", "nimi"], ""],
+                            ""
+                        ],
+                    },
+                    paint: {
+                        'text-color': "#999",
+                        'text-halo-blur': 1,
+                        'text-halo-color': "rgb(242,243,240)",
+                        'text-halo-width': 2,
+                    },
+                })
             })
 
 
