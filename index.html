@@ -206,7 +206,7 @@
             () => window.hideAll(x=>!/valio/.test(x)),
             'valio-fields-boundary', 'valio-fields-fill', 'valio-plohko-co2-sym',
             ],
-            'histosol-field-co2': ['plohko-fill', 'plohko-co2-sym', 'plohko-outline'],
+            'histosol-field-co2': ['histosol-plohko-fill', 'histosol-plohko-co2-sym', 'histosol-plohko-outline'],
             'forest-grid': ['metsaan-hila-c', 'metsaan-hila-sym', 'metsaan-hila-outline'],
             'privately-owned-forests': ['metsaan-stand-others-c'],
             'zonation6': ['zonation-v6-raster'],
@@ -219,6 +219,7 @@
                 ...Object.keys(natura2000_mappings).map(x => x),
                 ...Object.keys(natura2000_mappings).map(x => `${x}-sym`),
             ],
+            'mavi-fields': ['mavi-plohko-fill', 'mavi-plohko-outline'],
         };
         window.toggleSatellite = function() {
             document.querySelectorAll('.satellite-button-container img').forEach(x => x.toggleAttribute('hidden'));
@@ -371,6 +372,18 @@
                 <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="histosol-field-co2" checked>
                 <label class="onoffswitch-label" for="histosol-field-co2"></label>
             </div>
+        </div>
+
+
+        <div class='layer-card'>
+            <div class='title'>Finnish Fields</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="mavi-fields">
+                <label class="onoffswitch-label" for="mavi-fields"></label>
+            </div>
+            <p>
+                This layer contains all fields from the field block registry of the Finnish Food Authority as of late 2017.
+            </p>
         </div>
 
 
@@ -579,6 +592,12 @@
                 "maxzoom": 11,
             });
 
+            map.addSource('mavi-peltolohko', {
+                "type": "vector",
+                "tiles": ["https://map.buttonprogram.org/mavi-peltolohko/{z}/{x}/{y}.pbf"],
+                "maxzoom": 11,
+            });
+
             map.addSource('histosol_plohko', {
                 "type": "vector",
                 "tiles": ["https://map.buttonprogram.org/peltolohko/histosol_plohko/{z}/{x}/{y}.pbf"],
@@ -717,7 +736,29 @@
 
 
             map.addLayer({
-                'id': 'plohko-fill',
+                'id': 'mavi-plohko-fill',
+                'source': 'mavi-peltolohko',
+                'source-layer': 'plohko_cd_2017B_2_MapInfo',
+                'type': 'fill',
+                'paint': {
+                    'fill-color': '#FFC300',
+                    'fill-opacity': 0.65,
+                }
+            })
+            map.addLayer({
+                'id': 'mavi-plohko-outline',
+                'source': 'mavi-peltolohko',
+                'source-layer': 'plohko_cd_2017B_2_MapInfo',
+                'type': 'line',
+                "minzoom": 11,
+                'paint': {
+                    'line-opacity': 0.75,
+                }
+            })
+
+
+            map.addLayer({
+                'id': 'histosol-plohko-fill',
                 'source': 'histosol_plohko',
                 'source-layer': 'suopellot',
                 'type': 'fill',
@@ -727,7 +768,7 @@
                 }
             })
             map.addLayer({
-                'id': 'plohko-outline',
+                'id': 'histosol-plohko-outline',
                 'source': 'histosol_plohko',
                 'source-layer': 'suopellot',
                 'type': 'line',
@@ -736,6 +777,32 @@
                     'line-opacity': 0.75,
                 }
             })
+            map.addLayer({
+                'id': 'histosol-plohko-co2-sym',
+                'source': 'histosol_plohko',
+                'source-layer': 'suopellot',
+                'type': 'symbol',
+                "minzoom": 12,
+                // 'maxzoom': zoomThreshold,
+                "paint": {},
+                "layout": {
+                    "symbol-placement": "point",
+                    "text-font": ["Open Sans Regular"],
+                    // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
+                    // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
+                    "text-field":
+                    ["let", "suffix", "t CO2e/y",
+                    ["concat",
+                    ["to-string",
+                    ["*", 10,
+                    ["round", ["*", 0.0002, ["get", "total_area"]]],
+                    ]],
+                    ["var", "suffix"]]],
+
+                    "text-size": 20,
+                }
+            })
+
 
             map.addLayer({
                 'id': 'peatland-co2',
@@ -796,32 +863,6 @@
                     ["round",
                     ["*", 1.5,
                     ["get", "co2"]]], 10]],
-                    ["var", "suffix"]]],
-
-                    "text-size": 20,
-                }
-            })
-
-            map.addLayer({
-                'id': 'plohko-co2-sym',
-                'source': 'histosol_plohko',
-                'source-layer': 'suopellot',
-                'type': 'symbol',
-                "minzoom": 12,
-                // 'maxzoom': zoomThreshold,
-                "paint": {},
-                "layout": {
-                    "symbol-placement": "point",
-                    "text-font": ["Open Sans Regular"],
-                    // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
-                    // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
-                    "text-field":
-                    ["let", "suffix", "t CO2e/y",
-                    ["concat",
-                    ["to-string",
-                    ["*", 10,
-                    ["round", ["*", 0.0002, ["get", "total_area"]]],
-                    ]],
                     ["var", "suffix"]]],
 
                     "text-size": 20,
