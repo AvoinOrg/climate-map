@@ -1,0 +1,4 @@
+# Outputs from tile processing scripts
+scripts/**/scratch/
+scripts/**/tiles/
+

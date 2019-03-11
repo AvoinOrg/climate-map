@@ -61,6 +61,8 @@ set -Eeuxo pipefail
     # MuutosPvm: Date (10.0)
     # Shape_STLe: Real (19.11)
 
+mkdir -p scratch/
+
 ogr_url=/vsizip//vsicurl/http://wwwd3.ymparisto.fi/d3/gis_data/spesific/natura.zip
 
 ogrinfo -ro -al -so "$ogr_url" | grep ^Layer.name | sed 's/.*://' |
@@ -71,15 +73,15 @@ while read -r layer; do
         -t_srs epsg:4326 \
         -mapFieldType date=string,datetime=string \
         -sql "select *, cast(substr(NaturaTunn, 3) as integer) as id from $layer where NaturaTunn is not null" \
-        "$layer.geojson" \
+        scratch/"$layer.geojson" \
         "$ogr_url"
 done
 
 tippecanoe \
     -zg \
     --no-tile-compression \
-    --output-to-directory=natura2000-tiles/ \
+    --output-to-directory=tiles/ \
     --coalesce-densest-as-needed \
     --extend-zooms-if-still-dropping \
     --use-attribute-for-id=id \
-    *.geojson
+    scratch/*.geojson
