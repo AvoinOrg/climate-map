@@ -202,7 +202,7 @@
             'privately-owned-forests': ['metsaan-stand-others-c'],
             'zonation6': ['zonation-v6-raster'],
             'ete': ['metsaan-ete-all-c', 'metsaan-ete-all-outline', 'metsaan-ete-all-sym'],
-            'ete-all-labels': [() => window.useAllEteCodes()],
+            'ete-all-labels': [() => window.enableAllEteCodes()],
             'terramonitor': ['terramonitor', () => window.toggleBaseMapSymbols()],
             'no2-raster': ['no2-raster', () => window.setNO2()],
             'mangrove-forests': ['mangrove-wms'],
@@ -232,12 +232,25 @@
             })
             layerGroupState[group] = newState;
         }
+
+        let eteAllState = false;
+        const eteBasicLabels = [
+            "match",
+            ["get","featurecode"],
+            70, "Gamekeeping area",
+            95, "Potential METSO Habitat",
+            98, "METSO Habitat",
+            10120, "Gamekeeping area",
+            15150, "METSO II",
+            "",
+        ]
+
         // NB: Use with caution. Very heavy.
         window.enableAllEteCodes = function() {
             fetch('ete_codes.json').then(function(response) {
                 response.json().then(e => {
                     window.useAllEteCodes(e);
-                    window.toggleGroup('ete');
+                    window.toggleGroup('ete', forcedState=true);
                 })
             })
         }
@@ -401,7 +414,7 @@
         <div class='layer-card'>
             <div class='title'>Display ALL Habitat Descriptions</div>
             <div class="onoffswitch">
-                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="ete-all-labels" onchange="window.enableAllEteCodes();">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="ete-all-labels">
                 <label class="onoffswitch-label" for="ete-all-labels"></label>
             </div>
         </div>
@@ -672,28 +685,7 @@
                 'type': 'symbol',
                 "layout": {
                     "text-font": ["Open Sans Regular"],
-                    "text-field": [
-                    "match",
-                    ["get","featurecode"],
-                    70, "Gamekeeping area",
-                    95, "Potential METSO Habitat",
-                    98, "METSO Habitat",
-                    10120, "Gamekeeping area",
-                    15150, "METSO II",
-                    "",
-                    ],
-                    // "icon-image": "https://example.com/METSO_logo08_FI.gif",
-                    //  [
-                    //     // "step",
-                    //     // [
-                    //     //     "zoom"
-                    //     // ],
-                    //     // [
-                    //         "match", ["get","featurecode"],
-                    //         "95", "METSO_logo08_FI.gif",
-                    //         null
-                    // ],
-                    // "text-field": ["get", "featurecode"],
+                    "text-field": eteBasicLabels,
                 },
                 paint: {
                     'text-color': "#999",
@@ -941,9 +933,9 @@
                     "text-font": ["Open Sans Regular"],
                     // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
                     // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
-                    "text-field":
-                    ["case", ["has", "histosol_area"],
-                        ["let", "suffix", "t CO2e/y",
+                    "text-field": [
+                        "case",
+                        ["has", "histosol_area"], ["let", "suffix", "t CO2e/y",
                             ["concat",
                                 ["to-string",
                                     ["*", 10,
@@ -990,15 +982,18 @@
             const id = 'metsaan-ete-all-sym'
             const isVisible = layerGroupState.ete
             const layer = map.getStyle().layers.filter(x => x.id ===id)[0]
-            layer.layout['text-field'] = [
-            "match",
-            ["get","featurecode"],
-            ...codes,
-            "UNKNOWN habitat type",
+
+            const eteAllLabels = [
+                "match",
+                ["get","featurecode"],
+                ...codes,
+                "UNKNOWN habitat type",
             ];
+            layer.layout['text-field'] = eteAllState ? eteBasicLabels : eteAllLabels;
+            eteAllState = !eteAllState;
             map.removeLayer(id)
             map.addLayer(layer)
-            toggleGroup('ete'); toggleGroup('ete');
+            toggleGroup('ete', forcedState=layerGroupState.ete);
         }
 
         let reqCounter = 0
