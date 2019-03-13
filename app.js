@@ -1,3 +1,24 @@
+// This must be set, but the value is not needed here.
+mapboxgl.accessToken = 'not-needed';
+
+const map = new mapboxgl.Map({
+    container: 'map', // container id
+    // style,
+    style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
+    center: [28, 65], // starting position [lng, lat]
+    zoom: 5, // starting zoom
+    attributionControl: false,
+});
+
+// Suppress uninformative console error spam:
+map.on('error', (e) => {
+    if (e.error.message === '') return;
+    console.error(e);
+})
+
+map.addControl(new mapboxgl.NavigationControl());
+
+
 const backgroundLayerGroups = { 'terramonitor': true }
 const layerGroupState = {
     'terramonitor': true,
@@ -5,11 +26,11 @@ const layerGroupState = {
 
 
 // Set up event handlers for layer toggles, etc.
-window.addEventListener('load', function() {
+window.addEventListener('load', () => {
     [...document.querySelectorAll('.layer-card input')].forEach(el => {
         if (el.disabled) return;
 
-        el.addEventListener('change', () => window.toggleGroup(el.id));
+        el.addEventListener('change', () => toggleGroup(el.id));
 
         // Populate layer state from DOM.
         layerGroupState[el.id] = el.checked;
@@ -20,13 +41,13 @@ window.addEventListener('load', function() {
     })
 })
 
-window.layerOriginalPaint = {}
-window.toggleBaseMapSymbols = function() {
+const layerOriginalPaint = {}
+const toggleBaseMapSymbols = () => {
     map.getStyle().layers.filter(x => x.type === 'symbol').forEach(layer => {
         if (layerGroupState.terramonitor) {
-            layer.paint = window.layerOriginalPaint[layer.id];
+            layer.paint = layerOriginalPaint[layer.id];
         } else {
-            window.invertLayerTextHalo(layer);
+            invertLayerTextHalo(layer);
         }
         map.removeLayer(layer.id);
         map.addLayer(layer);
@@ -45,16 +66,16 @@ const natura2000_mappings = {
 const layerGroups = {
     'peatland-co2': ['peatland-co2', 'peatland-co2-sym', 'peatland-outline'],
     'valio': [
-    () => window.hideAll(x=>!/valio/.test(x)),
-    'valio-fields-boundary', 'valio-fields-fill', 'valio-plohko-co2-sym',
+        () => hideAllLayersMatchingFilter(x=>!/valio/.test(x)),
+        'valio-fields-boundary', 'valio-fields-fill', 'valio-plohko-co2-sym',
     ],
     'histosol-field-co2': ['histosol-plohko-fill', 'histosol-plohko-co2-sym', 'histosol-plohko-outline'],
     'forest-grid': ['metsaan-hila-c', 'metsaan-hila-sym', 'metsaan-hila-outline'],
     'privately-owned-forests': ['metsaan-stand-others-c'],
     'zonation6': ['zonation-v6-raster'],
     'ete': ['metsaan-ete-all-c', 'metsaan-ete-all-outline', 'metsaan-ete-all-sym'],
-    'ete-all-labels': [() => window.toggleEteCodes()],
-    'terramonitor': ['terramonitor', () => window.toggleBaseMapSymbols()],
+    'ete-all-labels': [() => toggleEteCodes()],
+    'terramonitor': ['terramonitor', () => toggleBaseMapSymbols()],
     'no2-raster': ['no2-raster', () => window.setNO2()],
     'mangrove-forests': ['mangrove-wms'],
     'natura2000': [
@@ -63,15 +84,8 @@ const layerGroups = {
     ],
     'mavi-fields': ['mavi-plohko-fill', 'mavi-plohko-outline'],
 };
-window.toggleSatellite = function() {
-    [...document.querySelectorAll('.satellite-button-container img')].forEach(x => x.toggleAttribute('hidden'));
-    window.toggleGroup('terramonitor')
-}
-window.toggleMenu = function() {
-    [...document.querySelectorAll('.menu-toggle')].forEach(x => x.toggleAttribute('hidden'))
-}
 
-window.toggleGroup = function(group, forcedState=undefined) {
+const toggleGroup = (group, forcedState=undefined) => {
     const oldState = layerGroupState[group];
     const newState = forcedState === undefined ? !oldState : forcedState;
     if (oldState === newState) return;
@@ -89,6 +103,14 @@ window.toggleGroup = function(group, forcedState=undefined) {
     layerGroupState[group] = newState;
 }
 
+window.toggleSatellite = function() {
+    [...document.querySelectorAll('.satellite-button-container img')].forEach(x => x.toggleAttribute('hidden'));
+    toggleGroup('terramonitor');
+}
+window.toggleMenu = function() {
+    [...document.querySelectorAll('.menu-toggle')].forEach(x => x.toggleAttribute('hidden'))
+}
+
 
 let eteAllState = false;
 const eteBasicLabels = [
@@ -102,7 +124,7 @@ const eteBasicLabels = [
     "",
 ]
 
-window.setEteCodes = function(codes) {
+const setEteCodes = (codes) => {
     const id = 'metsaan-ete-all-sym'
     const layer = map.getStyle().layers.filter(x => x.id ===id)[0]
 
@@ -119,26 +141,26 @@ window.setEteCodes = function(codes) {
     toggleGroup('ete', forcedState=layerGroupState.ete);
 }
 
-window.toggleEteCodes = function() {
+const toggleEteCodes = () => {
     fetch('ete_codes.json').then(function(response) {
         response.json().then(e => {
-            window.setEteCodes(e);
-            window.toggleGroup('ete', forcedState=true);
+            setEteCodes(e);
+            toggleGroup('ete', forcedState=true);
         })
     })
 }
 
 
-window.hideAll = function (filterFn) {
+const hideAllLayersMatchingFilter = (filterFn) => {
     Object.keys(layerGroupState).forEach(group => {
         const layerIsInBackground = group in backgroundLayerGroups;
         if (layerIsInBackground) return;
         if (filterFn && !filterFn(group)) return;
-        window.toggleGroup(group, forcedState=false);
+        toggleGroup(group, forcedState=false);
     })
 }
 
-window.invertLayerTextHalo = function(layer) {
+const invertLayerTextHalo = (layer) => {
     layer.paint = {...layer.paint}
     if (layer.paint && layer.paint["text-halo-width"]) {
         // Original style is something like:
@@ -153,7 +175,7 @@ window.invertLayerTextHalo = function(layer) {
     }
 }
 
-window.enableDefaultLayers = function() {
+const enableDefaultLayers = () => {
     Object.entries(layerGroupState).forEach(([group, enabled]) => {
         enabled && layerGroups[group].forEach(layer => {
             typeof layer === 'string' &&
@@ -163,45 +185,16 @@ window.enableDefaultLayers = function() {
 }
 
 
-// This must be set, but the value is not needed here.
-mapboxgl.accessToken = 'not-needed';
-
-const style = {
-    "version": 8,
-    "glyphs": "https://map.buttonprogram.org/suot/font/{fontstack}/{range}.pbf",
-    "layers": [
-    {
-        "id": "background",
-        "type": "background",
-        "paint": {
-            "background-color": "#ddeeff"
-        }
-    },
-    ]
-}
-
-const map = new mapboxgl.Map({
-    container: 'map', // container id
-    // style,
-    style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
-    center: [28, 65], // starting position [lng, lat]
-    zoom: 5, // starting zoom
-    attributionControl: false,
-});
-window.map = map;
-
-map.addControl(new mapboxgl.NavigationControl());
-
-function addLayer(map, layer, visibility='none') {
+const addLayer = (layer, visibility='none') => {
     const layout = layer.layout || {}
     layout.visibility = visibility
     map.addLayer({ layout, ...layer })
 }
 
-map.on('load', function () {
+map.on('load', () => {
     const originalMapLayerIds = {}
 
-    addLayer(map, {
+    addLayer({
         'id': 'terramonitor',
         'type': 'raster',
         'source': {
@@ -232,7 +225,7 @@ map.on('load', function () {
         "tiles": ["https://map.buttonprogram.org/stand-others/{z}/{x}/{y}.pbf"],
         "maxzoom": 13,
     });
-    addLayer(map, {
+    addLayer({
         'id': 'metsaan-stand-others-c',
         'source': 'metsaan-stand-others',
         'source-layer': 'stand-others',
@@ -249,7 +242,7 @@ map.on('load', function () {
         "tiles": ["https://map.buttonprogram.org/metsaan-hila/{z}/{x}/{y}.pbf"],
         "maxzoom": 15,
     });
-    addLayer(map, {
+    addLayer({
         'id': 'metsaan-hila-c',
         'source': 'metsaan-hila',
         'source-layer': 'metsaan-hila',
@@ -266,7 +259,7 @@ map.on('load', function () {
             'fill-opacity': 0.9
         },
     })
-    addLayer(map, {
+    addLayer({
         'id': 'metsaan-hila-outline',
         'source': 'metsaan-hila',
         'source-layer': 'metsaan-hila',
@@ -276,7 +269,7 @@ map.on('load', function () {
             'line-opacity': 0.75,
         }
     })
-    addLayer(map, {
+    addLayer({
         'id': 'metsaan-hila-sym',
         'source': 'metsaan-hila',
         'source-layer': 'metsaan-hila',
@@ -299,7 +292,7 @@ map.on('load', function () {
         "maxzoom": 11,
     });
     Object.entries(natura2000_mappings).map(([baseName, x]) => {
-        addLayer(map, {
+        addLayer({
             'id': baseName,
             'source': 'natura2000',
             'source-layer': x.layer,
@@ -309,7 +302,7 @@ map.on('load', function () {
                 'fill-opacity': 0.45,
             },
         })
-        addLayer(map, {
+        addLayer({
             'id': `${baseName}-sym`,
             'source': 'natura2000',
             'source-layer': x.layer,
@@ -339,7 +332,7 @@ map.on('load', function () {
         "tiles": ["https://map.buttonprogram.org/metsaan-ete/{z}/{x}/{y}.pbf"],
         "maxzoom": 12,
     });
-    addLayer(map, {
+    addLayer({
         'id': 'metsaan-ete-all-c',
         'source': 'metsaan-ete',
         'source-layer': 'metsaan-ete',
@@ -349,7 +342,7 @@ map.on('load', function () {
             'fill-opacity': 0.7,
         },
     })
-    addLayer(map, {
+    addLayer({
         'id': 'metsaan-ete-all-outline',
         'source': 'metsaan-ete',
         'source-layer': 'metsaan-ete',
@@ -359,7 +352,7 @@ map.on('load', function () {
             'line-opacity': 1,
         }
     })
-    addLayer(map, {
+    addLayer({
         'id': 'metsaan-ete-all-sym',
         'source': 'metsaan-ete',
         'source-layer': 'metsaan-ete',
@@ -382,7 +375,7 @@ map.on('load', function () {
         "tiles": ["https://map.buttonprogram.org/mavi-peltolohko/{z}/{x}/{y}.pbf"],
         "maxzoom": 11,
     });
-    addLayer(map, {
+    addLayer({
         'id': 'mavi-plohko-fill',
         'source': 'mavi-peltolohko',
         'source-layer': 'plohko_cd_2017B_2_MapInfo',
@@ -392,7 +385,7 @@ map.on('load', function () {
             'fill-opacity': 0.65,
         }
     })
-    addLayer(map, {
+    addLayer({
         'id': 'mavi-plohko-outline',
         'source': 'mavi-peltolohko',
         'source-layer': 'plohko_cd_2017B_2_MapInfo',
@@ -409,7 +402,7 @@ map.on('load', function () {
         "tiles": ["https://map.buttonprogram.org/peltolohko/histosol_plohko/{z}/{x}/{y}.pbf"],
         "maxzoom": 11,
     });
-    addLayer(map, {
+    addLayer({
         'id': 'histosol-plohko-fill',
         'source': 'histosol_plohko',
         'source-layer': 'suopellot',
@@ -419,7 +412,7 @@ map.on('load', function () {
             'fill-opacity': 1
         }
     })
-    addLayer(map, {
+    addLayer({
         'id': 'histosol-plohko-outline',
         'source': 'histosol_plohko',
         'source-layer': 'suopellot',
@@ -429,7 +422,7 @@ map.on('load', function () {
             'line-opacity': 0.75,
         }
     })
-    addLayer(map, {
+    addLayer({
         'id': 'histosol-plohko-co2-sym',
         'source': 'histosol_plohko',
         'source-layer': 'suopellot',
@@ -440,18 +433,14 @@ map.on('load', function () {
         "layout": {
             "symbol-placement": "point",
             "text-font": ["Open Sans Regular"],
+            "text-size": 20,
             // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
             // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
-            "text-field":
-            ["let", "suffix", "t CO2e/y",
-            ["concat",
-            ["to-string",
-            ["*", 10,
-            ["round", ["*", 0.0002, ["get", "total_area"]]],
-            ]],
-            ["var", "suffix"]]],
-
-            "text-size": 20,
+            "text-field": [
+                "concat",
+                ["*", 10, ["round", ["*", 0.0002, ["get", "total_area"]]]],
+                "t CO2e/y",
+            ],
         }
     })
 
@@ -461,7 +450,7 @@ map.on('load', function () {
         "tiles": ["https://map.buttonprogram.org/stand-suot/{z}/{x}/{y}.pbf"],
         "maxzoom": 12,
     });
-    addLayer(map, {
+    addLayer({
         'id': 'peatland-co2',
         'source': 'stand-suot',
         'source-layer': 'stand-suot',
@@ -490,7 +479,7 @@ map.on('load', function () {
             'fill-opacity': 0.9
         },
     })
-    addLayer(map, {
+    addLayer({
         'id': 'peatland-outline',
         'source': 'stand-suot',
         'source-layer': 'stand-suot',
@@ -500,7 +489,7 @@ map.on('load', function () {
             'line-opacity': 0.75,
         }
     })
-    addLayer(map, {
+    addLayer({
         'id': 'peatland-co2-sym',
         'source': 'stand-suot',
         'source-layer': 'stand-suot',
@@ -514,17 +503,10 @@ map.on('load', function () {
             "text-font": ["Open Sans Regular"],
             "text-field": [
                 "case", ["has", "co2"], [
-                    "let", "suffix", "t CO2e/y", [
-                        "concat", [
-                            "to-string",
-                            ["/", [
-                                "round", [
-                                    "*", 1.5,
-                                    ["get", "co2"]]], 10]
-                        ],
-                        ["var", "suffix"],
-                    ],
-                ], ""
+                    "concat",
+                    ["/", [ "round", ["*", 1.5, ["get", "co2"]]], 10],
+                    "t CO2e/y",
+                ], "",
             ],
         }
     })
@@ -538,7 +520,7 @@ map.on('load', function () {
         "maxzoom": 5,
     });
 
-    addLayer(map, {
+    addLayer({
         'id': 'no2-raster',
         'source': 'no2-tiles',
         'type': 'raster',
@@ -547,7 +529,7 @@ map.on('load', function () {
     })
 
 
-    addLayer(map, {
+    addLayer({
         'id': 'mangrove-wms',
         'type': 'raster',
         'source': {
@@ -571,7 +553,7 @@ map.on('load', function () {
             "minzoom": 5,
             "maxzoom": 9,
         });
-        addLayer(map, {
+        addLayer({
             id,
             'source': sourceName,
             'type': 'raster',
@@ -582,7 +564,7 @@ map.on('load', function () {
     })
 
 
-    window.enableDefaultLayers();
+    enableDefaultLayers();
 
     map.setPaintProperty('no2-raster', 'raster-opacity', 0.7);
     // map.setPaintProperty('terramonitor', 'raster-opacity', 0.6)
@@ -592,8 +574,8 @@ map.on('load', function () {
     // Ensure all symbol layers appear on top of satellite imagery.
     map.getStyle().layers.filter(x => x.type === 'symbol').forEach(layer => {
         // Rework Stadia default style to look nicer on top of satellite imagery
-        window.layerOriginalPaint[layer.id] = {...layer.paint}
-        window.invertLayerTextHalo(layer)
+        layerOriginalPaint[layer.id] = {...layer.paint}
+        invertLayerTextHalo(layer)
         map.removeLayer(layer.id)
         map.addLayer(layer)
         // map.moveLayer(layer.id)
@@ -611,7 +593,7 @@ privateDatasets.valio = (map, secret) => {
         "maxzoom": 11,
     });
 
-    addLayer(map, {
+    addLayer({
         'id': 'valio-fields-fill',
         'source': 'valio_fields',
         'source-layer': 'valio_fields',
@@ -626,7 +608,7 @@ privateDatasets.valio = (map, secret) => {
             ],
         }
     })
-    addLayer(map, {
+    addLayer({
         'id': 'valio-fields-boundary',
         'source': 'valio_fields',
         'source-layer': 'valio_fields',
@@ -636,7 +618,7 @@ privateDatasets.valio = (map, secret) => {
         },
         "minzoom": 11,
     })
-    addLayer(map, {
+    addLayer({
         'id': 'valio-plohko-co2-sym',
         'source': 'valio_fields',
         'source-layer': 'valio_fields',
@@ -652,28 +634,22 @@ privateDatasets.valio = (map, secret) => {
             // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
             // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
             "text-field": [
-                "case",
-                ["has", "histosol_area"], ["let", "suffix", "t CO2e/y",
-                    ["concat",
-                        ["to-string",
-                            ["*", 10,
-                                ["round", ["*", 0.0002, ["get", "total_area"]]],
-                            ]],
-                        ["var", "suffix"],
-                        "\npeat:", ["/",["round",['*', 0.001, ['to-number',["get", "histosol_area"],0]]],10],
-                        "ha\ntotal:", ["/",["round",['*', 0.001, ["get", "total_area"]]],10],"ha",
-                    ],
-                ],
-                "",
+                "case", ["has", "total_area"], [
+                    "concat",
+                    ["*", 10, ["round", ["*", 0.0002, ["get", "total_area"]]]],
+                    "t CO2e/y",
+                    "\npeat:", ["/",["round",['*', 0.001, ['to-number',["get", "histosol_area"],0]]],10],
+                    "ha\ntotal:", ["/",["round",['*', 0.001, ["get", "total_area"]]],10],"ha",
+                ], "",
             ],
         }
     })
 };
 
 
-window.enablePrivateDatasets = function(secrets=[]) {
+window.enablePrivateDatasets = (secrets=[]) => {
     if (secrets.length === 0) return;
-    window.map.on('load', () => {
+    map.on('load', () => {
         secrets.forEach(secret => {
             const name = secret.split('-')[0];
             const addLayerFn = privateDatasets[name];

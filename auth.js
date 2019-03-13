@@ -4,28 +4,7 @@ const claimHashes = {
     valio: '75e3e7c68bffb0efc8f893345bfe161f77175b8f9ce31840db93ace7fa46f3db',
 }
 
-window.initAuthWithClaims = function() {
-    const hashParams = location.hash.replace(/^[#?]*/, '').split('&').reduce((prev, item) => (
-        Object.assign({ [item.split('=')[0]]: item.split('=')[1] }, prev)
-    ), {});
-
-    if (!hashParams || !hashParams.codes) return window.initAuth();
-
-    const claims = hashParams.codes.split(',');
-    let claimsOK = 0;
-    claims.forEach(claim => {
-        const key = claim.split('-')[0];
-        claimsOK += sha256(claim) === claimHashes[key];
-    })
-    if (claims.length === claimsOK) {
-        window.location.hash = '';
-        window.initAuth(claims);
-    } else {
-        window.alert(`Invalid codes for private datasets: ${claims.join(", ")}`);
-    }
-}
-
-window.initAuth = function(claims=[]) {
+const initAuth = function(claims=[]) {
     let idToken;
     let accessToken;
     let expiresAt;
@@ -132,4 +111,25 @@ window.initAuth = function(claims=[]) {
     displayButtons();
 }
 
-window.addEventListener('load', window.initAuthWithClaims);
+const initAuthWithClaims = function() {
+    const hashParams = location.hash.replace(/^[#?]*/, '').split('&').reduce((prev, item) => (
+        Object.assign({ [item.split('=')[0]]: item.split('=')[1] }, prev)
+    ), {});
+
+    if (!hashParams || !hashParams.codes) return initAuth();
+
+    const claims = hashParams.codes.split(',');
+    let claimsOK = 0;
+    claims.forEach(claim => {
+        const key = claim.split('-')[0];
+        claimsOK += sha256(claim) === claimHashes[key];
+    })
+    if (claims.length === claimsOK) {
+        window.location.hash = '';
+        initAuth(claims);
+    } else {
+        window.alert(`Invalid codes for private datasets: ${claims.join(", ")}`);
+    }
+}
+
+window.addEventListener('load', initAuthWithClaims);
