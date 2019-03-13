@@ -1,6 +1,15 @@
 body {
     margin: 0;
     padding: 0;
+
+    /* https://tachyons.io/docs/typography/font-family/ */
+    font-family: -apple-system, BlinkMacSystemFont,
+                 'avenir next', avenir,
+                 'helvetica neue', helvetica,
+                 ubuntu,
+                 roboto, noto,
+                 'segoe ui', arial,
+                 sans-serif;
 }
 
 #map {
@@ -16,7 +25,6 @@ body {
     right: 1rem;
     background-color: white;
     color: black;
-    font-family: Arial, sans-serif;
 }
 
 .logos {
