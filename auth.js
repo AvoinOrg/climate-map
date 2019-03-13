@@ -1,41 +1,8 @@
+import { sha256 } from 'js-sha256';
+
 const claimHashes = {
     valio: '75e3e7c68bffb0efc8f893345bfe161f77175b8f9ce31840db93ace7fa46f3db',
 }
-
-function hexString(buffer) {
-    const byteArray = new Uint8Array(buffer);
-
-    const hexCodes = [...byteArray].map(value => {
-      const hexCode = value.toString(16);
-      const paddedHexCode = hexCode.padStart(2, '0');
-      return paddedHexCode;
-    });
-
-    return hexCodes.join('');
-  }
-
-const sha256hex = (text, callback) =>
-    crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(
-        digest => callback(hexString(digest))
-    )
-
-const verifyClaimHash = (text, callback) => {
-    const key = text.split('-')[0]
-    sha256hex(text, x => callback(x === claimHashes[key]))
-};
-
-const verifyClaims = (claims, callback) => {
-    // Super hacky. Too lazy to load a proper async/promise library etc.
-    let numLeft = claims.length;
-    let numSuccess = 0;
-    claims.forEach(claim => {
-        verifyClaimHash(claim, (result) => {
-            numLeft--;
-            numSuccess += result
-            if (numLeft === 0) return callback(numSuccess === claims.length);
-        })
-    })
-};
 
 window.initAuthWithClaims = function() {
     const hashParams = location.hash.replace(/^[#?]*/, '').split('&').reduce((prev, item) => (
@@ -44,14 +11,18 @@ window.initAuthWithClaims = function() {
 
     if (!hashParams || !hashParams.codes) return window.initAuth();
 
-    const claims = hashParams.codes.split(',')
-    verifyClaims(claims, result => {
-        if (result) {
-            window.location.hash = '';
-            window.initAuth(claims);
-        }
-        else alert(`Invalid codes for private datasets: ${claims.join(", ")}`);
+    const claims = hashParams.codes.split(',');
+    let claimsOK = 0;
+    claims.forEach(claim => {
+        const key = claim.split('-')[0];
+        claimsOK += sha256(claim) === claimHashes[key];
     })
+    if (claims.length === claimsOK) {
+        window.location.hash = '';
+        window.initAuth(claims);
+    } else {
+        window.alert(`Invalid codes for private datasets: ${claims.join(", ")}`);
+    }
 }
 
 window.initAuth = function(claims=[]) {

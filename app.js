@@ -6,7 +6,7 @@ const layerGroupState = {
 
 // Set up event handlers for layer toggles, etc.
 window.addEventListener('load', function() {
-    document.querySelectorAll('.layer-card input').forEach(el => {
+    [...document.querySelectorAll('.layer-card input')].forEach(el => {
         if (el.disabled) return;
 
         el.addEventListener('change', () => window.toggleGroup(el.id));
@@ -64,11 +64,11 @@ const layerGroups = {
     'mavi-fields': ['mavi-plohko-fill', 'mavi-plohko-outline'],
 };
 window.toggleSatellite = function() {
-    document.querySelectorAll('.satellite-button-container img').forEach(x => x.toggleAttribute('hidden'));
+    [...document.querySelectorAll('.satellite-button-container img')].forEach(x => x.toggleAttribute('hidden'));
     window.toggleGroup('terramonitor')
 }
 window.toggleMenu = function() {
-    document.querySelectorAll('.menu-toggle').forEach(x => x.toggleAttribute('hidden'))
+    [...document.querySelectorAll('.menu-toggle')].forEach(x => x.toggleAttribute('hidden'))
 }
 
 window.toggleGroup = function(group, forcedState=undefined) {
@@ -115,7 +115,7 @@ window.setEteCodes = function(codes) {
     layer.layout['text-field'] = eteAllState ? eteBasicLabels : eteAllLabels;
     eteAllState = !eteAllState;
     map.removeLayer(id)
-    map.addLayer(layer)
+    addLayer(layer, visibility=layerGroupState.ete ? 'visible' : 'none')
     toggleGroup('ete', forcedState=layerGroupState.ete);
 }
 
@@ -192,10 +192,16 @@ window.map = map;
 
 map.addControl(new mapboxgl.NavigationControl());
 
+function addLayer(map, layer, visibility='none') {
+    const layout = layer.layout || {}
+    layout.visibility = visibility
+    map.addLayer({ layout, ...layer })
+}
+
 map.on('load', function () {
     const originalMapLayerIds = {}
 
-    map.addLayer({
+    addLayer(map, {
         'id': 'terramonitor',
         'type': 'raster',
         'source': {
@@ -226,7 +232,7 @@ map.on('load', function () {
         "tiles": ["https://map.buttonprogram.org/stand-others/{z}/{x}/{y}.pbf"],
         "maxzoom": 13,
     });
-    map.addLayer({
+    addLayer(map, {
         'id': 'metsaan-stand-others-c',
         'source': 'metsaan-stand-others',
         'source-layer': 'stand-others',
@@ -243,7 +249,7 @@ map.on('load', function () {
         "tiles": ["https://map.buttonprogram.org/metsaan-hila/{z}/{x}/{y}.pbf"],
         "maxzoom": 15,
     });
-    map.addLayer({
+    addLayer(map, {
         'id': 'metsaan-hila-c',
         'source': 'metsaan-hila',
         'source-layer': 'metsaan-hila',
@@ -260,7 +266,7 @@ map.on('load', function () {
             'fill-opacity': 0.9
         },
     })
-    map.addLayer({
+    addLayer(map, {
         'id': 'metsaan-hila-outline',
         'source': 'metsaan-hila',
         'source-layer': 'metsaan-hila',
@@ -270,7 +276,7 @@ map.on('load', function () {
             'line-opacity': 0.75,
         }
     })
-    map.addLayer({
+    addLayer(map, {
         'id': 'metsaan-hila-sym',
         'source': 'metsaan-hila',
         'source-layer': 'metsaan-hila',
@@ -293,7 +299,7 @@ map.on('load', function () {
         "maxzoom": 11,
     });
     Object.entries(natura2000_mappings).map(([baseName, x]) => {
-        map.addLayer({
+        addLayer(map, {
             'id': baseName,
             'source': 'natura2000',
             'source-layer': x.layer,
@@ -303,12 +309,12 @@ map.on('load', function () {
                 'fill-opacity': 0.45,
             },
         })
-        map.addLayer({
+        addLayer(map, {
             'id': `${baseName}-sym`,
             'source': 'natura2000',
             'source-layer': x.layer,
             'type': 'symbol',
-                "layout": {
+            "layout": {
                 "text-font": ["Open Sans Regular"],
                 "text-field": [
                     "case",
@@ -333,7 +339,7 @@ map.on('load', function () {
         "tiles": ["https://map.buttonprogram.org/metsaan-ete/{z}/{x}/{y}.pbf"],
         "maxzoom": 12,
     });
-    map.addLayer({
+    addLayer(map, {
         'id': 'metsaan-ete-all-c',
         'source': 'metsaan-ete',
         'source-layer': 'metsaan-ete',
@@ -343,7 +349,7 @@ map.on('load', function () {
             'fill-opacity': 0.7,
         },
     })
-    map.addLayer({
+    addLayer(map, {
         'id': 'metsaan-ete-all-outline',
         'source': 'metsaan-ete',
         'source-layer': 'metsaan-ete',
@@ -353,7 +359,7 @@ map.on('load', function () {
             'line-opacity': 1,
         }
     })
-    map.addLayer({
+    addLayer(map, {
         'id': 'metsaan-ete-all-sym',
         'source': 'metsaan-ete',
         'source-layer': 'metsaan-ete',
@@ -376,7 +382,7 @@ map.on('load', function () {
         "tiles": ["https://map.buttonprogram.org/mavi-peltolohko/{z}/{x}/{y}.pbf"],
         "maxzoom": 11,
     });
-    map.addLayer({
+    addLayer(map, {
         'id': 'mavi-plohko-fill',
         'source': 'mavi-peltolohko',
         'source-layer': 'plohko_cd_2017B_2_MapInfo',
@@ -386,7 +392,7 @@ map.on('load', function () {
             'fill-opacity': 0.65,
         }
     })
-    map.addLayer({
+    addLayer(map, {
         'id': 'mavi-plohko-outline',
         'source': 'mavi-peltolohko',
         'source-layer': 'plohko_cd_2017B_2_MapInfo',
@@ -403,7 +409,7 @@ map.on('load', function () {
         "tiles": ["https://map.buttonprogram.org/peltolohko/histosol_plohko/{z}/{x}/{y}.pbf"],
         "maxzoom": 11,
     });
-    map.addLayer({
+    addLayer(map, {
         'id': 'histosol-plohko-fill',
         'source': 'histosol_plohko',
         'source-layer': 'suopellot',
@@ -413,7 +419,7 @@ map.on('load', function () {
             'fill-opacity': 1
         }
     })
-    map.addLayer({
+    addLayer(map, {
         'id': 'histosol-plohko-outline',
         'source': 'histosol_plohko',
         'source-layer': 'suopellot',
@@ -423,7 +429,7 @@ map.on('load', function () {
             'line-opacity': 0.75,
         }
     })
-    map.addLayer({
+    addLayer(map, {
         'id': 'histosol-plohko-co2-sym',
         'source': 'histosol_plohko',
         'source-layer': 'suopellot',
@@ -455,7 +461,7 @@ map.on('load', function () {
         "tiles": ["https://map.buttonprogram.org/stand-suot/{z}/{x}/{y}.pbf"],
         "maxzoom": 12,
     });
-    map.addLayer({
+    addLayer(map, {
         'id': 'peatland-co2',
         'source': 'stand-suot',
         'source-layer': 'stand-suot',
@@ -484,7 +490,7 @@ map.on('load', function () {
             'fill-opacity': 0.9
         },
     })
-    map.addLayer({
+    addLayer(map, {
         'id': 'peatland-outline',
         'source': 'stand-suot',
         'source-layer': 'stand-suot',
@@ -494,7 +500,7 @@ map.on('load', function () {
             'line-opacity': 0.75,
         }
     })
-    map.addLayer({
+    addLayer(map, {
         'id': 'peatland-co2-sym',
         'source': 'stand-suot',
         'source-layer': 'stand-suot',
@@ -532,7 +538,7 @@ map.on('load', function () {
         "maxzoom": 5,
     });
 
-    map.addLayer({
+    addLayer(map, {
         'id': 'no2-raster',
         'source': 'no2-tiles',
         'type': 'raster',
@@ -541,7 +547,7 @@ map.on('load', function () {
     })
 
 
-    map.addLayer({
+    addLayer(map, {
         'id': 'mangrove-wms',
         'type': 'raster',
         'source': {
@@ -565,7 +571,7 @@ map.on('load', function () {
             "minzoom": 5,
             "maxzoom": 9,
         });
-        map.addLayer({
+        addLayer(map, {
             id,
             'source': sourceName,
             'type': 'raster',
@@ -576,14 +582,7 @@ map.on('load', function () {
     })
 
 
-    // Hide new layers by default.
-    map.getStyle().layers.map(layer => {
-        const isOldLayer = layer.id in originalMapLayerIds
-        isOldLayer || map.setLayoutProperty(layer.id, 'visibility', 'none')
-    })
-
     window.enableDefaultLayers();
-
 
     map.setPaintProperty('no2-raster', 'raster-opacity', 0.7);
     // map.setPaintProperty('terramonitor', 'raster-opacity', 0.6)
@@ -612,7 +611,7 @@ privateDatasets.valio = (map, secret) => {
         "maxzoom": 11,
     });
 
-    map.addLayer({
+    addLayer(map, {
         'id': 'valio-fields-fill',
         'source': 'valio_fields',
         'source-layer': 'valio_fields',
@@ -627,7 +626,7 @@ privateDatasets.valio = (map, secret) => {
             ],
         }
     })
-    map.addLayer({
+    addLayer(map, {
         'id': 'valio-fields-boundary',
         'source': 'valio_fields',
         'source-layer': 'valio_fields',
@@ -637,7 +636,7 @@ privateDatasets.valio = (map, secret) => {
         },
         "minzoom": 11,
     })
-    map.addLayer({
+    addLayer(map, {
         'id': 'valio-plohko-co2-sym',
         'source': 'valio_fields',
         'source-layer': 'valio_fields',
@@ -649,6 +648,7 @@ privateDatasets.valio = (map, secret) => {
         "layout": {
             "symbol-placement": "point",
             "text-font": ["Open Sans Regular"],
+            "text-size": 20,
             // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
             // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
             "text-field": [
@@ -666,8 +666,6 @@ privateDatasets.valio = (map, secret) => {
                 ],
                 "",
             ],
-
-            "text-size": 20,
         }
     })
 };
@@ -676,21 +674,12 @@ privateDatasets.valio = (map, secret) => {
 window.enablePrivateDatasets = function(secrets=[]) {
     if (secrets.length === 0) return;
     window.map.on('load', () => {
-        const originalMapLayerIds = {}
-        map.getStyle().layers.forEach(x => originalMapLayerIds[x.id] = true)
-
         secrets.forEach(secret => {
             const name = secret.split('-')[0];
             const addLayerFn = privateDatasets[name];
             console.log('Enabled private dataset:', name)
             addLayerFn(map, secret);
             document.querySelector(`#layer-card-${name}`).removeAttribute('hidden');
-        })
-
-        // Hide new layers by default.
-        map.getStyle().layers.map(layer => {
-            const isOldLayer = layer.id in originalMapLayerIds
-            isOldLayer || map.setLayoutProperty(layer.id, 'visibility', 'none')
         })
     })
 }
