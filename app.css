@@ -39,9 +39,13 @@ body {
     height: 50px;
     border-radius: 50%;
     text-align: center;
-    line-height: 50px;
     vertical-align: middle;
-    padding: 15px;
+    padding: var(--menu-button-padding);
+}
+:root {
+    --menu-padding: 30px;
+    --menu-button-padding: 15px;
+    --button-border-offset: 50px;
 }
 #menu-container{
     font-size: 30px;
@@ -49,33 +53,56 @@ body {
     top: 0;
     left: 0;
     width: 500px;
-    max-width: calc(100vw - 60px);
+    /* TODO: I couldn't get CSS var expressions to work here: */
+    max-width: calc(100vw - 60px); 
     height: 100%;
-    padding: 0 30px;
+    padding: 0 var(--menu-padding);
     background: #ffffff;
     overflow-y: scroll;
     z-index: 10; /* Shadow mapbox-gl controls (z-index 2) */
 }
 #menu-container .ui-button {
     z-index: 5;
+    left: 550px;
+}
+.ui-button {
+    padding: var(--button-border-offset);
 }
 
 .menu-button-container{
     position: fixed;
     top: 0;
     left: 0;
-    padding: 50px;
+}
+.satellite-button-container{
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    /* background: rgba(255, 255, 255, 0.8); */
+    /* margin-right: 20px; */
+    /* overflow: auto; */
+    border-radius: 3px;
 }
 
-#menu-container .ui-button {
-    left: 550px;
-}
 #menu-container h1 {
     font-size: 50px;
 }
 @media (max-width: 750px) {
-    #menu-container{
-        width: calc(100vw - 60px);
+    :root {
+        --menu-padding: 15px;
+        --menu-button-padding: 10px;
+        --button-border-offset: 10px;
+    }
+    .circle-icon {
+        padding: var(--menu-button-padding);
+    }
+    #menu-container .circle-icon {
+        border: 1px solid black;
+    }
+    #menu-container {
+        padding-top: 30px;
+        width: calc(100vw - 30px); /* calc(100vw - 2*var(--menu-padding)) */
+        max-width: calc(100vw - 30px); /* calc(100vw - 2*var(--menu-padding)) */
     }
     #menu-container .satellite-button-container {
         display: none;
@@ -83,24 +110,7 @@ body {
     #menu-container .menu-button-container {
         left: unset;
         right: 0;
-        padding-top: 10px;
     }
-    #menu-container .circle-icon {
-        border: 1px solid black;
-    }
-    #menu-container {
-        padding-top: 50px;
-    }
-}
-.satellite-button-container{
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    padding: 50px;
-    /* background: rgba(255, 255, 255, 0.8); */
-    /* margin-right: 20px; */
-    /* overflow: auto; */
-    border-radius: 3px;
 }
 
 .layer-card {
