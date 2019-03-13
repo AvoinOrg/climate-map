@@ -42,8 +42,15 @@
             font-family: Arial, sans-serif;
         }
 
-        .logo {
-            max-width: 10vw;
+        .logos {
+            display: grid;
+            grid-template-columns: calc(50% - 15px) calc(50% - 15px);
+            grid-gap: 15px;
+            align-items: center;
+            justify-items: center;
+        }
+        .logos img {
+            width: 100%;
         }
 
         .circle-icon:hover {
@@ -65,27 +72,54 @@
             top: 0;
             left: 0;
             width: 500px;
+            max-width: calc(100vw - 60px);
             height: 100%;
             padding: 0 30px;
             background: #ffffff;
             overflow-y: scroll;
+            z-index: 10; /* Shadow mapbox-gl controls (z-index 2) */
         }
         #menu-container .ui-button {
-            left: 550px;
+            z-index: 5;
         }
+
         .menu-button-container{
             position: fixed;
             top: 0;
             left: 0;
-            padding-top: 50px;
-            padding-left: 50px;
+            padding: 50px;
+        }
+
+        #menu-container .ui-button {
+            left: 550px;
+        }
+        #menu-container h1 {
+            font-size: 50px;
+        }
+        @media (max-width: 750px) {
+            #menu-container{
+                width: calc(100vw - 60px);
+            }
+            #menu-container .satellite-button-container {
+                display: none;
+            }
+            #menu-container .menu-button-container {
+                left: unset;
+                right: 0;
+                padding-top: 10px;
+            }
+            #menu-container .circle-icon {
+                border: 1px solid black;
+            }
+            #menu-container {
+                padding-top: 50px;
+            }
         }
         .satellite-button-container{
             position: fixed;
             bottom: 0;
             left: 0;
-            padding-bottom: 50px;
-            padding-left: 50px;
+            padding: 50px;
             /* background: rgba(255, 255, 255, 0.8); */
             /* margin-right: 20px; */
             /* overflow: auto; */
@@ -99,6 +133,7 @@
         .layer-card .title {
             font-size: 30px;
             display: inline-block;
+            max-width: calc(100% - 48px); /* 48px is the width of the toggle switch, below */
         }
         .layer-card p {
             color: #404040;
@@ -310,7 +345,7 @@
     <div id='btn-login'>Login</div>
 
     <div class='menu-button-container menu-toggle' onclick="toggleMenu();">
-        <img class='circle-icon menu' src='outline-menu-24px.svg'/>
+        <img class='circle-icon' src='outline-menu-24px.svg'/>
     </div>
 
     <div class='satellite-button-container' onclick="toggleSatellite();">
@@ -319,8 +354,8 @@
     </div>
 
     <div id='menu-container' class='menu-toggle' hidden>
-        <div class='menu-button-container ui-button' onclick="toggleMenu();">
-            <img class='circle-icon close' src='outline-close-24px.svg'/>
+        <div class='menu-button-container ui-button close' onclick="toggleMenu();">
+            <img class='circle-icon' src='outline-close-24px.svg'/>
         </div>
 
         <div class='satellite-button-container ui-button' onclick="toggleSatellite();">
@@ -331,7 +366,7 @@
         <h1>Sustainability Map</h1>
 
         <p>
-            Map displaying areas where actions are required in order to save environmental resources
+            This map displays areas where actions are required in order to save environmental resources
         </p>
 
         <div class='layer-card'>
@@ -493,15 +528,15 @@
         </div>
 
 
-        <hr /><br/>
-        <img alt="Metsäkeskus" src="metsakeskus_logo.jpg" class="logo">
-        <img alt="Terramonitor" src="terramonitor_logo.jpg" class="logo">
-        <br/>
-        <img alt="Copernicus" src="copernicus_logo.jpg" class="logo">
-        <img alt="ESA, European Space Agency" src="esa_logo.jpg" class="logo">
-        <br/>
-        <img alt="Mavi" src="mavi_logo.jpg" class="logo">
-        <img alt="Luke" src="luke_logo.jpg" class="logo">
+        <hr />
+        <div class="logos">
+            <img alt="Metsäkeskus" src="metsakeskus_logo.jpg">
+            <img alt="Terramonitor" src="terramonitor_logo.jpg">
+            <img alt="Copernicus" src="copernicus_logo.jpg">
+            <img alt="ESA, European Space Agency" src="esa_logo.jpg">
+            <img alt="Mavi" src="mavi_logo.jpg">
+            <img alt="Luke" src="luke_logo.jpg">
+        </div>
 
     </div>
 
