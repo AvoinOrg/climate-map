@@ -54,29 +54,23 @@ window.initAuthWithClaims = function() {
     })
 }
 
-window.initAuth = function(claims) {
+window.initAuth = function(claims=[]) {
     let idToken;
     let accessToken;
     let expiresAt;
 
-    const webAuth = new auth0.WebAuth({
-        domain: AUTH0_DOMAIN,
-        clientID: AUTH0_CLIENT_ID,
-        responseType: 'token id_token',
-        scope: 'openid email',
-        redirectUri: window.location.href
-    });
+    function isAuthenticated() {
+        // Check whether the current time is past the
+        // Access Token's expiry time
+        const expiration = parseInt(expiresAt) || 0;
+        return localStorage.getItem('isLoggedIn') === 'true' && new Date().getTime() < expiration;
+    }
 
-    const loginBtn = document.getElementById('btn-login');
-    const logoutBtn = document.getElementById('btn-logout');
-
-    const authorizeParams = {roleclaims: claims};
-    loginBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        webAuth.authorize(authorizeParams);
-    });
-
-    logoutBtn.addEventListener('click', logout);
+    function displayButtons() {
+        const auth = isAuthenticated();
+        loginBtn.hidden = auth
+        logoutBtn.hidden = !auth
+    }
 
     function handleAuthentication() {
         webAuth.parseHash(function(err, authResult) {
@@ -93,7 +87,7 @@ window.initAuth = function(claims) {
     function localLogin(authResult) {
         const payload = authResult.idTokenPayload
 
-        const roles = payload['https://map.buttonprogram.org/roles']
+        const roles = payload['https://map.buttonprogram.org/roles'] || [];
         window.enablePrivateDatasets(roles);
 
         // Set isLoggedIn flag in localStorage
@@ -106,14 +100,15 @@ window.initAuth = function(claims) {
         idToken = authResult.idToken;
 
         localStorage.setItem('authResult', JSON.stringify(authResult));
+
+        displayButtons();
     }
 
-    function renewTokens() {
+    function renewTokens(authorizeParams) {
         const authResult = JSON.parse(localStorage.getItem('authResult'));
 
         if (authResult) {
             localLogin(authResult);
-            displayButtons();
             if (isAuthenticated()) return;
         }
 
@@ -124,7 +119,6 @@ window.initAuth = function(claims) {
                 console.log('webAuth.checkSession: Could not get a new token', err.error, err.error_description);
                 logout();
             }
-            displayButtons();
         });
     }
 
@@ -136,27 +130,35 @@ window.initAuth = function(claims) {
         accessToken = '';
         idToken = '';
         expiresAt = 0;
+
         displayButtons();
     }
 
-    function isAuthenticated() {
-        // Check whether the current time is past the
-        // Access Token's expiry time
-        const expiration = parseInt(expiresAt) || 0;
-        return localStorage.getItem('isLoggedIn') === 'true' && new Date().getTime() < expiration;
-    }
+    const webAuth = new auth0.WebAuth({
+        domain: window.AUTH0_DOMAIN,
+        clientID: window.AUTH0_CLIENT_ID,
+        responseType: 'token id_token',
+        scope: 'openid email',
+        redirectUri: window.location.href
+    });
 
-    function displayButtons() {
-        const auth = isAuthenticated();
-        if (loginBtn.hidden !== auth) {
-            loginBtn.toggleAttribute('hidden');
-            logoutBtn.toggleAttribute('hidden');
-        }
-    }
+    const loginBtn = document.getElementById('btn-login');
+    const logoutBtn = document.getElementById('btn-logout');
+
+    const authorizeParams = claims.length > 0 ? {roleclaims: claims} : {};
+    loginBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        webAuth.authorize(authorizeParams);
+    });
+
+    logoutBtn.addEventListener('click', logout);
 
     if (localStorage.getItem('isLoggedIn') === 'true') {
-        renewTokens();
+        renewTokens(authorizeParams);
     } else {
         handleAuthentication();
     }
+    displayButtons();
 }
+
+window.addEventListener('load', window.initAuthWithClaims);

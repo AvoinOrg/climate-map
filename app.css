@@ -1,0 +1,168 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+#map {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+#no2 {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background-color: white;
+    color: black;
+    font-family: Arial, sans-serif;
+}
+
+.logos {
+    display: grid;
+    grid-template-columns: calc(50% - 15px) calc(50% - 15px);
+    grid-gap: 15px;
+    align-items: center;
+    justify-items: center;
+}
+.logos img {
+    width: 100%;
+}
+
+.circle-icon:hover {
+    cursor: pointer;
+}
+.circle-icon {
+    background: #ffffff;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 50px;
+    vertical-align: middle;
+    padding: 15px;
+}
+#menu-container{
+    font-size: 30px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 500px;
+    max-width: calc(100vw - 60px);
+    height: 100%;
+    padding: 0 30px;
+    background: #ffffff;
+    overflow-y: scroll;
+    z-index: 10; /* Shadow mapbox-gl controls (z-index 2) */
+}
+#menu-container .ui-button {
+    z-index: 5;
+}
+
+.menu-button-container{
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 50px;
+}
+
+#menu-container .ui-button {
+    left: 550px;
+}
+#menu-container h1 {
+    font-size: 50px;
+}
+@media (max-width: 750px) {
+    #menu-container{
+        width: calc(100vw - 60px);
+    }
+    #menu-container .satellite-button-container {
+        display: none;
+    }
+    #menu-container .menu-button-container {
+        left: unset;
+        right: 0;
+        padding-top: 10px;
+    }
+    #menu-container .circle-icon {
+        border: 1px solid black;
+    }
+    #menu-container {
+        padding-top: 50px;
+    }
+}
+.satellite-button-container{
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    padding: 50px;
+    /* background: rgba(255, 255, 255, 0.8); */
+    /* margin-right: 20px; */
+    /* overflow: auto; */
+    border-radius: 3px;
+}
+
+.layer-card {
+    margin-bottom: 30px;
+    font-size: 20px;
+}
+.layer-card .title {
+    font-size: 30px;
+    display: inline-block;
+    max-width: calc(100% - 48px); /* 48px is the width of the toggle switch, below */
+}
+.layer-card p {
+    color: #404040;
+}
+.layer-disabled {
+    color: #969696;
+}
+
+.onoffswitch {
+    position: relative; width: 48px;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+    float: right;
+}
+.onoffswitch-checkbox {
+    display: none;
+}
+.onoffswitch-label {
+    display: block; overflow: hidden; cursor: pointer;
+    height: 20px; padding: 0; line-height: 20px;
+    border: 2px solid #FFFFFF; border-radius: 20px;
+    background-color: #A8A8A8;
+    transition: background-color 0.15s ease-in;
+}
+.onoffswitch-label:before {
+    content: "";
+    display: block; width: 20px; margin: 0px;
+    background: #FFFFFF;
+    position: absolute; top: 0; bottom: 0;
+    right: 26px;
+    border: 2px solid #FFFFFF; border-radius: 20px;
+    transition: all 0.15s ease-in 0s;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label {
+    background-color: #191C1F;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label, .onoffswitch-checkbox:checked + .onoffswitch-label:before {
+    border-color: #191C1F;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label:before {
+    right: 0px;
+}
+
+*[hidden] { display: none; }
+
+#btn-logout:hover, #btn-login:hover {
+    cursor: pointer;
+}
+#btn-logout, #btn-login {
+    background: #333;
+    color: #eee;
+    font-size: 24px;
+    position: absolute;
+    top:15px;
+    right: 60px;
+}
