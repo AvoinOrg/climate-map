@@ -609,6 +609,7 @@ privateDatasets.valio = (map, secret) => {
         },
         "minzoom": 11,
     })
+    const tonsPerYear = ["*", 10, ["round", ["*", 0.0002, ["get", "total_area"]]]];
     addLayer({
         'id': 'valio-plohko-co2-sym',
         'source': 'valio_fields',
@@ -625,13 +626,19 @@ privateDatasets.valio = (map, secret) => {
             // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
             // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
             "text-field": [
-                "case", ["has", "total_area"], [
-                    "concat",
-                    ["*", 10, ["round", ["*", 0.0002, ["get", "total_area"]]]],
-                    "t CO2e/y",
-                    "\npeat:", ["/",["round",['*', 0.001, ['to-number',["get", "histosol_area"],0]]],10],
-                    "ha\ntotal:", ["/",["round",['*', 0.001, ["get", "total_area"]]],10],"ha",
-                ], "",
+                "step", ["zoom"],
+                ["case", ["has", "total_area"],
+                    ["concat", tonsPerYear, "t/y"],
+                    ""],
+                15, [
+                    "case", ["has", "total_area"], [
+                        "concat",
+                        tonsPerYear,
+                        "t CO2e/y",
+                        "\npeat:", ["/",["round",['*', 0.001, ['to-number',["get", "histosol_area"],0]]],10],
+                        "ha\ntotal:", ["/",["round",['*', 0.001, ["get", "total_area"]]],10],"ha",
+                    ], "",
+                ],
             ],
         }
     })
