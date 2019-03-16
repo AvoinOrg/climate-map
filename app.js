@@ -64,14 +64,20 @@ const natura2000_mappings = {
 }
 
 const layerGroups = {
-    'peatland-co2': ['peatland-co2', 'peatland-co2-sym', 'peatland-outline'],
+    'peatland-co2': [
+        () => hideAllLayersMatchingFilter(x=>/privately-owned-forests/.test(x)),
+        'peatland-co2', 'peatland-co2-sym', 'peatland-outline',
+    ],
     'valio': [
         () => hideAllLayersMatchingFilter(x=>!/valio/.test(x)),
         'valio-fields-boundary', 'valio-fields-fill', 'valio-plohko-co2-sym',
     ],
     'histosol-field-co2': ['histosol-plohko-fill', 'histosol-plohko-co2-sym', 'histosol-plohko-outline'],
     'forest-grid': ['metsaan-hila-c', 'metsaan-hila-sym', 'metsaan-hila-outline'],
-    'privately-owned-forests': ['metsaan-stand-others-c'],
+    'privately-owned-forests': [
+        () => hideAllLayersMatchingFilter(x=>/peatland-co2/.test(x)),
+        'peatland-co2', 'peatland-outline',
+    ],
     'zonation6': ['zonation-v6-raster'],
     'ete': ['metsaan-ete-all-c', 'metsaan-ete-all-outline', 'metsaan-ete-all-sym'],
     'ete-all-labels': [() => toggleEteCodes()],
@@ -218,23 +224,6 @@ map.on('load', () => {
 
 
     map.getStyle().layers.forEach(x => originalMapLayerIds[x.id] = true)
-
-
-    map.addSource('metsaan-stand-others', {
-        "type": "vector",
-        "tiles": ["https://map.buttonprogram.org/stand-others/{z}/{x}/{y}.pbf"],
-        "maxzoom": 13,
-    });
-    addLayer({
-        'id': 'metsaan-stand-others-c',
-        'source': 'metsaan-stand-others',
-        'source-layer': 'stand-others',
-        'type': 'fill',
-        'paint': {
-            'fill-color': 'brown',
-            'fill-opacity': 0.5
-        },
-    });
 
 
     map.addSource('metsaan-hila', {
@@ -445,15 +434,15 @@ map.on('load', () => {
     })
 
 
-    map.addSource('stand-suot', {
+    map.addSource('metsaan-stand', {
         "type": "vector",
-        "tiles": ["https://map.buttonprogram.org/stand-suot/{z}/{x}/{y}.pbf"],
+        "tiles": ["https://map.buttonprogram.org/stand2/{z}/{x}/{y}.pbf.gz"],
         "maxzoom": 12,
     });
     addLayer({
         'id': 'peatland-co2',
-        'source': 'stand-suot',
-        'source-layer': 'stand-suot',
+        'source': 'metsaan-stand',
+        'source-layer': 'stand',
         // 'maxzoom': zoomThreshold,
         'type': 'fill',
         // 'filter': ['==', 'isState', true],
@@ -481,8 +470,8 @@ map.on('load', () => {
     })
     addLayer({
         'id': 'peatland-outline',
-        'source': 'stand-suot',
-        'source-layer': 'stand-suot',
+        'source': 'metsaan-stand',
+        'source-layer': 'stand',
         'type': 'line',
         "minzoom": 11,
         'paint': {
@@ -491,8 +480,8 @@ map.on('load', () => {
     })
     addLayer({
         'id': 'peatland-co2-sym',
-        'source': 'stand-suot',
-        'source-layer': 'stand-suot',
+        'source': 'metsaan-stand',
+        'source-layer': 'stand',
         'type': 'symbol',
         "minzoom": 12,
         // 'maxzoom': zoomThreshold,
@@ -503,9 +492,11 @@ map.on('load', () => {
             "text-font": ["Open Sans Regular"],
             "text-field": [
                 "case", ["has", "co2"], [
-                    "concat",
-                    ["/", [ "round", ["*", 1.5, ["get", "co2"]]], 10],
-                    "t CO2e/y",
+                    "case", ["<", ["to-number", ["get", "co2"], 0], 0.1], "", [
+                        "concat",
+                        ["get", "co2"],
+                        "t CO2e/y",
+                    ],
                 ], "",
             ],
         }
