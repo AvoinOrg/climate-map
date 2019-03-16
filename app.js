@@ -13,7 +13,7 @@ const map = new mapboxgl.Map({
 // Suppress uninformative console error spam:
 map.on('error', (e) => {
     if (e.error.message === '') return;
-    console.error(e);
+    console.error(e.error.message, e.error.stack, e.target);
 })
 
 map.addControl(new mapboxgl.NavigationControl());
