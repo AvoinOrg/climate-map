@@ -28,6 +28,7 @@ map.addControl(new mapboxgl.GeolocateControl({
 if (MapboxGeocoder !== undefined) {
     map.addControl(new MapboxGeocoder({
         accessToken: window.GEOCODING_ACCESS_TOKEN,
+        countries: 'fi',
     }));
 }
 
