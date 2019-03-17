@@ -24,6 +24,13 @@ map.addControl(new mapboxgl.GeolocateControl({
     trackUserLocation: true,
 }));
 
+// Only add the geocoding widget if it's been loaded.
+if (MapboxGeocoder !== undefined) {
+    map.addControl(new MapboxGeocoder({
+        accessToken: window.GEOCODING_ACCESS_TOKEN,
+    }));
+}
+
 
 const backgroundLayerGroups = { 'terramonitor': true }
 const layerGroupState = {
