@@ -7,7 +7,6 @@ const map = new mapboxgl.Map({
     style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
     center: [28, 65], // starting position [lng, lat]
     zoom: 5, // starting zoom
-    attributionControl: false,
 });
 
 // Suppress uninformative console error spam:
@@ -210,17 +209,11 @@ map.on('load', () => {
             ],
             'tileSize': 256,
             // "maxzoom": 16, // After zoom level 16 the images (used to) get blurrier
+            attribution: '<a href="https://www.terramonitor.com">© Terramonitor</a>',
         },
         'paint': {},
     });
 
-
-    // Custom attribution for Terramonitor since the WMS source doesn't present show one automatically.
-    map.addControl(new mapboxgl.AttributionControl({
-        customAttribution: '' +
-            '<a href="https://www.terramonitor.com">© Terramonitor</a>' +
-            ' | <a href="http://mavi.fi">© Maaseutuvirasto 2018</a>'
-    }));
 
 
     map.getStyle().layers.forEach(x => originalMapLayerIds[x.id] = true)
@@ -230,6 +223,7 @@ map.on('load', () => {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/metsaan-hila/{z}/{x}/{y}.pbf"],
         "maxzoom": 15,
+        attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
     });
     addLayer({
         'id': 'metsaan-hila-c',
@@ -279,6 +273,8 @@ map.on('load', () => {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/natura2000/{z}/{x}/{y}.pbf"],
         "maxzoom": 11,
+        // SYKE applies Creative Commons By 4.0 International license for open datasets.
+        attribution: '<a href=https://www.syke.fi/en-US/Open_information">SYKE</a>',
     });
     Object.entries(natura2000_mappings).map(([baseName, x]) => {
         addLayer({
@@ -320,6 +316,7 @@ map.on('load', () => {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/metsaan-ete/{z}/{x}/{y}.pbf"],
         "maxzoom": 12,
+        attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
     });
     addLayer({
         'id': 'metsaan-ete-all-c',
@@ -363,6 +360,7 @@ map.on('load', () => {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/mavi-peltolohko/{z}/{x}/{y}.pbf"],
         "maxzoom": 11,
+        attribution: '<a href="https://www.ruokavirasto.fi/">© Finnish Food Authority</a>',
     });
     addLayer({
         'id': 'mavi-plohko-fill',
@@ -390,6 +388,7 @@ map.on('load', () => {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/peltolohko/histosol_plohko/{z}/{x}/{y}.pbf"],
         "maxzoom": 11,
+        attribution: '<a href="https://www.ruokavirasto.fi/">© Finnish Food Authority</a>',
     });
     addLayer({
         'id': 'histosol-plohko-fill',
@@ -437,7 +436,8 @@ map.on('load', () => {
     map.addSource('metsaan-stand', {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/stand2/{z}/{x}/{y}.pbf.gz"],
-        "maxzoom": 12,
+        "maxzoom": 13,
+        attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
     });
     addLayer({
         'id': 'peatland-co2',
@@ -509,6 +509,7 @@ map.on('load', () => {
         "type": "raster",
         "tiles": ["https://map.buttonprogram.org/atmoshack/mbtiles-dump/" + no2Tileset + "/{z}/{x}/{y}.png?v=5&_=" + timestampHour],
         "maxzoom": 5,
+        attribution: '<a href="https://www.esa.int/ESA">ESA</a>',
     });
 
     addLayer({
@@ -528,7 +529,10 @@ map.on('load', () => {
             'tiles': [
             'https://gis.unep-wcmc.org/arcgis/services/marine/GMW_001_MangroveDistribition_2010/MapServer/WMSServer?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=0&styles=default',
             ],
-            'tileSize': 256
+            'tileSize': 256,
+            // Creative Commons Attribution 4.0 Unported (CC BY 4.0)
+            // http://data.unep-wcmc.org/pdfs/45/WCMC-043-GlobalCH-IFCPS6-2017.pdf
+            attribution: '<a href="https://www.eorc.jaxa.jp/ALOS/en/kyoto/mangrovewatch.htm">Global Mangrove Watch</a>',
         },
         'paint': {}
     })
@@ -543,6 +547,9 @@ map.on('load', () => {
             "tiles": [`https://map.buttonprogram.org/suot/zonation/MetZa2018_VMA0${v}/{z}/{x}/{y}.png?v=5`],
             "minzoom": 5,
             "maxzoom": 9,
+            // Creative Commons 4.0
+            // © SYKE Datasources: Finnish Forest Centre, Metsähallitus, Natural Resources Institute Finland, Finnish Environment Institute, National Land Survey of Finland, Hansen/UMD/Google/USGS/NASA
+            attribution: '<a href="http://metatieto.ymparisto.fi:8080/geoportal/catalog/search/resource/details.page?uuid=%7B8E4EA3B2-A542-4C39-890C-DD7DED33AAE1%7D">© SYKE Datasources</a>',
         });
         addLayer({
             id,

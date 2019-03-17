@@ -7,6 +7,7 @@ tmp=$(mktemp -d --suffix=button_zonation)
 cleanup() { rm -rf "$tmp"; }
 trap cleanup EXIT
 
+# English metadata: http://metatieto.ymparisto.fi:8080/geoportal/catalog/search/resource/details.page?uuid=%7B8E4EA3B2-A542-4C39-890C-DD7DED33AAE1%7D
 # Via https://www.syke.fi/fi-FI/Avoin_tieto/Paikkatietoaineistot/Ladattavat_paikkatietoaineistot(36026)
 wget -O "$tmp/zonation.zip" http://wwwd3.ymparisto.fi/d3/gis_data/spesific/zonation_valtakunnallinen.zip
 
