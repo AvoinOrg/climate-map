@@ -15,6 +15,14 @@ map.on('error', (e) => {
     console.error(e.error.message, e.error.stack, e.target);
 })
 
+// Only add the geocoding widget if it's been loaded.
+if (MapboxGeocoder !== undefined) {
+    map.addControl(new MapboxGeocoder({
+        accessToken: window.GEOCODING_ACCESS_TOKEN,
+        countries: 'fi',
+    }));
+}
+
 map.addControl(new mapboxgl.NavigationControl());
 
 map.addControl(new mapboxgl.GeolocateControl({
@@ -23,14 +31,6 @@ map.addControl(new mapboxgl.GeolocateControl({
     },
     trackUserLocation: true,
 }));
-
-// Only add the geocoding widget if it's been loaded.
-if (MapboxGeocoder !== undefined) {
-    map.addControl(new MapboxGeocoder({
-        accessToken: window.GEOCODING_ACCESS_TOKEN,
-        countries: 'fi',
-    }));
-}
 
 
 const backgroundLayerGroups = { 'terramonitor': true }
