@@ -54,27 +54,27 @@ const toggleBaseMapSymbols = () => {
 }
 
 const natura2000_mappings = {
-    "natura2000-sac": {layer:"NaturaSAC_alueet", color: 'cyan'},
-    "natura2000-sac-lines": {layer:"NaturaSAC_viivat", color: 'gray'},
-    "natura2000-sci": {layer:"NaturaSCI_alueet", color: 'purple'},
-    "natura2000-spa": {layer:"NaturaSPA_alueet", color: 'magenta'},
-    "natura2000-impl-ma": {layer:"NaturaTotTapa_ma", color: '#ca9f74'},
-    "natura2000-impl-r": {layer:"NaturaTotTapa_r", color: 'brown'},
+    "natura2000-sac": { layer: "NaturaSAC_alueet", color: 'cyan' },
+    "natura2000-sac-lines": { layer: "NaturaSAC_viivat", color: 'gray' },
+    "natura2000-sci": { layer: "NaturaSCI_alueet", color: 'purple' },
+    "natura2000-spa": { layer: "NaturaSPA_alueet", color: 'magenta' },
+    "natura2000-impl-ma": { layer: "NaturaTotTapa_ma", color: '#ca9f74' },
+    "natura2000-impl-r": { layer: "NaturaTotTapa_r", color: 'brown' },
 }
 
 const layerGroups = {
     'peatland-co2': [
-        () => hideAllLayersMatchingFilter(x=>/privately-owned-forests/.test(x)),
+        () => hideAllLayersMatchingFilter(x => /privately-owned-forests/.test(x)),
         'peatland-co2', 'peatland-co2-sym', 'peatland-outline',
     ],
     'valio': [
-        () => hideAllLayersMatchingFilter(x=>!/valio/.test(x)),
+        () => hideAllLayersMatchingFilter(x => !/valio/.test(x)),
         'valio-fields-boundary', 'valio-fields-fill', 'valio-plohko-co2-sym',
     ],
     'histosol-field-co2': ['histosol-plohko-fill', 'histosol-plohko-co2-sym', 'histosol-plohko-outline'],
     'forest-grid': ['metsaan-hila-c', 'metsaan-hila-sym', 'metsaan-hila-outline'],
     'privately-owned-forests': [
-        () => hideAllLayersMatchingFilter(x=>/peatland-co2/.test(x)),
+        () => hideAllLayersMatchingFilter(x => /peatland-co2/.test(x)),
         'peatland-co2', 'peatland-outline',
     ],
     'zonation6': ['zonation-v6-raster'],
@@ -91,7 +91,7 @@ const layerGroups = {
     'helsinki-buildings': ['helsinki-buildings-fill', 'helsinki-buildings-outline'],
 };
 
-const toggleGroup = (group, forcedState=undefined) => {
+const toggleGroup = (group, forcedState = undefined) => {
     const oldState = layerGroupState[group];
     const newState = forcedState === undefined ? !oldState : forcedState;
     if (oldState === newState) return;
@@ -109,11 +109,11 @@ const toggleGroup = (group, forcedState=undefined) => {
     layerGroupState[group] = newState;
 }
 
-window.toggleSatellite = function() {
+window.toggleSatellite = function () {
     [...document.querySelectorAll('.satellite-button-container img')].forEach(x => x.toggleAttribute('hidden'));
     toggleGroup('terramonitor');
 }
-window.toggleMenu = function() {
+window.toggleMenu = function () {
     [...document.querySelectorAll('.menu-toggle')].forEach(x => x.toggleAttribute('hidden'))
 }
 
@@ -121,7 +121,7 @@ window.toggleMenu = function() {
 let eteAllState = false;
 const eteBasicLabels = [
     "match",
-    ["get","featurecode"],
+    ["get", "featurecode"],
     70, "Gamekeeping area",
     95, "Potential METSO Habitat",
     98, "METSO Habitat",
@@ -132,26 +132,26 @@ const eteBasicLabels = [
 
 const setEteCodes = (codes) => {
     const id = 'metsaan-ete-all-sym'
-    const layer = map.getStyle().layers.filter(x => x.id ===id)[0]
+    const layer = map.getStyle().layers.filter(x => x.id === id)[0]
 
     const eteAllLabels = [
         "match",
-        ["get","featurecode"],
+        ["get", "featurecode"],
         ...codes,
         "UNKNOWN habitat type",
     ];
     layer.layout['text-field'] = eteAllState ? eteBasicLabels : eteAllLabels;
     eteAllState = !eteAllState;
     map.removeLayer(id)
-    addLayer(layer, visibility=layerGroupState.ete ? 'visible' : 'none')
-    toggleGroup('ete', forcedState=layerGroupState.ete);
+    addLayer(layer, visibility = layerGroupState.ete ? 'visible' : 'none')
+    toggleGroup('ete', forcedState = layerGroupState.ete);
 }
 
 const toggleEteCodes = () => {
-    fetch('ete_codes.json').then(function(response) {
+    fetch('ete_codes.json').then(function (response) {
         response.json().then(e => {
             setEteCodes(e);
-            toggleGroup('ete', forcedState=true);
+            toggleGroup('ete', forcedState = true);
         })
     })
 }
@@ -162,12 +162,12 @@ const hideAllLayersMatchingFilter = (filterFn) => {
         const layerIsInBackground = group in backgroundLayerGroups;
         if (layerIsInBackground) return;
         if (filterFn && !filterFn(group)) return;
-        toggleGroup(group, forcedState=false);
+        toggleGroup(group, forcedState = false);
     })
 }
 
 const invertLayerTextHalo = (layer) => {
-    layer.paint = {...layer.paint}
+    layer.paint = { ...layer.paint }
     if (layer.paint && layer.paint["text-halo-width"]) {
         // Original style is something like:
         // text-color: "#999"
@@ -185,13 +185,13 @@ const enableDefaultLayers = () => {
     Object.entries(layerGroupState).forEach(([group, enabled]) => {
         enabled && layerGroups[group].forEach(layer => {
             typeof layer === 'string' &&
-            map.setLayoutProperty(layer, 'visibility', 'visible');
+                map.setLayoutProperty(layer, 'visibility', 'visible');
         });
     })
 }
 
 
-const addLayer = (layer, visibility='none') => {
+const addLayer = (layer, visibility = 'none') => {
     const layout = layer.layout || {}
     layout.visibility = visibility
     map.addLayer({ layout, ...layer })
@@ -206,7 +206,7 @@ map.on('load', () => {
         'source': {
             'type': 'raster',
             'tiles': [
-            'https://maps.terramonitor.com/9c2040ec0fb91cfdfd723496515d759a77b363ee/pro/wms?bbox={bbox-epsg-3857}&format=image/jpeg&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=rgb&styles=',
+                'https://maps.terramonitor.com/9c2040ec0fb91cfdfd723496515d759a77b363ee/pro/wms?bbox={bbox-epsg-3857}&format=image/jpeg&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=rgb&styles=',
             ],
             'tileSize': 256,
             // "maxzoom": 16, // After zoom level 16 the images (used to) get blurrier
@@ -233,12 +233,12 @@ map.on('load', () => {
         'type': 'fill',
         'paint': {
             'fill-color': [
-            'interpolate',
-            ['linear'],
-            ['get', 'age'],
-            0, 'rgb(218,248,85)', // green
-            70, 'rgb(252,113,34)', // orange
-            100, 'rgb(245,17,72)', // red
+                'interpolate',
+                ['linear'],
+                ['get', 'age'],
+                0, 'rgb(218,248,85)', // green
+                70, 'rgb(252,113,34)', // orange
+                100, 'rgb(245,17,72)', // red
             ],
             'fill-opacity': 0.9
         },
@@ -477,13 +477,13 @@ map.on('load', () => {
         // 'filter': ['==', 'isState', true],
         'paint': {
             'fill-color': [
-            'interpolate',
-            ['linear'],
-            ['get', 'fertilityclass'],
-            1, 'rgb(245,17,72)', // red
-            4, 'rgb(252,113,34)', // orange
-            // 8, 'rgb(218,248,85)',
-            6, 'rgb(218,248,85)', // green
+                'interpolate',
+                ['linear'],
+                ['get', 'fertilityclass'],
+                1, 'rgb(245,17,72)', // red
+                4, 'rgb(252,113,34)', // orange
+                // 8, 'rgb(218,248,85)',
+                6, 'rgb(218,248,85)', // green
             ],
             // 'fill-outline-color': [
             //     'interpolate',
@@ -503,6 +503,7 @@ map.on('load', () => {
         'source-layer': 'stand',
         'type': 'line',
         "minzoom": 11,
+        // 'maxzoom': zoomThreshold,
         'paint': {
             'line-opacity': 0.75,
         }
@@ -532,7 +533,7 @@ map.on('load', () => {
     })
 
 
-    const no2Tileset = Number.parseInt( window.location.search.substring(1) ) || 0
+    const no2Tileset = Number.parseInt(window.location.search.substring(1)) || 0
     const timestampHour = Math.round(+new Date() / 1e6)
     map.addSource('no2-tiles', {
         "type": "raster",
@@ -556,7 +557,7 @@ map.on('load', () => {
         'source': {
             'type': 'raster',
             'tiles': [
-            'https://gis.unep-wcmc.org/arcgis/services/marine/GMW_001_MangroveDistribition_2010/MapServer/WMSServer?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=0&styles=default',
+                'https://gis.unep-wcmc.org/arcgis/services/marine/GMW_001_MangroveDistribition_2010/MapServer/WMSServer?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=0&styles=default',
             ],
             'tileSize': 256,
             // Creative Commons Attribution 4.0 Unported (CC BY 4.0)
@@ -567,7 +568,7 @@ map.on('load', () => {
     })
 
 
-    const zonationVersions = [1,2,3,4,5,6]
+    const zonationVersions = [1, 2, 3, 4, 5, 6]
     zonationVersions.map(v => {
         const sourceName = `zonation-v${v}`
         const id = `${sourceName}-raster`
@@ -601,7 +602,7 @@ map.on('load', () => {
     // Ensure all symbol layers appear on top of satellite imagery.
     map.getStyle().layers.filter(x => x.type === 'symbol').forEach(layer => {
         // Rework Stadia default style to look nicer on top of satellite imagery
-        layerOriginalPaint[layer.id] = {...layer.paint}
+        layerOriginalPaint[layer.id] = { ...layer.paint }
         invertLayerTextHalo(layer)
         map.removeLayer(layer.id)
         map.addLayer(layer)
@@ -627,11 +628,11 @@ privateDatasets.valio = (map, secret) => {
         'type': 'fill',
         'paint': {
             'fill-color': [
-            'interpolate',
-            ['linear'],
-            ['to-number', ['get', 'histosol_ratio'], 0],
-            0, 'yellow',
-            1, 'red',
+                'interpolate',
+                ['linear'],
+                ['to-number', ['get', 'histosol_ratio'], 0],
+                0, 'yellow',
+                1, 'red',
             ],
         }
     })
@@ -671,8 +672,8 @@ privateDatasets.valio = (map, secret) => {
                         "concat",
                         tonsPerYear,
                         "t CO2e/y",
-                        "\npeat:", ["/",["round",['*', 0.001, ['to-number',["get", "histosol_area"],0]]],10],
-                        "ha\ntotal:", ["/",["round",['*', 0.001, ["get", "total_area"]]],10],"ha",
+                        "\npeat:", ["/", ["round", ['*', 0.001, ['to-number', ["get", "histosol_area"], 0]]], 10],
+                        "ha\ntotal:", ["/", ["round", ['*', 0.001, ["get", "total_area"]]], 10], "ha",
                     ], "",
                 ],
             ],
@@ -681,7 +682,7 @@ privateDatasets.valio = (map, secret) => {
 };
 
 
-window.enablePrivateDatasets = (secrets=[]) => {
+window.enablePrivateDatasets = (secrets = []) => {
     if (secrets.length === 0) return;
     map.on('load', () => {
         secrets.forEach(secret => {
@@ -697,7 +698,7 @@ window.enablePrivateDatasets = (secrets=[]) => {
 
 let reqCounter = 0
 let lastRequestSeen = 0
-window.setNO2 = function(currentRequestNum, e, lat, lon) {
+window.setNO2 = function (currentRequestNum, e, lat, lon) {
     const elem = document.getElementById('no2')
     if (!layerGroupState['no2-raster'] || !currentRequestNum) {
         elem.innerHTML = ''
@@ -715,7 +716,7 @@ window.setNO2 = function(currentRequestNum, e, lat, lon) {
         elem.innerHTML = `NO2: ${e.error}${coords}`
     } else {
         const n = e.no2_concentration
-        elem.innerHTML = `NO2: ${(n*1e6).toFixed(1)} µmol/m<sup>2</sup>${coords}`
+        elem.innerHTML = `NO2: ${(n * 1e6).toFixed(1)} µmol/m<sup>2</sup>${coords}`
     }
 }
 
@@ -728,9 +729,9 @@ const updateNO2Reading = function (e) {
     const url = `https://map.buttonprogram.org/query_no2?latitude=${lat}&longitude=${lon}&v=9`
     const currentRequestNum = ++reqCounter
     fetch(url)
-    .then(function(response) {
-        response.json().then(e => window.setNO2(currentRequestNum, e, lat, lon))
-    })
+        .then(function (response) {
+            response.json().then(e => window.setNO2(currentRequestNum, e, lat, lon))
+        })
 
     // console.log(e.point.x, e.point.y, e.lngLat.lat, e.lngLat.lng)
     // var features = map.queryRenderedFeatures(e.point);
