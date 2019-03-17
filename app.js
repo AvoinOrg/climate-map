@@ -17,6 +17,13 @@ map.on('error', (e) => {
 
 map.addControl(new mapboxgl.NavigationControl());
 
+map.addControl(new mapboxgl.GeolocateControl({
+    positionOptions: {
+        enableHighAccuracy: true,
+    },
+    trackUserLocation: true,
+}));
+
 
 const backgroundLayerGroups = { 'terramonitor': true }
 const layerGroupState = {
