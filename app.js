@@ -88,6 +88,7 @@ const layerGroups = {
         ...Object.keys(natura2000_mappings).map(x => `${x}-sym`),
     ],
     'mavi-fields': ['mavi-plohko-fill', 'mavi-plohko-outline'],
+    'helsinki-buildings': ['helsinki-buildings-fill', 'helsinki-buildings-outline'],
 };
 
 const toggleGroup = (group, forcedState=undefined) => {
@@ -376,6 +377,34 @@ map.on('load', () => {
         'id': 'mavi-plohko-outline',
         'source': 'mavi-peltolohko',
         'source-layer': 'plohko_cd_2017B_2_MapInfo',
+        'type': 'line',
+        "minzoom": 11,
+        'paint': {
+            'line-opacity': 0.75,
+        }
+    })
+
+
+    map.addSource('helsinki-buildings', {
+        "type": "vector",
+        "tiles": ["https://map.buttonprogram.org/helsinki-buildings/{z}/{x}/{y}.pbf"],
+        "maxzoom": 14,
+        attribution: '<a href="https://www.hel.fi">© City of Helsinki</a>',
+    });
+    addLayer({
+        'id': 'helsinki-buildings-fill',
+        'source': 'helsinki-buildings',
+        'source-layer': 'Rakennukset_alue',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'cyan',
+            'fill-opacity': 0.65,
+        }
+    })
+    addLayer({
+        'id': 'helsinki-buildings-outline',
+        'source': 'helsinki-buildings',
+        'source-layer': 'Rakennukset_alue',
         'type': 'line',
         "minzoom": 11,
         'paint': {
