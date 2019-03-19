@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "parcel index.html",
-    "build": "rm -rf dist/ && parcel build index.html && cp -a favicon/* dist/favicon/",
+    "build": "rm -rf dist/ && parcel build index.html && cp -a favicon/* dist/favicon/ && cp og-image.jpg dist/",
     "favicon": "real-favicon generate faviconDescription.json faviconData.json favicon/"
   },
   "devDependencies": {
