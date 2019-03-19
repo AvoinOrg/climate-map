@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "parcel index.html",
-    "build": "parcel build index.html"
+    "build": "rm -rf dist/ && parcel build index.html && cp -a favicon/* dist/favicon/",
+    "favicon": "real-favicon generate faviconDescription.json faviconData.json favicon/"
   },
   "devDependencies": {
     "parcel-bundler": "^1.12.1"
@@ -14,6 +15,7 @@
   "dependencies": {
     "autoprefixer": "^9.4.10",
     "babel-polyfill": "^6.26.0",
+    "cli-real-favicon": "^0.0.7",
     "js-sha256": "^0.9.0",
     "postcss-preset-env": "^6.6.0",
     "whatwg-fetch": "^3.0.0"
