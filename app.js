@@ -239,7 +239,7 @@ map.on('load', () => {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/metsaan-hila/{z}/{x}/{y}.pbf"],
         "maxzoom": 15,
-        bounds: [20.6455928891, 59.846373196, 31.5160921567, 70.1641930203], // Finland
+        bounds: [19, 59, 32, 71], // Finland
         attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
     });
     addLayer({
@@ -290,7 +290,7 @@ map.on('load', () => {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/natura2000/{z}/{x}/{y}.pbf"],
         "maxzoom": 11,
-        bounds: [20.6455928891, 59.846373196, 31.5160921567, 70.1641930203], // Finland
+        bounds: [19, 59, 32, 71], // Finland
         // SYKE applies Creative Commons By 4.0 International license for open datasets.
         attribution: '<a href=https://www.syke.fi/en-US/Open_information">SYKE</a>',
     });
@@ -334,7 +334,7 @@ map.on('load', () => {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/metsaan-ete/{z}/{x}/{y}.pbf"],
         "maxzoom": 12,
-        bounds: [20.6455928891, 59.846373196, 31.5160921567, 70.1641930203], // Finland
+        bounds: [19, 59, 32, 71], // Finland
         attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
     });
     addLayer({
@@ -379,7 +379,7 @@ map.on('load', () => {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/mavi-peltolohko/{z}/{x}/{y}.pbf"],
         "maxzoom": 11,
-        bounds: [20.6455928891, 59.846373196, 31.5160921567, 70.1641930203], // Finland
+        bounds: [19, 59, 32, 71], // Finland
         attribution: '<a href="https://www.ruokavirasto.fi/">© Finnish Food Authority</a>',
     });
     addLayer({
@@ -440,7 +440,7 @@ map.on('load', () => {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/peltolohko/histosol_plohko/{z}/{x}/{y}.pbf"],
         "maxzoom": 11,
-        bounds: [20.6455928891, 59.846373196, 31.5160921567, 70.1641930203], // Finland
+        bounds: [19, 59, 32, 71], // Finland
         attribution: '<a href="https://www.ruokavirasto.fi/">© Finnish Food Authority</a>',
     });
     addLayer({
@@ -489,8 +489,9 @@ map.on('load', () => {
     map.addSource('metsaan-stand', {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/stand2/{z}/{x}/{y}.pbf.gz?v=2"],
+        "minzoom": 12,
         "maxzoom": 13,
-        bounds: [20.6455928891, 59.846373196, 31.5160921567, 70.1641930203], // Finland
+        bounds: [19, 59, 32, 71], // Finland
         attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
     });
     addLayer({
@@ -603,7 +604,7 @@ map.on('load', () => {
             "tiles": [`https://map.buttonprogram.org/suot/zonation/MetZa2018_VMA0${v}/{z}/{x}/{y}.png?v=5`],
             "minzoom": 5,
             "maxzoom": 9,
-            bounds: [20.6455928891, 59.846373196, 31.5160921567, 70.1641930203], // Finland
+            bounds: [19, 59, 32, 71], // Finland
             // Creative Commons 4.0
             // © SYKE Datasources: Finnish Forest Centre, Metsähallitus, Natural Resources Institute Finland, Finnish Environment Institute, National Land Survey of Finland, Hansen/UMD/Google/USGS/NASA
             attribution: '<a href="http://metatieto.ymparisto.fi:8080/geoportal/catalog/search/resource/details.page?uuid=%7B8E4EA3B2-A542-4C39-890C-DD7DED33AAE1%7D">© SYKE Datasources</a>',
@@ -645,7 +646,7 @@ privateDatasets.valio = (map, secret) => {
     map.addSource('valio_fields', {
         "type": "vector",
         "tiles": [`https://map.buttonprogram.org/private/${secret}/valio_fields/{z}/{x}/{y}.pbf`],
-        bounds: [20.6455928891, 59.846373196, 31.5160921567, 70.1641930203], // Finland
+        bounds: [19, 59, 32, 71], // Finland
         "maxzoom": 11,
     });
 
