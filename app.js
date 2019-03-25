@@ -103,7 +103,7 @@ const layerGroups = {
         ...Object.keys(natura2000_mappings).map(x => `${x}-sym`),
     ],
     'mavi-fields': ['mavi-plohko-fill', 'mavi-plohko-outline'],
-    'helsinki-buildings': ['helsinki-buildings-fill', 'helsinki-buildings-outline'],
+    'helsinki-buildings': ['helsinki-buildings-fill', 'helsinki-buildings-outline', 'helsinki-buildings-co2'],
 };
 
 const toggleGroup = (group, forcedState = undefined) => {
@@ -433,6 +433,38 @@ map.on('load', () => {
         'paint': {
             'line-opacity': 0.75,
         }
+    })
+
+    // (60 kWh/m3)  * (0.250 CO2e kg/kWh) -> 15kg/m3
+    addLayer({
+        'id': 'helsinki-buildings-co2',
+        'source': 'helsinki-buildings',
+        'source-layer': 'Rakennukset_alue',
+        'type': 'symbol',
+        "minzoom": 16,
+        'paint': {},
+        "layout": {
+            "symbol-placement": "point",
+            "text-font": ["Open Sans Regular"],
+            "text-size": 20,
+            "text-field": [
+                "case", ["has", "i_raktilav"], [
+                    'let',
+                    "co2", ['*', 15, ['to-number', ["get", "i_raktilav"], 0]], [
+                        'concat', [
+                            // Multiply back by true scale (-3, from kg -> tons) and (-1) from two sig. digits.
+                            '*', ['^', 10, ['+', -4, ['round', ['log10', ['var', 'co2']]]]],
+                            // Round to two significant digits:
+                            ['round', ['/',
+                                ['var', 'co2'],
+                                ['^', 10, ['+', -1, ['round', ['log10', ['var', 'co2']]]]],
+                            ]],
+                        ],
+                        ' t CO2e/y',
+                    ],
+                ], "",
+            ],
+        },
     })
 
 
