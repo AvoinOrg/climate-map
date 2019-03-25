@@ -714,7 +714,7 @@ privateDatasets.valio = (map, secret) => {
                     ["concat", tonsPerYear, "t/y"],
                     ""],
                 15, [
-                    "case", ["has", "total_area"], [
+                    "case", ["has", "histosol_area"], [
                         "concat",
                         tonsPerYear,
                         "t CO2e/y",
