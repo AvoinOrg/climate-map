@@ -80,7 +80,7 @@ const natura2000_mappings = {
 const layerGroups = {
     'peatland-co2': [
         () => hideAllLayersMatchingFilter(x => /privately-owned-forests/.test(x)),
-        'peatland-co2', 'peatland-co2-sym', 'peatland-outline',
+        'peatland-co2', 'peatland-co2-sym', 'peatland-outline', 'metsaan-stand-raster',
     ],
     'valio': [
         () => hideAllLayersMatchingFilter(x => !/valio/.test(x)),
@@ -90,7 +90,7 @@ const layerGroups = {
     'forest-grid': ['metsaan-hila-c', 'metsaan-hila-sym', 'metsaan-hila-outline'],
     'privately-owned-forests': [
         () => hideAllLayersMatchingFilter(x => /peatland-co2/.test(x)),
-        'peatland-co2', 'peatland-outline',
+        'peatland-co2', 'peatland-outline', 'metsaan-stand-raster',
     ],
     'zonation6': ['zonation-v6-raster'],
     'ete': ['metsaan-ete-all-c', 'metsaan-ete-all-outline', 'metsaan-ete-all-sym'],
@@ -556,6 +556,23 @@ map.on('load', () => {
                 ], "",
             ],
         }
+    })
+
+    map.addSource('metsaan-stand-raster', {
+        "type": "raster",
+        'tiles': ['https://map.buttonprogram.org/stand2/{z}/{x}/{y}.png?v=3'],
+        'tileSize': 512,
+        "maxzoom": 12,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
+    });
+
+    addLayer({
+        'id': 'metsaan-stand-raster',
+        'source': 'metsaan-stand-raster',
+        'type': 'raster',
+        'minzoom': 0,
+        'maxzoom': 12,
     })
 
 
