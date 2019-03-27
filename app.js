@@ -229,30 +229,36 @@ const fieldPlotTextField = [
 
     // 0 <= zoom < 15.5:
     [
-        "case", [">=", ["get", "histosol_ratio"], 0.5], [
-            "concat", histosolCalc, " t/y",
-        ], [ // else: non-histosol (histosol_area < 50%)
-            "concat", nonHistosolCalc, " t/y",
-        ],
+        // The data always has this but this seems necessary anyway. Some bug maybe?
+        "case", ["has", "histosol_ratio"], [
+            "case", [">=", ["get", "histosol_ratio"], 0.5], [
+                "concat", histosolCalc, " t/y",
+            ], [ // else: non-histosol (histosol_area < 50%)
+                "concat", nonHistosolCalc, " t/y",
+            ],
+        ], "?",
     ],
 
     // zoom >= 15.5:
     15.5,
     [
-        "case", [">=", ["get", "histosol_ratio"], 0.5], [
-            "concat",
-            histosolCalc,
-            "t CO2e/y",
-            '\nsoil: histosol',
-            // "\npeat:", ["/", ["round", ['*', 0.001, ['to-number', ["get", "histosol_area"], 0]]], 10], 'ha',
-            "\narea: ", ["/", ["round", ['*', 0.001, ["get", "total_area"]]], 10], "ha",
-        ], [ // else: non-histosol (histosol_area < 50%)
-            "concat",
-            nonHistosolCalc,
-            "t CO2e/y",
-            '\nsoil: mineral',
-            "\narea: ", ["/", ["round", ['*', 0.001, ["get", "total_area"]]], 10], "ha",
-        ],
+        // The data always has this but this seems necessary anyway. Some bug maybe?
+        "case", ["has", "histosol_ratio"], [
+            "case", [">=", ["get", "histosol_ratio"], 0.5], [
+                "concat",
+                histosolCalc,
+                "t CO2e/y",
+                '\nsoil: histosol',
+                // "\npeat:", ["/", ["round", ['*', 0.001, ['to-number', ["get", "histosol_area"], 0]]], 10], 'ha',
+                "\narea: ", ["/", ["round", ['*', 0.001, ["get", "total_area"]]], 10], "ha",
+            ], [ // else: non-histosol (histosol_area < 50%)
+                "concat",
+                nonHistosolCalc,
+                "t CO2e/y",
+                '\nsoil: mineral',
+                "\narea: ", ["/", ["round", ['*', 0.001, ["get", "total_area"]]], 10], "ha",
+            ],
+        ], "?",
     ],
 ];
 
