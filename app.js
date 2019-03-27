@@ -762,6 +762,13 @@ window.enablePrivateDatasets = (secrets = []) => {
             console.log('Enabled private dataset:', name)
             addLayerFn(map, secret);
             document.querySelector(`#layer-card-${name}`).removeAttribute('hidden');
+
+            if (name === 'valio') {
+                // Enable the Valio fields and the Biodiversity layers by default only.
+                hideAllLayersMatchingFilter(x => /./.test(x));
+                toggleGroup('valio');
+                toggleGroup('zonation6');
+            }
         })
     })
 }
