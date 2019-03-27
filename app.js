@@ -209,56 +209,50 @@ const roundToSignificantDigits = (n, expr) => [
         'round', [
             '/',
             expr,
-            ['^', 10, ['+', -n+1, ['round', ['log10', expr]]]],
+            ['^', 10, ['+', -n+1, ['floor', ['log10', expr]]]],
         ],
     ],
-    ['^', 10, ['-', n-1, ['round', ['log10', expr]]]],
+    ['^', 10, ['-', n-1, ['floor', ['log10', expr]]]],
 ]
 
 // Ruokavirasto field plots CO2e formulas:
 //
 // histosol: 400t CO2eq/ha/20yrs -> 20t CO2e/ha/y -> 2kg/m2/y
 //
-// non-histosol: 0.6t CO2e/ha/year as an average for the period of 10 years.
-// -> 0.06kg/m2/y
-const histosolCalc = roundToSignificantDigits(2, ['*', 0.002, ['get', 'total_area']]);
-const nonHistosolCalc = roundToSignificantDigits(2, ['*', 0.001 * 0.06, ['get', 'total_area']]);
+// non-histosol: 2.2 CO2e/ha/year as an average for the period of 10 years.
+// -> 0.22kg/m2/y
+const histosolCalc = roundToSignificantDigits(2, ['*', 20 * 1e-4, ['get', 'total_area']]);
+const nonHistosolCalc = roundToSignificantDigits(2, ['*', 2.2 * 1e-4, ['get', 'total_area']]);
 
 const fieldPlotTextField = [
     "step", ["zoom"],
 
     // 0 <= zoom < 15.5:
     [
-        // The data always has this but this seems necessary anyway. Some bug maybe?
-        "case", ["has", "histosol_ratio"], [
-            "case", [">=", ["get", "histosol_ratio"], 0.5], [
-                "concat", histosolCalc, " t/y",
-            ], [ // else: non-histosol (histosol_area < 50%)
-                "concat", nonHistosolCalc, " t/y",
-            ],
-        ], "?",
+        "case", [">=", ["get", "histosol_ratio"], 0.5], [
+            "concat", histosolCalc, " t/y",
+        ], [ // else: non-histosol (histosol_area < 50%)
+            "concat", nonHistosolCalc, " t/y",
+        ],
     ],
 
     // zoom >= 15.5:
     15.5,
     [
-        // The data always has this but this seems necessary anyway. Some bug maybe?
-        "case", ["has", "histosol_ratio"], [
-            "case", [">=", ["get", "histosol_ratio"], 0.5], [
-                "concat",
-                histosolCalc,
-                "t CO2e/y",
-                '\nsoil: histosol',
-                // "\npeat:", ["/", ["round", ['*', 0.001, ['to-number', ["get", "histosol_area"], 0]]], 10], 'ha',
-                "\narea: ", ["/", ["round", ['*', 0.001, ["get", "total_area"]]], 10], "ha",
-            ], [ // else: non-histosol (histosol_area < 50%)
-                "concat",
-                nonHistosolCalc,
-                "t CO2e/y",
-                '\nsoil: mineral',
-                "\narea: ", ["/", ["round", ['*', 0.001, ["get", "total_area"]]], 10], "ha",
-            ],
-        ], "?",
+        "case", [">=", ["get", "histosol_ratio"], 0.5], [
+            "concat",
+            histosolCalc,
+            "t CO2e/y",
+            '\nsoil: histosol',
+            // "\npeat:", ["/", ["round", ['*', 0.001, ['to-number', ["get", "histosol_area"], 0]]], 10], 'ha',
+            "\narea: ", ["/", ["round", ['*', 0.001, ["get", "total_area"]]], 10], "ha",
+        ], [ // else: non-histosol (histosol_area < 50%)
+            "concat",
+            nonHistosolCalc,
+            "t CO2e/y",
+            '\nsoil: mineral',
+            "\narea: ", ["/", ["round", ['*', 0.001, ["get", "total_area"]]], 10], "ha",
+        ],
     ],
 ];
 
@@ -775,8 +769,14 @@ window.enablePrivateDatasets = (secrets = []) => {
                 toggleGroup('valio');
                 toggleGroup('zonation6');
             }
-        })
-    })
+        });
+
+        // Ensure we add the new layers to the general bookkeeping.
+        map.getStyle().layers.filter(x => x.type === 'symbol').forEach(layer => {
+            if (layer.id in layerOriginalPaint) return;
+            layerOriginalPaint[layer.id] = { ...layer.paint }
+        });
+    });
 }
 
 
