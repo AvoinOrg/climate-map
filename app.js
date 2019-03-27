@@ -102,7 +102,7 @@ const layerGroups = {
         ...Object.keys(natura2000_mappings).map(x => x),
         ...Object.keys(natura2000_mappings).map(x => `${x}-sym`),
     ],
-    'mavi-fields': ['mavi-plohko-fill', 'mavi-plohko-outline'],
+    'mavi-fields': ['mavi-plohko-fill', 'mavi-plohko-outline', 'mavi-plohko-co2'],
     'helsinki-buildings': ['helsinki-buildings-fill', 'helsinki-buildings-outline', 'helsinki-buildings-co2'],
 };
 
@@ -204,6 +204,63 @@ const enableDefaultLayers = () => {
         });
     })
 }
+
+
+// NB: By using the '/' operator instead of '*', we get rid of float bugs like 1.2000000000004.
+const roundToSignificantDigits = (n, expr) => [
+    // Multiply back by true scale
+    '/',
+    // Round to two significant digits:
+    [
+        'round', [
+            '/',
+            expr,
+            ['^', 10, ['+', -n+1, ['round', ['log10', expr]]]],
+        ],
+    ],
+    ['^', 10, ['-', n-1, ['round', ['log10', expr]]]],
+]
+
+// Ruokavirasto field plots CO2e formulas:
+//
+// histosol: 400t CO2eq/ha/20yrs -> 20t CO2e/ha/y -> 2kg/m2/y
+//
+// non-histosol: 0.6t CO2e/ha/year as an average for the period of 10 years.
+// -> 0.06kg/m2/y
+const histosolCalc = roundToSignificantDigits(2, ['*', 0.002, ['get', 'total_area']]);
+const nonHistosolCalc = roundToSignificantDigits(2, ['*', 0.001 * 0.06, ['get', 'total_area']]);
+
+const fieldPlotTextField = [
+    "step", ["zoom"],
+
+    // 0 <= zoom < 15.5:
+    [
+        "case", [">=", ["get", "histosol_ratio"], 0.5], [
+            "concat", histosolCalc, " t/y",
+        ], [ // else: non-histosol (histosol_area < 50%)
+            "concat", nonHistosolCalc, " t/y",
+        ],
+    ],
+
+    // zoom >= 15.5:
+    15.5,
+    [
+        "case", [">=", ["get", "histosol_ratio"], 0.5], [
+            "concat",
+            histosolCalc,
+            "t CO2e/y",
+            '\nsoil: histosol',
+            // "\npeat:", ["/", ["round", ['*', 0.001, ['to-number', ["get", "histosol_area"], 0]]], 10], 'ha',
+            "\narea: ", ["/", ["round", ['*', 0.001, ["get", "total_area"]]], 10], "ha",
+        ], [ // else: non-histosol (histosol_area < 50%)
+            "concat",
+            nonHistosolCalc,
+            "t CO2e/y",
+            '\nsoil: mineral',
+            "\narea: ", ["/", ["round", ['*', 0.001, ["get", "total_area"]]], 10], "ha",
+        ],
+    ],
+];
 
 
 const addLayer = (layer, visibility = 'none') => {
@@ -402,6 +459,18 @@ map.on('load', () => {
             'line-opacity': 0.75,
         }
     })
+    addLayer({
+        'id': 'mavi-plohko-co2',
+        'source': 'mavi-peltolohko',
+        'source-layer': 'plohko_cd_2017B_2_MapInfo',
+        'type': 'symbol',
+        minzoom: 12,
+        'paint': {},
+        'layout': {
+            "text-font": ["Open Sans Regular"],
+            'text-field': fieldPlotTextField,
+        }
+    })
 
 
     map.addSource('helsinki-buildings', {
@@ -450,16 +519,10 @@ map.on('load', () => {
             "text-field": [
                 "case", ["has", "i_raktilav"], [
                     'let',
-                    "co2", ['*', 15, ['to-number', ["get", "i_raktilav"], 0]], [
-                        'concat', [
-                            // Multiply back by true scale (-3, from kg -> tons) and (-1) from two sig. digits.
-                            '*', ['^', 10, ['+', -4, ['round', ['log10', ['var', 'co2']]]]],
-                            // Round to two significant digits:
-                            ['round', ['/',
-                                ['var', 'co2'],
-                                ['^', 10, ['+', -1, ['round', ['log10', ['var', 'co2']]]]],
-                            ]],
-                        ],
+                    "co2", ['/', ['*', 15, ['to-number', ["get", "i_raktilav"], 0]], 1000],
+                    [
+                        'concat',
+                        roundToSignificantDigits(2, ['var', 'co2']), // kg -> tons
                         ' t CO2e/y',
                     ],
                 ], "",
@@ -694,7 +757,7 @@ const privateDatasets = {}
 privateDatasets.valio = (map, secret) => {
     map.addSource('valio_fields', {
         "type": "vector",
-        "tiles": [`https://map.buttonprogram.org/private/${secret}/valio_fields/{z}/{x}/{y}.pbf`],
+        "tiles": [`https://map.buttonprogram.org/private/${secret}/valio_fields/{z}/{x}/{y}.pbf?v=3`],
         bounds: [19, 59, 32, 71], // Finland
         "maxzoom": 11,
     });
@@ -724,7 +787,7 @@ privateDatasets.valio = (map, secret) => {
         },
         "minzoom": 11,
     })
-    const tonsPerYear = ["*", 10, ["round", ["*", 0.0002, ["get", "total_area"]]]];
+
     addLayer({
         'id': 'valio-plohko-co2-sym',
         'source': 'valio_fields',
@@ -740,21 +803,7 @@ privateDatasets.valio = (map, secret) => {
             "text-size": 20,
             // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
             // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
-            "text-field": [
-                "step", ["zoom"],
-                ["case", ["has", "total_area"],
-                    ["concat", tonsPerYear, "t/y"],
-                    ""],
-                15, [
-                    "case", ["has", "histosol_area"], [
-                        "concat",
-                        tonsPerYear,
-                        "t CO2e/y",
-                        "\npeat:", ["/", ["round", ['*', 0.001, ['to-number', ["get", "histosol_area"], 0]]], 10],
-                        "ha\ntotal:", ["/", ["round", ['*', 0.001, ["get", "total_area"]]], 10], "ha",
-                    ], "",
-                ],
-            ],
+            "text-field": fieldPlotTextField,
         }
     })
 };
