@@ -78,19 +78,13 @@ const natura2000_mappings = {
 }
 
 const layerGroups = {
-    'peatland-co2': [
-        () => hideAllLayersMatchingFilter(x => /privately-owned-forests/.test(x)),
-        'peatland-co2', 'peatland-co2-sym', 'peatland-outline', 'metsaan-stand-raster',
-    ],
     'valio': [
         () => hideAllLayersMatchingFilter(x => !/valio/.test(x)),
-        'valio-fields-boundary', 'valio-fields-fill', 'valio-plohko-co2-sym',
+        'valio-fields-boundary', 'valio-fields-fill', 'valio-plohko-co2',
     ],
-    'histosol-field-co2': ['histosol-plohko-fill', 'histosol-plohko-co2-sym', 'histosol-plohko-outline'],
     'forest-grid': ['metsaan-hila-c', 'metsaan-hila-sym', 'metsaan-hila-outline'],
     'privately-owned-forests': [
-        () => hideAllLayersMatchingFilter(x => /peatland-co2/.test(x)),
-        'peatland-co2', 'peatland-outline', 'metsaan-stand-raster',
+        'metsaan-stand-fill', 'metsaan-stand-co2', 'metsaan-stand-outline', 'metsaan-stand-raster',
     ],
     'zonation6': ['zonation-v6-raster'],
     'ete': ['metsaan-ete-all-c', 'metsaan-ete-all-outline', 'metsaan-ete-all-sym'],
@@ -531,56 +525,6 @@ map.on('load', () => {
     })
 
 
-    map.addSource('histosol_plohko', {
-        "type": "vector",
-        "tiles": ["https://map.buttonprogram.org/peltolohko/histosol_plohko/{z}/{x}/{y}.pbf"],
-        "maxzoom": 11,
-        bounds: [19, 59, 32, 71], // Finland
-        attribution: '<a href="https://www.ruokavirasto.fi/">© Finnish Food Authority</a>',
-    });
-    addLayer({
-        'id': 'histosol-plohko-fill',
-        'source': 'histosol_plohko',
-        'source-layer': 'suopellot',
-        'type': 'fill',
-        'paint': {
-            'fill-color': 'red',
-            'fill-opacity': 1
-        }
-    })
-    addLayer({
-        'id': 'histosol-plohko-outline',
-        'source': 'histosol_plohko',
-        'source-layer': 'suopellot',
-        'type': 'line',
-        "minzoom": 11,
-        'paint': {
-            'line-opacity': 0.75,
-        }
-    })
-    addLayer({
-        'id': 'histosol-plohko-co2-sym',
-        'source': 'histosol_plohko',
-        'source-layer': 'suopellot',
-        'type': 'symbol',
-        "minzoom": 12,
-        // 'maxzoom': zoomThreshold,
-        "paint": {},
-        "layout": {
-            "symbol-placement": "point",
-            "text-font": ["Open Sans Regular"],
-            "text-size": 20,
-            // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
-            // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
-            "text-field": [
-                "concat",
-                ["*", 10, ["round", ["*", 0.0002, ["get", "total_area"]]]],
-                "t CO2e/y",
-            ],
-        }
-    })
-
-
     map.addSource('metsaan-stand', {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/stand2/{z}/{x}/{y}.pbf.gz?v=2"],
@@ -590,7 +534,7 @@ map.on('load', () => {
         attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
     });
     addLayer({
-        'id': 'peatland-co2',
+        'id': 'metsaan-stand-fill',
         'source': 'metsaan-stand',
         'source-layer': 'stand',
         // 'maxzoom': zoomThreshold,
@@ -619,7 +563,7 @@ map.on('load', () => {
         },
     })
     addLayer({
-        'id': 'peatland-outline',
+        'id': 'metsaan-stand-outline',
         'source': 'metsaan-stand',
         'source-layer': 'stand',
         'type': 'line',
@@ -630,11 +574,11 @@ map.on('load', () => {
         }
     })
     addLayer({
-        'id': 'peatland-co2-sym',
+        'id': 'metsaan-stand-co2',
         'source': 'metsaan-stand',
         'source-layer': 'stand',
         'type': 'symbol',
-        "minzoom": 12,
+        "minzoom": 15.5,
         // 'maxzoom': zoomThreshold,
         "paint": {},
         "layout": {
@@ -736,7 +680,7 @@ map.on('load', () => {
 
     map.setPaintProperty('no2-raster', 'raster-opacity', 0.7);
     // map.setPaintProperty('terramonitor', 'raster-opacity', 0.6)
-    // map.setPaintProperty('peatland-co2', 'opacity', 0.6)
+    // map.setPaintProperty('metsaan-stand', 'opacity', 0.6)
 
 
     // Ensure all symbol layers appear on top of satellite imagery.
@@ -789,7 +733,7 @@ privateDatasets.valio = (map, secret) => {
     })
 
     addLayer({
-        'id': 'valio-plohko-co2-sym',
+        'id': 'valio-plohko-co2',
         'source': 'valio_fields',
         'source-layer': 'valio_fields',
         // 'source-layer': 'suopellot',
