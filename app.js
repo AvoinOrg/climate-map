@@ -268,16 +268,16 @@ const areaCO2eFillColorInterp = expr => [
     'interpolate',
     ['linear'],
     expr,
-    0, 'yellow',
-    2, 'orange',
-    5, 'red',
+    0, 'rgba(255, 255, 0, 0.65)',
+    2, 'rgba(255, 165, 0, 0.55)',
+    5, 'rgba(235, 0, 0, 0.65)',
 ];
 const areaCO2eFillColorStep = expr => [
     'step',
     expr,
-    'yellow',
-    2, 'orange',
-    5, 'red',
+    'rgba(255, 255, 0, 0.65)',
+    2, 'rgba(255, 165, 0, 0.5)',
+    5, 'rgba(235, 0, 0, 0.65)',
 ];
 const areaCO2eFillColor = areaCO2eFillColorInterp;
 
@@ -467,7 +467,7 @@ map.on('load', () => {
         'paint': {
             // 'fill-color': '#FFC300',
             'fill-color': areaCO2eFillColor(fieldPlotCO2ePerHectare),
-            'fill-opacity': fillOpacity,
+            // 'fill-opacity': fillOpacity, // Set by fill-color rgba
         }
     })
     addLayer({
@@ -600,7 +600,7 @@ map.on('load', () => {
             //     // 8, 'rgb(218,248,85)',
             //     9, 'rgb(0, 77, 153)',
             // ],
-            'fill-opacity': fillOpacity,
+            // 'fill-opacity': fillOpacity, // Set by fill-color rgba
         },
     })
     addLayer({
@@ -754,7 +754,7 @@ privateDatasets.valio = (map, secret) => {
         'type': 'fill',
         'paint': {
             'fill-color': areaCO2eFillColor(fieldPlotCO2ePerHectare),
-            'fill-opacity': fillOpacity,
+            // 'fill-opacity': fillOpacity, // Set by fill-color rgba
         },
     })
     addLayer({
