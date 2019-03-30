@@ -4,12 +4,12 @@ body {
 
     /* https://tachyons.io/docs/typography/font-family/ */
     font-family: -apple-system, BlinkMacSystemFont,
-                 'avenir next', avenir,
-                 'helvetica neue', helvetica,
-                 ubuntu,
-                 roboto, noto,
-                 'segoe ui', arial,
-                 sans-serif;
+    'avenir next', avenir,
+    'helvetica neue', helvetica,
+    ubuntu,
+    roboto, noto,
+    'segoe ui', arial,
+    sans-serif;
 }
 
 #map {
@@ -172,4 +172,51 @@ body {
     position: absolute;
     top:65px;
     right: 60px;
+}
+
+
+#legend-co2e {
+    top: 20px;
+    left:160px;
+    position: absolute;
+    padding: 5px;
+    background: white;
+    box-shadow: 0 0 10px 2px rgba(0,0,0,0.1);
+}
+#legend-co2e .legend-title {
+    text-align: left;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 90%;
+}
+#legend-co2e .legend-scale ul {
+    margin: 0;
+    padding: 0;
+    float: left;
+    list-style: none;
+    width: 100%;
+}
+#legend-co2e .legend-scale ul li {
+    display: block;
+    float: left;
+    width: 33%; /* fallback */
+    width: calc(100% / 3);
+    margin-bottom: 6px;
+    text-align: center;
+    font-size: 80%;
+    list-style: none;
+}
+#legend-co2e ul.legend-labels li span {
+    display: block;
+    float: left;
+    height: 15px;
+    width: 100%;
+}
+#legend-co2e .legend-source {
+    font-size: 70%;
+    color: #999;
+    clear: both;
+}
+#legend-co2e a {
+    color: #777;
 }
