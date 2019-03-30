@@ -224,6 +224,11 @@ const roundToSignificantDigits = (n, expr) => [
 const histosolCalc = roundToSignificantDigits(2, ['*', 20 * 1e-4, ['get', 'total_area']]);
 const nonHistosolCalc = roundToSignificantDigits(2, ['*', 2.2 * 1e-4, ['get', 'total_area']]);
 
+// Unit: tons of CO2e per hectare per annum.
+const fieldPlotCO2ePerHectare = [
+    "case", [">=", ["get", "histosol_ratio"], 0.5], 20, 2.2,
+];
+
 const fieldPlotTextField = [
     "step", ["zoom"],
 
@@ -255,6 +260,27 @@ const fieldPlotTextField = [
         ],
     ],
 ];
+
+
+const fillOpacity = 0.65;
+
+const areaCO2eFillColorInterp = expr => [
+    'interpolate',
+    ['linear'],
+    expr,
+    0, 'yellow',
+    2, 'orange',
+    5, 'red',
+];
+const areaCO2eFillColorStep = expr => [
+    'step',
+    expr,
+    'yellow',
+    2, 'orange',
+    5, 'red',
+];
+const areaCO2eFillColor = areaCO2eFillColorInterp;
+
 
 
 const addLayer = (layer, visibility = 'none') => {
@@ -307,7 +333,7 @@ map.on('load', () => {
                 70, 'rgb(252,113,34)', // orange
                 100, 'rgb(245,17,72)', // red
             ],
-            'fill-opacity': 0.9
+            'fill-opacity': fillOpacity,
         },
     })
     addLayer({
@@ -395,7 +421,7 @@ map.on('load', () => {
         'type': 'fill',
         'paint': {
             'fill-color': 'cyan',
-            'fill-opacity': 0.7,
+            'fill-opacity': fillOpacity,
         },
     })
     addLayer({
@@ -439,8 +465,9 @@ map.on('load', () => {
         'source-layer': 'plohko_cd_2017B_2_MapInfo',
         'type': 'fill',
         'paint': {
-            'fill-color': '#FFC300',
-            'fill-opacity': 0.65,
+            // 'fill-color': '#FFC300',
+            'fill-color': areaCO2eFillColor(fieldPlotCO2ePerHectare),
+            'fill-opacity': fillOpacity,
         }
     })
     addLayer({
@@ -484,7 +511,7 @@ map.on('load', () => {
         'type': 'fill',
         'paint': {
             'fill-color': 'cyan',
-            'fill-opacity': 0.65,
+            'fill-opacity': fillOpacity,
         }
     })
     addLayer({
@@ -541,15 +568,29 @@ map.on('load', () => {
         'type': 'fill',
         // 'filter': ['==', 'isState', true],
         'paint': {
-            'fill-color': [
-                'interpolate',
-                ['linear'],
-                ['get', 'fertilityclass'],
-                1, 'rgb(245,17,72)', // red
-                4, 'rgb(252,113,34)', // orange
-                // 8, 'rgb(218,248,85)',
-                6, 'rgb(218,248,85)', // green
-            ],
+            'fill-color': areaCO2eFillColor([
+                'case',
+                ['has', 'co2'],
+                [
+                    'let',
+                    'co2', ['to-number', ['get', 'co2'], 0],
+                    'area', ['*', 1e-4, ['to-number', ['get', 'st_area'], 0]],
+                    [
+                        'case', ['==', ['var', 'area'], 0], 0,
+                        ['/', ['var', 'co2'], ['var', 'area']],
+                    ],
+                ],
+                0,
+            ]),
+            // 'fill-color': [
+            //     'interpolate',
+            //     ['linear'],
+            //     ['get', 'fertilityclass'],
+            //     1, 'rgb(245,17,72)', // red
+            //     4, 'rgb(252,113,34)', // orange
+            //     // 8, 'rgb(218,248,85)',
+            //     6, 'rgb(218,248,85)', // green
+            // ],
             // 'fill-outline-color': [
             //     'interpolate',
             //     ['linear'],
@@ -559,7 +600,7 @@ map.on('load', () => {
             //     // 8, 'rgb(218,248,85)',
             //     9, 'rgb(0, 77, 153)',
             // ],
-            'fill-opacity': 0.9
+            'fill-opacity': fillOpacity,
         },
     })
     addLayer({
@@ -712,14 +753,9 @@ privateDatasets.valio = (map, secret) => {
         'source-layer': 'valio_fields',
         'type': 'fill',
         'paint': {
-            'fill-color': [
-                'interpolate',
-                ['linear'],
-                ['to-number', ['get', 'histosol_ratio'], 0],
-                0, 'yellow',
-                1, 'red',
-            ],
-        }
+            'fill-color': areaCO2eFillColor(fieldPlotCO2ePerHectare),
+            'fill-opacity': fillOpacity,
+        },
     })
     addLayer({
         'id': 'valio-fields-boundary',
