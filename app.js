@@ -485,7 +485,7 @@ map.on('load', () => {
         'source': 'mavi-peltolohko',
         'source-layer': 'plohko_cd_2017B_2_MapInfo',
         'type': 'symbol',
-        minzoom: 12,
+        minzoom: 14.5,
         'paint': {},
         'layout': {
             "text-font": ["Open Sans Regular"],
@@ -774,7 +774,7 @@ privateDatasets.valio = (map, secret) => {
         'source-layer': 'valio_fields',
         // 'source-layer': 'suopellot',
         'type': 'symbol',
-        "minzoom": 12,
+        "minzoom": 14.5,
         // 'maxzoom': zoomThreshold,
         "paint": {},
         "layout": {
