@@ -18,7 +18,7 @@ map.on('error', (e) => {
 // Only add the geocoding widget if it's been loaded.
 if (MapboxGeocoder !== undefined) {
     map.addControl(new MapboxGeocoder({
-        accessToken: window.GEOCODING_ACCESS_TOKEN,
+        accessToken: process.env.GEOCODING_ACCESS_TOKEN,
         countries: 'fi',
     }));
 }

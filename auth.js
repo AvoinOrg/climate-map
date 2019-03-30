@@ -85,8 +85,8 @@ const initAuth = function(claims=[]) {
     }
 
     const webAuth = new auth0.WebAuth({
-        domain: window.AUTH0_DOMAIN,
-        clientID: window.AUTH0_CLIENT_ID,
+        domain: process.env.AUTH0_DOMAIN,
+        clientID: process.env.AUTH0_CLIENT_ID,
         responseType: 'token id_token',
         scope: 'openid email',
         redirectUri: window.location.href
