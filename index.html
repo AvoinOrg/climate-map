@@ -89,14 +89,6 @@
         </p>
 
         <div class='layer-card'>
-            <div class='title'>Mangrove forests</div>
-            <div class="onoffswitch">
-                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="mangrove-forests" checked>
-                <label class="onoffswitch-label" for="mangrove-forests"></label>
-            </div>
-        </div>
-
-        <div class='layer-card'>
             <div class='title'>Air pollution indicator NO2</div>
             <div class="onoffswitch">
                 <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="no2-raster">
@@ -125,17 +117,6 @@
             </p>
         </div>
 
-
-        <div class='layer-card'>
-            <div class='title'>Forest Grid Measurements</div>
-            <div class="onoffswitch">
-                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="forest-grid">
-                <label class="onoffswitch-label" for="forest-grid"></label>
-            </div>
-        </div>
-
-
-
         <div class='layer-card'>
             <div class='title'>Forests</div>
             <div class="onoffswitch">
@@ -144,8 +125,23 @@
             </div>
             <p>
                 This layer shows forest resources catalogued by the Finnish Forest Centre.
-                Most forests shown here are privately owned.<br/>
+                Most forests shown here are privately owned.
+                <br/>
                 The data covers around 75% of Finland's forests.
+            </p>
+        </div>
+
+        <div class='layer-card'>
+            <div class='title'>Forest Grid Data (Preview)</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="forest-grid">
+                <label class="onoffswitch-label" for="forest-grid"></label>
+            </div>
+            <p>
+                This is a demonstration of the visualization of the relatively high-resolution grid
+                based data obtained by remote sensing by the Finnish Forest Centre.
+                <br/>
+                The data so far only shows a few select locations.
             </p>
         </div>
 
@@ -229,19 +225,32 @@
 
 
         <div class='layer-card layer-disabled'>
-            <div class='title'>Wetlands</div>
-            <div class="onoffswitch">
-                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="wetlands" disabled>
-                <label class="onoffswitch-label" for="wetlands"></label>
-            </div>
-        </div>
-
-
-        <div class='layer-card layer-disabled'>
             <div class='title'>Pasture fields</div>
             <div class="onoffswitch">
                 <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="pasture-fields" disabled>
                 <label class="onoffswitch-label" for="pasture-fields"></label>
+            </div>
+        </div>
+
+
+        <div class='layer-card'>
+            <div class='title'>Mangrove forests</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="mangrove-forests" checked>
+                <label class="onoffswitch-label" for="mangrove-forests"></label>
+            </div>
+            <p>
+                This layer shows mangrove forests monitored by <a href="https://www.globalmangrovewatch.org/about/">the Global Mangrove Watch</a>.
+                <br/>
+                The data shown here is from 2010.
+            </p>
+        </div>
+
+        <div class='layer-card layer-disabled'>
+            <div class='title'>Wetlands</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="wetlands" disabled>
+                <label class="onoffswitch-label" for="wetlands"></label>
             </div>
         </div>
 
