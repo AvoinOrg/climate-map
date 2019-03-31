@@ -565,46 +565,39 @@ map.on('load', () => {
         bounds: [19, 59, 32, 71], // Finland
         attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
     });
+
+    // TODO: maybe enable this in the future?
+    const fillColorCO2e = areaCO2eFillColor([
+        'case',
+        ['has', 'co2'],
+        [
+            'let',
+            'co2', ['to-number', ['get', 'co2'], 0],
+            'area', ['*', 1e-4, ['to-number', ['get', 'st_area'], 0]],
+            [
+                'case', ['==', ['var', 'area'], 0], 0,
+                ['/', ['var', 'co2'], ['var', 'area']],
+            ],
+        ],
+        0,
+    ]);
+    // The original fill color. Consistent with the raster overview images at the moment.
+    const fillColorFertilityClass = [
+        'interpolate',
+        ['linear'],
+        ['get', 'fertilityclass'],
+        1, 'rgba(245,17,72,0.8)', // red
+        4, 'rgba(252,113,34,0.8)', // orange
+        // 8, 'rgba(218,248,85,0.8)',
+        6, 'rgba(218,248,85,0.8)', // green
+    ];
     addLayer({
         'id': 'metsaan-stand-fill',
         'source': 'metsaan-stand',
         'source-layer': 'stand',
-        // 'maxzoom': zoomThreshold,
         'type': 'fill',
-        // 'filter': ['==', 'isState', true],
         'paint': {
-            'fill-color': areaCO2eFillColor([
-                'case',
-                ['has', 'co2'],
-                [
-                    'let',
-                    'co2', ['to-number', ['get', 'co2'], 0],
-                    'area', ['*', 1e-4, ['to-number', ['get', 'st_area'], 0]],
-                    [
-                        'case', ['==', ['var', 'area'], 0], 0,
-                        ['/', ['var', 'co2'], ['var', 'area']],
-                    ],
-                ],
-                0,
-            ]),
-            // 'fill-color': [
-            //     'interpolate',
-            //     ['linear'],
-            //     ['get', 'fertilityclass'],
-            //     1, 'rgb(245,17,72)', // red
-            //     4, 'rgb(252,113,34)', // orange
-            //     // 8, 'rgb(218,248,85)',
-            //     6, 'rgb(218,248,85)', // green
-            // ],
-            // 'fill-outline-color': [
-            //     'interpolate',
-            //     ['linear'],
-            //     ['get', 'drainagestate'],
-            //     6, 'rgb(89, 122, 155)',
-            //     // 7, 'rgb(252,113,34)',
-            //     // 8, 'rgb(218,248,85)',
-            //     9, 'rgb(0, 77, 153)',
-            // ],
+            'fill-color': fillColorFertilityClass,
             // 'fill-opacity': fillOpacity, // Set by fill-color rgba
         },
     })
@@ -616,7 +609,7 @@ map.on('load', () => {
         "minzoom": 11,
         // 'maxzoom': zoomThreshold,
         'paint': {
-            'line-opacity': 0.75,
+            'line-opacity': 0.5,
         }
     })
     addLayer({
