@@ -98,6 +98,11 @@ const layerGroups = {
     ],
     'mavi-fields': ['mavi-plohko-fill', 'mavi-plohko-outline', 'mavi-plohko-co2'],
     'helsinki-buildings': ['helsinki-buildings-fill', 'helsinki-buildings-outline', 'helsinki-buildings-co2'],
+    'fmi-enfuser-airquality': ['fmi-enfuser-airquality'],
+    'fmi-enfuser-pm2pm5': ['fmi-enfuser-pm2pm5'],
+    'fmi-enfuser-pm10': ['fmi-enfuser-pm10'],
+    'fmi-enfuser-no2': ['fmi-enfuser-no2'],
+    'fmi-enfuser-ozone': ['fmi-enfuser-ozone'],
 };
 
 const toggleGroup = (group, forcedState = undefined) => {
@@ -112,7 +117,7 @@ const toggleGroup = (group, forcedState = undefined) => {
         if (typeof layer === 'function') {
             layer();
         } else {
-            map.setLayoutProperty(layer, 'visibility', newState ? 'visible' : 'none')
+            map.setLayoutProperty(layer, 'visibility', newState ? 'visible' : 'none');
         }
     })
     layerGroupState[group] = newState;
@@ -671,6 +676,9 @@ map.on('load', () => {
         'type': 'raster',
         'minzoom': 0,
         'maxzoom': 10,
+        paint: {
+            'raster-opacity': 0.7,
+        },
     })
 
 
@@ -712,17 +720,44 @@ map.on('load', () => {
             'type': 'raster',
             'minzoom': 0,
             // 'maxzoom': 10,
+            paint: {
+                'raster-opacity': 0.6,
+            },
         })
-        map.setPaintProperty(id, 'raster-opacity', 0.6)
     })
 
 
+    const fmiEnfuserSets = {
+        'airquality': 'index_of_airquality_194',
+        'no2': 'mass_concentration_of_nitrogen_dioxide_in_air_4902',
+        'pm10': 'mass_concentration_of_pm10_ambient_aerosol_in_air_4904',
+        'pm2pm5': 'mass_concentration_of_pm2p5_ambient_aerosol_in_air_4905',
+        'ozone': 'mass_concentration_of_ozone_in_air_4903',
+    }
+
+    for (const key in fmiEnfuserSets) {
+        const sourceName = `fmi-enfuser-${key}`;
+        const varName = fmiEnfuserSets[key];
+        map.addSource(sourceName, {
+            "type": "raster",
+            "tiles": [`https://map.buttonprogram.org/fmi-enfuser/${varName}/{z}/{x}/{y}.png?v=2`],
+            "minzoom": 9,
+            "maxzoom": 13,
+            bounds: [ 24.579, 60.132, 25.200, 60.368 ], // Helsinki (FMI dataset bounds anyway)
+            attribution: '<a href="https://en.ilmatieteenlaitos.fi/environmental-information-fusion-service">© Finnish Meteorological Institute</a>',
+        });
+        addLayer({
+            id: sourceName,
+            'source': sourceName,
+            'type': 'raster',
+            paint: {
+                'raster-opacity': 0.8,
+            },
+        })
+    }
+
+
     enableDefaultLayers();
-
-    map.setPaintProperty('no2-raster', 'raster-opacity', 0.7);
-    // map.setPaintProperty('terramonitor', 'raster-opacity', 0.6)
-    // map.setPaintProperty('metsaan-stand', 'opacity', 0.6)
-
 
     // Ensure all symbol layers appear on top of satellite imagery.
     map.getStyle().layers.filter(x => x.type === 'symbol').forEach(layer => {
