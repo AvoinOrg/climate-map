@@ -699,7 +699,7 @@ map.on('load', () => {
         const id = `${sourceName}-raster`
         map.addSource(sourceName, {
             "type": "raster",
-            "tiles": [`https://map.buttonprogram.org/suot/zonation/MetZa2018_VMA0${v}/{z}/{x}/{y}.png?v=5`],
+            "tiles": [`https://map.buttonprogram.org/suot/zonation/MetZa2018_VMA0${v}/{z}/{x}/{y}.png?v=7`],
             "minzoom": 5,
             "maxzoom": 9,
             bounds: [19, 59, 32, 71], // Finland

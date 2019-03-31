@@ -6,14 +6,10 @@ import numpy as np
 # cmap = plt.get_cmap('viridis')
 # cmap4 = {i:([round(z*255) for z in x]+[255]) if i else [0,0,0,0] for i,x in enumerate(cmap.colors)}
 
-# a fully transparent colormap except for the two entries:
+# a fully transparent colormap except for the one entry.
 cmap4 = dict(enumerate([[0,0,0,0]]*256))
 
-light_green = 191 # '#46ce4d', 'rgb(70, 206, 77)'
-dark_green = 255 # '#17631b', 'rgb(23, 99, 27)'
-
-cmap4[light_green] = 70, 206, 77, 255
-cmap4[dark_green] = 23, 99, 27, 255
+cmap4[255] = 61, 55, 239, 255
 
 #NB: Zonation input files directly correspond to quantiles!
 # np.quantile(r[mask], 0.5) ~= 0.5, etc.
@@ -30,9 +26,7 @@ with rasterio.open(f) as src:
     # r[~mask] = 1e-9
     # encoded = 255 - (255 * np.log(r) / np.log(1e-9)).round().astype(np.uint8)
 
-    encoded = np.where(r < 0.9, 0,
-        np.where(r < 0.95, light_green, dark_green)
-    ).astype(np.uint8)
+    encoded = np.where(r < 0.9, 0, 255).astype(np.uint8)
 
     dst_profile = src.profile.copy()
     dst_profile.update({
