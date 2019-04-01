@@ -849,7 +849,7 @@ map.on('load', () => {
         "minzoom": 0,
         "maxzoom": 12,
         bounds: [19, 59, 32, 71], // Finland
-        attribution: '<a href="https://www.hsy.fi/">© HSY</a>',
+        attribution: '<a href="http://www.gtk.fi/">© Geological Survey of Finland</a>',
     });
     addLayer({
         'id': 'gtk-mp20k-maalajit-fill',
@@ -857,8 +857,7 @@ map.on('load', () => {
         'source-layer': 'mp20k_maalajit',
         'type': 'fill',
         'paint': {
-            'fill-color': 'brown',
-            // areaCO2eFillColor(['*', 1e-3, ['get', 'CO2']]), // The variable CO2 is not documented at all!
+            'fill-color': 'rgb(188, 167, 177)',
             'fill-opacity': fillOpacity,
         },
     })
@@ -867,8 +866,7 @@ map.on('load', () => {
         'source': 'gtk-mp20k-maalajit',
         'source-layer': 'mp20k_maalajit',
         'type': 'line',
-        "minzoom": 11,
-        // 'maxzoom': zoomThreshold,
+        "minzoom": 9,
         'paint': {
             'line-opacity': 0.5,
         }
@@ -878,16 +876,20 @@ map.on('load', () => {
         'source': 'gtk-mp20k-maalajit',
         'source-layer': 'mp20k_maalajit',
         'type': 'symbol',
-        "minzoom": 15.5,
-        // 'maxzoom': zoomThreshold,
+        "minzoom": 14,
         "paint": {},
         "layout": {
             "text-size": 20,
             "symbol-placement": "point",
             "text-font": ["Open Sans Regular"],
-            "text-field": ['concat',
-                'topsoil: ', ['get', 'pintamaalaji'],
-                '\nsubsoil: ', ['get', 'pohjamaalaji'],
+            "text-field": [
+                'case', ['==', ['get', 'pintamaalaji'], ['get', 'pohjamaalaji']],
+                ['get', 'pintamaalaji'],
+                [
+                    'concat',
+                    'topsoil: ', ['get', 'pintamaalaji'],
+                    '\nsubsoil: ', ['get', 'pohjamaalaji'],
+                ],
             ],
         }
     })
