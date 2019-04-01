@@ -238,19 +238,7 @@
 
 
         <div class='layer-card'>
-            <div class='title'>Tropical and Subtropical Peat</div>
-            <div class="onoffswitch">
-                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="cifor-peatdepth">
-                <label class="onoffswitch-label" for="cifor-peatdepth"></label>
-            </div>
-            <p>
-                This layer visualizes tropical peat depth from 0 to 10 metres.
-                <br/>Lighter colors corresponds to deeper peat depths.
-            </p>
-        </div>
-
-        <div class='layer-card'>
-            <div class='title'>Mangrove forests</div>
+            <div class='title'>Tropical Mangrove forests</div>
             <div class="onoffswitch">
                 <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="mangrove-forests" checked>
                 <label class="onoffswitch-label" for="mangrove-forests"></label>
@@ -262,12 +250,31 @@
             </p>
         </div>
 
-        <div class='layer-card layer-disabled'>
-            <div class='title'>Wetlands</div>
+        <div class='layer-card'>
+            <div class='title'>Tropical Peat</div>
             <div class="onoffswitch">
-                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="wetlands" disabled>
-                <label class="onoffswitch-label" for="wetlands"></label>
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="cifor-peatdepth">
+                <label class="onoffswitch-label" for="cifor-peatdepth"></label>
             </div>
+            <p>
+                This layer visualizes tropical and subtropical peat depth from 0 to 10 metres.
+                <br/>
+                Lighter colors corresponds to deeper peat depths.
+            </p>
+        </div>
+
+        <div class='layer-card'>
+            <div class='title'>Tropical Wetlands</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="cifor-wetlands">
+                <label class="onoffswitch-label" for="cifor-wetlands"></label>
+            </div>
+            <p>
+                This layer visualizes tropical and subtropical wetlands.
+                <br/>
+                Different colors correspond to different classes of wetlands, including mangroves, swamps, fens, floodplains and marshes.
+                <!-- TODO add legend -->
+            </p>
         </div>
 
 

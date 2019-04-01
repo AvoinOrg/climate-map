@@ -106,6 +106,7 @@ const layerGroups = {
     'hsy-solar-potential': ['hsy-solar-potential-fill', 'hsy-solar-potential-outline', 'hsy-solar-potential-sym'],
     'gtk-mp20k-maalajit': ['gtk-mp20k-maalajit-fill', 'gtk-mp20k-maalajit-outline', 'gtk-mp20k-maalajit-sym'],
     'cifor-peatdepth': ['cifor-peatdepth-raster'],
+    'cifor-wetlands': ['cifor-wetlands-raster'],
 };
 
 const toggleGroup = (group, forcedState = undefined) => {
@@ -827,15 +828,31 @@ map.on('load', () => {
     map.addSource('cifor-peatdepth', {
         "type": "raster",
         "tiles": ["https://map.buttonprogram.org/cifor/TROP-SUBTROP_PeatDepthV2_2016_CIFOR/{z}/{x}/{y}.png"],
+        bounds: [-180, -60, 180, 40],
         "minzoom": 10,
         "maxzoom": 10,
+        attribution: '<a href="https://www.cifor.org/">© Center for International Forestry Research (CIFOR)</a>',
     });
-
+    map.addSource('cifor-wetlands', {
+        "type": "raster",
+        "tiles": ["https://map.buttonprogram.org/cifor/TROP-SUBTROP_WetlandV2_2016_CIFOR/{z}/{x}/{y}.png"],
+        bounds: [-180, -60, 180, 40],
+        "minzoom": 10,
+        "maxzoom": 10,
+        attribution: '<a href="https://www.cifor.org/">© Center for International Forestry Research (CIFOR)</a>',
+    });
     addLayer({
         'id': 'cifor-peatdepth-raster',
         'source': 'cifor-peatdepth',
         'type': 'raster',
-        'minzoom': 5,
+        paint: {
+            'raster-opacity': 0.7,
+        },
+    })
+    addLayer({
+        'id': 'cifor-wetlands-raster',
+        'source': 'cifor-wetlands',
+        'type': 'raster',
         paint: {
             'raster-opacity': 0.7,
         },
