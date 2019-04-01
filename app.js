@@ -104,6 +104,7 @@ const layerGroups = {
     'fmi-enfuser-no2': ['fmi-enfuser-no2'],
     'fmi-enfuser-ozone': ['fmi-enfuser-ozone'],
     'hsy-solar-potential': ['hsy-solar-potential-fill', 'hsy-solar-potential-outline', 'hsy-solar-potential-sym'],
+    'gtk-mp20k-maalajit': ['gtk-mp20k-maalajit-fill', 'gtk-mp20k-maalajit-outline', 'gtk-mp20k-maalajit-sym'],
 };
 
 const toggleGroup = (group, forcedState = undefined) => {
@@ -821,6 +822,55 @@ map.on('load', () => {
         }
     })
 
+
+    map.addSource('gtk-mp20k-maalajit', {
+        "type": "vector",
+        "tiles": ["https://map.buttonprogram.org/mp20k_maalajit/{z}/{x}/{y}.pbf?v=2"],
+        "minzoom": 0,
+        "maxzoom": 12,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="https://www.hsy.fi/">© HSY</a>',
+    });
+    addLayer({
+        'id': 'gtk-mp20k-maalajit-fill',
+        'source': 'gtk-mp20k-maalajit',
+        'source-layer': 'mp20k_maalajit',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'brown',
+            // areaCO2eFillColor(['*', 1e-3, ['get', 'CO2']]), // The variable CO2 is not documented at all!
+            'fill-opacity': fillOpacity,
+        },
+    })
+    addLayer({
+        'id': 'gtk-mp20k-maalajit-outline',
+        'source': 'gtk-mp20k-maalajit',
+        'source-layer': 'mp20k_maalajit',
+        'type': 'line',
+        "minzoom": 11,
+        // 'maxzoom': zoomThreshold,
+        'paint': {
+            'line-opacity': 0.5,
+        }
+    })
+    addLayer({
+        'id': 'gtk-mp20k-maalajit-sym',
+        'source': 'gtk-mp20k-maalajit',
+        'source-layer': 'mp20k_maalajit',
+        'type': 'symbol',
+        "minzoom": 15.5,
+        // 'maxzoom': zoomThreshold,
+        "paint": {},
+        "layout": {
+            "text-size": 20,
+            "symbol-placement": "point",
+            "text-font": ["Open Sans Regular"],
+            "text-field": ['concat',
+                'topsoil: ', ['get', 'pintamaalaji'],
+                '\nsubsoil: ', ['get', 'pohjamaalaji'],
+            ],
+        }
+    })
 
 
     enableDefaultLayers();
