@@ -827,17 +827,17 @@ map.on('load', () => {
 
     map.addSource('cifor-peatdepth', {
         "type": "raster",
-        "tiles": ["https://map.buttonprogram.org/cifor/TROP-SUBTROP_PeatDepthV2_2016_CIFOR/{z}/{x}/{y}.png"],
+        "tiles": ["https://map.buttonprogram.org/cifor/TROP-SUBTROP_PeatDepthV2_2016_CIFOR/{z}/{x}/{y}.png?v=3"],
         bounds: [-180, -60, 180, 40],
-        "minzoom": 10,
+        "minzoom": 0,
         "maxzoom": 10,
         attribution: '<a href="https://www.cifor.org/">© Center for International Forestry Research (CIFOR)</a>',
     });
     map.addSource('cifor-wetlands', {
         "type": "raster",
-        "tiles": ["https://map.buttonprogram.org/cifor/TROP-SUBTROP_WetlandV2_2016_CIFOR/{z}/{x}/{y}.png"],
+        "tiles": ["https://map.buttonprogram.org/cifor/TROP-SUBTROP_WetlandV2_2016_CIFOR/{z}/{x}/{y}.png?v=3"],
         bounds: [-180, -60, 180, 40],
-        "minzoom": 10,
+        "minzoom": 0,
         "maxzoom": 10,
         attribution: '<a href="https://www.cifor.org/">© Center for International Forestry Research (CIFOR)</a>',
     });

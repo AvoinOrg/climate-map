@@ -220,3 +220,31 @@ body {
 #legend-co2e a {
     color: #777;
 }
+
+
+
+
+#legend-cifor-peatdepth ul {
+    list-style: none;
+}
+#legend-cifor-peatdepth li {
+    display: inline-block;
+}
+#legend-cifor-peatdepth li span {
+    display:inline-block;
+    padding: 5px 5.5px;
+    margin:0;
+}
+
+
+#legend-cifor-wetlands ul {
+    list-style: none;
+}
+#legend-cifor-wetlands li {
+    display: inline-block;
+}
+#legend-cifor-wetlands li span {
+    display:inline-block;
+    padding: 5px 8px;
+    margin: 3px 0;
+}
