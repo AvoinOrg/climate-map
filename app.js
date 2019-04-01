@@ -103,6 +103,7 @@ const layerGroups = {
     'fmi-enfuser-pm10': ['fmi-enfuser-pm10'],
     'fmi-enfuser-no2': ['fmi-enfuser-no2'],
     'fmi-enfuser-ozone': ['fmi-enfuser-ozone'],
+    'waqi': ['waqi-raster'],
     'hsy-solar-potential': ['hsy-solar-potential-fill', 'hsy-solar-potential-outline', 'hsy-solar-potential-sym'],
     'gtk-mp20k-maalajit': ['gtk-mp20k-maalajit-fill', 'gtk-mp20k-maalajit-outline', 'gtk-mp20k-maalajit-sym'],
     'cifor-peatdepth': ['cifor-peatdepth-raster'],
@@ -910,6 +911,32 @@ map.on('load', () => {
             ],
         }
     })
+
+
+    const waqiAqis = [
+        'usepa-aqi',  // Plots markers based on the composite AQI calculated with the US EPA standard.
+        'usepa-pm25', // PM2.5 based AQI - if a station does not have PM2.5 reading, then it is not plotted.
+        'usepa-10',   // Same as above, but for PM10.
+        'usepa-o3',   // Same as above, but for Ozone (based on the 1 hour breakpoints).
+        'usepa-no2',  // Same as above, but for Nitrogen Dioxide.
+        'usepa-so2',  // Same as above, but for Sulfur Dioxide.
+        'usepa-co',   // Same as above, but for Carbon Monoxide.
+        'asean-pm10', // Asean PM10 raw PM10 concentration (explanations).
+    ]
+    const waqiAqi = 'usepa-aqi';
+    map.addSource('waqi', {
+        "type": "raster",
+        "tiles": [`https://tiles.waqi.info/tiles/${waqiAqi}/{z}/{x}/{y}.png?token=${process.env.WAQI_TOKEN}`],
+        attribution: '<a href="https://www.cifor.org/">© The World Air Quality Project</a>',
+    });
+    addLayer({
+        'id': 'waqi-raster',
+        'source': 'waqi',
+        'type': 'raster',
+        paint: {
+            'raster-opacity': 1.0,
+        },
+    });
 
 
     enableDefaultLayers();
