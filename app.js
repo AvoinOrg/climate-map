@@ -108,6 +108,7 @@ const layerGroups = {
     'gtk-mp20k-maalajit': ['gtk-mp20k-maalajit-fill', 'gtk-mp20k-maalajit-outline', 'gtk-mp20k-maalajit-sym'],
     'cifor-peatdepth': ['cifor-peatdepth-raster'],
     'cifor-wetlands': ['cifor-wetlands-raster'],
+    'gfw_tree_plantations': ['gfw_tree_plantations-fill', 'gfw_tree_plantations-outline', 'gfw_tree_plantations-sym'],
 };
 
 const toggleGroup = (group, forcedState = undefined) => {
@@ -291,6 +292,27 @@ const areaCO2eFillColorStep = expr => [
 ];
 const areaCO2eFillColor = areaCO2eFillColorInterp;
 
+
+function getGeoJsonGeometryBounds(coordinates) {
+    if (typeof coordinates[0] === 'number') {
+        const [lon, lat] = coordinates;
+        return [lon, lat, lon, lat];
+    }
+
+    const bounds = [999,999,-999,-999];
+    for (const x of coordinates) {
+        const bounds2 = getGeoJsonGeometryBounds(x)
+        bounds[0] = Math.min(bounds[0], bounds2[0]);
+        bounds[1] = Math.min(bounds[1], bounds2[1]);
+        bounds[2] = Math.max(bounds[2], bounds2[2]);
+        bounds[3] = Math.max(bounds[3], bounds2[3]);
+    }
+    return bounds;
+}
+function getGeoJsonGeometryCenter(coordinates) {
+    const bounds = getGeoJsonGeometryBounds(coordinates);
+    return [ (bounds[0] + bounds[2])/2, (bounds[1] + bounds[3])/2 ];
+}
 
 
 const addLayer = (layer, visibility = 'none') => {
@@ -936,6 +958,98 @@ map.on('load', () => {
         paint: {
             'raster-opacity': 1.0,
         },
+    });
+
+
+    map.addSource('gfw_tree_plantations', {
+        "type": "vector",
+        "tiles": ["https://map.buttonprogram.org/gfw_tree_plantations/{z}/{x}/{y}.pbf"],
+        "minzoom": 0,
+        "maxzoom": 12,
+        attribution: '<a href="https://www.globalforestwatch.org/">© Global Forest Watch</a>',
+    });
+    addLayer({
+        'id': 'gfw_tree_plantations-fill',
+        'source': 'gfw_tree_plantations',
+        'source-layer': 'gfw_plantations',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'rgb(188, 167, 177)',
+            'fill-opacity': fillOpacity,
+        },
+    })
+    addLayer({
+        'id': 'gfw_tree_plantations-outline',
+        'source': 'gfw_tree_plantations',
+        'source-layer': 'gfw_plantations',
+        'type': 'line',
+        "minzoom": 9,
+        'paint': {
+            'line-opacity': 0.5,
+        }
+    })
+    addLayer({
+        'id': 'gfw_tree_plantations-sym',
+        'source': 'gfw_tree_plantations',
+        'source-layer': 'gfw_plantations',
+        'type': 'symbol',
+        "minzoom": 14,
+        "paint": {},
+        "layout": {
+            "text-size": 20,
+            "symbol-placement": "point",
+            "text-font": ["Open Sans Regular"],
+            "text-field": ['get', 'spec3'],
+        }
+    })
+
+    map.on('click', 'gfw_tree_plantations-fill', e => {
+        const f = e.features[0];
+        const coordinates = getGeoJsonGeometryCenter(f.geometry.coordinates);
+        const { image, spec_simp, type_text, area_ha } = f.properties;
+
+        // Ensure that if the map is zoomed out such that multiple
+        // copies of the feature are visible, the popup appears
+        // over the copy being pointed to.
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+
+        const images = image.replace(/\.(tif|img|_)/g, '').toUpperCase().split(/[,; ]+/);
+        let results = '';
+        images.forEach(x => {
+            if (!/LGN\d/.test(x)) return;
+            const base = x.replace(/LGN.*/, 'LGN0');
+            // Most of the source images seem to fall in these categories.
+            const candidates = [0,1,2].map(x => {
+                results += `\n<li><a target="_blank" href="https://earthexplorer.usgs.gov/metadata/12864/${base+x}/">${base+x}</a></li>`;
+            });
+        })
+
+        let html = `
+            ${spec_simp}
+            <br/>
+            ${type_text}
+            <br/>
+            Area:${area_ha.toFixed(1)} hectares
+            <br/>
+            Landsat source ID: <code>${image}</code>
+            <br/>
+        `
+        if (results) html += `Potential Landsat source images: <ul>${results}</ul>`;
+
+        new mapboxgl.Popup()
+        .setLngLat(coordinates)
+        // Upstream X-Frame-Options prevents this iframe trick.
+        // .setHTML(`<iframe sandbox src="https://earthexplorer.usgs.gov/metadata/12864/${image}/"></iframe>`)
+        .setHTML(html)
+        .addTo(map);
+    });
+    map.on('mouseenter', 'gfw_tree_plantations-fill', function () {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', 'gfw_tree_plantations-fill', function () {
+        map.getCanvas().style.cursor = '';
     });
 
 
