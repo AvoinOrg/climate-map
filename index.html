@@ -46,7 +46,7 @@
     <div id='map'></div>
 
     <div id='legend-co2e'>
-        <div class='legend-title'><abbr title='CO2 equivalent'>CO2e</abbr> emission reduction potential</div>
+        <div class='legend-title'><abbr title='CO₂ equivalent'>CO₂e</abbr> emission reduction potential</div>
         <div class='legend-scale'>
             <ul class='legend-labels'>
                 <li><span style='background:rgba(255, 255, 0, 0.65)'></span>0-2 tons</li>
@@ -89,19 +89,19 @@
         </p>
 
         <div class='layer-card'>
-            <div class='title'>Air pollution indicator NO2</div>
+            <div class='title'>Air pollution indicator NO₂</div>
             <div class="onoffswitch">
                 <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="no2-raster">
                 <label class="onoffswitch-label" for="no2-raster"></label>
             </div>
             <p>
-                Burning of fossil fuel creates oir pollutants such as NO2 and small particles.
+                Burning of fossil fuel creates oir pollutants such as NO₂ and small particles.
             </p>
             <strong>Air cleanliness</strong>
             <p>
-                The satellite NO2 data is based on Sentinel 5P measurements and is updated approximately once per 24 hours for any given location.
+                The satellite NO₂ data is based on Sentinel 5P measurements and is updated approximately once per 24 hours for any given location.
 
-                A healthy threshold of NO2 is around 50 umol/m<sup>2</sup>.
+                A healthy threshold of NO₂ is around 50 umol/m<sup>2</sup>.
             </p>
         </div>
 
@@ -361,93 +361,109 @@
 
             <legend class="legend-fmi-enfuser">
                 <ul class='legend-labels'>
-                    <li style="background-color:rgba(253,231,37,0.65)">1.0</li>
-                    <li style="background-color:rgba(173,220,48,0.65)">1.5</li>
-                    <li style="background-color:rgba(96,202,96,0.65)">2.0</li>
-                    <li style="background-color:rgba(42,176,127,0.65)">2.5</li>
-                    <li style="background-color:rgba(32,147,140,0.65)">3.0</li>
-                    <li style="background-color:rgba(42,118,142,0.65)">3.5</li>
-                    <li style="background-color:rgba(56,88,140,0.65)">4.0</li>
-                    <li style="background-color:rgba(70,52,128,0.65)">4.5</li>
-                    <li style="background-color:rgba(70,11,94,0.65)">5.0</li>
-                </ul>
+                    <li style="background-color:rgba(4,192,234,0.65)">1.0</li>
+                    <li style="background-color:rgba(48,155,34,0.65)">1.5</li>
+                    <li style="background-color:rgba(221,193,53,0.65)">2.0</li>
+                    <li style="background-color:rgba(205,110,28,0.65)">2.5</li>
+                    <li style="background-color:rgba(188,25,3,0.65)">3.0</li>
+                    <li style="background-color:rgba(150,19,13,0.65)">3.5</li>
+                    <li style="background-color:rgba(111,13,23,0.65)">4.0</li>
+                    <li style="background-color:rgba(75,8,33,0.65)">4.5</li>
+                    <li style="background-color:rgba(37,2,43,0.65)">5.0</li>
+                    </ul>
             </legend>
         </div>
 
 
         <div class='layer-card'>
-            <div class='title'>NO2</div>
+            <div class='title'>NO₂</div>
             <div class="onoffswitch">
                 <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="fmi-enfuser-no2">
                 <label class="onoffswitch-label" for="fmi-enfuser-no2"></label>
             </div>
             <legend class="legend-fmi-enfuser">
                 <ul class='legend-labels'>
-                    <li style="background-color:rgba(253,231,37,0.65)">0</li>
-                    <li style="background-color:rgba(124,210,80,0.65)">20</li>
-                    <li style="background-color:rgba(36,170,131,0.65)">40</li>
-                    <li style="background-color:rgba(41,123,142,0.65)">60</li>
-                    <li style="background-color:rgba(63,72,137,0.65)">80</li>
-                    <li style="background-color:rgba(70,8,92,0.65)">100</li>
+                    <li style="background-color:rgba(4,192,234,0.65)">0</li>
+                    <li style="background-color:rgba(48,155,34,0.65)">20</li>
+                    <li style="background-color:rgba(221,193,53,0.65)">
+                            <abbr title='40 µg/m³ is the WHO guideline for maximum annual average exposure to NO₂'>40</abbr>
+                            <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
+                    </li>
+                    <li style="background-color:rgba(188,25,3,0.65)">120</li>
+                    <li style="background-color:rgba(37,2,43,0.65)">
+                            <abbr title='200 µg/m³ is the WHO guideline for maximum 1 hour exposure to NO₂'>200+</abbr>
+                            <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
+                    </li>
                     <li>µg/m<sup>3</sup></li>
                 </ul>
             </legend>
         </div>
 
         <div class='layer-card'>
-            <div class='title'>PM2/PM5 Concentration</div>
+            <div class='title'>PM<sub>2.5</sub> Concentration</div>
             <div class="onoffswitch">
                 <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="fmi-enfuser-pm2pm5">
                 <label class="onoffswitch-label" for="fmi-enfuser-pm2pm5"></label>
             </div>
             <legend class="legend-fmi-enfuser">
                 <ul class='legend-labels'>
-                    <li style="background-color:rgba(253,231,37,0.65)">0</li>
-                    <li style="background-color:rgba(137,213,72,0.65)">5</li>
-                    <li style="background-color:rgba(46,179,124,0.65)">10</li>
-                    <li style="background-color:rgba(35,137,142,0.65)">15</li>
-                    <li style="background-color:rgba(53,94,141,0.65)">20</li>
-                    <li style="background-color:rgba(71,42,122,0.65)">25</li>
+                    <li style="background-color:rgba(4,192,234,0.65)">0</li>
+                    <li style="background-color:rgba(48,155,34,0.65)">5</li>
+                    <li style="background-color:rgba(221,193,53,0.65)">
+                            <abbr title='10 µg/m³ is the WHO guideline for maximum annual average exposure to PM2.5'>10</abbr>
+                            <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
+                    </li>
+                    <li style="background-color:rgba(188,25,3,0.65)">
+                            <abbr title='25 µg/m³ is the WHO guideline for maximum 24 hour exposure to PM2.5'>25</abbr>
+                            <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
+                    </li>
+                    <li style="background-color:rgba(37,2,43,0.65)">40+</li>
                     <li>µg/m<sup>3</sup></li>
                 </ul>
             </legend>
         </div>
 
         <div class='layer-card'>
-            <div class='title'>PM10 Concentration</div>
+            <div class='title'>PM<sub>10</sub> Concentration</div>
             <div class="onoffswitch">
                 <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="fmi-enfuser-pm10">
                 <label class="onoffswitch-label" for="fmi-enfuser-pm10"></label>
             </div>
             <legend class="legend-fmi-enfuser">
                 <ul class='legend-labels'>
-                    <li style="background-color:rgba(253,231,37,0.65)">0</li>
-                    <li style="background-color:rgba(149,216,64,0.65)">10</li>
-                    <li style="background-color:rgba(61,188,116,0.65)">20</li>
-                    <li style="background-color:rgba(31,151,139,0.65)">30</li>
-                    <li style="background-color:rgba(44,113,142,0.65)">40</li>
-                    <li style="background-color:rgba(63,72,137,0.65)">50</li>
-                    <li style="background-color:rgba(72,23,105,0.65)">60</li>
+                    <li style="background-color:rgba(4,192,234,0.65)">0</li>
+                    <li style="background-color:rgba(48,155,34,0.65)">10</li>
+                    <li style="background-color:rgba(221,193,53,0.65)">
+                            <abbr title='20 µg/m³ is the WHO guideline for maximum annual average exposure to PM10'>20</abbr>
+                            <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
+                    </li>
+                    <li style="background-color:rgba(188,25,3,0.65)">
+                            <abbr title='50 µg/m³ is the WHO guideline for maximum 24 hour exposure to PM10'>50</abbr>
+                            <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
+                    </li>
+                    <li style="background-color:rgba(37,2,43,0.65)">80+</li>
                     <li>µg/m<sup>3</sup></li>
                 </ul>
             </legend>
         </div>
 
         <div class='layer-card'>
-            <div class='title'>Ozone Concentration</div>
+            <div class='title'>Ozone O<sub>3</sub> Concentration</div>
             <div class="onoffswitch">
                 <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="fmi-enfuser-ozone">
                 <label class="onoffswitch-label" for="fmi-enfuser-ozone"></label>
             </div>
             <legend class="legend-fmi-enfuser">
                 <ul class='legend-labels'>
-                    <li style="background-color:rgba(253,231,37,0.65)">0</li>
-                    <li style="background-color:rgba(144,215,67,0.65)">20</li>
-                    <li style="background-color:rgba(55,184,120,0.65)">40</li>
-                    <li style="background-color:rgba(32,146,140,0.65)">60</li>
-                    <li style="background-color:rgba(48,106,142,0.65)">80</li>
-                    <li style="background-color:rgba(67,61,132,0.65)">100</li>
-                    <li style="background-color:rgba(69,5,89,0.65)">120</li>
+                    <li style="background-color:rgba(4,192,234,0.65)">40</li>
+                    <li style="background-color:rgba(48,155,34,0.65)">80</li>
+                    <li style="background-color:rgba(221,193,53,0.65)">
+                            <abbr title='100 µg/m³ is the WHO guideline for maximum 8 hour average exposure to ozone'>100</abbr>
+                    </li>
+                    <li style="background-color:rgba(188,25,3,0.65)">
+                            <abbr title='Long term target threshold level for the EU'>120</abbr>
+                    </li>
+                    <li style="background-color:rgba(37,2,43,0.65)">140+</li>
                     <li>µg/m<sup>3</sup></li>
                 </ul>
             </legend>
