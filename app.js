@@ -237,7 +237,7 @@ const nonHistosolCalc = roundToSignificantDigits(2, ['*', 2.2 * 1e-4, ['get', 't
 
 // Unit: tons of CO2e per hectare per annum.
 const fieldPlotCO2ePerHectare = [
-    "case", [">=", ["get", "histosol_ratio"], 0.5], 20, 2.2,
+    "case", [">=", ["get", "histosol_ratio"], 0.4], 20, 2.2,
 ];
 
 const fieldPlotTextField = [
@@ -245,7 +245,7 @@ const fieldPlotTextField = [
 
     // 0 <= zoom < 15.5:
     [
-        "case", [">=", ["get", "histosol_ratio"], 0.5], [
+        "case", [">=", ["get", "histosol_ratio"], 0.4], [
             "concat", histosolCalc, " t/y",
         ], [ // else: non-histosol (histosol_area < 50%)
             "concat", nonHistosolCalc, " t/y",
@@ -255,7 +255,7 @@ const fieldPlotTextField = [
     // zoom >= 15.5:
     15.5,
     [
-        "case", [">=", ["get", "histosol_ratio"], 0.5], [
+        "case", [">=", ["get", "histosol_ratio"], 0.4], [
             "concat",
             histosolCalc,
             "t CO2e/y",
