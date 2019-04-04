@@ -175,6 +175,13 @@ body {
 }
 
 
+legend ul {
+    list-style: none;
+}
+legend li {
+    display: inline-block;
+}
+
 #legend-co2e {
     top: 20px;
     left:160px;
@@ -256,5 +263,12 @@ body {
 .legend-fmi-enfuser li {
     display: inline-block;
     padding: 5px 8px;
-    margin: 3px 0;
+}
+
+#legend-snow-cover-loss li span {
+    border: 2px solid black;
+}
+#legend-snow-cover-loss li span {
+    display:inline-block;
+    padding: 5px 8px;
 }

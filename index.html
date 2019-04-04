@@ -107,6 +107,31 @@
 
 
         <div class='layer-card'>
+            <div class='title'>Snow Cover Loss</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="snow_cover_loss" checked>
+                <label class="onoffswitch-label" for="snow_cover_loss"></label>
+            </div>
+            <p>
+                This layer shows the global decrease in the amount of snow over time.
+                Each area shown corresponds to an area that between 1980 and 1990 had at least 10 days of snow on average.
+                This average is contrasted with the average snowfall between 1996 and 2016.
+                <br/>
+                The data comes from FT-ESDR or <a href="http://www.ntsg.umt.edu/freeze-thaw/">Freeze/Thaw Earth System Data Record</a>.
+            </p>
+            <legend id="legend-snow-cover-loss">
+                <ul class='legend-labels'>
+                    <li><span style="background-color:rgba(255,255,255,0.65);">≤ 0</span></li>
+                    <li><span style="background-color:rgba(128,128,128,0.65);">8</span></li>
+                    <li><span style="background-color:rgba(252,113,34,0.65);">15</span></li>
+                    <li><span style="background-color:rgba(245,17,72,0.65);">21</span></li>
+                    <li>days of snow cover lost</li>
+                </ul>
+            </legend>
+        </div>
+
+
+        <div class='layer-card'>
             <div class='title'>Field Plots</div>
             <div class="onoffswitch">
                 <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="mavi-fields" checked>
