@@ -45,20 +45,6 @@
 <body>
     <div id='map'></div>
 
-    <div id='legend-co2e'>
-        <div class='legend-title'><abbr title='CO₂ equivalent'>CO₂e</abbr> emission reduction potential</div>
-        <div class='legend-scale'>
-            <ul class='legend-labels'>
-                <li><span style='background:rgba(255, 255, 0, 0.65)'></span>0-2 tons</li>
-                <li><span style='background:rgba(255, 165, 0, 0.55)'></span>2-5 tons</li>
-                <li><span style='background:rgba(235, 0, 0, 0.65)'></span>5+ tons</li>
-            </ul>
-        </div>
-        <div class='legend-footer'>
-            Values are indicated per hectare per annum over a 10 year period.
-        </div>
-      </div>
-
     <!-- These buttons are toggled on through -->
     <div id='btn-logout' hidden>Logout</div>
     <div id='btn-login' hidden>Login</div>
@@ -132,7 +118,7 @@
 
 
         <div class='layer-card'>
-            <div class='title'>Field Plots</div>
+            <div class='title'>Fields</div>
             <div class="onoffswitch">
                 <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="mavi-fields" checked>
                 <label class="onoffswitch-label" for="mavi-fields"></label>
@@ -140,6 +126,20 @@
             <p>
                 This layer contains all fields from the field plot registry of the Finnish Food Authority as of late 2017.
             </p>
+
+            <legend id='legend-co2e'>
+                <div class='legend-title'><abbr title='CO₂ equivalent'>CO₂e</abbr> emission reduction potential</div>
+                <div class='legend-scale'>
+                    <ul class='legend-labels'>
+                        <li><span style='background:rgba(255, 255, 0, 0.65)'></span>0-2 tons</li>
+                        <li><span style='background:rgba(255, 165, 0, 0.55)'></span>2-5 tons</li>
+                        <li><span style='background:rgba(235, 0, 0, 0.65)'></span>5+ tons</li>
+                    </ul>
+                </div>
+                <div class='legend-footer'>
+                    Values are indicated per hectare per annum over a 10 year period.
+                </div>
+            </legend>
         </div>
 
         <div class='layer-card'>
@@ -177,6 +177,20 @@
                 <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="valio">
                 <label class="onoffswitch-label" for="valio"></label>
             </div>
+
+            <legend id='legend-co2e'>
+                <div class='legend-title'><abbr title='CO₂ equivalent'>CO₂e</abbr> emission reduction potential</div>
+                <div class='legend-scale'>
+                    <ul class='legend-labels'>
+                        <li><span style='background:rgba(255, 255, 0, 0.65)'></span>0-2 tons</li>
+                        <li><span style='background:rgba(255, 165, 0, 0.55)'></span>2-5 tons</li>
+                        <li><span style='background:rgba(235, 0, 0, 0.65)'></span>5+ tons</li>
+                    </ul>
+                </div>
+                <div class='legend-footer'>
+                    Values are indicated per hectare per annum over a 10 year period.
+                </div>
+            </legend>
         </div>
 
         <hr/>
