@@ -183,38 +183,25 @@ legend li {
 }
 
 #legend-co2e .legend-title {
-    text-align: center;
     margin-bottom: 8px;
-    font-weight: bold;
     font-size: 90%;
 }
 #legend-co2e .legend-scale ul {
     margin: 0;
-    padding: 0;
-    float: left;
     list-style: none;
-    width: 100%;
 }
 #legend-co2e .legend-scale ul li {
-    display: block;
-    float: left;
-    width: 33%; /* fallback */
-    width: calc(100% / 3);
+    display: inline-block;
     margin-bottom: 6px;
-    text-align: center;
-    font-size: 80%;
-    list-style: none;
 }
 #legend-co2e ul.legend-labels li span {
-    display: block;
-    float: left;
-    height: 15px;
-    width: 100%;
+    display: inline-block;
+    padding: 5px 8px;
+    border: 1px solid black;
 }
 #legend-co2e .legend-footer {
-    font-size: 70%;
+    font-size: 80%;
     color: #333;
-    clear: both;
 }
 #legend-co2e a {
     color: #777;
