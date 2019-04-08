@@ -1080,7 +1080,11 @@ map.on('load', () => {
         'source-layer': 'gfw_plantations',
         'type': 'fill',
         'paint': {
-            'fill-color': 'rgb(188, 167, 177)',
+            'fill-color': [
+                'case', ['<', 0.4, ['get', 'peat_ratio']],
+                'rgb(109, 41, 7)',
+                'rgb(188, 167, 177)',
+            ],
             'fill-opacity': fillOpacity,
         },
     })
@@ -1112,7 +1116,7 @@ map.on('load', () => {
     map.on('click', 'gfw_tree_plantations-fill', e => {
         const f = e.features[0];
         const coordinates = getGeoJsonGeometryCenter(f.geometry.coordinates);
-        const { image, spec_simp, type_text, area_ha } = f.properties;
+        const { image, spec_simp, type_text, area_ha, peat_ratio, avg_peatdepth } = f.properties;
 
         // Ensure that if the map is zoomed out such that multiple
         // copies of the feature are visible, the popup appears
@@ -1132,11 +1136,14 @@ map.on('load', () => {
             });
         })
 
+        const peatInfo = peat_ratio < 0.4 ? '' : `<strong>Tropical peatland</strong><br/>\nAverage peat depth: ${avg_peatdepth.toFixed(1)} metres<br/>`;
+
         let html = `
             ${spec_simp}
             <br/>
             ${type_text}
             <br/>
+            ${peatInfo}
             Area:${area_ha.toFixed(1)} hectares
             <br/>
             Landsat source ID: <code>${image}</code>
