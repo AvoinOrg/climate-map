@@ -316,10 +316,18 @@ function getGeoJsonGeometryCenter(coordinates) {
 }
 
 
+const originalLayerDefs = {};
 const addLayer = (layer, visibility = 'none') => {
     const layout = layer.layout || {}
     layout.visibility = visibility
-    map.addLayer({ layout, ...layer })
+    map.addLayer({ layout, ...layer });
+    originalLayerDefs[layer.id] = layer;
+}
+
+const originalSourceDefs = {}
+const addSource = (name, source) => {
+    map.addSource(name, source);
+    originalSourceDefs[name] = source;
 }
 
 map.on('load', () => {
@@ -345,7 +353,7 @@ map.on('load', () => {
     map.getStyle().layers.forEach(x => originalMapLayerIds[x.id] = true)
 
 
-    map.addSource('metsaan-hila', {
+    addSource('metsaan-hila', {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/metsaan-hila/{z}/{x}/{y}.pbf"],
         "maxzoom": 15,
@@ -396,7 +404,7 @@ map.on('load', () => {
     })
 
 
-    map.addSource('natura2000', {
+    addSource('natura2000', {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/natura2000/{z}/{x}/{y}.pbf"],
         "maxzoom": 11,
@@ -440,7 +448,7 @@ map.on('load', () => {
     })
 
 
-    map.addSource('metsaan-ete', {
+    addSource('metsaan-ete', {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/metsaan-ete/{z}/{x}/{y}.pbf"],
         "maxzoom": 12,
@@ -485,7 +493,7 @@ map.on('load', () => {
     })
 
 
-    map.addSource('mavi-peltolohko', {
+    addSource('mavi-peltolohko', {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/mavi-peltolohko/{z}/{x}/{y}.pbf"],
         "maxzoom": 11,
@@ -527,7 +535,7 @@ map.on('load', () => {
     })
 
 
-    map.addSource('helsinki-buildings', {
+    addSource('helsinki-buildings', {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/helsinki-buildings/{z}/{x}/{y}.pbf"],
         "maxzoom": 14,
@@ -585,7 +593,7 @@ map.on('load', () => {
     })
 
 
-    map.addSource('metsaan-stand', {
+    addSource('metsaan-stand', {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/stand2/{z}/{x}/{y}.pbf.gz?v=2"],
         "minzoom": 12,
@@ -664,7 +672,7 @@ map.on('load', () => {
         }
     })
 
-    map.addSource('metsaan-stand-raster', {
+    addSource('metsaan-stand-raster', {
         "type": "raster",
         'tiles': ['https://map.buttonprogram.org/stand2/{z}/{x}/{y}.png?v=3'],
         'tileSize': 512,
@@ -682,9 +690,10 @@ map.on('load', () => {
     })
 
 
+
     const no2Tileset = Number.parseInt(window.location.search.substring(1)) || 0
     const timestampHour = Math.round(+new Date() / 1e6)
-    map.addSource('no2-tiles', {
+    addSource('no2-tiles', {
         "type": "raster",
         "tiles": ["https://map.buttonprogram.org/atmoshack/mbtiles-dump/" + no2Tileset + "/{z}/{x}/{y}.png?v=5&_=" + timestampHour],
         "maxzoom": 5,
@@ -725,7 +734,7 @@ map.on('load', () => {
     zonationVersions.map(v => {
         const sourceName = `zonation-v${v}`
         const id = `${sourceName}-raster`
-        map.addSource(sourceName, {
+        addSource(sourceName, {
             "type": "raster",
             "tiles": [`https://map.buttonprogram.org/suot/zonation/MetZa2018_VMA0${v}/{z}/{x}/{y}.png?v=7`],
             "minzoom": 5,
@@ -759,7 +768,7 @@ map.on('load', () => {
     for (const key in fmiEnfuserSets) {
         const sourceName = `fmi-enfuser-${key}`;
         const varName = fmiEnfuserSets[key];
-        map.addSource(sourceName, {
+        addSource(sourceName, {
             "type": "raster",
             "tiles": [`https://map.buttonprogram.org/fmi-enfuser/${varName}/{z}/{x}/{y}.png?v=2`],
             "minzoom": 9,
@@ -781,7 +790,7 @@ map.on('load', () => {
     // https://www.hsy.fi/fi/asiantuntijalle/avoindata/Sivut/AvoinData.aspx?dataID=41
     // https://www.hsy.fi/fi/asiantuntijalle/avoindata/lisenssi/Sivut/default.aspx
     // CC 4.0 BY, ByAttribution
-    map.addSource('hsy-solar-potential', {
+    addSource('hsy-solar-potential', {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/hsy-aurinkosahkopotentiaali/{z}/{x}/{y}.pbf"],
         "minzoom": 1,
@@ -798,7 +807,7 @@ map.on('load', () => {
         'paint': {
             'fill-color': [
                 "case", ["has", "ELEC"], [
-                    "case", ["<", 0, ["get", "ELEC"]], 
+                    "case", ["<", 0, ["get", "ELEC"]],
                     '#92b565',
                     'gray',
                 ],
@@ -849,7 +858,7 @@ map.on('load', () => {
     })
 
 
-    map.addSource('cifor-peatdepth', {
+    addSource('cifor-peatdepth', {
         "type": "raster",
         "tiles": ["https://map.buttonprogram.org/cifor/TROP-SUBTROP_PeatDepthV2_2016_CIFOR/{z}/{x}/{y}.png?v=3"],
         bounds: [-180, -60, 180, 40],
@@ -857,7 +866,7 @@ map.on('load', () => {
         "maxzoom": 10,
         attribution: '<a href="https://www.cifor.org/">© Center for International Forestry Research (CIFOR)</a>',
     });
-    map.addSource('cifor-wetlands', {
+    addSource('cifor-wetlands', {
         "type": "raster",
         "tiles": ["https://map.buttonprogram.org/cifor/TROP-SUBTROP_WetlandV2_2016_CIFOR/{z}/{x}/{y}.png?v=3"],
         bounds: [-180, -60, 180, 40],
@@ -884,7 +893,7 @@ map.on('load', () => {
 
 
 
-    map.addSource('gtk-mp20k-maalajit', {
+    addSource('gtk-mp20k-maalajit', {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/mp20k_maalajit/{z}/{x}/{y}.pbf?v=2"],
         "minzoom": 0,
@@ -947,7 +956,7 @@ map.on('load', () => {
         'asean-pm10', // Asean PM10 raw PM10 concentration (explanations).
     ]
     const waqiAqi = 'usepa-aqi';
-    map.addSource('waqi', {
+    addSource('waqi', {
         "type": "raster",
         "tiles": [`https://tiles.waqi.info/tiles/${waqiAqi}/{z}/{x}/{y}.png?token=${process.env.WAQI_TOKEN}`],
         attribution: '<a href="https://www.cifor.org/">© The World Air Quality Project</a>',
@@ -962,7 +971,7 @@ map.on('load', () => {
     });
 
 
-    map.addSource('gfw_tree_plantations', {
+    addSource('gfw_tree_plantations', {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/gfw_tree_plantations/{z}/{x}/{y}.pbf"],
         "minzoom": 0,
@@ -1058,7 +1067,7 @@ map.on('load', () => {
 
 
     const snowCoverLossDays = ['-', ["get", "avg_snow_cover_1980_1990"], ["get", "avg_snow_cover_1996_2016"]];
-    map.addSource('snow_cover_loss', {
+    addSource('snow_cover_loss', {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/snow_cover_loss_2016/{z}/{x}/{y}.pbf"],
         "maxzoom": 3,
@@ -1127,7 +1136,7 @@ map.on('load', () => {
 const privateDatasets = {}
 
 privateDatasets.valio = (map, secret) => {
-    map.addSource('valio_fields', {
+    addSource('valio_fields', {
         "type": "vector",
         "tiles": [`https://map.buttonprogram.org/private/${secret}/valio_fields/{z}/{x}/{y}.pbf?v=3`],
         bounds: [19, 59, 32, 71], // Finland
@@ -1247,3 +1256,26 @@ const updateNO2Reading = function (e) {
 
 map.on('mousemove', updateNO2Reading);
 map.on('click', updateNO2Reading); // for mobile devices etc.
+
+
+
+// TODO: export pre-multiplied alpha colors:
+// https://github.com/mapbox/mapbox-gl-native/issues/193#issuecomment-43077841
+// > A color component can be from 0 to N where N is the alpha component of the color.
+// > So a color like rgba(1, 1, 1, 0.5) turns into a premultiplied color of rgba(0.5, 0.5, 0.5, 0.5),
+// > i.e. N is 0.5 here because alpha is 0.5.
+
+window.exportLayerGroup = groupName => {
+    const e = {"version": 8, "name": "export", sources:{}, layers:[]}
+    e.layers = layerGroups[groupName]
+        .filter(x => typeof x === 'string')
+        .map(x => originalLayerDefs[x])
+        .filter(x => x.type !== 'symbol')
+        .filter(x => x.type !== 'raster')
+        ;
+    e.layers.forEach(({source}) => {
+        e.sources[source] = originalSourceDefs[source];
+    });
+
+    console.log(JSON.stringify(e));
+}
