@@ -130,6 +130,7 @@ const toggleGroup = (group, forcedState = undefined) => {
         if (typeof layer === 'function') {
             layer();
         } else {
+            map.moveLayer(layer); // Make this the topmost layer.
             map.setLayoutProperty(layer, 'visibility', newState ? 'visible' : 'none');
         }
     })
