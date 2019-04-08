@@ -181,7 +181,6 @@ legend ul {
 legend li {
     display: inline-block;
 }
-
 #legend-co2e .legend-title {
     margin-bottom: 8px;
     font-size: 90%;
@@ -250,4 +249,13 @@ legend li {
 #legend-snow-cover-loss li span {
     display:inline-block;
     padding: 5px 8px;
+}
+
+
+#legend-mature-forests li span {
+    display: inline-block;
+    height: 1em;
+    width: 1em;
+    margin: 0 10px;
+    border: 1px solid black;
 }

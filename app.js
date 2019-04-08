@@ -84,7 +84,12 @@ const layerGroups = {
     ],
     'forest-grid': ['metsaan-hila-c', 'metsaan-hila-sym', 'metsaan-hila-outline'],
     'privately-owned-forests': [
+        () => hideAllLayersMatchingFilter(x => /mature-forests/.test(x)),
         'metsaan-stand-fill', 'metsaan-stand-co2', 'metsaan-stand-outline', 'metsaan-stand-raster',
+    ],
+    'mature-forests': [
+        () => hideAllLayersMatchingFilter(x => /privately-owned-forests/.test(x)),
+        'metsaan-stand-mature-fill', 'metsaan-stand-outline', 'metsaan-stand-mature-sym', 'metsaan-stand-mature-raster',
     ],
     'zonation6': ['zonation-v6-raster'],
     'ete': ['metsaan-ete-all-c', 'metsaan-ete-all-outline', 'metsaan-ete-all-sym'],
@@ -627,6 +632,11 @@ map.on('load', () => {
         // 8, 'rgba(218,248,85,0.8)',
         6, 'rgba(218,248,85,0.8)', // green
     ];
+    const fillRegenerationFelling = [
+        'case', ['>=', 0.5, ['get', 'regeneration_felling_prediction']],
+        'rgba(73, 25, 2320, 0.65)',
+        'rgba(206, 244, 66, 0.35)',
+    ];
     addLayer({
         'id': 'metsaan-stand-fill',
         'source': 'metsaan-stand',
@@ -684,6 +694,91 @@ map.on('load', () => {
     addLayer({
         'id': 'metsaan-stand-raster',
         'source': 'metsaan-stand-raster',
+        'type': 'raster',
+        'minzoom': 0,
+        'maxzoom': 12,
+    });
+
+
+    addLayer({
+        'id': 'metsaan-stand-mature-fill',
+        'source': 'metsaan-stand',
+        'source-layer': 'stand',
+        'type': 'fill',
+        minzoom:12,
+        'paint': {
+            // 'fill-color': fillColorFertilityClass,
+            'fill-color': fillRegenerationFelling,
+            // 'fill-opacity': fillOpacity, // Set by fill-color rgba
+        },
+    })
+    const treeSpeciesText = speciesId => [
+        "match", speciesId,
+        1,"Pine",
+        2,"Spruce",
+        3,"Silver birch",
+        4,"Downy birch",
+        5,"Asp",
+        6,"Grey alder",
+        7,"Black alder",
+        8,"Other coniferous tree",
+        9,"Other deciduous tree",
+        10,"Oregon pine",
+        11,"Common juniper",
+        12,"Contorta pine",
+        13,"European white elm",
+        14,"Larch",
+        15,"Small-leaved lime",
+        16,"Black spruce",
+        17,"Willow",
+        18,"Rowan",
+        19,"Fir",
+        20,"Goat willow",
+        21,"Ash",
+        22,"Swiss pine",
+        23,"Serbian spruce",
+        24,"Oak",
+        25,"Bird cherry",
+        26,"Maple",
+        27,"Curly birch",
+        28,"Scots elm",
+        29,"Deciduous tree",
+        30,"Coniferous tree",
+        "Unknown",
+    ]
+    addLayer({
+        'id': 'metsaan-stand-mature-sym',
+        'source': 'metsaan-stand',
+        'source-layer': 'stand',
+        'type': 'symbol',
+        "minzoom": 15.5,
+        // 'maxzoom': zoomThreshold,
+        "paint": {},
+        "layout": {
+            "text-size": 20,
+            "symbol-placement": "point",
+            "text-font": ["Open Sans Regular"],
+            "text-field": [
+                        "concat",
+                        "Main species: ",treeSpeciesText(["get", "maintreespecies"]),
+                        "\navg.age: ",["get", "meanage"],
+                        "\navg.diameter: ",["get", "meandiameter"]," cm",
+                    ],
+        }
+    })
+
+    addSource('metsaan-stand-mature-raster', {
+        "type": "raster",
+        'tiles': ['https://map.buttonprogram.org/stand2-mature/{z}/{x}/{y}.png'],
+        'tileSize': 512,
+        "maxzoom": 12,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
+    });
+
+    addLayer({
+        'id': 'metsaan-stand-mature-raster',
+        'source': 'metsaan-stand-mature-raster',
         'type': 'raster',
         'minzoom': 0,
         'maxzoom': 12,
