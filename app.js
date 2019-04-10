@@ -101,7 +101,10 @@ const layerGroups = {
         ...Object.keys(natura2000_mappings).map(x => x),
         ...Object.keys(natura2000_mappings).map(x => `${x}-sym`),
     ],
-    'mavi-fields': ['mavi-plohko-fill', 'mavi-plohko-outline', 'mavi-plohko-co2'],
+    'mavi-fields': [
+        () => hideAllLayersMatchingFilter(x => x === 'valio'),
+        'mavi-plohko-fill', 'mavi-plohko-outline', 'mavi-plohko-co2'
+    ],
     'helsinki-buildings': ['helsinki-buildings-fill', 'helsinki-buildings-outline', 'helsinki-buildings-co2'],
     'fmi-enfuser-airquality': ['fmi-enfuser-airquality'],
     'fmi-enfuser-pm2pm5': ['fmi-enfuser-pm2pm5'],
@@ -240,12 +243,43 @@ const roundToSignificantDigits = (n, expr) => [
 //
 // non-histosol: 2.2 CO2e/ha/year as an average for the period of 10 years.
 // -> 0.22kg/m2/y
-const histosolCalc = roundToSignificantDigits(2, ['*', 20 * 1e-4, ['get', 'total_area']]);
-const nonHistosolCalc = roundToSignificantDigits(2, ['*', 2.2 * 1e-4, ['get', 'total_area']]);
+//
+// NB: dataset attribute "pinta_ala" (area) is in acres, not m2 or hectares.
+
+// NB: Duplicated logic because I don't know how to interpret
+// Mapbox style expressions in outside contexts.
+const fieldPlotCO2eFn = props => {
+    const isHistosolType = t => [-104,195511,195512,195513,195514].indexOf(t) !== -1;
+    const histosolRatio = (
+        + (isHistosolType(props.soil_type1) ? props.soil_type1_ratio : 0)
+        + (isHistosolType(props.soil_type2) ? props.soil_type2_ratio : 0)
+    );
+    const co2ePerHa = histosolRatio >= 0.4 ? 20 : 2.2;
+    const areaHa = 1e-2 * props.pinta_ala;
+    return areaHa * co2ePerHa; // tons per ha
+}
+
+const histosolCalc = roundToSignificantDigits(2, ['*', 20 * 1e-2, ['get', 'pinta_ala']]);
+const nonHistosolCalc = roundToSignificantDigits(2, ['*', 2.2 * 1e-2, ['get', 'pinta_ala']]);
+
+const fieldPlotHistosolMult = v => [
+    'match', v,
+    -104, 1, // Histosols
+    195511, 1, // Lieju (Lj) RT
+    195512, 1, // Saraturve (Ct) RT
+    195513, 1, // Rahkaturve (St) RT
+    195514, 1, // Turvetuotantoalue (Tu) RT
+    0,
+];
+const fieldPlotHistosolRatio = [
+    '+',
+    ['*', fieldPlotHistosolMult(["get", "soil_type1"]), ["max", 0, ["get", "soil_type1_ratio"]]],
+    ['*', fieldPlotHistosolMult(["get", "soil_type2"]), ["max", 0, ["get", "soil_type2_ratio"]]],
+];
 
 // Unit: tons of CO2e per hectare per annum.
 const fieldPlotCO2ePerHectare = [
-    "case", [">=", ["get", "histosol_ratio"], 0.4], 20, 2.2,
+    "case", [">=", fieldPlotHistosolRatio, 0.4], 20, 2.2,
 ];
 
 const fieldPlotTextField = [
@@ -253,7 +287,7 @@ const fieldPlotTextField = [
 
     // 0 <= zoom < 15.5:
     [
-        "case", [">=", ["get", "histosol_ratio"], 0.4], [
+        "case", [">=", fieldPlotHistosolRatio, 0.4], [
             "concat", histosolCalc, " t/y",
         ], [ // else: non-histosol (histosol_area < 50%)
             "concat", nonHistosolCalc, " t/y",
@@ -263,19 +297,19 @@ const fieldPlotTextField = [
     // zoom >= 15.5:
     15.5,
     [
-        "case", [">=", ["get", "histosol_ratio"], 0.4], [
+        "case", [">=", fieldPlotHistosolRatio, 0.4], [
             "concat",
             histosolCalc,
             "t CO2e/y",
             '\nsoil: histosol',
             // "\npeat:", ["/", ["round", ['*', 0.001, ['to-number', ["get", "histosol_area"], 0]]], 10], 'ha',
-            "\narea: ", ["/", ["round", ['*', 0.001, ["get", "total_area"]]], 10], "ha",
+            "\narea: ", ["/", ["round", ['*', 0.1, ["get", "pinta_ala"]]], 10], "ha",
         ], [ // else: non-histosol (histosol_area < 50%)
             "concat",
             nonHistosolCalc,
             "t CO2e/y",
             '\nsoil: mineral',
-            "\narea: ", ["/", ["round", ['*', 0.001, ["get", "total_area"]]], 10], "ha",
+            "\narea: ", ["/", ["round", ['*', 0.1, ["get", "pinta_ala"]]], 10], "ha",
         ],
     ],
 ];
@@ -337,6 +371,99 @@ const addSource = (name, source) => {
     originalSourceDefs[name] = source;
 }
 
+
+
+const gtkLukeSoilTypes = {
+    // Placeholder value:
+    "-1": null,
+
+    // LUKE.fi soil types (soilOfFinland2015):
+    "-101": 'Anthrosols',
+    "-102": 'Arenosols/Podzols',
+    "-103": 'Gleysols',
+    "-104": 'Histosols',
+    "-105": 'Leptosols',
+    "-106": 'Podzols',
+    "-107": 'Podzols/Arenosols',
+    "-108": 'Regosols',
+    "-109": 'Stagnosols',
+
+    // GTK.fi soil types (mp20k_maalajit):
+    195111: 'Kalliomaa (Ka) RT',
+    195112: 'Rakka (RaKa) RT',
+    195113: 'Rapakallio (RpKa) RT',
+    195213: 'Soramoreeni (SrMr) RT',
+    195214: 'Hiekkamoreeni (Mr) RT',
+    195215: 'Hienoainesmoreeni (HMr) RT',
+    195311: 'Lohkareita (Lo) RT',
+    195312: 'Kiviä (Ki) RT',
+    195313: 'Sora (Sr) RT',
+    195314: 'Hiekka (Hk) RT',
+    195315: 'karkea Hieta (KHt) RT',
+    195411: 'hieno Hieta (HHt) RT',
+    195412: 'Hiesu (Hs) RT',
+    195413: 'Savi (Sa) RT',
+    195511: 'Lieju (Lj) RT',
+    195512: 'Saraturve (Ct) RT',
+    195513: 'Rahkaturve (St) RT',
+    195514: 'Turvetuotantoalue (Tu) RT',
+    195601: 'Täytemaa (Ta)',
+    195602: 'Kartoittamaton (0)',
+    195603: 'Vesi (Ve)',
+    19531421: 'liejuinen Hiekka (LjHk) RT',
+    19531521: 'liejuinen Hieta (karkea) (LjHt) RT',
+    19541121: 'liejuinen hieno Hieta (LjHHt) RT',
+    19541221: 'Liejuhiesu (LjHs) RT',
+    19541321: 'Liejusavi (LjSa) RT',
+};
+
+
+const setupPopupHandlerForMaviPeltolohko = layerName => {
+    map.on('click', layerName, e => {
+        const f = e.features[0];
+        const coordinates = getGeoJsonGeometryCenter(f.geometry.coordinates);
+        const { soil_type1, soil_type1_ratio, soil_type2, soil_type2_ratio, pinta_ala } = f.properties;
+
+        // Ensure that if the map is zoomed out such that multiple
+        // copies of the feature are visible, the popup appears
+        // over the copy being pointed to.
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+
+        let html = ''
+        if (soil_type1 !== -1) {
+            html += `
+                Primary soil: ${gtkLukeSoilTypes[soil_type1]} (${Math.round(100 * soil_type1_ratio)} %)
+                <br/>
+            `;
+        }
+        if (soil_type2 !== -1 && soil_type1_ratio <= 0.99) {
+            html += `
+            Secondary soil: ${gtkLukeSoilTypes[soil_type2]} (${Math.round(100 * soil_type2_ratio)} %)
+            <br/>
+            `;
+        }
+        html += `
+            Area: ${pinta_ala.toFixed(1)} hectares
+            <br/>
+            Emission reduction potential: ${fieldPlotCO2eFn(f.properties).toFixed(1)} tons CO₂e per year
+        `;
+
+        new mapboxgl.Popup()
+        .setLngLat(coordinates)
+        .setHTML(html)
+        .addTo(map);
+    });
+    map.on('mouseenter', layerName, function () {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', layerName, function () {
+        map.getCanvas().style.cursor = '';
+    });
+}
+
+
 map.on('load', () => {
     const originalMapLayerIds = {}
 
@@ -354,7 +481,6 @@ map.on('load', () => {
         },
         'paint': {},
     });
-
 
 
     map.getStyle().layers.forEach(x => originalMapLayerIds[x.id] = true)
@@ -540,6 +666,8 @@ map.on('load', () => {
             'text-field': fieldPlotTextField,
         }
     })
+
+    setupPopupHandlerForMaviPeltolohko('mavi-plohko-fill');
 
 
     addSource('helsinki-buildings', {
@@ -1399,6 +1527,8 @@ privateDatasets.valio = (map, secret) => {
             "text-field": fieldPlotTextField,
         }
     })
+
+    setupPopupHandlerForMaviPeltolohko('valio-fields-fill');
 };
 
 
