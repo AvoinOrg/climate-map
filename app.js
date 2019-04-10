@@ -408,7 +408,7 @@ const setupPopupHandlerForMaviPeltolohko = layerName => {
                 <br/>
             `;
         }
-        if (soil_type2 !== -1 && soil_type1_ratio <= 0.99) {
+        if (soil_type2 !== -1 && soil_type2_ratio >= 0.01) {
             html += `
             Secondary soil: ${gtkLukeSoilTypes[soil_type2]} (${Math.round(100 * soil_type2_ratio)} %)
             <br/>
