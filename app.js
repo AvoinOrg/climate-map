@@ -335,28 +335,6 @@ const areaCO2eFillColorStep = expr => [
 const areaCO2eFillColor = areaCO2eFillColorInterp;
 
 
-function getGeoJsonGeometryBounds(coordinates) {
-    if (typeof coordinates[0] === 'number') {
-        const [lon, lat] = coordinates;
-        return [lon, lat, lon, lat];
-    }
-
-    const bounds = [999,999,-999,-999];
-    for (const x of coordinates) {
-        const bounds2 = getGeoJsonGeometryBounds(x)
-        bounds[0] = Math.min(bounds[0], bounds2[0]);
-        bounds[1] = Math.min(bounds[1], bounds2[1]);
-        bounds[2] = Math.max(bounds[2], bounds2[2]);
-        bounds[3] = Math.max(bounds[3], bounds2[3]);
-    }
-    return bounds;
-}
-function getGeoJsonGeometryCenter(coordinates) {
-    const bounds = getGeoJsonGeometryBounds(coordinates);
-    return [ (bounds[0] + bounds[2])/2, (bounds[1] + bounds[3])/2 ];
-}
-
-
 const originalLayerDefs = {};
 const addLayer = (layer, visibility = 'none') => {
     const layout = layer.layout || {}
@@ -421,15 +399,7 @@ const gtkLukeSoilTypes = {
 const setupPopupHandlerForMaviPeltolohko = layerName => {
     map.on('click', layerName, e => {
         const f = e.features[0];
-        const coordinates = getGeoJsonGeometryCenter(f.geometry.coordinates);
         const { soil_type1, soil_type1_ratio, soil_type2, soil_type2_ratio, pinta_ala } = f.properties;
-
-        // Ensure that if the map is zoomed out such that multiple
-        // copies of the feature are visible, the popup appears
-        // over the copy being pointed to.
-        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-        }
 
         let html = ''
         if (soil_type1 !== -1) {
@@ -451,7 +421,7 @@ const setupPopupHandlerForMaviPeltolohko = layerName => {
         `;
 
         new mapboxgl.Popup()
-        .setLngLat(coordinates)
+        .setLngLat(e.lngLat)
         .setHTML(html)
         .addTo(map);
     });
@@ -619,15 +589,7 @@ const metsaanFiAccessibilityClassifier = {
 const setupPopupHandlerForMetsaanFiStandData = layerName => {
     map.on('click', layerName, e => {
         const f = e.features[0];
-        const coordinates = getGeoJsonGeometryCenter(f.geometry.coordinates);
         const p = f.properties;
-
-        // Ensure that if the map is zoomed out such that multiple
-        // copies of the feature are visible, the popup appears
-        // over the copy being pointed to.
-        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-        }
 
         const soilTypeInfo = metsaanFiSoilTypes.filter(x => x[0] === p.soiltype)[0];
         let soilEn=soilFi = '';
@@ -659,7 +621,7 @@ const setupPopupHandlerForMetsaanFiStandData = layerName => {
         `;
 
         new mapboxgl.Popup()
-        .setLngLat(coordinates)
+        .setLngLat(e.lngLat)
         .setHTML(html)
         .addTo(map);
     });
@@ -1425,15 +1387,7 @@ map.on('load', () => {
 
     map.on('click', 'gfw_tree_plantations-fill', e => {
         const f = e.features[0];
-        const coordinates = getGeoJsonGeometryCenter(f.geometry.coordinates);
         const { image, spec_simp, type_text, area_ha, peat_ratio, avg_peatdepth } = f.properties;
-
-        // Ensure that if the map is zoomed out such that multiple
-        // copies of the feature are visible, the popup appears
-        // over the copy being pointed to.
-        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-        }
 
         const images = image.replace(/\.(tif|img|_)/g, '').toUpperCase().split(/[,; ]+/);
         let results = '';
@@ -1462,7 +1416,7 @@ map.on('load', () => {
         if (results) html += `Potential Landsat source images: <ul>${results}</ul>`;
 
         new mapboxgl.Popup()
-        .setLngLat(coordinates)
+        .setLngLat(e.lngLat)
         // Upstream X-Frame-Options prevents this iframe trick.
         // .setHTML(`<iframe sandbox src="https://earthexplorer.usgs.gov/metadata/12864/${image}/"></iframe>`)
         .setHTML(html)
