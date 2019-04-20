@@ -610,7 +610,7 @@ const setupPopupHandlerForMetsaanFiStandData = layerName => {
             <tr><th>Soil</th><td>${soilEn || soilFi || ''}</td></tr>
             <tr><th>Area</th><td>${+p.area.toPrecision(3)} hectares</td></tr>
             <tr><th>Accessibility</th><td>${metsaanFiAccessibilityClassifier[p.accessibility] || ''}</td></tr>
-            <tr><th>Approx. tree stem count</th><td>${+(p.stemcount * p.area).toPrecision(2)}</td></tr>
+            <tr><th>Approx. tree stem count</th><td>${(+(p.stemcount * p.area).toPrecision(2)).toLocaleString()}</td></tr>
             <!-- <tr><th>TODO(Probably/Not/Yes/No): Mature enough for regeneration felling?</th><td>${p.regeneration_felling_prediction}</td></tr> -->
             <tr><th>Development class</th><td>${metsaanFiDevelopmentClass[p.developmentclass] || ''}</td></tr>
             <tr><th>Fertility classifier</th><td>${metsaanFiFertilityClass[p.fertilityclass] || ''}</td></tr>
