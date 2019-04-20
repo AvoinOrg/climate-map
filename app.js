@@ -339,6 +339,9 @@ const originalLayerDefs = {};
 const addLayer = (layer, visibility = 'none') => {
     const layout = layer.layout || {}
     layout.visibility = visibility
+    layer.paint = layer.paint || {};
+    if (layer.type === 'raster')
+        layer.paint['raster-resampling'] = layer.paint['raster-resampling'] || 'nearest';
     map.addLayer({ layout, ...layer });
     originalLayerDefs[layer.id] = layer;
 }
