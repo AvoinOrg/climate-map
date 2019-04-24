@@ -403,6 +403,7 @@ const setupPopupHandlerForMaviPeltolohko = layerName => {
     map.on('click', layerName, e => {
         const f = e.features[0];
         const { soil_type1, soil_type1_ratio, soil_type2, soil_type2_ratio, pinta_ala } = f.properties;
+        const areaHa = 0.01 * +pinta_ala;
 
         let html = ''
         if (soil_type1 !== -1) {
@@ -418,7 +419,7 @@ const setupPopupHandlerForMaviPeltolohko = layerName => {
             `;
         }
         html += `
-            Area: ${+pinta_ala.toPrecision(3)} hectares
+            Area: ${areaHa.toPrecision(3)} hectares
             <br/>
             Emission reduction potential: ${+fieldPlotCO2eFn(f.properties).toPrecision(2)} tons CO₂e per year
         `;
