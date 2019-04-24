@@ -405,16 +405,25 @@ const setupPopupHandlerForMaviPeltolohko = layerName => {
         const { soil_type1, soil_type1_ratio, soil_type2, soil_type2_ratio, pinta_ala } = f.properties;
         const areaHa = 0.01 * +pinta_ala;
 
+        // Sometimes there's overlapping data so the sum is > 100%.
+        // However, the data itself is coarse-grained so normalizing
+        // the ratios to 100% is justified.
+        // The error is within the bounds of data accuracy anyway
+        // (and this only applies to small % of cases anyway).
+        const normalizedSoilRatio = (
+            soil_type2_ratio <= 0 ? 1 : soil_type1_ratio / (soil_type1_ratio + soil_type2_ratio)
+        );
+        const normalizedSoilRatioPct = Math.round(100 * normalizedSoilRatio);
         let html = ''
         if (soil_type1 !== -1) {
             html += `
-                Primary soil: ${gtkLukeSoilTypes[soil_type1]} (${Math.round(100 * soil_type1_ratio)} %)
+                Primary soil: ${gtkLukeSoilTypes[soil_type1]} (${normalizedSoilRatioPct} %)
                 <br/>
             `;
         }
-        if (soil_type2 !== -1 && soil_type2_ratio >= 0.01) {
+        if (soil_type2 !== -1 && normalizedSoilRatioPct <= 99) {
             html += `
-            Secondary soil: ${gtkLukeSoilTypes[soil_type2]} (${Math.round(100 * soil_type2_ratio)} %)
+            Secondary soil: ${gtkLukeSoilTypes[soil_type2]} (${100 - normalizedSoilRatioPct} %)
             <br/>
             `;
         }
