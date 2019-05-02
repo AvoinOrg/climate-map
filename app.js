@@ -32,7 +32,7 @@ map.addControl(new mapboxgl.GeolocateControl({
     trackUserLocation: true,
 }));
 
-map.addControl(new mapboxgl.ScaleControl());
+map.addControl(new mapboxgl.ScaleControl() , 'bottom-right');
 
 const backgroundLayerGroups = { 'terramonitor': true }
 const layerGroupState = {
