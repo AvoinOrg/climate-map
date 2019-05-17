@@ -86,7 +86,9 @@ const layerGroups = {
     'forest-grid': ['metsaan-hila-c', 'metsaan-hila-sym', 'metsaan-hila-outline'],
     'privately-owned-forests': [
         () => hideAllLayersMatchingFilter(x => /mature-forests/.test(x)),
-        'metsaan-stand-fill', 'metsaan-stand-co2', 'metsaan-stand-outline', 'metsaan-stand-raster',
+        'metsaan-stand-raster', 'metsaan-stand-fill', 'metsaan-stand-co2', 'metsaan-stand-outline',
+        // Norway. TODO: refactor mavi-fields to a more generic name?
+        'nibio-ar50-forests-fill', 'nibio-ar50-forests-outline', 'nibio-ar50-forests-sym',
     ],
     'mature-forests': [
         () => hideAllLayersMatchingFilter(x => /privately-owned-forests/.test(x)),
@@ -104,7 +106,9 @@ const layerGroups = {
     ],
     'mavi-fields': [
         () => hideAllLayersMatchingFilter(x => x === 'valio'),
-        'mavi-plohko-fill', 'mavi-plohko-outline', 'mavi-plohko-co2'
+        'mavi-plohko-fill', 'mavi-plohko-outline', 'mavi-plohko-co2',
+        // Norway. TODO: refactor mavi-fields to a more generic name?
+        'nibio-soils-fill', 'nibio-soils-outline', 'nibio-soils-sym',
     ],
     'helsinki-buildings': ['helsinki-buildings-fill', 'helsinki-buildings-outline', 'helsinki-buildings-co2'],
     'fmi-enfuser-airquality': ['fmi-enfuser-airquality'],
@@ -1610,6 +1614,240 @@ map.on('load', () => {
             ],
         }
     })
+
+
+    // https://www.nibio.no/tjenester/nedlasting-av-kartdata/dokumentasjon/jordsmonn/_/attachment/inline/f67020d0-cf9f-4085-aaaa-3b1a231826cc:5d04023805e4bf08580857f779517265ad4fdc19/Dokumentasjon%20jordsmonn%2020160525.pdf
+
+    // Soil granularity? Something like that
+    const nibioSoilTexture = v => [
+        "match", v,
+        1, "Sand",
+
+        2, "Silty sand", // <10% clay, 40..85% sand, <50% silt
+        3, "Silt", // <12% clay, >50% silt
+        4, "Moderate clay silt", // 10..25% clay, 25..50% silt
+
+        // [25..40% clay, 25..50% silt] or 
+        // or 40..60% clay and <=50% silt
+        // or >60% clay
+        5, "Medium-high clay content",
+
+        6, "Organic", // >=20% organic material,
+        0, "Unclassified",
+        9, "Unclassified",
+    ];
+
+    // WRB codes from NIBIO data:
+    const wrbCodeToLabel = v => [
+        "match", v,
+        "FL", "Fluvisol",
+        "CM", "Cambisol",
+        "PH", "Phaeozem",
+        "UM", "Umbrisol",
+        "HS", "Histosol",
+        "AB", "Albeluvisol",
+        "GL", "Gleysol",
+        "ST", "Stagnosol",
+        "PL", "Planosol",
+        "RG", "Regosol",
+        "AR", "Arenosol",
+        "PZ", "Podzol",
+        "LP", "Leptosol",
+        "AT", "Anthrosol",
+        "RGah", "Fill soil", // I think? Original NIBIO: "Planeringer/Fyllinger"
+        "TC", "Technosol",
+        "",
+    ];
+
+    {
+        const isHistosol = ["==", ['get', 'wrbgrupper'], 'HS'];
+        // Unit: tons of CO2e per hectare per annum.
+        const fieldPlotCO2ePerHectare = ["case", isHistosol, 20, 2.2];
+        const histosolCalc = roundToSignificantDigits(2, ['*', 20 * 1e-4, ['get', 'st_area']]);
+        const nonHistosolCalc = roundToSignificantDigits(2, ['*', 2.2 * 1e-4, ['get', 'st_area']]);
+
+        const fieldPlotTextField = [
+            "step", ["zoom"],
+
+            // 0 <= zoom < 15.5:
+            [
+                "case", isHistosol, [
+                    "concat", histosolCalc, " t/y",
+                ], [ // else: non-histosol (histosol_area < 50%)
+                    "concat", nonHistosolCalc, " t/y",
+                ],
+            ],
+
+            // zoom >= 15.5:
+            15.5,
+            [
+                "case", isHistosol, [
+                    "concat",
+                    histosolCalc,
+                    "t CO2e/y",
+                    '\nsoil: histosol',
+                    // "\npeat:", ["/", ["round", ['*', 0.001, ['to-number', ["get", "histosol_area"], 0]]], 10], 'ha',
+                    "\narea: ", ["/", ["round", ['*', 1e-3, ["get", "st_area"]]], 10], "ha",
+                ], [ // else: non-histosol (histosol_area < 50%)
+                    "concat",
+                    nonHistosolCalc,
+                    "t CO2e/y",
+                    '\nsoil: mineral',
+                    "\narea: ", ["/", ["round", ['*', 1e-3, ["get", "st_area"]]], 10], "ha",
+                ],
+            ],
+        ];
+
+
+        addSource('nibio-soils', {
+            "type": "vector",
+            "tiles": ["https://map.buttonprogram.org/nibio-jordsmonn/{z}/{x}/{y}.pbf.gz?v=1"],
+            "minzoom": 0,
+            "maxzoom": 12,
+            // bounds: [19, 59, 32, 71], // Finland
+            attribution: '<a href="https://nibio.no/">© NIBIO</a>',
+        });
+        addLayer({
+            'id': 'nibio-soils-fill',
+            'source': 'nibio-soils',
+            'source-layer': 'default',
+            'type': 'fill',
+            'paint': {
+                'fill-color': areaCO2eFillColor(fieldPlotCO2ePerHectare),
+                // 'fill-color': 'yellow',
+                // 'fill-opacity': fillOpacity,
+            },
+        })
+        addLayer({
+            'id': 'nibio-soils-outline',
+            'source': 'nibio-soils',
+            'source-layer': 'default',
+            'type': 'line',
+            "minzoom": 9,
+            'paint': {
+                'line-opacity': 0.5,
+            }
+        })
+        addLayer({
+            'id': 'nibio-soils-sym',
+            'source': 'nibio-soils',
+            'source-layer': 'default',
+            'type': 'symbol',
+            "minzoom": 14,
+            "paint": {},
+            "layout": {
+                "text-size": 20,
+                "symbol-placement": "point",
+                "text-font": ["Open Sans Regular"],
+                "text-field": fieldPlotTextField, // wrbCodeToLabel(["get", "wrbgrupper"]),
+                //     'case', ['==', ['get', 'pintamaalaji'], ['get', 'pohjamaalaji']],
+                //     ['get', 'pintamaalaji'],
+                //     [
+                //         'concat',
+                //         'topsoil: ', ['get', 'pintamaalaji'],
+                //         '\nsubsoil: ', ['get', 'pohjamaalaji'],
+                //     ],
+                // ],
+            }
+        })
+    }
+
+
+    addSource('nibio-ar50', {
+        "type": "vector",
+        "tiles": ["https://map.buttonprogram.org/nibio-ar50/{z}/{x}/{y}.pbf.gz?v=1"],
+        "minzoom": 0,
+        "maxzoom": 12,
+        // bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="https://nibio.no/">© NIBIO</a>',
+    });
+    addLayer({
+        'id': 'nibio-ar50-fill',
+        'source': 'nibio-ar50',
+        'source-layer': 'default',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'rgba(200,0,0,0.5)',
+            'fill-opacity': fillOpacity,
+        },
+    })
+    addLayer({
+        'id': 'nibio-ar50-outline',
+        'source': 'nibio-ar50',
+        'source-layer': 'default',
+        'type': 'line',
+        "minzoom": 9,
+        'paint': {
+            'line-opacity': 0.5,
+        }
+    })
+    addLayer({
+        'id': 'nibio-ar50-sym',
+        'source': 'nibio-ar50',
+        'source-layer': 'default',
+        'type': 'symbol',
+        "minzoom": 14,
+        "paint": {},
+        "layout": {
+            "text-size": 20,
+            "symbol-placement": "point",
+            "text-font": ["Open Sans Regular"],
+            "text-field": '',
+        }
+    })
+
+    // AR50: arealtype (ARTYPE)
+    // Class	Description
+    // 10	Built: residential, urban, urban, transport, industrial, etc.
+    // 20	Agriculture: Full-grown soil, surface cultivation soil and inland pasture
+    // 30	Forest: Forest-covered area
+    // 50	Snaemark(?): with natural vegetation cover that is not forest
+    // 60	?: Area that on the surface has the mark of marsh
+    // 70	?: Ice and snow that do not melt during the summer
+    // 81	Fresh water: River and lake
+    // 82	Ocean
+    // 99	Not mapped
+    addLayer({
+        'id': 'nibio-ar50-forests-fill',
+        'source': 'nibio-ar50',
+        'source-layer': 'default',
+        filter: ['==', ['get', 'arealtype'], 30],
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'rgba(200,2000,0,0.5)',
+            'fill-opacity': fillOpacity,
+        },
+    })
+    addLayer({
+        'id': 'nibio-ar50-forests-outline',
+        'source': 'nibio-ar50',
+        'source-layer': 'default',
+        filter: ['==', ['get', 'arealtype'], 30],
+        'type': 'line',
+        "minzoom": 9,
+        'paint': {
+            'line-opacity': 0.5,
+        }
+    })
+    addLayer({
+        'id': 'nibio-ar50-forests-sym',
+        'source': 'nibio-ar50',
+        'source-layer': 'default',
+        filter: ['==', ['get', 'arealtype'], 30],
+        'type': 'symbol',
+        "minzoom": 14,
+        "paint": {},
+        "layout": {
+            "text-size": 20,
+            "symbol-placement": "point",
+            "text-font": ["Open Sans Regular"],
+            "text-field": '',
+        }
+    })
+
+
+
+
 
 
     enableDefaultLayers();
