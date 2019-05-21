@@ -1849,7 +1849,7 @@ map.on('load', () => {
 
     addSource('hel-energiatodistukset', {
         "type": "vector",
-        "tiles": ["https://map.buttonprogram.org/hel-energiatodistukset/{z}/{x}/{y}.pbf"],
+        "tiles": ["https://map.buttonprogram.org/hel-energiatodistukset/{z}/{x}/{y}.pbf?v=3"],
         "maxzoom": 14,
         // Bounds source: https://koordinates.com/layer/4257-finland-11000000-administrative-regions/
         // select ST_Extent(ST_Transform(ST_SetSRID(geom,3067), 4326))
@@ -1910,9 +1910,19 @@ map.on('load', () => {
         e.features.forEach(f => {
             const p = f.properties;
 
+            const energyUse = p.e_luku * p.lämmitetty_nettoala
+            const energyPerVolume = p.i_raktilav
+                ? `<br/>Energy use per m<sup>3</sup>: ${+((energyUse / p.i_raktilav).toPrecision(2)).toLocaleString()} kWh per year`
+                : '';
+
             const url = `https://www.energiatodistusrekisteri.fi/public_html?energiatodistus-id=${p.todistustunnus}&command=access&t=energiatodistus&p=energiatodistukset`
             html += `
+            <p>
             Certificate ID: <a href="${url}">${p.todistustunnus}</a><br/>
+            Total energy consumption: ${(+energyUse.toPrecision(2)).toLocaleString()} kWh per year<br/>
+            Energy use per m<sup>2</sup>: ${p.e_luku} kWh per year
+            ${energyPerVolume}
+            </p>
             `
         })
 
