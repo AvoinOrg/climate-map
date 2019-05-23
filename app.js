@@ -965,6 +965,57 @@ map.on('load', () => {
             "text-field": "",
         },
     })
+    map.on('click', 'helsinki-puretut-fill', e => {
+        const htmlParts = [];
+        const buildingIdMap = {};
+        e.features.forEach(f => {
+            const p = f.properties;
+            const buildingIdText = p.vtj_prt && p.ratu
+                ? `${p.vtj_prt} (${p.ratu})`
+                : p.vtj_prt || p.ratu;
+            const s =`
+            <p>
+            <strong>Permit ID:</strong> ${p.tunnus}
+            <br/><strong>Property ID:</strong> ${p.rakennuspaikka}
+            XXX_BUILDING_ID_TEMPLATE_XXX
+            <address>
+            ${p.osoite}<br/>
+            ${p.postinumero}
+            </address>
+            <strong>Demolition requested by:</strong> <address>
+            ${p.hakija}<br/>
+            ${p.hakija_osoite}<br/>
+            ${p.hakija_postinumero}<br/>
+            </address>
+            <strong>Demolishing permit valid until:</strong> ${p.lupa_voimassa_asti}
+            </p>
+            `;
+            // Deduplicate info texts:
+            if (htmlParts.indexOf(s) === -1) {
+                htmlParts.push(s);
+            }
+            buildingIdMap[s] = buildingIdMap[s] || [];
+            if (buildingIdText) buildingIdMap[s].push(buildingIdText);
+        })
+
+        const html = htmlParts.reduce((a,b) => a+b.replace(
+            'XXX_BUILDING_ID_TEMPLATE_XXX',
+            buildingIdMap[b]
+            ? buildingIdMap[b].reduce( (a,b) => a?`${a}, ${b}` : `<br/><strong>Building ID:</strong> ${b}`, '' )
+            : ''
+        ), '')
+
+        new mapboxgl.Popup()
+        .setLngLat(e.lngLat)
+        .setHTML(html)
+        .addTo(map);
+    });
+    map.on('mouseenter', 'helsinki-puretut-fill', function () {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', 'helsinki-puretut-fill', function () {
+        map.getCanvas().style.cursor = '';
+    });
 
 
     addSource('metsaan-stand', {
