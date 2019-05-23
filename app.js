@@ -110,7 +110,10 @@ const layerGroups = {
         // Norway. TODO: refactor mavi-fields to a more generic name?
         'nibio-soils-fill', 'nibio-soils-outline', 'nibio-soils-sym',
     ],
-    'helsinki-buildings': ['helsinki-buildings-fill', 'helsinki-buildings-outline', 'helsinki-buildings-co2'],
+    'helsinki-buildings': [
+        'helsinki-buildings-fill', 'helsinki-buildings-outline', 'helsinki-buildings-co2',
+        'helsinki-puretut-fill', 'helsinki-puretut-outline', 'helsinki-puretut-sym',
+    ],
     'building-energy-certificates': ['hel-energiatodistukset-fill', 'hel-energiatodistukset-outline', 'hel-energiatodistukset-sym'],
     'fmi-enfuser-airquality': ['fmi-enfuser-airquality'],
     'fmi-enfuser-pm2pm5': ['fmi-enfuser-pm2pm5'],
@@ -913,6 +916,53 @@ map.on('load', () => {
                     ],
                 ], "",
             ],
+        },
+    })
+
+
+    addSource('helsinki-puretut', {
+        "type": "vector",
+        "tiles": ["https://map.buttonprogram.org/hel-puretut/{z}/{x}/{y}.pbf.gz?v=0"],
+        "maxzoom": 14,
+        // Bounds source: https://koordinates.com/layer/4257-finland-11000000-administrative-regions/
+        // select ST_Extent(ST_Transform(ST_SetSRID(geom,3067), 4326))
+        // from "finland-11000000-administrative-regions" where kunta_ni1='Helsinki';
+        bounds: [24, 59, 26, 61],
+        attribution: '<a href="https://www.hel.fi">© City of Helsinki</a>',
+    });
+    addLayer({
+        'id': 'helsinki-puretut-fill',
+        'source': 'helsinki-puretut',
+        'source-layer': 'default',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'red',
+            'fill-opacity': fillOpacity,
+        }
+    })
+    addLayer({
+        'id': 'helsinki-puretut-outline',
+        'source': 'helsinki-puretut',
+        'source-layer': 'default',
+        'type': 'line',
+        "minzoom": 11,
+        'paint': {
+            'line-opacity': 0.75,
+        }
+    })
+
+    addLayer({
+        'id': 'helsinki-puretut-sym',
+        'source': 'helsinki-puretut',
+        'source-layer': 'default',
+        'type': 'symbol',
+        "minzoom": 16,
+        'paint': {},
+        "layout": {
+            "symbol-placement": "point",
+            "text-font": ["Open Sans Regular"],
+            "text-size": 20,
+            "text-field": "",
         },
     })
 
