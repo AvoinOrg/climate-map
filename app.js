@@ -142,7 +142,10 @@ const toggleGroup = (group, forcedState = undefined) => {
         if (typeof layer === 'function') {
             layer();
         } else {
-            map.moveLayer(layer); // Make this the topmost layer.
+            const layerIsInBackground = group in backgroundLayerGroups;
+            if (!layerIsInBackground) {
+                map.moveLayer(layer); // Make this the topmost layer.
+            }
             map.setLayoutProperty(layer, 'visibility', newState ? 'visible' : 'none');
         }
     })
@@ -975,8 +978,6 @@ map.on('load', () => {
                 : p.vtj_prt || p.ratu;
             const s =`
             <p>
-            <strong>Permit ID:</strong> ${p.tunnus}
-            <br/><strong>Property ID:</strong> ${p.rakennuspaikka}
             XXX_BUILDING_ID_TEMPLATE_XXX
             <address>
             ${p.osoite}<br/>
@@ -987,7 +988,7 @@ map.on('load', () => {
             ${p.hakija_osoite}<br/>
             ${p.hakija_postinumero}<br/>
             </address>
-            <strong>Demolishing permit valid until:</strong> ${p.lupa_voimassa_asti}
+            <strong>Demolition permit valid until:</strong> ${p.lupa_voimassa_asti}
             </p>
             `;
             // Deduplicate info texts:
@@ -1001,7 +1002,7 @@ map.on('load', () => {
         const html = htmlParts.reduce((a,b) => a+b.replace(
             'XXX_BUILDING_ID_TEMPLATE_XXX',
             buildingIdMap[b]
-            ? buildingIdMap[b].reduce( (a,b) => a?`${a}, ${b}` : `<br/><strong>Building ID:</strong> ${b}`, '' )
+            ? buildingIdMap[b].reduce( (a,b) => a?`${a}, ${b}` : `<strong>Building ID:</strong> ${b}`, '' )
             : ''
         ), '')
 
