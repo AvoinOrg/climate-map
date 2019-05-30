@@ -283,6 +283,80 @@
         </div>
 
 
+        <div class='layer-card'>
+            <div class='title'>Arvometsä CO2e Preview</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="arvometsa">
+                <label class="onoffswitch-label" for="arvometsa"></label>
+            </div>
+
+            Projections for:
+            <div class="arvometsa-projections">
+            <button class="arvometsa_eihakata">Ei hakata</button>
+            <button class="arvometsa_alaharvennus">Alaharvennus</button>
+            <button class="arvometsa_ylaharvennus">Yläharvennus</button>
+            <button class="arvometsa_maxhakkuu">Maksimaalinen hakkuu</button>
+            <button class="arvometsa_jatkuva">Jatkuva</button>
+            </div>
+
+            <strong>Forest carbon</strong>
+            <legend id="legend-cifor-peatdepth">
+                <ul class='legend-labels arvometsa arvometsa-cbf'>
+                    <li><span style="background-color:rgba(47,10,91,255);color:#fff;">10</span></li>
+                    <li><span style="background-color:rgba(81,14,108,255);color:#fff;">20</span></li>
+                    <li><span style="background-color:rgba(113,25,110,255);color:#fff;">30</span></li>
+                    <li><span style="background-color:rgba(144,37,104,255);">40</span></li>
+                    <li><span style="background-color:rgba(176,49,91,255);">50</span></li>
+                    years
+                </ul>
+            </legend>
+            <output class='arvometsa-cbf'></output>
+
+            <strong>Forestry management total carbon</strong>
+            <legend id="legend-cifor-peatdepth">
+                <ul class='legend-labels arvometsa arvometsa-cbt'>
+                    <li><span style="background-color:rgba(47,10,91,255);color:#fff;">10</span></li>
+                    <li><span style="background-color:rgba(81,14,108,255);color:#fff;">20</span></li>
+                    <li><span style="background-color:rgba(113,25,110,255);color:#fff;">30</span></li>
+                    <li><span style="background-color:rgba(144,37,104,255);">40</span></li>
+                    <li><span style="background-color:rgba(176,49,91,255);">50</span></li>
+                    years
+                </ul>
+            </legend>
+            <output class='arvometsa-cbt'></output>
+
+            <strong>Carbon in living biomass</strong>
+            <legend id="legend-cifor-peatdepth">
+                <ul class='legend-labels arvometsa arvometsa-bio'>
+                    <li><span style="background-color:rgba(47,10,91,255);color:#fff;">Now</span></li>
+                    or in
+                    <li><span style="background-color:rgba(47,10,91,255);color:#fff;">10</span></li>
+                    <li><span style="background-color:rgba(81,14,108,255);color:#fff;">20</span></li>
+                    <li><span style="background-color:rgba(113,25,110,255);color:#fff;">30</span></li>
+                    <li><span style="background-color:rgba(144,37,104,255);">40</span></li>
+                    <li><span style="background-color:rgba(176,49,91,255);">50</span></li>
+                    years
+                </ul>
+            </legend>
+            <output class='arvometsa-bio'></output>
+
+            <strong>Carbon bound to dead organic biomass</strong>
+            <legend id="legend-cifor-peatdepth">
+                <ul class='legend-labels arvometsa arvometsa-maa'>
+                    <li><span style="background-color:rgba(47,10,91,255);color:#fff;">Now</span></li>
+                    or in
+                    <li><span style="background-color:rgba(47,10,91,255);color:#fff;">10</span></li>
+                    <li><span style="background-color:rgba(81,14,108,255);color:#fff;">20</span></li>
+                    <li><span style="background-color:rgba(113,25,110,255);color:#fff;">30</span></li>
+                    <li><span style="background-color:rgba(144,37,104,255);">40</span></li>
+                    <li><span style="background-color:rgba(176,49,91,255);">50</span></li>
+                    years
+                </ul>
+            </legend>
+            <output class='arvometsa-maa'></output>
+        </div>
+
+
         <div class='layer-card layer-disabled'>
             <div class='title'>Municipal forests</div>
             <div class="onoffswitch">

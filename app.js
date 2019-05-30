@@ -90,6 +90,11 @@ const layerGroups = {
         // Norway. TODO: refactor mavi-fields to a more generic name?
         'nibio-ar50-forests-fill', 'nibio-ar50-forests-outline', 'nibio-ar50-forests-sym',
     ],
+    'arvometsa': [
+        'arvometsa-fill',
+        'arvometsa-boundary',
+        'arvometsa-sym',
+    ],
     'mature-forests': [
         () => hideAllLayersMatchingFilter(x => /privately-owned-forests/.test(x)),
         'metsaan-stand-mature-fill', 'metsaan-stand-outline', 'metsaan-stand-mature-sym', 'metsaan-stand-mature-raster',
@@ -237,7 +242,7 @@ const enableDefaultLayers = () => {
 
 
 // NB: By using the '/' operator instead of '*', we get rid of float bugs like 1.2000000000004.
-const roundToSignificantDigits = (n, expr) => [
+const roundToSignificantDigitsPos = (n, expr) => [
     // Multiply back by true scale
     '/',
     // Round to two significant digits:
@@ -249,6 +254,12 @@ const roundToSignificantDigits = (n, expr) => [
         ],
     ],
     ['^', 10, ['-', n-1, ['floor', ['log10', expr]]]],
+]
+const roundToSignificantDigits = (n, expr) => [
+    'case',
+    ['==', 0, expr], 0,
+    ['>', 0, expr], ['*', -1, roundToSignificantDigitsPos(n, ['*', -1, expr])],
+    roundToSignificantDigitsPos(n, expr),
 ]
 
 // Ruokavirasto field plots CO2e formulas:
@@ -1104,6 +1115,218 @@ map.on('load', () => {
             ],
         }
     })
+
+
+    const arvometsaDatasets = [
+        'arvometsa1',
+        'arvometsa2',
+        'arvometsa_alaharvennus',
+        'arvometsa_eihakata',
+        'arvometsa_jatkuva',
+        'arvometsa_maxhakkuu',
+        'arvometsa_ylaharvennus',
+    ];
+
+    arvometsaDatasets.forEach(x => {
+        addSource(x, {
+            "type": "vector",
+            "tiles": [`https://map.buttonprogram.org/${x}-tiles/{z}/{x}/{y}.pbf.gz?v=2`],
+            // "minzoom": 12,
+            "maxzoom": 14,
+            bounds: [19, 59, 32, 71], // Finland
+            attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
+        });
+    })
+
+    document.querySelectorAll('.arvometsa-projections button').forEach(e => {
+        let dataset = e.className;
+        e.addEventListener('click', () => {
+            if (dataset === 'arvometsa_alaharvennus') dataset = 'arvometsa1';
+            if (dataset === 'arvometsa_eihakata') dataset = 'arvometsa2';
+            window.arvometsaDataset = dataset;
+            window.replaceArvometsa();
+        })
+    });
+
+    document.querySelectorAll('.arvometsa li span').forEach(e => {
+        const classes = [...e.parentElement.parentElement.classList];
+        const attr = classes.filter(x => /arvometsa-/.test(x))[0].split(/-/)[1];
+        const years = e.textContent.trim();
+        const suffix = years === 'Now' ? '0' : years[0];
+        e.addEventListener('click', () => {
+            window.arvometsaAttr = attr + suffix;
+            window.replaceArvometsa();
+        })
+    })
+
+    const arvometsaCO2eValue = attr => [
+        'case', ['has', attr], [
+            '*',
+            ['/', ['get', attr], 10], // C: tons/10 years -> C: tons/y
+            3.6, // C -> CO2
+            ['/', 1, ['get', 'area']], // divide total by area in hectares -> CO2/ha/y
+        ],
+        0,
+    ];
+
+    addLayer({
+        'id': 'arvometsa-fill',
+        'source': 'arvometsa1',
+        'source-layer': 'default',
+        'type': 'fill',
+        'paint': {
+            // 'fill-color': 'red',
+            'fill-color': areaCO2eFillColor(arvometsaCO2eValue('cbf1')),
+            // 'fill-opacity': fillOpacity, // Set by fill-color rgba
+        },
+    })
+    addLayer({
+        'id': 'arvometsa-boundary',
+        'source': 'arvometsa1',
+        'source-layer': 'default',
+        'type': 'line',
+        'paint': {
+            'line-opacity': 0.5,
+        }
+    })
+
+    window.arvometsaAttr = 'cbf1';
+    window.arvometsaDataset = 'arvometsa1';
+    window.replaceArvometsa = () => {
+        const attr = window.arvometsaAttr;
+        const dataset = window.arvometsaDataset;
+
+        // attr like 'cbt1', 'cbt2', 'bio0', 'maa0'
+        // NB: special handling for maa0+
+        // dataset like 'arvometsa1-tiles'
+        {
+            const layer = {
+                'id': 'arvometsa-fill',
+                'source': dataset,
+                'source-layer': 'default',
+                'type': 'fill',
+                'paint': {
+                    // 'fill-color': 'red',
+                    'fill-color': areaCO2eFillColor(arvometsaCO2eValue(attr)),
+                    // 'fill-opacity': fillOpacity, // Set by fill-color rgba
+                },
+            };
+            map.removeLayer(layer.id);
+            map.addLayer(layer);
+        }
+        const layer = {
+            'id': 'arvometsa-sym',
+            'source': dataset,
+            'source-layer': 'default',
+            'type': 'symbol',
+            "minzoom": 15.5,
+            // 'maxzoom': zoomThreshold,
+            "paint": {},
+            "layout": {
+                "text-size": 20,
+                "symbol-placement": "point",
+                "text-font": ["Open Sans Regular"],
+                "text-field": [
+                    "case", ["has", attr], [
+                        "concat",
+                        roundToSignificantDigits(2, arvometsaCO2eValue(attr)),
+                        " t CO2e/y",
+                        [
+                            'case', ['>', 0, arvometsaCO2eValue(attr)],
+                            '\n(net carbon source)',
+                            '',
+                        ],
+                    ], "",
+                ],
+            }
+        };
+        map.removeLayer(layer.id);
+        map.addLayer(layer);
+
+
+        const baseAttrs = `
+        cbf1 cbf2 cbf3 cbf4 cbf5
+        cbt1 cbt2 cbt3 cbt4 cbt5
+        bio0 bio1 bio2 bio3 bio4 bio5
+        maa0 maa1 maa2 maa3 maa4 maa5
+       `.trim();
+
+        function sleep (time) {
+            return new Promise((resolve) => setTimeout(resolve, time));
+        }
+
+        // required workaround. Allow mapbox GL to compute something first?
+        sleep(200).then(() => {
+
+            const totals = {};
+            baseAttrs.split(/\s+/).forEach(attr => {
+                totals[attr] = 0;
+            });
+
+            map.queryRenderedFeatures(dataset).filter(x => x.source === dataset).forEach(x => {
+                const p = x.properties;
+                if (!p.cbt1) return;
+                for (a in totals) {
+                    if (a in p) totals[a] += p[a];
+                }
+            });
+
+            const W = 420;
+            const H = 150;
+            const Hbar = 110;
+
+            baseAttrs.split('\n').forEach(attrGroup => {
+                const prefix = attrGroup.trim().slice(0,3);
+                const attrs = attrGroup.trim().split(/ /);
+
+                const outputElem = document.querySelector(`output.arvometsa-${prefix}`);
+
+                const maaBioDataset = ['arvometsa1', 'arvometsa2'].indexOf(dataset) !== -1;
+                const maaBioAttr = ['maa', 'bio'].indexOf(prefix) !== -1;
+                // This latter condition should not be necessary. Alas, mapbox-gl has some super strange bug.
+                if (totals[attrs[0]] === 0 || (!maaBioDataset && maaBioAttr)) {
+                    outputElem.innerHTML = '';
+                    return;
+                }
+
+                const maxValue = Math.max(...attrs.map(a => totals[a]));
+                const co2maxVal = 3.6 * maxValue / 10;
+                const co2eMaxStr = (+co2maxVal.toPrecision(2)).toLocaleString();
+                const co2eMidStr = (+(co2maxVal/2).toPrecision(2)).toLocaleString();
+
+                let svg = `
+                <svg class="chart" width="${W}" height="${H}" aria-labelledby="title desc" role="img">
+                <g>
+                    <text x="${30*attrs.length + 30}" y="15">${co2eMaxStr} tons CO2e/y</text>
+                    <text x="${30*attrs.length + 30}" y="65">${co2eMidStr} tons CO2e/y</text>
+                    <text x="${30*attrs.length + 30}"  y="110">0 tons CO2e/y</text>
+                </g>
+                `;
+
+                attrs.forEach((x,i) => {
+                    const v = totals[x] / maxValue;
+                    const co2val = 3.6 * totals[x];
+                    const co2e = (+co2val.toPrecision(2)).toLocaleString() + ' tons of CO2 per decade';
+                    svg += `
+                    <g class="bar">
+                    <rect width="20" height="${v*Hbar}" y="${Hbar*(1-v)}" x=${i*30} title="${co2e}"></rect>
+                    <text x="${i*30}" y="130" dy=".35em">${(+x[3])*10}</text>
+                    </g>
+                    `;
+                });
+                svg += `
+                <g>
+                <text x="${attrs.length*30}" y="130" dy=".35em">years from now</text>
+                </g>
+                `
+                svg += '</svg><br/>';
+                outputElem.innerHTML = svg;
+            });
+
+        }); // /sleep
+
+    };
+
 
     addSource('metsaan-stand-raster', {
         "type": "raster",

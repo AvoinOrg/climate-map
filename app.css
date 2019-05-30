@@ -259,3 +259,10 @@ legend li {
     margin: 0 10px;
     border: 1px solid black;
 }
+
+.arvometsa li span:hover {
+    cursor: pointer;
+}
+g.bar rect {
+    fill: rgba(31, 23, 23, 0.8);
+}
