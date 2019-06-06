@@ -43,6 +43,24 @@
 </head>
 
 <body>
+    <noscript style="height: 100%; display: grid; margin-top: 100px; position: relative; z-index: 1000 !important;">
+        <a href="https://www.enable-javascript.com/" style="margin: auto;">
+            <h1>This website requires Javascript.</h1>
+        </a>
+    </noscript>
+
+    <script>
+        var msie = window.navigator.userAgent.indexOf('MSIE ') !== -1; // IE 10 or older
+        if (msie) {
+            alert('This website requires Internet Explorer 11 or newer to run');
+
+            (function(u) {
+                var s = document.createElement('script'); s.async = true; s.src = u;
+                var b = document.getElementsByTagName('script')[0]; b.parentNode.insertBefore(s, b);
+            })('//updatemybrowser.org/umb.js');
+        }
+    </script>
+
     <div id='map'></div>
 
     <!-- These buttons are toggled on through -->
