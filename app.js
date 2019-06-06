@@ -135,6 +135,9 @@ const layerGroups = {
     'corine_clc2018': ['corine_clc2018-fill', 'corine_clc2018-outline', 'corine_clc2018-sym'],
 
     'bogs': ['gtk-turvevarat-suot-fill'],
+
+    'berries-lingonberry': ['berries-lingonberry-raster'],
+    'berries-bilberry': ['berries-bilberry-raster'],
 };
 
 const toggleGroup = (group, forcedState = undefined) => {
@@ -1137,6 +1140,43 @@ map.on('load', () => {
             attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
         });
     })
+
+    // Forecasts are made using data from the National Forest Inventory at http://kartta.metla.fi/
+    // License: http://kartta.metla.fi/MVMI-Lisenssi.pdf
+    addSource('berries-lingonberry', {
+        type: 'raster',
+        'tiles': ['https://map.buttonprogram.org/marjakartta-puolukka/{z}/{x}/{y}.png?v=6'],
+        'tileSize': 256,
+        "maxzoom": 12,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="https://luke.fi/">© Natural Resources Institute Finland (Luke)</a>',
+    })
+    addLayer({
+        'id': 'berries-lingonberry-raster',
+        'source': 'berries-lingonberry',
+        'type': 'raster',
+        paint: {
+            'raster-opacity': 0.7,
+        },
+    });
+
+    addSource('berries-bilberry', {
+        type: 'raster',
+        'tiles': ['https://map.buttonprogram.org/marjakartta-mustikka/{z}/{x}/{y}.png?v=6'],
+        'tileSize': 256,
+        "maxzoom": 12,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="https://luke.fi/">© Natural Resources Institute Finland (Luke)</a>',
+    })
+    addLayer({
+        'id': 'berries-bilberry-raster',
+        'source': 'berries-bilberry',
+        'type': 'raster',
+        paint: {
+            'raster-opacity': 0.7,
+        },
+    });
+
 
     document.querySelectorAll('.arvometsa-projections button').forEach(e => {
         let dataset = e.className;
