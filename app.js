@@ -134,7 +134,7 @@ const layerGroups = {
     'snow_cover_loss': ['snow_cover_loss-fill', 'snow_cover_loss-sym'],
     'corine_clc2018': ['corine_clc2018-fill', 'corine_clc2018-outline', 'corine_clc2018-sym'],
 
-    'bogs': ['gtk-turvevarat-suot-fill'],
+    'bogs': ['gtk-turvevarat-suot-fill', 'fi-mml-suot-fill'],
 
     'berries-lingonberry': ['berries-lingonberry-raster'],
     'berries-bilberry': ['berries-bilberry-raster'],
@@ -2307,6 +2307,25 @@ map.on('load', () => {
 
 
 
+    addSource('fi-mml-suot', {
+        "type": "vector",
+        "tiles": ["https://map.buttonprogram.org/fi-mml-suot/{z}/{x}/{y}.pbf.gz?v=5"],
+        "minzoom": 0,
+        "maxzoom": 11,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="http://mml.fi/">© National Land Survey of Finland</a>',
+    });
+
+    addLayer({
+        'id': 'fi-mml-suot-fill',
+        'source': 'fi-mml-suot',
+        'source-layer': 'default',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'orange',
+            'fill-opacity': fillOpacity,
+        },
+    })
 
     /* Attributes in 'gtk-turvevarat':
     suon_id suon_nimi n e korkeus_mmpy_min korkeus_mmpy_max
