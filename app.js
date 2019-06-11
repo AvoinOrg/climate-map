@@ -684,7 +684,7 @@ map.on('load', () => {
         'source': {
             'type': 'raster',
             'tiles': [
-                'https://maps.terramonitor.com/9c2040ec0fb91cfdfd723496515d759a77b363ee/pro/wms?bbox={bbox-epsg-3857}&format=image/jpeg&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=rgb&styles=',
+                `https://tm2.terramonitor.com/${process.env.TERRAMONITOR_KEY}/rgb/{z}/{x}/{y}.png`,
             ],
             'tileSize': 256,
             // "maxzoom": 16, // After zoom level 16 the images (used to) get blurrier
