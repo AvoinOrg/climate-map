@@ -1361,8 +1361,8 @@ map.on('load', () => {
                 if (prefix === 'npv') {
                     const v = (+(nC_to_CO2 * totals.npv3).toPrecision(2)).toLocaleString();
                     const out = `<br/>${v} tons CO<sub>2</sub>e`;
-                    if (outputElem.innerHTML !== out)
-                        outputElem.innerHTML = out;
+                    if (outputElem.sourceHTML !== out)
+                        outputElem.innerHTML = outputElem.sourceHTML = out;
                     return;
                 }
                 const unit = cumulative ? 'tons CO2e' : 'tons CO2e/y'
@@ -1396,8 +1396,8 @@ map.on('load', () => {
                 </g>
                 `
                 svg += '</svg><br/>';
-                if (outputElem.innerHTML !== svg)
-                    outputElem.innerHTML = svg;
+                if (outputElem.sourceHTML !== svg)
+                    outputElem.innerHTML = outputElem.sourceHTML = svg;
             });
 
         }
