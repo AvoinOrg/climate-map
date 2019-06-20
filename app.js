@@ -112,6 +112,8 @@ const layerGroups = {
     'mavi-fields': [
         () => hideAllLayersMatchingFilter(x => x === 'valio'),
         'mavi-plohko-fill', 'mavi-plohko-outline', 'mavi-plohko-co2',
+        'mavi-plohko-removed-fill',
+        'mavi-plohko-removed-outline',
         // Norway. TODO: refactor mavi-fields to a more generic name?
         'nibio-soils-fill', 'nibio-soils-outline', 'nibio-soils-sym',
     ],
@@ -436,9 +438,18 @@ const gtkLukeSoilTypes = {
     19541321: 'Liejusavi (LjSa) RT',
 };
 
+const genericPopupHandler = (layer, fn) => {
+    map.on('click', layer, fn);
+    map.on('mouseenter', layer, function () {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', layer, function () {
+        map.getCanvas().style.cursor = '';
+    });
+}
 
 const setupPopupHandlerForMaviPeltolohko = layerName => {
-    map.on('click', layerName, e => {
+    genericPopupHandler(layerName, e => {
         const f = e.features[0];
         const { soil_type1, soil_type1_ratio, soil_type2, soil_type2_ratio, pinta_ala } = f.properties;
         const areaHa = 0.01 * +pinta_ala;
@@ -452,7 +463,7 @@ const setupPopupHandlerForMaviPeltolohko = layerName => {
             soil_type2_ratio <= 0 ? 1 : soil_type1_ratio / (soil_type1_ratio + soil_type2_ratio)
         );
         const normalizedSoilRatioPct = Math.round(100 * normalizedSoilRatio);
-        let html = ''
+        let html = '<strong>Field plot</strong><br/>'
         if (soil_type1 !== -1) {
             html += `
                 Primary soil: ${gtkLukeSoilTypes[soil_type1]} (${normalizedSoilRatioPct} %)
@@ -475,12 +486,6 @@ const setupPopupHandlerForMaviPeltolohko = layerName => {
         .setLngLat(e.lngLat)
         .setHTML(html)
         .addTo(map);
-    });
-    map.on('mouseenter', layerName, function () {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', layerName, function () {
-        map.getCanvas().style.cursor = '';
     });
 }
 
@@ -638,7 +643,7 @@ const metsaanFiAccessibilityClassifier = {
 
 
 const setupPopupHandlerForMetsaanFiStandData = layerName => {
-    map.on('click', layerName, e => {
+    genericPopupHandler(layerName, e => {
         const f = e.features[0];
         const p = f.properties;
 
@@ -675,12 +680,6 @@ const setupPopupHandlerForMetsaanFiStandData = layerName => {
         .setLngLat(e.lngLat)
         .setHTML(html)
         .addTo(map);
-    });
-    map.on('mouseenter', layerName, function () {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', layerName, function () {
-        map.getCanvas().style.cursor = '';
     });
 }
 
@@ -890,6 +889,49 @@ map.on('load', () => {
 
     setupPopupHandlerForMaviPeltolohko('mavi-plohko-fill');
 
+    addSource('mavi-peltolohko-removed', {
+        "type": "vector",
+        "tiles": ["https://map.buttonprogram.org/mavi-peltolohko-removed-2017b/{z}/{x}/{y}.pbf.gz?v=4"],
+        "maxzoom": 11,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="https://www.ruokavirasto.fi/">© Finnish Food Authority</a>',
+    });
+    addLayer({
+        'id': 'mavi-plohko-removed-fill',
+        'source': 'mavi-peltolohko-removed',
+        'source-layer': 'default',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'rgb(150, 52, 52)',
+            'fill-opacity': fillOpacity,
+        }
+    })
+    addLayer({
+        'id': 'mavi-plohko-removed-outline',
+        'source': 'mavi-peltolohko-removed',
+        'source-layer': 'default',
+        'type': 'line',
+        "minzoom": 11,
+        'paint': {
+            'line-opacity': 0.75,
+        }
+    })
+    genericPopupHandler('mavi-plohko-removed-fill', e => {
+        const f = e.features[0];
+        const { pinta_ala, ymparys, lohko } = f.properties;
+        const areaHa = 0.01 * +pinta_ala;
+
+        html = `<strong>A former field plot</strong>
+        <br/><strong>Area</strong>: ${areaHa.toFixed(1)} hectares
+        <br/><strong>Perimeter</strong>: ${(+ymparys).toFixed(0)} metres
+        <br/><strong>Plot ID:</strong>: ${lohko}
+        `
+        new mapboxgl.Popup()
+        .setLngLat(e.lngLat)
+        .setHTML(html)
+        .addTo(map);
+    });
+
 
     addSource('helsinki-buildings', {
         "type": "vector",
@@ -994,7 +1036,7 @@ map.on('load', () => {
             "text-field": "",
         },
     })
-    map.on('click', 'helsinki-puretut-fill', e => {
+    genericPopupHandler('helsinki-puretut-fill', e => {
         const htmlParts = [];
         const buildingIdMap = {};
         e.features.forEach(f => {
@@ -1036,12 +1078,6 @@ map.on('load', () => {
         .setLngLat(e.lngLat)
         .setHTML(html)
         .addTo(map);
-    });
-    map.on('mouseenter', 'helsinki-puretut-fill', function () {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', 'helsinki-puretut-fill', function () {
-        map.getCanvas().style.cursor = '';
     });
 
 
@@ -1812,7 +1848,7 @@ map.on('load', () => {
         }
     })
 
-    map.on('click', 'gfw_tree_plantations-fill', e => {
+    genericPopupHandler('gfw_tree_plantations-fill', e => {
         const f = e.features[0];
         const { image, spec_simp, type_text, area_ha, peat_ratio, avg_peatdepth } = f.properties;
 
@@ -1848,12 +1884,6 @@ map.on('load', () => {
         // .setHTML(`<iframe sandbox src="https://earthexplorer.usgs.gov/metadata/12864/${image}/"></iframe>`)
         .setHTML(html)
         .addTo(map);
-    });
-    map.on('mouseenter', 'gfw_tree_plantations-fill', function () {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', 'gfw_tree_plantations-fill', function () {
-        map.getCanvas().style.cursor = '';
     });
 
 
@@ -2313,7 +2343,7 @@ map.on('load', () => {
         },
     })
 
-    map.on('click', 'hel-energiatodistukset-fill', e => {
+    genericPopupHandler('hel-energiatodistukset-fill', e => {
         let html='';
         e.features.forEach(f => {
             const p = f.properties;
@@ -2339,13 +2369,6 @@ map.on('load', () => {
         .setHTML(html)
         .addTo(map);
     });
-    map.on('mouseenter', 'hel-energiatodistukset-outline', function () {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', 'hel-energiatodistukset-outline', function () {
-        map.getCanvas().style.cursor = '';
-    });
-
 
 
 
@@ -2409,7 +2432,7 @@ map.on('load', () => {
             'fill-opacity': fillOpacity,
         },
     })
-    map.on('click', 'gtk-turvevarat-suot-fill', e => {
+    genericPopupHandler('gtk-turvevarat-suot-fill', e => {
         let html='';
         e.features.forEach(f => {
             const p = f.properties;
@@ -2448,12 +2471,6 @@ map.on('load', () => {
         .setLngLat(e.lngLat)
         .setHTML(html)
         .addTo(map);
-    });
-    map.on('mouseenter', 'gtk-turvevarat-suot-fill', function () {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', 'gtk-turvevarat-suot-fill', function () {
-        map.getCanvas().style.cursor = '';
     });
 
 
