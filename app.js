@@ -42,7 +42,7 @@ const layerGroupState = {
 
 // Set up event handlers for layer toggles, etc.
 window.addEventListener('load', () => {
-    [...document.querySelectorAll('.layer-card input')].forEach(el => {
+    [...document.querySelectorAll('.layer-card input[name="onoffswitch"]')].forEach(el => {
         if (el.disabled) return;
 
         el.addEventListener('change', () => toggleGroup(el.id));
@@ -112,6 +112,8 @@ const layerGroups = {
     'mavi-fields': [
         () => hideAllLayersMatchingFilter(x => x === 'valio'),
         'mavi-plohko-fill', 'mavi-plohko-outline', 'mavi-plohko-co2',
+        'mavi-plohko-removed-fill',
+        'mavi-plohko-removed-outline',
         // Norway. TODO: refactor mavi-fields to a more generic name?
         'nibio-soils-fill', 'nibio-soils-outline', 'nibio-soils-sym',
     ],
@@ -362,6 +364,16 @@ const areaCO2eFillColorStep = expr => [
 ];
 const areaCO2eFillColor = areaCO2eFillColorInterp;
 
+const arvometsaAreaCO2eFillColor = expr => [
+    'interpolate',
+    ['linear'],
+    expr,
+    -2, 'rgba(206, 3, 37, 0.65)',
+    0, 'rgba(255, 255, 0, 0.65)',
+    2, 'rgba(33, 228, 8, 0.65)',
+    5, 'rgba(4, 196, 221, 0.65)',
+];
+
 
 const originalLayerDefs = {};
 const addLayer = (layer, visibility = 'none') => {
@@ -426,9 +438,18 @@ const gtkLukeSoilTypes = {
     19541321: 'Liejusavi (LjSa) RT',
 };
 
+const genericPopupHandler = (layer, fn) => {
+    map.on('click', layer, fn);
+    map.on('mouseenter', layer, function () {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', layer, function () {
+        map.getCanvas().style.cursor = '';
+    });
+}
 
 const setupPopupHandlerForMaviPeltolohko = layerName => {
-    map.on('click', layerName, e => {
+    genericPopupHandler(layerName, e => {
         const f = e.features[0];
         const { soil_type1, soil_type1_ratio, soil_type2, soil_type2_ratio, pinta_ala } = f.properties;
         const areaHa = 0.01 * +pinta_ala;
@@ -442,7 +463,7 @@ const setupPopupHandlerForMaviPeltolohko = layerName => {
             soil_type2_ratio <= 0 ? 1 : soil_type1_ratio / (soil_type1_ratio + soil_type2_ratio)
         );
         const normalizedSoilRatioPct = Math.round(100 * normalizedSoilRatio);
-        let html = ''
+        let html = '<strong>Field plot</strong><br/>'
         if (soil_type1 !== -1) {
             html += `
                 Primary soil: ${gtkLukeSoilTypes[soil_type1]} (${normalizedSoilRatioPct} %)
@@ -465,12 +486,6 @@ const setupPopupHandlerForMaviPeltolohko = layerName => {
         .setLngLat(e.lngLat)
         .setHTML(html)
         .addTo(map);
-    });
-    map.on('mouseenter', layerName, function () {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', layerName, function () {
-        map.getCanvas().style.cursor = '';
     });
 }
 
@@ -628,7 +643,7 @@ const metsaanFiAccessibilityClassifier = {
 
 
 const setupPopupHandlerForMetsaanFiStandData = layerName => {
-    map.on('click', layerName, e => {
+    genericPopupHandler(layerName, e => {
         const f = e.features[0];
         const p = f.properties;
 
@@ -666,12 +681,6 @@ const setupPopupHandlerForMetsaanFiStandData = layerName => {
         .setHTML(html)
         .addTo(map);
     });
-    map.on('mouseenter', layerName, function () {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', layerName, function () {
-        map.getCanvas().style.cursor = '';
-    });
 }
 
 
@@ -684,7 +693,7 @@ map.on('load', () => {
         'source': {
             'type': 'raster',
             'tiles': [
-                'https://maps.terramonitor.com/9c2040ec0fb91cfdfd723496515d759a77b363ee/pro/wms?bbox={bbox-epsg-3857}&format=image/jpeg&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=rgb&styles=',
+                `https://tm2.terramonitor.com/${process.env.TERRAMONITOR_KEY}/rgb/{z}/{x}/{y}.png`,
             ],
             'tileSize': 256,
             // "maxzoom": 16, // After zoom level 16 the images (used to) get blurrier
@@ -880,6 +889,49 @@ map.on('load', () => {
 
     setupPopupHandlerForMaviPeltolohko('mavi-plohko-fill');
 
+    addSource('mavi-peltolohko-removed', {
+        "type": "vector",
+        "tiles": ["https://map.buttonprogram.org/mavi-peltolohko-removed-2017b/{z}/{x}/{y}.pbf.gz?v=4"],
+        "maxzoom": 11,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="https://www.ruokavirasto.fi/">© Finnish Food Authority</a>',
+    });
+    addLayer({
+        'id': 'mavi-plohko-removed-fill',
+        'source': 'mavi-peltolohko-removed',
+        'source-layer': 'default',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'rgb(150, 52, 52)',
+            'fill-opacity': fillOpacity,
+        }
+    })
+    addLayer({
+        'id': 'mavi-plohko-removed-outline',
+        'source': 'mavi-peltolohko-removed',
+        'source-layer': 'default',
+        'type': 'line',
+        "minzoom": 11,
+        'paint': {
+            'line-opacity': 0.75,
+        }
+    })
+    genericPopupHandler('mavi-plohko-removed-fill', e => {
+        const f = e.features[0];
+        const { pinta_ala, ymparys, lohko } = f.properties;
+        const areaHa = 0.01 * +pinta_ala;
+
+        html = `<strong>A former field plot</strong>
+        <br/><strong>Area</strong>: ${areaHa.toFixed(1)} hectares
+        <br/><strong>Perimeter</strong>: ${(+ymparys).toFixed(0)} metres
+        <br/><strong>Plot ID:</strong>: ${lohko}
+        `
+        new mapboxgl.Popup()
+        .setLngLat(e.lngLat)
+        .setHTML(html)
+        .addTo(map);
+    });
+
 
     addSource('helsinki-buildings', {
         "type": "vector",
@@ -984,7 +1036,7 @@ map.on('load', () => {
             "text-field": "",
         },
     })
-    map.on('click', 'helsinki-puretut-fill', e => {
+    genericPopupHandler('helsinki-puretut-fill', e => {
         const htmlParts = [];
         const buildingIdMap = {};
         e.features.forEach(f => {
@@ -1026,12 +1078,6 @@ map.on('load', () => {
         .setLngLat(e.lngLat)
         .setHTML(html)
         .addTo(map);
-    });
-    map.on('mouseenter', 'helsinki-puretut-fill', function () {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', 'helsinki-puretut-fill', function () {
-        map.getCanvas().style.cursor = '';
     });
 
 
@@ -1120,27 +1166,6 @@ map.on('load', () => {
     })
 
 
-    const arvometsaDatasets = [
-        'arvometsa1',
-        'arvometsa2',
-        'arvometsa_alaharvennus',
-        'arvometsa_eihakata',
-        'arvometsa_jatkuva',
-        'arvometsa_maxhakkuu',
-        'arvometsa_ylaharvennus',
-    ];
-
-    arvometsaDatasets.forEach(x => {
-        addSource(x, {
-            "type": "vector",
-            "tiles": [`https://map.buttonprogram.org/${x}-tiles/{z}/{x}/{y}.pbf.gz?v=2`],
-            // "minzoom": 12,
-            "maxzoom": 14,
-            bounds: [19, 59, 32, 71], // Finland
-            attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
-        });
-    })
-
     // Forecasts are made using data from the National Forest Inventory at http://kartta.metla.fi/
     // License: http://kartta.metla.fi/MVMI-Lisenssi.pdf
     addSource('berries-lingonberry', {
@@ -1178,11 +1203,31 @@ map.on('load', () => {
     });
 
 
+    const arvometsaDatasets = [
+        'BPHT001001_EiKäsitellä',
+        'BPHT002001_JatkuvaKasvatus',
+        'BPHT003001_AlaharvennusAvohakkuu',
+        'BPHT004001_YläharvennusJatkettuKiertoaika',
+    ];
+
+    arvometsaDatasets.forEach(x => {
+        addSource(x, {
+            "type": "vector",
+            "tiles": [`https://map.buttonprogram.org/arvometsa/${x}.001.csv-tiles/{z}/{x}/{y}.pbf.gz?v=0`],
+            // "minzoom": 12,
+            "maxzoom": 14,
+            bounds: [19, 59, 32, 71], // Finland
+            attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
+        });
+    })
+
     document.querySelectorAll('.arvometsa-projections button').forEach(e => {
         let dataset = e.className;
         e.addEventListener('click', () => {
-            if (dataset === 'arvometsa_alaharvennus') dataset = 'arvometsa1';
-            if (dataset === 'arvometsa_eihakata') dataset = 'arvometsa2';
+            if (dataset === 'arvometsa_alaharvennus') dataset = 'BPHT003001_AlaharvennusAvohakkuu';
+            if (dataset === 'arvometsa_ylaharvennus') dataset = 'BPHT004001_YläharvennusJatkettuKiertoaika';
+            if (dataset === 'arvometsa_jatkuva') dataset = 'BPHT002001_JatkuvaKasvatus';
+            if (dataset === 'arvometsa_eihakata') dataset = 'BPHT001001_EiKäsitellä';
             window.arvometsaDataset = dataset;
             window.replaceArvometsa();
         })
@@ -1199,46 +1244,59 @@ map.on('load', () => {
         })
     })
 
+    const nC_to_CO2 = 3.6;
     const arvometsaCO2eValue = attr => [
         'case', ['has', attr], [
             '*',
             ['/', ['get', attr], 10], // C: tons/10 years -> C: tons/y
-            3.6, // C -> CO2
+            nC_to_CO2, // C -> CO2
             ['/', 1, ['get', 'area']], // divide total by area in hectares -> CO2/ha/y
         ],
         0,
     ];
 
+
+    window.arvometsaAttr = 'cbf1';
+    window.arvometsaDataset = 'BPHT003001_AlaharvennusAvohakkuu';
+    window.arvometsaInterval = null;
+
     addLayer({
         'id': 'arvometsa-fill',
-        'source': 'arvometsa1',
+        'source': window.arvometsaDataset,
         'source-layer': 'default',
         'type': 'fill',
         'paint': {
             // 'fill-color': 'red',
-            'fill-color': areaCO2eFillColor(arvometsaCO2eValue('cbf1')),
+            'fill-color': arvometsaAreaCO2eFillColor(arvometsaCO2eValue('cbf1')),
             // 'fill-opacity': fillOpacity, // Set by fill-color rgba
         },
     })
     addLayer({
         'id': 'arvometsa-boundary',
-        'source': 'arvometsa1',
+        'source': window.arvometsaDataset,
         'source-layer': 'default',
         'type': 'line',
         'paint': {
             'line-opacity': 0.5,
         }
     })
+    // Dummy initial symbol layer to prevent warnings:
+    addLayer({
+        'id': 'arvometsa-sym',
+        'source': window.arvometsaDataset,
+        'source-layer': 'default',
+        'type': 'symbol',
+    })
 
-    window.arvometsaAttr = 'cbf1';
-    window.arvometsaDataset = 'arvometsa1';
     window.replaceArvometsa = () => {
         const attr = window.arvometsaAttr;
         const dataset = window.arvometsaDataset;
 
+        if (window.arvometsaInterval !== null) {
+            window.clearInterval(window.arvometsaInterval);
+        }
+
         // attr like 'cbt1', 'cbt2', 'bio0', 'maa0'
-        // NB: special handling for maa0+
-        // dataset like 'arvometsa1-tiles'
         {
             const layer = {
                 'id': 'arvometsa-fill',
@@ -1247,7 +1305,7 @@ map.on('load', () => {
                 'type': 'fill',
                 'paint': {
                     // 'fill-color': 'red',
-                    'fill-color': areaCO2eFillColor(arvometsaCO2eValue(attr)),
+                    'fill-color': arvometsaAreaCO2eFillColor(arvometsaCO2eValue(attr)),
                     // 'fill-opacity': fillOpacity, // Set by fill-color rgba
                 },
             };
@@ -1289,31 +1347,33 @@ map.on('load', () => {
         cbt1 cbt2 cbt3 cbt4 cbt5
         bio0 bio1 bio2 bio3 bio4 bio5
         maa0 maa1 maa2 maa3 maa4 maa5
+        npv2 npv3 npv4
        `.trim();
 
         function sleep (time) {
             return new Promise((resolve) => setTimeout(resolve, time));
         }
 
-        // required workaround. Allow mapbox GL to compute something first?
-        sleep(200).then(() => {
-
+        const updateGraphs = () => {
             const totals = {};
             baseAttrs.split(/\s+/).forEach(attr => {
                 totals[attr] = 0;
             });
 
-            map.queryRenderedFeatures(dataset).filter(x => x.source === dataset).forEach(x => {
+            map.queryRenderedFeatures(dataset)
+            .filter(x => x.source === dataset && x.layer.id === 'arvometsa-fill')
+            .forEach(x => {
                 const p = x.properties;
-                if (!p.cbt1) return;
+                if (p.cbt1 === null || p.cbt1 === undefined) return;
                 for (a in totals) {
-                    if (a in p) totals[a] += p[a];
+                    if (a in p) totals[a] += p[a] / p.area;
                 }
             });
 
             const W = 420;
             const H = 150;
             const Hbar = 110;
+            const cumulative = document.getElementById('arvometsa-cumulative').checked;
 
             baseAttrs.split('\n').forEach(attrGroup => {
                 const prefix = attrGroup.trim().slice(0,3);
@@ -1321,36 +1381,48 @@ map.on('load', () => {
 
                 const outputElem = document.querySelector(`output.arvometsa-${prefix}`);
 
-                const maaBioDataset = ['arvometsa1', 'arvometsa2'].indexOf(dataset) !== -1;
-                const maaBioAttr = ['maa', 'bio'].indexOf(prefix) !== -1;
-                // This latter condition should not be necessary. Alas, mapbox-gl has some super strange bug.
-                if (totals[attrs[0]] === 0 || (!maaBioDataset && maaBioAttr)) {
-                    outputElem.innerHTML = '';
-                    return;
-                }
-
+                const minValue = Math.min(0, Math.min(...attrs.map(a => totals[a])));
                 const maxValue = Math.max(...attrs.map(a => totals[a]));
-                const co2maxVal = 3.6 * maxValue / 10;
+
+                const cumulativeSum = attrs.map(a => totals[a]).reduce((a,b) => a+b, 0);
+                const delta = cumulative ? cumulativeSum : (maxValue - minValue);
+
+                if (delta === 0) return; // nothing to display
+                // console.log(prefix, cumulativeSum);
+
+                const co2maxVal = (cumulative ? cumulativeSum : (0.1 * maxValue)) * nC_to_CO2;
                 const co2eMaxStr = (+co2maxVal.toPrecision(2)).toLocaleString();
                 const co2eMidStr = (+(co2maxVal/2).toPrecision(2)).toLocaleString();
 
+                if (prefix === 'npv') {
+                    const v = (+(nC_to_CO2 * totals.npv3).toPrecision(2)).toLocaleString();
+                    const out = `<br/>${v} tons CO<sub>2</sub>e`;
+                    if (outputElem.sourceHTML !== out)
+                        outputElem.innerHTML = outputElem.sourceHTML = out;
+                    return;
+                }
+                const unit = cumulative ? 'tons CO2e' : 'tons CO2e/y'
                 let svg = `
                 <svg class="chart" width="${W}" height="${H}" aria-labelledby="title desc" role="img">
                 <g>
-                    <text x="${30*attrs.length + 30}" y="15">${co2eMaxStr} tons CO2e/y</text>
-                    <text x="${30*attrs.length + 30}" y="65">${co2eMidStr} tons CO2e/y</text>
-                    <text x="${30*attrs.length + 30}"  y="110">0 tons CO2e/y</text>
+                    <text x="${30*attrs.length + 30}" y="15">${co2eMaxStr} ${unit}</text>
+                    <text x="${30*attrs.length + 30}" y="65">${co2eMidStr} ${unit}</text>
+                    <text x="${30*attrs.length + 30}" y="110">0 ${unit}</text>
                 </g>
                 `;
 
+                let sum = 0;
                 attrs.forEach((x,i) => {
-                    const v = totals[x] / maxValue;
-                    const co2val = 3.6 * totals[x];
+                    if (cumulative) sum += totals[x];
+                    else sum = totals[x];
+                    const v = sum / delta;
+                    const year = (+x[3]) * 10;
+                    const co2val = nC_to_CO2 * sum;
                     const co2e = (+co2val.toPrecision(2)).toLocaleString() + ' tons of CO2 per decade';
                     svg += `
                     <g class="bar">
                     <rect width="20" height="${v*Hbar}" y="${Hbar*(1-v)}" x=${i*30} title="${co2e}"></rect>
-                    <text x="${i*30}" y="130" dy=".35em">${(+x[3])*10}</text>
+                    <text x="${i*30}" y="130" dy=".35em">${year}</text>
                     </g>
                     `;
                 });
@@ -1360,11 +1432,16 @@ map.on('load', () => {
                 </g>
                 `
                 svg += '</svg><br/>';
-                outputElem.innerHTML = svg;
+                if (outputElem.sourceHTML !== svg)
+                    outputElem.innerHTML = outputElem.sourceHTML = svg;
             });
 
-        }); // /sleep
+        }
 
+        window.arvometsaInterval = window.setInterval(updateGraphs, 500);
+        // Need to sleep a little first;
+        // to allow mapbox GL to compute something first? Maybe it's a bug.
+        sleep(200).then(updateGraphs);
     };
 
 
@@ -1771,7 +1848,7 @@ map.on('load', () => {
         }
     })
 
-    map.on('click', 'gfw_tree_plantations-fill', e => {
+    genericPopupHandler('gfw_tree_plantations-fill', e => {
         const f = e.features[0];
         const { image, spec_simp, type_text, area_ha, peat_ratio, avg_peatdepth } = f.properties;
 
@@ -1807,12 +1884,6 @@ map.on('load', () => {
         // .setHTML(`<iframe sandbox src="https://earthexplorer.usgs.gov/metadata/12864/${image}/"></iframe>`)
         .setHTML(html)
         .addTo(map);
-    });
-    map.on('mouseenter', 'gfw_tree_plantations-fill', function () {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', 'gfw_tree_plantations-fill', function () {
-        map.getCanvas().style.cursor = '';
     });
 
 
@@ -2272,7 +2343,7 @@ map.on('load', () => {
         },
     })
 
-    map.on('click', 'hel-energiatodistukset-fill', e => {
+    genericPopupHandler('hel-energiatodistukset-fill', e => {
         let html='';
         e.features.forEach(f => {
             const p = f.properties;
@@ -2298,13 +2369,6 @@ map.on('load', () => {
         .setHTML(html)
         .addTo(map);
     });
-    map.on('mouseenter', 'hel-energiatodistukset-outline', function () {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', 'hel-energiatodistukset-outline', function () {
-        map.getCanvas().style.cursor = '';
-    });
-
 
 
     addSource('fi-mml-suot', {
@@ -2387,7 +2451,7 @@ map.on('load', () => {
             'fill-opacity': fillOpacity,
         },
     })
-    map.on('click', 'gtk-turvevarat-suot-fill', e => {
+    genericPopupHandler('gtk-turvevarat-suot-fill', e => {
         let html='';
         e.features.forEach(f => {
             const p = f.properties;
@@ -2426,12 +2490,6 @@ map.on('load', () => {
         .setLngLat(e.lngLat)
         .setHTML(html)
         .addTo(map);
-    });
-    map.on('mouseenter', 'gtk-turvevarat-suot-fill', function () {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', 'gtk-turvevarat-suot-fill', function () {
-        map.getCanvas().style.cursor = '';
     });
 
 
