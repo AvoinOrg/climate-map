@@ -60,7 +60,8 @@ const layerOriginalPaint = {}
 const toggleBaseMapSymbols = () => {
     map.getStyle().layers.filter(x => x.type === 'symbol').forEach(layer => {
         if (layerGroupState.terramonitor) {
-            layer.paint = layerOriginalPaint[layer.id];
+            if (layer.paint !== undefined)
+                layer.paint = layerOriginalPaint[layer.id];
         } else {
             invertLayerTextHalo(layer);
         }
