@@ -67,8 +67,8 @@ const layerOriginalPaint = {}
 const toggleBaseMapSymbols = () => {
     map.getStyle().layers.filter(x => x.type === 'symbol').forEach(layer => {
         if (layerGroupState.terramonitor) {
-            if (layer.paint !== undefined)
-                layer.paint = layerOriginalPaint[layer.id];
+            // TODO: somehow delay this until after the layer style has fully loaded
+            if (layerOriginalPaint[layer.id].paint === undefined) return;
         } else {
             invertLayerTextHalo(layer);
         }
