@@ -702,7 +702,7 @@ const setupPopupHandlerForMetsaanFiStandData = layerName => {
         const p = f.properties;
 
         const soilTypeInfo = metsaanFiSoilTypes.filter(x => x[0] === p.soiltype)[0];
-        let soilEn=soilFi = '';
+        let _id=null, soilEn='', soilFi='';
         if (soilTypeInfo) {
             [_id, soilEn, soilFi] = soilTypeInfo;
         }
