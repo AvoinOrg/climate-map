@@ -266,3 +266,41 @@ legend li {
 g.bar rect {
     fill: rgba(31, 23, 23, 0.8);
 }
+
+
+.tooltip {
+    cursor: help;
+    position: relative;
+}
+
+.tooltip::before, .tooltip::after {
+    position: absolute;
+    left: 50%;
+    opacity: 0;
+    z-index: -100;
+}
+
+.tooltip:hover::before, .tooltip:focus::before, .tooltip:hover::after, .tooltip:focus::after {
+    opacity: 1;
+    z-index: 100;
+}
+
+.tooltip::before {
+    border-style: solid;
+    border-width: 1em .75em 0 .75em;
+    border-color: #3e474f transparent transparent transparent;
+    bottom: 100%;
+    margin-left: -.5em;
+    content: " ";
+}
+
+.tooltip::after {
+    background: #bec3c7;
+    border-radius: .25em;
+    bottom: 180%;
+    color: black;
+    width: 17.5em;
+    padding: 1em;
+    margin-left: -8.75em;
+    content: attr(title);
+}

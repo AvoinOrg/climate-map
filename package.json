@@ -13,6 +13,9 @@
     "parcel-bundler": "^1.12.1"
   },
   "dependencies": {
+    "@turf/boolean-within": "^6.0.1",
+    "@turf/helpers": "^6.1.4",
+    "@turf/meta": "^6.0.2",
     "autoprefixer": "^9.4.10",
     "babel-polyfill": "^6.26.0",
     "cli-real-favicon": "^0.0.7",

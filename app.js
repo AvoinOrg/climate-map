@@ -1,3 +1,10 @@
+import {default as turfBooleanWithin} from '@turf/boolean-within';
+import {feature as turfFeature} from '@turf/helpers';
+import {flattenReduce as turfFlattenReduce} from '@turf/meta';
+
+window.turfBooleanWithin = turfBooleanWithin;
+window.turfFeature = turfFeature;
+
 // This must be set, but the value is not needed here.
 mapboxgl.accessToken = 'not-needed';
 
@@ -202,14 +209,14 @@ const setEteCodes = (codes) => {
     eteAllState = !eteAllState;
     map.removeLayer(id)
     addLayer(layer, visibility = layerGroupState.ete ? 'visible' : 'none')
-    toggleGroup('ete', forcedState = layerGroupState.ete);
+    toggleGroup('ete', layerGroupState.ete);
 }
 
 const toggleEteCodes = () => {
     fetch('ete_codes.json').then(function (response) {
         response.json().then(e => {
             setEteCodes(e);
-            toggleGroup('ete', forcedState = true);
+            toggleGroup('ete', true);
         })
     })
 }
@@ -220,7 +227,7 @@ const hideAllLayersMatchingFilter = (filterFn) => {
         const layerIsInBackground = group in backgroundLayerGroups;
         if (layerIsInBackground) return;
         if (filterFn && !filterFn(group)) return;
-        toggleGroup(group, forcedState = false);
+        toggleGroup(group, false);
     })
 }
 
@@ -451,9 +458,29 @@ const genericPopupHandler = (layer, fn) => {
     });
 }
 
+// kg/ha/year
+const turkuAuraJokiEmissions = {
+    untreated: {
+        totN: 16.5, totP:  1.3, PP:  1.0, DRP: 0.4, solidMatter: 696,
+    },
+    treated: {
+        totN:  4.5, totP: 1.86, PP: 0.95, DRP: 0.91, solidMatter: 570,
+    },
+};
+
+// Simplified to be small enough to be included inline.
+// SELECT ST_AsGeoJSON(ST_Simplify(wkb_geometry,0.01)) FROM aura_joki_value; -- EPSG:4326
+//
+// The region was obtained from:
+// https://metsakeskus.maps.arcgis.com/apps/webappviewer/index.html?id=4ab572bdb631439d82f8aa8e0284f663
+// Also http://paikkatieto.ymparisto.fi/value/ (but it crashes the browser pretty easily!)
+const turkuAuraJokiValue = {"type":"Polygon","coordinates":[[[22.6103877990383,60.6344856066462],[22.5870539729996,60.6103588211101],[22.6233478269874,60.5751045114842],[22.6081371120958,60.5626995848525],[22.6246074790853,60.5589631167027],[22.611648617642,60.5406368750108],[22.6314716339555,60.5150340334038],[22.6092672609967,60.4938538962352],[22.4821141856954,60.4683242152806],[22.4659206330005,60.450887946384],[22.3802794072847,60.4674571656726],[22.3552912683436,60.4536851421538],[22.3834536221754,60.4463719123733],[22.3751925022249,60.4285164369009],[22.3333390617128,60.4151056439502],[22.3043323282709,60.4346888430041],[22.2864479797805,60.4347006782323],[22.2854431135939,60.416082779118],[22.2287674601729,60.4333815276613],[22.2759013480459,60.4641676815831],[22.2655255299015,60.4711140245897],[22.2847212938923,60.495795969575],[22.2673139070335,60.5176149346882],[22.3275866631243,60.5391575071753],[22.2614068872664,60.5673420543226],[22.2678055710792,60.5790404344835],[22.3609367082758,60.5887055316531],[22.3772772685066,60.603266563484],[22.3587439869585,60.6056855294338],[22.4099654349429,60.6259246878061],[22.3993092976892,60.6329568465254],[22.4175178677525,60.6469925120255],[22.5366813830571,60.6510082108548],[22.5450098508632,60.6360496225363],[22.6117183453645,60.6535058093237],[22.6103877990383,60.6344856066462]]]};
+const turkuAuraJokiValueFeature = turfFeature(turkuAuraJokiValue);
+window.turkuAuraJokiValueFeature = turkuAuraJokiValueFeature;
+
 const setupPopupHandlerForMaviPeltolohko = layerName => {
-    genericPopupHandler(layerName, e => {
-        const f = e.features[0];
+    genericPopupHandler(layerName, ev => {
+        const f = ev.features[0];
         const { soil_type1, soil_type1_ratio, soil_type2, soil_type2_ratio, pinta_ala } = f.properties;
         const areaHa = 0.01 * +pinta_ala;
 
@@ -485,8 +512,32 @@ const setupPopupHandlerForMaviPeltolohko = layerName => {
             Emission reduction potential: ${+fieldPlotCO2eFn(f.properties).toPrecision(2)} tons CO₂e per year
         `;
 
+        // Simplification: The field is in the catchment area if any part of it is.
+        const inTurkuAurajokiCatchmentArea = turfFlattenReduce(
+            turfFeature(f.geometry),
+            (v, feature) => v || turfBooleanWithin(feature, turkuAuraJokiValueFeature),
+            false
+        );
+
+        const e = turkuAuraJokiEmissions;
+        const pp = x => (+x.toPrecision(2)).toLocaleString();
+        if (inTurkuAurajokiCatchmentArea) {
+            html += `
+            <hr/>
+            <abbr class="tooltip" title="Väisänen & Puustinen (toim.), 2010">Current material emissions to the Aura river</abbr>:<br/>
+            Nitrogen: ${pp(e.untreated.totN * areaHa)} kg per year<br/>
+            Phosphorus: ${pp(e.untreated.totP * areaHa)} kg per year<br/>
+            Solid matter: ${pp(e.untreated.solidMatter * areaHa)} kg per year<br/>
+
+            <abbr class="tooltip" title="Puustinen ym. (2005), Puustinen (2013)">Potential emission reductions</abbr>:<br/>
+            Nitrogen: ${pp( (e.untreated.totN - e.treated.totN) * areaHa )} kg per year<br/>
+            Phosphorus: ${pp( (e.untreated.totP - e.treated.totP) * areaHa )} kg per year (a small increase)<br/>
+            Solid matter: ${pp( (e.untreated.solidMatter - e.treated.solidMatter) * areaHa )} kg per year<br/>
+            `;
+        }
+
         new mapboxgl.Popup()
-        .setLngLat(e.lngLat)
+        .setLngLat(ev.lngLat)
         .setHTML(html)
         .addTo(map);
     });
@@ -660,6 +711,7 @@ const setupPopupHandlerForMetsaanFiStandData = layerName => {
             `Completed at: ${p.ditch_completion_date || p.ditchingyear}` :
             '';
 
+        const pp = x => (+x.toPrecision(2)).toLocaleString();
         const html = `
             <table>
             <tr><th>Main tree species</th><td>${metsaanFiTreeSpecies[p.maintreespecies] || ''}</td></tr>
@@ -669,7 +721,7 @@ const setupPopupHandlerForMetsaanFiStandData = layerName => {
             <tr><th>Soil</th><td>${soilEn || soilFi || ''}</td></tr>
             <tr><th>Area</th><td>${+p.area.toPrecision(3)} hectares</td></tr>
             <tr><th>Accessibility</th><td>${metsaanFiAccessibilityClassifier[p.accessibility] || ''}</td></tr>
-            <tr><th>Approx. tree stem count</th><td>${(+(p.stemcount * p.area).toPrecision(2)).toLocaleString()}</td></tr>
+            <tr><th>Approx. tree stem count</th><td>${pp(p.stemcount * p.area)}</td></tr>
             <!-- <tr><th>TODO(Probably/Not/Yes/No): Mature enough for regeneration felling?</th><td>${p.regeneration_felling_prediction}</td></tr> -->
             <tr><th>Development class</th><td>${metsaanFiDevelopmentClass[p.developmentclass] || ''}</td></tr>
             <tr><th>Fertility classifier</th><td>${metsaanFiFertilityClass[p.fertilityclass] || ''}</td></tr>
@@ -1357,6 +1409,8 @@ map.on('load', () => {
             return new Promise((resolve) => setTimeout(resolve, time));
         }
 
+        const pp = x => (+x.toPrecision(2)).toLocaleString();
+
         const updateGraphs = () => {
             const totals = {};
             baseAttrs.split(/\s+/).forEach(attr => {
@@ -1394,11 +1448,11 @@ map.on('load', () => {
                 // console.log(prefix, cumulativeSum);
 
                 const co2maxVal = (cumulative ? cumulativeSum : (0.1 * maxValue)) * nC_to_CO2;
-                const co2eMaxStr = (+co2maxVal.toPrecision(2)).toLocaleString();
-                const co2eMidStr = (+(co2maxVal/2).toPrecision(2)).toLocaleString();
+                const co2eMaxStr = pp(co2maxVal);
+                const co2eMidStr = pp(co2maxVal/2);
 
                 if (prefix === 'npv') {
-                    const v = (+(nC_to_CO2 * totals.npv3).toPrecision(2)).toLocaleString();
+                    const v = pp(nC_to_CO2 * totals.npv3);
                     const out = `<br/>${v} tons CO<sub>2</sub>e`;
                     if (outputElem.sourceHTML !== out)
                         outputElem.innerHTML = outputElem.sourceHTML = out;
@@ -1421,7 +1475,7 @@ map.on('load', () => {
                     const v = sum / delta;
                     const year = (+x[3]) * 10;
                     const co2val = nC_to_CO2 * sum;
-                    const co2e = (+co2val.toPrecision(2)).toLocaleString() + ' tons of CO2 per decade';
+                    const co2e = `${pp(co2val)} tons of CO2 per decade`;
                     svg += `
                     <g class="bar">
                     <rect width="20" height="${v*Hbar}" y="${Hbar*(1-v)}" x=${i*30} title="${co2e}"></rect>
@@ -2351,16 +2405,17 @@ map.on('load', () => {
         e.features.forEach(f => {
             const p = f.properties;
 
+            const pp = x => (+x.toPrecision(2)).toLocaleString();
             const energyUse = p.e_luku * p.lämmitetty_nettoala
             const energyPerVolume = p.i_raktilav
-                ? `<br/>Energy use per m<sup>3</sup>: ${+((energyUse / p.i_raktilav).toPrecision(2)).toLocaleString()} kWh per year`
+                ? `<br/>Energy use per m<sup>3</sup>: ${pp(energyUse / p.i_raktilav)} kWh per year`
                 : '';
 
             const url = `https://www.energiatodistusrekisteri.fi/public_html?energiatodistus-id=${p.todistustunnus}&command=access&t=energiatodistus&p=energiatodistukset`
             html += `
             <p>
             Certificate ID: <a href="${url}">${p.todistustunnus}</a><br/>
-            Total energy consumption: ${(+energyUse.toPrecision(2)).toLocaleString()} kWh per year<br/>
+            Total energy consumption: ${pp(energyUse)} kWh per year<br/>
             Energy use per m<sup>2</sup>: ${p.e_luku} kWh per year
             ${energyPerVolume}
             </p>
@@ -2421,7 +2476,7 @@ map.on('load', () => {
     0	Muuttunut peruuttamattomasti: vesitalous muuttunut, kasvillisuuden muutos edennyt pitkälle. Kasvillisuus muuttunut kauttaaltaan ja sen kehitys osissa tapauksista edennyt turvekangasvaiheeseen. Suoveden pinta kauttaaltaan alentunut.
     */
 
-    gtkTurveVaratLuonnontilaisuusluokka = {
+    const gtkTurveVaratLuonnontilaisuusluokka = {
         "-1": 'Unclassified',
         0: 'Irreversible changes',
         1: 'Water flow thoroughly changed and there are clear changes to the vegetation',
