@@ -1490,13 +1490,13 @@ map.on('load', () => {
                 totals[mAttr] = 0;
             });
 
-            map.queryRenderedFeatures(dataset)
-            .filter(x => x.source === dataset && x.layer.id === 'arvometsa-fill')
+            map.queryRenderedFeatures('arvometsa')
+            .filter(x => x.source === 'arvometsa' && x.layer.id === 'arvometsa-fill')
             .forEach(x => {
                 const p = x.properties;
                 if (p.m0_cbt1 === null || p.m0_cbt1 === undefined) return;
                 if (!p.area) return; // hypothetical
-                for (a in totals) {
+                for (const a in totals) {
                     if (a in p) totals[a] += p[a] / p.area;
                 }
             });
