@@ -378,20 +378,30 @@
                 </div>
             </legend>
 
-            Projections for:
-            <div class="arvometsa-projections">
-            <button class="arvometsa_alaharvennus">Alaharvennus</button>
-            <button class="arvometsa_ylaharvennus">Yläharvennus</button>
-            <button class="arvometsa_jatkuva">Jatkuva</button>
-            <button class="arvometsa_eihakata">Ei hakata</button>
-            <!-- <button class="arvometsa_maxhakkuu">Maksimaalinen hakkuu</button> -->
-            </div>
+            <p>
+                Projections for:
+                <div class="arvometsa-projections">
+                    <button class="arvometsa_eihakata">Ei hakata</button>
+                    <button class="arvometsa_jatkuva">Jatkuva kasvatus</button>
+                    <button class="arvometsa_alaharvennus">Alaharvennus – avohakkuu</button>
+                    <button class="arvometsa_ylaharvennus">Yläharvennus – jatkettu kiertoaika</button>
+                    <button class="arvometsa_maxhakkuu">Metsän poisto</button>
+                </div>
+            </p>
+
             <label>Show cumulative carbon balance
-                <input id="arvometsa-cumulative" type="checkbox" checked>
+                <input id="arvometsa-cumulative" type="checkbox" checked/>
             </label>
+
             <br/>
 
-            <strong>Forest carbon balance (sequestration – releases)</strong>
+            <p class="info">
+                <strong>Carbon balance</strong>: Carbon balance is defined as the amount of carbon sequestered minus the amount released.
+                <br/>
+                Therefore a negative carbon balance means a plot of land that is a net carbon source,
+                and a positive value indicates a net carbon sink.
+            </p>
+            <strong>Forest CO2e balance (trees + soil)</strong>
             <legend id="legend-cifor-peatdepth">
                 <ul class='legend-labels arvometsa arvometsa-cbf'>
                     <li><span style="background-color:rgba(47,10,91,255);color:#fff;">10</span></li>
@@ -404,7 +414,7 @@
             </legend>
             <output class='arvometsa-cbf'></output>
 
-            <strong>Forestry carbon balance (sequestration – releases)</strong>
+            <strong>Forestry CO2e balance (trees + soil + products)</strong>
             <legend id="legend-cifor-peatdepth">
                 <ul class='legend-labels arvometsa arvometsa-cbt'>
                     <li><span style="background-color:rgba(47,10,91,255);color:#fff;">10</span></li>
@@ -417,7 +427,7 @@
             </legend>
             <output class='arvometsa-cbt'></output>
 
-            <strong>Carbon in living biomass</strong>
+            <strong>Carbon stock in trees</strong>
             <legend id="legend-cifor-peatdepth">
                 <ul class='legend-labels arvometsa arvometsa-bio'>
                     <li><span style="background-color:rgba(47,10,91,255);color:#fff;">Now</span></li>
@@ -432,7 +442,7 @@
             </legend>
             <output class='arvometsa-bio'></output>
 
-            <strong>Carbon bound to dead organic biomass</strong>
+            <strong>Carbon stock in soil</strong>
             <legend id="legend-cifor-peatdepth">
                 <ul class='legend-labels arvometsa arvometsa-maa'>
                     <li><span style="background-color:rgba(47,10,91,255);color:#fff;">Now</span></li>

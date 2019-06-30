@@ -533,7 +533,7 @@ const setupPopupHandlerForMaviPeltolohko = layerName => {
             `;
         }
 
-        new mapboxgl.Popup()
+        new mapboxgl.Popup({maxWidth: '360px'})
         .setLngLat(ev.lngLat)
         .setHTML(html)
         .addTo(map);
@@ -728,7 +728,7 @@ const setupPopupHandlerForMetsaanFiStandData = layerName => {
             <tr><th>Data source</th><td>${metsaanFiDatasources.filter(x => x.id === p.datasource)[0].description || ''}</td></tr>
         `;
 
-        new mapboxgl.Popup()
+        new mapboxgl.Popup({maxWidth: '360px'})
         .setLngLat(e.lngLat)
         .setHTML(html)
         .addTo(map);
@@ -1126,7 +1126,7 @@ map.on('load', () => {
             : ''
         ), '')
 
-        new mapboxgl.Popup()
+        new mapboxgl.Popup({maxWidth: '360px'})
         .setLngLat(e.lngLat)
         .setHTML(html)
         .addTo(map);
@@ -1255,32 +1255,32 @@ map.on('load', () => {
     });
 
 
-    const arvometsaDatasets = [
-        'BPHT001001_EiKäsitellä',
-        'BPHT002001_JatkuvaKasvatus',
-        'BPHT003001_AlaharvennusAvohakkuu',
-        'BPHT004001_YläharvennusJatkettuKiertoaika',
+    addSource('arvometsa', {
+        "type": "vector",
+        "tiles": [`https://map.buttonprogram.org/arvometsa/{z}/{x}/{y}.pbf.gz?v=0`],
+        // "minzoom": 12,
+        "maxzoom": 14,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
+    });
+
+    const arvometsaDatasetClasses = [
+        'arvometsa_eihakata',
+        'arvometsa_jatkuva',
+        'arvometsa_alaharvennus',
+        'arvometsa_ylaharvennus',
+        'arvometsa_maxhakkuu',
     ];
-
-    arvometsaDatasets.forEach(x => {
-        addSource(x, {
-            "type": "vector",
-            "tiles": [`https://map.buttonprogram.org/arvometsa/${x}.001.csv-tiles/{z}/{x}/{y}.pbf.gz?v=0`],
-            // "minzoom": 12,
-            "maxzoom": 14,
-            bounds: [19, 59, 32, 71], // Finland
-            attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
-        });
-    })
-
+    const arvometsaDatasetTitles = [
+        'No cuttings',
+        'Continuous cultivation',
+        'Alaharvennus – avohakkuu',
+        'Yläharvennus – jatkettu kiertoaika',
+        'Removal of the forest',
+    ];
     document.querySelectorAll('.arvometsa-projections button').forEach(e => {
-        let dataset = e.className;
         e.addEventListener('click', () => {
-            if (dataset === 'arvometsa_alaharvennus') dataset = 'BPHT003001_AlaharvennusAvohakkuu';
-            if (dataset === 'arvometsa_ylaharvennus') dataset = 'BPHT004001_YläharvennusJatkettuKiertoaika';
-            if (dataset === 'arvometsa_jatkuva') dataset = 'BPHT002001_JatkuvaKasvatus';
-            if (dataset === 'arvometsa_eihakata') dataset = 'BPHT001001_EiKäsitellä';
-            window.arvometsaDataset = dataset;
+            window.arvometsaDataset = arvometsaDatasetClasses.indexOf(e.className);
             window.replaceArvometsa();
         })
     });
@@ -1308,24 +1308,25 @@ map.on('load', () => {
     ];
 
 
-    window.arvometsaAttr = 'cbf1';
-    window.arvometsaDataset = 'BPHT003001_AlaharvennusAvohakkuu';
+    window.arvometsaAttr = 'cbt1';
+    window.arvometsaDataset = 0; // 'BPHT003001_AlaharvennusAvohakkuu';
     window.arvometsaInterval = null;
 
+    const mAttr = `m${window.arvometsaDataset}_${window.arvometsaAttr}`;
     addLayer({
         'id': 'arvometsa-fill',
-        'source': window.arvometsaDataset,
+        'source': 'arvometsa',
         'source-layer': 'default',
         'type': 'fill',
         'paint': {
             // 'fill-color': 'red',
-            'fill-color': arvometsaAreaCO2eFillColor(arvometsaCO2eValue('cbf1')),
+            'fill-color': arvometsaAreaCO2eFillColor(arvometsaCO2eValue(mAttr)),
             // 'fill-opacity': fillOpacity, // Set by fill-color rgba
         },
     })
     addLayer({
         'id': 'arvometsa-boundary',
-        'source': window.arvometsaDataset,
+        'source': 'arvometsa',
         'source-layer': 'default',
         'type': 'line',
         'paint': {
@@ -1335,7 +1336,7 @@ map.on('load', () => {
     // Dummy initial symbol layer to prevent warnings:
     addLayer({
         'id': 'arvometsa-sym',
-        'source': window.arvometsaDataset,
+        'source': 'arvometsa',
         'source-layer': 'default',
         'type': 'symbol',
     })
@@ -1343,6 +1344,7 @@ map.on('load', () => {
     window.replaceArvometsa = () => {
         const attr = window.arvometsaAttr;
         const dataset = window.arvometsaDataset;
+        const mAttr = `m${dataset}_${attr}`
 
         if (window.arvometsaInterval !== null) {
             window.clearInterval(window.arvometsaInterval);
@@ -1352,12 +1354,12 @@ map.on('load', () => {
         {
             const layer = {
                 'id': 'arvometsa-fill',
-                'source': dataset,
+                'source': 'arvometsa',
                 'source-layer': 'default',
                 'type': 'fill',
                 'paint': {
                     // 'fill-color': 'red',
-                    'fill-color': arvometsaAreaCO2eFillColor(arvometsaCO2eValue(attr)),
+                    'fill-color': arvometsaAreaCO2eFillColor(arvometsaCO2eValue(mAttr)),
                     // 'fill-opacity': fillOpacity, // Set by fill-color rgba
                 },
             };
@@ -1366,7 +1368,7 @@ map.on('load', () => {
         }
         const layer = {
             'id': 'arvometsa-sym',
-            'source': dataset,
+            'source': 'arvometsa',
             'source-layer': 'default',
             'type': 'symbol',
             "minzoom": 15.5,
@@ -1377,12 +1379,12 @@ map.on('load', () => {
                 "symbol-placement": "point",
                 "text-font": ["Open Sans Regular"],
                 "text-field": [
-                    "case", ["has", attr], [
+                    "case", ["has", mAttr], [
                         "concat",
-                        roundToSignificantDigits(2, arvometsaCO2eValue(attr)),
+                        roundToSignificantDigits(2, arvometsaCO2eValue(mAttr)),
                         " t CO2e/y",
                         [
-                            'case', ['>', 0, arvometsaCO2eValue(attr)],
+                            'case', ['>', 0, arvometsaCO2eValue(mAttr)],
                             '\n(net carbon source)',
                             '',
                         ],
@@ -1402,23 +1404,98 @@ map.on('load', () => {
         npv2 npv3 npv4
        `.trim();
 
+        const abbrTitles = {
+            cbf: 'Forest CO2e balance (trees + soil)',
+            cbt: 'Forestry CO2e balance (trees + soil + products)',
+            bio: 'Carbon stock in trees',
+            maa: 'Carbon stock in soil',
+            npv: 'Discounted Net Present Carbon Value',
+       }
+
+       const pp = x => (+x.toPrecision(2)).toLocaleString();
+
+       genericPopupHandler('arvometsa-fill', e => {
+            const f = e.features[0];
+            const p = f.properties;
+
+            
+            let html = `<strong>${p.area} hectares</strong>
+            <table>
+            <tr><th colspan="1" rowspan="2">Quantity<br/><small>carbon, tons</small></th><th colspan="6">Years from now</th></tr>
+            <tr><th>0</th><th>10</th><th>20</th><th>30</th><th>40</th><th>50</th></tr>
+        `;
+
+            const bestMethods = {};
+            const bestValues = {};
+            for (const a in p) {
+                if (!/^m\d_/.test(a)) continue;
+                const baseAttr = a.substr(3);
+                const datasetIdx = +a[1];
+                if (!(baseAttr in bestValues) || p[a] > bestValues[baseAttr]) {
+                    bestValues[baseAttr] = p[a];
+                    bestMethods[baseAttr] = datasetIdx;
+                }
+            }
+
+            arvometsaDatasetTitles.forEach((name, dataset) => {
+                html += `<tr><th colspan="7">${name}</th><th>`;
+
+                baseAttrs.split('\n').forEach(attrGroup => {
+                    const prefix = attrGroup.trim().slice(0,3);
+                    if (prefix === 'npv') {
+                        const attr = `m${dataset}_npv3`;
+                        const tag = bestMethods[attr.substr(3)] === dataset ? 'th' : 'td';
+                        html += `
+                        <tr><td><abbr title="${abbrTitles[prefix]}">${prefix.toUpperCase()}</abbr></td>
+                        <${tag}>${pp(p[attr]*p.area)}</${tag}>
+                        <td colspan="5"></td>
+                        </tr>
+                        `;
+                        return;
+                    }
+
+                    html += `<tr><td><abbr title="${abbrTitles[prefix]}">${prefix==='maa' ? 'SOIL' : prefix.toUpperCase()}</abbr></td>`;
+                    const attrs = attrGroup.trim().split(/ /).map(attr => `m${dataset}_${attr}`);
+
+                    if (attrs[0][ attrs[0].length-1 ] !== '0') html += `<td></td>`;
+
+                    attrs.forEach(attr => {
+                        const tag = bestMethods[attr.substr(3)] === dataset ? 'th' : 'td';
+                        html += `<${tag}>${pp(p[attr]*p.area)}</${tag}>`;
+                    })
+                    html += '</tr>';
+
+                });    
+
+            });
+            html += `</table>`
+
+            new mapboxgl.Popup({maxWidth: '360px'})
+            .setLngLat(e.lngLat)
+            .setHTML(html)
+            .addTo(map);
+        });
+    
+
         function sleep (time) {
             return new Promise((resolve) => setTimeout(resolve, time));
         }
 
-        const pp = x => (+x.toPrecision(2)).toLocaleString();
 
         const updateGraphs = () => {
+            const dataset = window.arvometsaDataset;
             const totals = {};
             baseAttrs.split(/\s+/).forEach(attr => {
-                totals[attr] = 0;
+                const mAttr = `m${dataset}_${attr}`;
+                totals[mAttr] = 0;
             });
 
             map.queryRenderedFeatures(dataset)
             .filter(x => x.source === dataset && x.layer.id === 'arvometsa-fill')
             .forEach(x => {
                 const p = x.properties;
-                if (p.cbt1 === null || p.cbt1 === undefined) return;
+                if (p.m0_cbt1 === null || p.m0_cbt1 === undefined) return;
+                if (!p.area) return; // hypothetical
                 for (a in totals) {
                     if (a in p) totals[a] += p[a] / p.area;
                 }
@@ -1431,7 +1508,7 @@ map.on('load', () => {
 
             baseAttrs.split('\n').forEach(attrGroup => {
                 const prefix = attrGroup.trim().slice(0,3);
-                const attrs = attrGroup.trim().split(/ /);
+                const attrs = attrGroup.trim().split(/ /).map(attr => `m${dataset}_${attr}`);
 
                 const outputElem = document.querySelector(`output.arvometsa-${prefix}`);
 
@@ -1442,7 +1519,6 @@ map.on('load', () => {
                 const delta = cumulative ? cumulativeSum : (maxValue - minValue);
 
                 if (delta === 0) return; // nothing to display
-                // console.log(prefix, cumulativeSum);
 
                 const co2maxVal = (cumulative ? cumulativeSum : (0.1 * maxValue)) * nC_to_CO2;
                 const co2eMaxStr = pp(co2maxVal);
@@ -1470,7 +1546,7 @@ map.on('load', () => {
                     if (cumulative) sum += totals[x];
                     else sum = totals[x];
                     const v = sum / delta;
-                    const year = (+x[3]) * 10;
+                    const year = (+x[6]) * 10;
                     const co2val = nC_to_CO2 * sum;
                     const co2e = `${pp(co2val)} tons of CO2 per decade`;
                     svg += `
