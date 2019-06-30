@@ -2446,6 +2446,190 @@ map.on('load', () => {
         },
     })
 
+    addSource('fi-mml-kaatopaikka', {
+        "type": "vector",
+        "tiles": ["https://data.avoinmap.com/fi-mml-maastotietokanta/layer_Kaatopaikka.geojsons/{z}/{x}/{y}.pbf.gz?v=0"],
+        "minzoom": 0,
+        "maxzoom": 11,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="http://mml.fi/">© National Land Survey of Finland</a>',
+    });
+
+    addLayer({
+        'id': 'fi-mml-kaatopaikka-fill',
+        'source': 'fi-mml-kaatopaikka',
+        'source-layer': 'default',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'black',
+            'fill-opacity': fillOpacity,
+        },
+    })
+
+    addSource('fi-mml-kansallispuisto', {
+        "type": "vector",
+        "tiles": ["https://data.avoinmap.com/fi-mml-maastotietokanta/layer_Kansallispuisto.geojsons/{z}/{x}/{y}.pbf.gz?v=0"],
+        "minzoom": 0,
+        "maxzoom": 13,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="http://mml.fi/">© National Land Survey of Finland</a>',
+    });
+
+    addLayer({
+        'id': 'fi-mml-kansallispuisto-fill',
+        'source': 'fi-mml-kansallispuisto',
+        'source-layer': 'default',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'green',
+            'fill-opacity': fillOpacity,
+        },
+    })
+
+    addSource('fi-mml-luonnonpuisto', {
+        "type": "vector",
+        "tiles": ["https://data.avoinmap.com/fi-mml-maastotietokanta/layer_Luonnonpuisto.geojsons/{z}/{x}/{y}.pbf.gz?v=0"],
+        "minzoom": 0,
+        "maxzoom": 13,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="http://mml.fi/">© National Land Survey of Finland</a>',
+    });
+
+    addLayer({
+        'id': 'fi-mml-luonnonpuisto-fill',
+        'source': 'fi-mml-luonnonpuisto',
+        'source-layer': 'default',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'green',
+            'fill-opacity': fillOpacity,
+        },
+    })
+
+    addSource('fi-mml-luonnonsuojelualue', {
+        "type": "vector",
+        "tiles": ["https://data.avoinmap.com/fi-mml-maastotietokanta/layer_Luonnonsuojelualue.geojsons/{z}/{x}/{y}.pbf.gz?v=0"],
+        "minzoom": 0,
+        "maxzoom": 13,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="http://mml.fi/">© National Land Survey of Finland</a>',
+    });
+
+    addLayer({
+        'id': 'fi-mml-luonnonsuojelualue-fill',
+        'source': 'fi-mml-luonnonsuojelualue',
+        'source-layer': 'default',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'green',
+            'fill-opacity': fillOpacity,
+        },
+    })
+
+    addSource('fi-mml-jarvet', {
+        "type": "vector",
+        "tiles": ["https://data.avoinmap.com/fi-mml-maastotietokanta/layer_Jarvi.geojsons/{z}/{x}/{y}.pbf.gz?v=0"],
+        "minzoom": 0,
+        "maxzoom": 12,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="http://mml.fi/">© National Land Survey of Finland</a>',
+    });
+
+    addLayer({
+        'id': 'fi-mml-jarvet-fill',
+        'source': 'fi-mml-jarvet',
+        'source-layer': 'default',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'blue',
+            'fill-opacity': fillOpacity,
+        },
+    })
+
+    addSource('fi-mml-koski', {
+        "type": "vector",
+        "tiles": ["https://data.avoinmap.com/fi-mml-maastotietokanta/layer_Koski.geojsons/{z}/{x}/{y}.pbf.gz?v=0"],
+        "minzoom": 0,
+        "maxzoom": 10,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="http://mml.fi/">© National Land Survey of Finland</a>',
+    });
+
+    addLayer({
+        'id': 'fi-mml-koski-fill',
+        'source': 'fi-mml-koski',
+        'source-layer': 'default',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'cyan',
+            'fill-opacity': fillOpacity,
+        },
+    })
+
+    // addSource('fi-mml-maatalousmaa', {
+    //     "type": "vector",
+    //     "tiles": ["https://data.avoinmap.com/fi-mml-maastotietokanta/layer_Maatalousmaa.geojsons/{z}/{x}/{y}.pbf.gz?v=0"],
+    //     "minzoom": 0,
+    //     "maxzoom": 11,
+    //     bounds: [19, 59, 32, 71], // Finland
+    //     attribution: '<a href="http://mml.fi/">© National Land Survey of Finland</a>',
+    // });
+
+    // addLayer({
+    //     'id': 'fi-mml-maatalousmaa-fill',
+    //     'source': 'fi-mml-maatalousmaa',
+    //     'source-layer': 'default',
+    //     'type': 'fill',
+    //     'paint': {
+    //         'fill-color': 'maroon',
+    //         'fill-opacity': fillOpacity,
+    //     },
+    // })
+
+
+    addSource('fi-mml-virkistysalue', {
+        "type": "vector",
+        "tiles": ["https://data.avoinmap.com/fi-mml-maastotietokanta/layer_Virkistysalue.geojsons/{z}/{x}/{y}.pbf.gz?v=0"],
+        "minzoom": 0,
+        "maxzoom": 10,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="http://mml.fi/">© National Land Survey of Finland</a>',
+    });
+
+    addLayer({
+        'id': 'fi-mml-virkistysalue-fill',
+        'source': 'fi-mml-virkistysalue',
+        'source-layer': 'default',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'grey',
+            'fill-opacity': fillOpacity,
+        },
+    })
+
+
+    addSource('fi-mml-niitty', {
+        "type": "vector",
+        "tiles": ["https://data.avoinmap.com/fi-mml-maastotietokanta/layer_Nitty.geojsons/{z}/{x}/{y}.pbf.gz?v=0"],
+        "minzoom": 0,
+        "maxzoom": 10,
+        bounds: [19, 59, 32, 71], // Finland
+        attribution: '<a href="http://mml.fi/">© National Land Survey of Finland</a>',
+    });
+
+    addLayer({
+        'id': 'fi-mml-niitty-fill',
+        'source': 'fi-mml-niitty',
+        'source-layer': 'default',
+        'type': 'fill',
+        'paint': {
+            'fill-color': 'magenta',
+            'fill-opacity': fillOpacity,
+        },
+    })
+
+
+
     /* Attributes in 'gtk-turvevarat':
     suon_id suon_nimi n e korkeus_mmpy_min korkeus_mmpy_max
     korkeustiedon_lahde kunta tutkimusvuosi luonnontilaisuusluokka
