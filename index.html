@@ -91,6 +91,29 @@
             This map displays areas where actions are required in order to save environmental resources
         </p>
 
+
+
+        <div class='layer-card'>
+            <div class='title'>Global geospatial dataset search</div>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="dataset-query" data-special>
+                <label class="onoffswitch-label" for="dataset-query"></label>
+            </div>
+            <label>
+                <input type="radio" name="dataset-query-point-type" value="included" checked />
+                New points <em>must</em> appear in search results
+            </label>
+            <br/>
+            <label>
+                <input type="radio" name="dataset-query-point-type" value="excluded" />
+                New points must <em>not</em> appear in search results
+            </label>
+            <br/>
+            <button class="button dataset-query-clear-points">Reset search and remove query points</button>
+        </div>
+
+        <hr/>
+
         <div class='layer-card'>
             <div class='title'>Air pollution indicator NO₂</div>
             <div class="onoffswitch">
@@ -107,7 +130,6 @@
                 A healthy threshold of NO₂ is around 50 umol/m<sup>2</sup>.
             </p>
         </div>
-
 
         <div class='layer-card'>
             <div class='title'>Snow Cover Loss</div>
@@ -693,6 +715,9 @@
     </div>
 
     <output id='no2'></output>
+
+    <div id="dataset-query-results" hidden>
+    </div>
 
 </body>
 

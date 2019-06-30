@@ -2,9 +2,6 @@ import {default as turfBooleanWithin} from '@turf/boolean-within';
 import {feature as turfFeature} from '@turf/helpers';
 import {flattenReduce as turfFlattenReduce} from '@turf/meta';
 
-window.turfBooleanWithin = turfBooleanWithin;
-window.turfFeature = turfFeature;
-
 // This must be set, but the value is not needed here.
 mapboxgl.accessToken = 'not-needed';
 
@@ -51,6 +48,7 @@ const layerGroupState = {
 window.addEventListener('load', () => {
     [...document.querySelectorAll('.layer-card input[name="onoffswitch"]')].forEach(el => {
         if (el.disabled) return;
+        if (el.hasAttribute("data-special")) return; // disable automatic handling
 
         el.addEventListener('change', () => toggleGroup(el.id));
 
@@ -476,7 +474,6 @@ const turkuAuraJokiEmissions = {
 // Also http://paikkatieto.ymparisto.fi/value/ (but it crashes the browser pretty easily!)
 const turkuAuraJokiValue = {"type":"Polygon","coordinates":[[[22.6103877990383,60.6344856066462],[22.5870539729996,60.6103588211101],[22.6233478269874,60.5751045114842],[22.6081371120958,60.5626995848525],[22.6246074790853,60.5589631167027],[22.611648617642,60.5406368750108],[22.6314716339555,60.5150340334038],[22.6092672609967,60.4938538962352],[22.4821141856954,60.4683242152806],[22.4659206330005,60.450887946384],[22.3802794072847,60.4674571656726],[22.3552912683436,60.4536851421538],[22.3834536221754,60.4463719123733],[22.3751925022249,60.4285164369009],[22.3333390617128,60.4151056439502],[22.3043323282709,60.4346888430041],[22.2864479797805,60.4347006782323],[22.2854431135939,60.416082779118],[22.2287674601729,60.4333815276613],[22.2759013480459,60.4641676815831],[22.2655255299015,60.4711140245897],[22.2847212938923,60.495795969575],[22.2673139070335,60.5176149346882],[22.3275866631243,60.5391575071753],[22.2614068872664,60.5673420543226],[22.2678055710792,60.5790404344835],[22.3609367082758,60.5887055316531],[22.3772772685066,60.603266563484],[22.3587439869585,60.6056855294338],[22.4099654349429,60.6259246878061],[22.3993092976892,60.6329568465254],[22.4175178677525,60.6469925120255],[22.5366813830571,60.6510082108548],[22.5450098508632,60.6360496225363],[22.6117183453645,60.6535058093237],[22.6103877990383,60.6344856066462]]]};
 const turkuAuraJokiValueFeature = turfFeature(turkuAuraJokiValue);
-window.turkuAuraJokiValueFeature = turkuAuraJokiValueFeature;
 
 const setupPopupHandlerForMaviPeltolohko = layerName => {
     genericPopupHandler(layerName, ev => {
@@ -2685,6 +2682,170 @@ map.on('load', () => {
         map.addLayer(layer)
         // map.moveLayer(layer.id)
     });
+
+
+
+    const queryPointsSource = {
+        type:'geojson',
+        data: { "type": "FeatureCollection", features: [], },
+    };
+
+    const refreshQueryPointsUI = () => {
+        map.getLayer('query-points-included') && map.removeLayer('query-points-included');
+        map.getLayer('query-points-excluded') && map.removeLayer('query-points-excluded');
+
+        map.getSource('query-points') && map.removeSource('query-points');
+        map.addSource('query-points', queryPointsSource);
+
+        map.addLayer({
+            "id": "query-points-included",
+            "type": "circle",
+            filter: ['==', ['get', 'type'], 'included'],
+            "source": "query-points",
+            "paint": {
+                "circle-radius": 20,
+                "circle-color": "green"
+            }
+        });
+
+        map.addLayer({
+            "id": "query-points-excluded",
+            "type": "circle",
+            filter: ['!=', ['get', 'type'], 'included'],
+            "source": "query-points",
+            "paint": {
+                "circle-radius": 20,
+                "circle-color": "red"
+            }
+        });
+    }
+
+    const clearQueryPoints = event => {
+        event.preventDefault();
+        queryPointsSource.data.features = [];
+        queryResultsElem.setAttribute('hidden', '');
+        refreshQueryPointsUI();
+        map.getLayer('dataset-query-results-outline') && map.removeLayer('dataset-query-results-outline');
+    }
+
+
+    const queryResultsElem = document.querySelector('#dataset-query-results');
+    const datasetQueryEnabledElem = document.querySelector('#dataset-query');
+    document.querySelectorAll('.dataset-query-clear-points').forEach(el => {
+        el.addEventListener('click', clearQueryPoints);
+    });
+
+    const addQueryPoint = async function (e) {
+        if (!datasetQueryEnabledElem.checked) return;
+        const {lat, lng} = e.lngLat;
+        const queryPointMode = document.querySelector('input[name="dataset-query-point-type"]:checked').value;
+        queryPointsSource.data.features.push({
+            "type": "Feature",
+            "properties": {"type": queryPointMode },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [lng, lat],
+            },
+        });
+        refreshQueryPointsUI();
+        await refreshDatasetQuery(1);
+    }
+
+    datasetQueryEnabledElem.addEventListener('change', e => {
+        if (!datasetQueryEnabledElem.checked) clearQueryPoints(e);
+    })
+
+    const sanitizeInputHTML = html => {
+        const elem = document.createElement("div");
+        elem.innerHTML = html;
+        return elem.textContent || elem.innerText || '';
+    };
+
+    const updateDatasetQueryResultsList = (page, results) => {
+        queryResultsElem.removeAttribute('hidden');
+        let html = '';
+        window.setDatasetQueryPage = async p => { await refreshDatasetQuery(p); };
+        if (page > 2) html += `<a class="pagination" href="#" onclick="setDatasetQueryPage(1);">Page 1</a> … `
+        if (page > 1) html += `<a class="pagination" href="#" onclick="setDatasetQueryPage(${page-1});">Page ${page-1}</a> `
+        html += ` Page ${page} `;
+        if (results.length === 100) html += ` <a class="pagination" href="#" onclick="setDatasetQueryPage(${page+1});">Page ${page+1}</a>`
+        html += '<hr/>'
+
+        results.forEach(x => {
+            let url = x.fullpath || x.absolute_path || x.url
+            if (x.urls && x.urls[0]) url = x.urls[0].url;
+            if (!url && x.source === 'arcgis-opendata')
+                // url = `https://www.arcgis.com/home/webmap/viewer.html?webmap=${x.id}`;
+                url = `https://www.arcgis.com/home/item.html?id=${x.id}`;
+            const urlText = url ? `<br/><a href="${url}">${url}</a>` : '';
+            html += `
+            <p>
+            <strong>${x.title || x.name || ''}</strong>${urlText}<br/>
+            ${x.orgName ? (x.orgName+'<br/>') : ''}
+            ${x.description ? (sanitizeInputHTML(x.description)+'<br/>') : ''}
+            </p>
+            `;
+        });
+        queryResultsElem.innerHTML = html;
+
+    };
+
+    let datasetQueryNum = 0;
+    let latestDatasetResultsNum = 0;
+    const refreshDatasetQuery = async function (pageNum) {
+        const f = queryPointsSource.data.features;
+        const pointsInc = f.filter(x => x.properties.type === 'included').map(x => x.geometry.coordinates);
+        const pointsExc = f.filter(x => x.properties.type !== 'included').map(x => x.geometry.coordinates);
+        const included = pointsInc.reduce((v,point) => `${v},${point[0]},${point[1]}`, '').slice(1);
+        const excluded = pointsExc.reduce((v,point) => `${v},${point[0]},${point[1]}`, '').slice(1);
+
+        const currentQuery = datasetQueryNum++;
+        // TODO: abort pending queries
+        const response = await fetch(`https://mapsearch.curiosity.consulting/query?included=${included}&excluded=${excluded}&page=${pageNum}`);
+
+        const results = await response.json();
+
+        if (latestDatasetResultsNum > currentQuery) return; // Hack: discard late-arriving requests.
+        latestDatasetResultsNum = currentQuery;
+
+        if (!datasetQueryEnabledElem.checked) return; // Hack: disabled already, so discard any results.
+
+        const features = results.map(x => ({
+            "type": "Feature",
+            "properties": {"type": x },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [x.bbox[0][0], x.bbox[0][1]],
+                    [x.bbox[1][0], x.bbox[0][1]],
+                    [x.bbox[1][0], x.bbox[1][1]],
+                    [x.bbox[0][0], x.bbox[1][1]],
+                    [x.bbox[0][0], x.bbox[0][1]],
+                ]],
+            },
+        }));
+
+        map.getLayer('dataset-query-results-outline') && map.removeLayer('dataset-query-results-outline');
+        map.getSource('dataset-query-results') && map.removeSource('dataset-query-results');
+        map.addSource('dataset-query-results', {
+            type:'geojson',
+            data: { "type": "FeatureCollection", features: features, },
+        });
+
+        map.addLayer({
+            'id': 'dataset-query-results-outline',
+            'source': 'dataset-query-results',
+            'type': 'line',
+            'paint': {
+                'line-width': 2.5,
+                'line-opacity': 0.5,
+            }
+        });
+
+        updateDatasetQueryResultsList(pageNum, results);
+    };
+
+    map.on('click', addQueryPoint);
 
 });  // /map onload
 

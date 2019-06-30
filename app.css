@@ -51,7 +51,7 @@ body {
     left: 0;
     width: 500px;
     /* TODO: I couldn't get CSS var expressions to work here: */
-    max-width: calc(100vw - 60px); 
+    max-width: calc(100vw - 60px);
     height: 100%;
     padding: 0 var(--menu-padding);
     background: #ffffff;
@@ -303,4 +303,33 @@ g.bar rect {
     padding: 1em;
     margin-left: -8.75em;
     content: attr(title);
+}
+
+#dataset-query-results {
+    /* font-size: 30px; */
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 500px;
+    /* TODO: I couldn't get CSS var expressions to work here: */
+    max-width: calc(100vw - 60px);
+    height: 100%;
+    padding: 0 var(--menu-padding);
+    background: #ffffff;
+    overflow-y: scroll;
+    z-index: 10; /* Shadow mapbox-gl controls (z-index 2) */
+}
+
+.button {
+    padding: 10px 20px;
+    text-decoration: none;
+    color: #000;
+    background-color: #ccc;
+    border: 1px solid black;
+    margin: 3px;
+    font-size: 1rem;
+}
+
+a:visited.pagination {
+    color: inherit;
 }
