@@ -1444,10 +1444,10 @@ map.on('load', () => {
                     const prefix = attrGroup.trim().slice(0,3);
                     if (prefix === 'npv') {
                         const attr = `m${dataset}_npv3`;
-                        const tag = bestMethods[attr.substr(3)] === dataset ? 'th' : 'td';
+                        const best = bestValues[attr.substr(3)] === p[attr];
                         html += `
                         <tr><td><abbr title="${abbrTitles[prefix]}">${prefix.toUpperCase()}</abbr></td>
-                        <${tag}>${pp(p[attr]*p.area)}</${tag}>
+                        <td>${best?'<strong>':''}${pp(p[attr]*p.area)}${best?'</strong>':''}</td>
                         <td colspan="5"></td>
                         </tr>
                         `;
@@ -1460,8 +1460,8 @@ map.on('load', () => {
                     if (attrs[0][ attrs[0].length-1 ] !== '0') html += `<td></td>`;
 
                     attrs.forEach(attr => {
-                        const tag = bestMethods[attr.substr(3)] === dataset ? 'th' : 'td';
-                        html += `<${tag}>${pp(p[attr]*p.area)}</${tag}>`;
+                        const best = bestValues[attr.substr(3)] === p[attr];
+                        html += `<td>${best?'<strong>':''}${pp(p[attr]*p.area)}${best?'</strong>':''}</td>`;
                     })
                     html += '</tr>';
 
