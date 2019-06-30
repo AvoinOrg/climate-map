@@ -1297,10 +1297,10 @@ map.on('load', () => {
     })
 
     const nC_to_CO2 = 3.6;
-    const arvometsaCO2eValue = attr => [
+    const arvometsaCO2eValue = (attr, expr) => [
         'case', ['has', attr], [
             '*',
-            ['/', ['get', attr], 10], // C: tons/10 years -> C: tons/y
+            ['/', expr, 10], // C: tons/10 years -> C: tons/y
             nC_to_CO2, // C -> CO2
             ['/', 1, ['get', 'area']], // divide total by area in hectares -> CO2/ha/y
         ],
@@ -1308,11 +1308,26 @@ map.on('load', () => {
     ];
 
 
-    window.arvometsaAttr = 'cbt1';
+    window.arvometsaAttr = 'DEFAULT';
     window.arvometsaDataset = 0; // 'BPHT003001_AlaharvennusAvohakkuu';
     window.arvometsaInterval = null;
 
+    const cbtSumAttr = [
+        'let', 'p', ['concat', 'm', ['get', 'best_method'], '_'], [
+            '*', 1/50, [
+                '+',
+                ['get', ['concat', ['var', 'p'], 'cbt1']],
+                ['get', ['concat', ['var', 'p'], 'cbt2']],
+                ['get', ['concat', ['var', 'p'], 'cbt3']],
+                ['get', ['concat', ['var', 'p'], 'cbt4']],
+                ['get', ['concat', ['var', 'p'], 'cbt5']],
+            ],
+        ],
+    ];
+
     const mAttr = `m${window.arvometsaDataset}_${window.arvometsaAttr}`;
+    const co2eValueExpr = arvometsaCO2eValue('m0_cbt1', cbtSumAttr);
+
     addLayer({
         'id': 'arvometsa-fill',
         'source': 'arvometsa',
@@ -1320,7 +1335,7 @@ map.on('load', () => {
         'type': 'fill',
         'paint': {
             // 'fill-color': 'red',
-            'fill-color': arvometsaAreaCO2eFillColor(arvometsaCO2eValue(mAttr)),
+            'fill-color': arvometsaAreaCO2eFillColor(co2eValueExpr),
             // 'fill-opacity': fillOpacity, // Set by fill-color rgba
         },
     })
@@ -1350,6 +1365,11 @@ map.on('load', () => {
             window.clearInterval(window.arvometsaInterval);
         }
 
+        const co2eValueExpr = arvometsaCO2eValue(
+            attr === 'DEFAULT' ? 'm0_cbt1' : mAttr,
+            attr === 'DEFAULT' ? cbtSumAttr : ['get', mAttr],
+        );
+
         // attr like 'cbt1', 'cbt2', 'bio0', 'maa0'
         {
             const layer = {
@@ -1359,7 +1379,7 @@ map.on('load', () => {
                 'type': 'fill',
                 'paint': {
                     // 'fill-color': 'red',
-                    'fill-color': arvometsaAreaCO2eFillColor(arvometsaCO2eValue(mAttr)),
+                    'fill-color': arvometsaAreaCO2eFillColor(co2eValueExpr),
                     // 'fill-opacity': fillOpacity, // Set by fill-color rgba
                 },
             };
@@ -1379,12 +1399,12 @@ map.on('load', () => {
                 "symbol-placement": "point",
                 "text-font": ["Open Sans Regular"],
                 "text-field": [
-                    "case", ["has", mAttr], [
+                    "case", ["has", 'm0_cbt1'], [
                         "concat",
-                        roundToSignificantDigits(2, arvometsaCO2eValue(mAttr)),
+                        roundToSignificantDigits(2, co2eValueExpr),
                         " t CO2e/y",
                         [
-                            'case', ['>', 0, arvometsaCO2eValue(mAttr)],
+                            'case', ['>', 0, co2eValueExpr],
                             '\n(net carbon source)',
                             '',
                         ],
