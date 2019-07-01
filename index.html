@@ -375,17 +375,18 @@
                 </div>
                 <div class='legend-footer'>
                     Values are indicated per hectare per annum over a 10 year period.
+                    The color coding corresponds to the scenario that maximizes CO2 sequestering for the given forest.
                 </div>
             </legend>
 
             <p>
                 Projections for:
                 <div class="arvometsa-projections">
-                    <button class="arvometsa_eihakata">Ei hakata</button>
-                    <button class="arvometsa_jatkuva">Jatkuva kasvatus</button>
-                    <button class="arvometsa_alaharvennus">Alaharvennus – avohakkuu</button>
-                    <button class="arvometsa_ylaharvennus">Yläharvennus – jatkettu kiertoaika</button>
-                    <button class="arvometsa_maxhakkuu">Metsän poisto</button>
+                    <button class="arvometsa_eihakata">No cuttings</button>
+                    <button class="arvometsa_jatkuva">Continuous cover forestry</button>
+                    <button class="arvometsa_alaharvennus">Thin from below – clearfell</button>
+                    <button class="arvometsa_ylaharvennus">Thin from above – extended rotation</button>
+                    <button class="arvometsa_maxhakkuu">Removal of tree cover</button>
                 </div>
             </p>
 
@@ -402,7 +403,7 @@
                 and a positive value indicates a net carbon sink.
             </p>
             <strong>Forest CO2e balance (trees + soil)</strong>
-            <legend id="legend-cifor-peatdepth">
+            <legend hidden id="legend-cifor-peatdepth">
                 <ul class='legend-labels arvometsa arvometsa-cbf'>
                     <li><span style="background-color:rgba(47,10,91,255);color:#fff;">10</span></li>
                     <li><span style="background-color:rgba(81,14,108,255);color:#fff;">20</span></li>
@@ -415,7 +416,7 @@
             <output class='arvometsa-cbf'></output>
 
             <strong>Forestry CO2e balance (trees + soil + products)</strong>
-            <legend id="legend-cifor-peatdepth">
+            <legend hidden id="legend-cifor-peatdepth">
                 <ul class='legend-labels arvometsa arvometsa-cbt'>
                     <li><span style="background-color:rgba(47,10,91,255);color:#fff;">10</span></li>
                     <li><span style="background-color:rgba(81,14,108,255);color:#fff;">20</span></li>
@@ -428,7 +429,7 @@
             <output class='arvometsa-cbt'></output>
 
             <strong>Carbon stock in trees</strong>
-            <legend id="legend-cifor-peatdepth">
+            <legend hidden id="legend-cifor-peatdepth">
                 <ul class='legend-labels arvometsa arvometsa-bio'>
                     <li><span style="background-color:rgba(47,10,91,255);color:#fff;">Now</span></li>
                     or in
@@ -443,7 +444,7 @@
             <output class='arvometsa-bio'></output>
 
             <strong>Carbon stock in soil</strong>
-            <legend id="legend-cifor-peatdepth">
+            <legend hidden id="legend-cifor-peatdepth">
                 <ul class='legend-labels arvometsa arvometsa-maa'>
                     <li><span style="background-color:rgba(47,10,91,255);color:#fff;">Now</span></li>
                     or in
@@ -457,8 +458,10 @@
             </legend>
             <output class='arvometsa-maa'></output>
 
-            <strong>Net present carbon balance</strong> (NPV, 3% annual discounting)
-           <output class='arvometsa-npv'></output>
+            <div style="margin-top: 10px">
+                <strong><abbr title="NPV, 3% annual discounting">Net present value</abbr>:</strong>
+                <output class='arvometsa-npv'></output>
+            </div>
         </div>
 
 

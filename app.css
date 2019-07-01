@@ -264,7 +264,10 @@ legend li {
     cursor: pointer;
 }
 g.bar rect {
-    fill: rgba(31, 23, 23, 0.8);
+    fill: rgba(31, 34, 80, 0.8);
+}
+g.line rect {
+    fill: rgba(87, 95, 66, 0.5);
 }
 
 
