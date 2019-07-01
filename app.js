@@ -43,6 +43,8 @@ const layerGroupState = {
     'terramonitor': true,
 }
 
+// Pretty print to precision:
+const pp = (x, precision=2) => (+x.toPrecision(precision)).toLocaleString();
 
 // Set up event handlers for layer toggles, etc.
 window.addEventListener('load', () => {
@@ -504,9 +506,9 @@ const setupPopupHandlerForMaviPeltolohko = layerName => {
             `;
         }
         html += `
-            Area: ${areaHa.toPrecision(3)} hectares
+            Area: ${pp(areaHa, 3)} hectares
             <br/>
-            Emission reduction potential: ${+fieldPlotCO2eFn(f.properties).toPrecision(2)} tons CO₂e per year
+            Emission reduction potential: ${pp(fieldPlotCO2eFn(f.properties))} tons CO₂e per year
         `;
 
         // Simplification: The field is in the catchment area if any part of it is.
@@ -517,7 +519,6 @@ const setupPopupHandlerForMaviPeltolohko = layerName => {
         );
 
         const e = turkuAuraJokiEmissions;
-        const pp = x => (+x.toPrecision(2)).toLocaleString();
         if (inTurkuAurajokiCatchmentArea) {
             html += `
             <hr/>
@@ -708,7 +709,6 @@ const setupPopupHandlerForMetsaanFiStandData = layerName => {
             `Completed at: ${p.ditch_completion_date || p.ditchingyear}` :
             '';
 
-        const pp = x => (+x.toPrecision(2)).toLocaleString();
         const html = `
             <table>
             <tr><th>Main tree species</th><td>${metsaanFiTreeSpecies[p.maintreespecies] || ''}</td></tr>
@@ -716,7 +716,7 @@ const setupPopupHandlerForMetsaanFiStandData = layerName => {
             <tr><th>Average tree trunk diameter</th><td>${p.meandiameter} cm</td></tr>
             <tr><th>Average tree height</th><td>${p.meanheight} m</td></tr>
             <tr><th>Soil</th><td>${soilEn || soilFi || ''}</td></tr>
-            <tr><th>Area</th><td>${+p.area.toPrecision(3)} hectares</td></tr>
+            <tr><th>Area</th><td>${pp(p.area, 3)} hectares</td></tr>
             <tr><th>Accessibility</th><td>${metsaanFiAccessibilityClassifier[p.accessibility] || ''}</td></tr>
             <tr><th>Approx. tree stem count</th><td>${pp(p.stemcount * p.area)}</td></tr>
             <!-- <tr><th>TODO(Probably/Not/Yes/No): Mature enough for regeneration felling?</th><td>${p.regeneration_felling_prediction}</td></tr> -->
@@ -1432,7 +1432,6 @@ map.on('load', () => {
             npv: 'Net present value of forest stock (3% discounting)',
        }
 
-       const pp = x => (+x.toPrecision(2)).toLocaleString();
 
        genericPopupHandler('arvometsa-fill', e => {
             const f = e.features[0];
@@ -1504,7 +1503,7 @@ map.on('load', () => {
 
         const updateGraphs = () => {
             const dataset = window.arvometsaDataset;
-            const totals = {};
+            const totals = {area:0};
             baseAttrs.split(/\s+/).forEach(attr => {
                 const mAttr = `m${dataset}_${attr}`;
                 totals[mAttr] = 0;
@@ -1526,7 +1525,7 @@ map.on('load', () => {
             const Hbar = 105;
             const Hmin = 10;
 
-            const carbonStockAttrPrefixes = ['bio', 'maa'];
+            const carbonStockAttrPrefixes = ['bio', 'maa', 'cst'];
             const cumulativeFlag = document.getElementById('arvometsa-cumulative').checked;
 
             function getUnit(prefix, cumulative) {
@@ -1539,7 +1538,14 @@ map.on('load', () => {
                 }
             }
 
-            baseAttrs.split('\n').forEach(attrGroup => {
+            // Hack: Sum bio+maa together.
+            const carbonStockTotal = 'cst0 cst1 cst2 cst3 cst4 cst5';
+            for (let i=0; i<6; i++) {
+                totals[`m${dataset}_cst${i}`] = totals[`m${dataset}_maa${i}`] + totals[`m${dataset}_bio${i}`];
+            }
+
+            const attrGroups = baseAttrs.split('\n').concat([carbonStockTotal]);
+            attrGroups.forEach(attrGroup => {
                 const prefix = attrGroup.trim().slice(0,3);
                 const attrs = attrGroup.trim().split(/ /).map(attr => `m${dataset}_${attr}`);
 
@@ -1634,6 +1640,11 @@ map.on('load', () => {
                 if (outputElem.sourceHTML !== svg)
                     outputElem.innerHTML = outputElem.sourceHTML = svg;
             });
+
+            const totalArea = `${pp(totals.area, 3)} hectares`;
+            const outputElem = document.querySelector(`output.arvometsa-area`);
+            if (outputElem.sourceHTML !== totalArea)
+                outputElem.innerHTML = outputElem.sourceHTML = totalArea;
 
         }
 
@@ -2070,7 +2081,7 @@ map.on('load', () => {
             ${type_text}
             <br/>
             ${peatInfo}
-            Area:${+area_ha.toPrecision(3)} hectares
+            Area:${pp(area_ha, 3)} hectares
             <br/>
             Landsat source ID: <code>${image}</code>
             <br/>
@@ -2547,7 +2558,6 @@ map.on('load', () => {
         e.features.forEach(f => {
             const p = f.properties;
 
-            const pp = x => (+x.toPrecision(2)).toLocaleString();
             const energyUse = p.e_luku * p.lämmitetty_nettoala
             const energyPerVolume = p.i_raktilav
                 ? `<br/>Energy use per m<sup>3</sup>: ${pp(energyUse / p.i_raktilav)} kWh per year`
@@ -3096,7 +3106,7 @@ window.setNO2 = function (currentRequestNum, e, lat, lon) {
         elem.innerHTML = `NO2: ${e.error}${coords}`
     } else {
         const n = e.no2_concentration
-        elem.innerHTML = `NO2: ${+(n * 1e6).toPrecision(2)} µmol/m<sup>2</sup>${coords}`
+        elem.innerHTML = `NO2: ${pp(n * 1e6, 2)} µmol/m<sup>2</sup>${coords}`
     }
 }
 
