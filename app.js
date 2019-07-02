@@ -1,6 +1,7 @@
 import {default as turfBooleanWithin} from '@turf/boolean-within';
 import {feature as turfFeature} from '@turf/helpers';
 import {flattenReduce as turfFlattenReduce} from '@turf/meta';
+import Chart from 'chart.js';
 
 // This must be set, but the value is not needed here.
 mapboxgl.accessToken = 'not-needed';
@@ -1462,11 +1463,12 @@ map.on('load', () => {
                 baseAttrs.split('\n').forEach(attrGroup => {
                     const prefix = attrGroup.trim().slice(0,3);
                     if (prefix === 'npv') {
+                        if (dataset === 0) return; // NPV is not applicable when the forest is never cut.
                         const attr = `m${dataset}_npv3`;
                         const best = bestValues[attr.substr(3)] === p[attr];
                         html += `
                         <tr><td><abbr title="${abbrTitles[prefix]}">${prefix.toUpperCase()}</abbr></td>
-                        <td>${best?'<strong>':''}${pp(p[attr]*p.area)}${best?'</strong>':''} €</td>
+                        <td>${best?'<strong>':''}${ pp(p[attr]*p.area) }${best?'</strong>':''} €</td>
                         <td colspan="5"></td>
                         </tr>
                         `;
@@ -1500,7 +1502,7 @@ map.on('load', () => {
             return new Promise((resolve) => setTimeout(resolve, time));
         }
 
-
+        const arvometsaGraphs = {};
         const updateGraphs = () => {
             const dataset = window.arvometsaDataset;
             const totals = {area:0};
@@ -1520,126 +1522,133 @@ map.on('load', () => {
                 }
             });
 
-            const W = 420;
-            const H = 150;
-            const Hbar = 105;
-            const Hmin = 10;
-
             const carbonStockAttrPrefixes = ['bio', 'maa', 'cst'];
             const cumulativeFlag = document.getElementById('arvometsa-cumulative').checked;
 
-            function getUnit(prefix, cumulative) {
+            function getUnit(prefix) {
                 if (carbonStockAttrPrefixes.indexOf(prefix) !== -1) {
                     return 'tons carbon';
-                } else if (cumulative) {
+                } else if (isCumulative(prefix)) {
                     return 'tons CO2e';
                 } else {
                     return 'tons CO2e/y';
                 }
             }
-
-            // Hack: Sum bio+maa together.
-            const carbonStockTotal = 'cst0 cst1 cst2 cst3 cst4 cst5';
-            for (let i=0; i<6; i++) {
-                totals[`m${dataset}_cst${i}`] = totals[`m${dataset}_maa${i}`] + totals[`m${dataset}_bio${i}`];
+            function isCumulative(prefix) {
+                // carbon stock is not counted cumulatively.
+                const isCarbonStock = carbonStockAttrPrefixes.indexOf(prefix) !== -1;
+                return cumulativeFlag && !isCarbonStock
             }
 
-            const attrGroups = baseAttrs.split('\n').concat([carbonStockTotal]);
+            const attrValues = {};
+
+            const attrGroups = baseAttrs.split('\n'); // .concat([carbonStockTotal]);
             attrGroups.forEach(attrGroup => {
                 const prefix = attrGroup.trim().slice(0,3);
                 const attrs = attrGroup.trim().split(/ /).map(attr => `m${dataset}_${attr}`);
 
-                const outputElem = document.querySelector(`output.arvometsa-${prefix}`);
-
-                // carbon stock is not counted cumulatively.
-                const isCarbonStock = carbonStockAttrPrefixes.indexOf(prefix) !== -1;
-                const cumulative = cumulativeFlag && !isCarbonStock
-
-                const attrValues = [];
-                for (const attr of attrs) {
-                    const prev = cumulative && attrValues.length > 0 ? attrValues[attrValues.length - 1] : 0;
-                    attrValues.push(prev + totals[attr]);
-                }
-
-                const minValue = Math.min(...attrValues);
-                const maxValue = Math.max(...attrValues);
-
-                const cumulativeSum = attrValues[attrValues.length - 1];
-                const delta = maxValue - minValue;
-
                 if (prefix === 'npv') {
-                    const value = totals[`m${dataset}_npv3`];
-                    const out = !value ? 'No data' : `${pp(value)} €`;
+                    const outputElem = document.querySelector(`output.arvometsa-npv`);
+                    // NPV does not really apply for CBF i.e. "no cuttings" 
+                    const value = dataset === 0 ? null : totals[`m${dataset}_npv3`];
+                    const out = value === 0 || value ? `${pp(value)} €` : '-';
                     if (outputElem.sourceHTML !== out)
                         outputElem.innerHTML = outputElem.sourceHTML = out;
                     return;
                 }
 
-                const unit = getUnit(prefix, cumulative);
-
-                if (delta === 0) {
-                    const out = `0 ${unit}`;
-                    if (outputElem.sourceHTML !== out)
-                        outputElem.innerHTML = outputElem.sourceHTML = out;
-                    return; // nothing to display
+                const attrV = [];
+                for (const attr of attrs) {
+                    const prev = isCumulative(prefix) && attrV.length > 0 ? attrV[attrV.length - 1] : 0;
+                    attrV.push(prev + totals[attr]);
                 }
-
-                // Carbon stock: Only display values as C, not CO2.
-                const co2maxVal = (cumulative ? cumulativeSum : (0.1 * maxValue)) * (isCarbonStock ? 1 : nC_to_CO2);
-                const co2eMaxStr = maxValue <= 0 ? 0 : pp(co2maxVal);
-                const co2eMidStr = pp(co2maxVal / 2);
-                const co2eMinStr = maxValue >  0 ? 0 : pp(co2maxVal);
-
-                let svg = `
-                <svg class="chart" width="${W}" height="${H}" aria-labelledby="title desc" role="img">
-                <g>
-                    <text x="${30*attrs.length + 30}" y="17">${co2eMaxStr} ${unit}</text>
-                    <text x="${30*attrs.length + 30}" y="69">${co2eMidStr} ${unit}</text>
-                    <text x="${30*attrs.length + 30}" y="120">${co2eMinStr} ${unit}</text>
-                </g>
-                `;
-
-                const max0 = Math.max(0, maxValue);
-                const min0 = Math.min(0, minValue);
-
-                if (true) { // maxValue * minValue < 0) {
-                    const zeroY = maxValue * minValue < 0 ? Hbar * max0 / (max0 - min0) : 0;
-                    svg += `<g class="line"><rect width="${30*attrs.length + 15}" y="${Hmin + zeroY}" x="0" height="1"></rect></g>`;
-                    svg += `<g class="line"><rect width="${30*attrs.length + 15}" y="${Hmin + 0.5*Hbar}" x="0" height="1"></rect></g>`;
-                    svg += `<g class="line"><rect width="${30*attrs.length + 15}" y="${Hmin + Hbar}" x="0" height="1"></rect></g>`;
-                }
-
-                attrValues.forEach((value,i) => {
-                    let y, height;
-                    if (max0 === 0) {
-                        const v = (value - min0) / (max0 - min0);
-                        y = 0;
-                        height = (1 - v) * Hbar;
-                    } else {
-                        const v = value / (max0 - min0);
-                        y = (1 - v) * Hbar;
-                        height = v * Hbar;
-                    }
-
-                    const year = (+attrs[i][6]) * 10;
-                    const co2val = nC_to_CO2 * value;
-                    const co2e = `${pp(co2val)} tons of CO2 per decade`; // TODO this is not visible now
-                    svg += `
-                    <g class="bar">
-                    <rect width="20" height="${height}" y="${Hmin + y}" x=${i*30} title="${co2e}"></rect>
-                    <text x="${i*30}" y="130" dy=".8em">${year}</text>
-                    </g>
-                    `;
-                });
-                svg += `
-                <g>
-                <text x="${attrs.length*30}" y="130" dy=".8em">years from now</text>
-                </g>
-                `
-                svg += '</svg><br/>';
-                if (outputElem.sourceHTML !== svg)
-                    outputElem.innerHTML = outputElem.sourceHTML = svg;
+                attrValues[prefix] = attrV;
             });
+
+
+
+            for (const prefix of ['cbf', 'cbt', 'bio']) {
+                let datasets;
+                const unit = getUnit(prefix);
+                switch (prefix) {
+                case 'cbf':
+                    datasets = [{
+                        label: 'CO2e balance',
+                        backgroundColor: 'green',
+                        data: attrValues.cbf,
+                    }];
+                    break;
+                case 'cbt':
+                    datasets = [{
+                        label: 'CO2e balance',
+                        backgroundColor: 'rgb(63, 90, 0)',
+                        data: attrValues.cbt,
+                    }];
+                    break;
+                case 'bio':
+                    datasets = [{
+                        label: 'Soil',
+                        backgroundColor: '#815f1c',
+                        data: attrValues.maa,
+                    }, {
+                        label: 'Trees',
+                        backgroundColor: '#00af5a',
+                        data: attrValues.bio,
+                    }];
+                    break;
+                }
+
+                const labels = {
+                    'cbf': ['10','20','30','40','50'],
+                    'cbt': ['10','20','30','40','50'],
+                    'bio': ['0','10','20','30','40','50'],
+                }
+
+                const outputElem = document.querySelector(`canvas.arvometsa-${prefix}`);
+                
+                const chart = arvometsaGraphs[prefix];
+                const labelCallback = function(tooltipItem, data) {
+                    const label = data.datasets[tooltipItem.datasetIndex].label;
+                    const v = pp(tooltipItem.yLabel, 2);
+                    return `${label}: ${v} ${unit}`;
+                };
+                if (chart) {
+                    let changed = chart.options.arvometsaCumulative !== isCumulative(prefix);
+                    chart.data.datasets.forEach((dataset, i) => {
+                        changed |= JSON.stringify(dataset.data) !== JSON.stringify(datasets[i].data);
+                        dataset.data = datasets[i].data;
+                    });
+                    chart.options.arvometsaCumulative = isCumulative(prefix);
+                    chart.options.tooltips.callbacks.label = labelCallback;
+                    if (changed) chart.update();
+                } else {
+                    const options = {
+                        arvometsaCumulative: isCumulative(prefix),
+                        animation: { duration: 0 },
+                        scales: {
+                            xAxes: [{
+                                stacked: true,
+                                scaleLabel: { display: true, labelString: 'years from now'}, 
+                            }],
+                            yAxes: [{
+                                stacked: true,
+                                ticks: {
+                                    beginAtZero: true,
+                                    callback: (value, index, values) => value.toLocaleString(),
+                                },
+                            }],
+                        },
+                        tooltips: {
+                            callbacks: { label: labelCallback },
+                        },
+                    };
+                    arvometsaGraphs[prefix] = new Chart(outputElem, {
+                        type: 'bar',
+                        data: {labels: labels[prefix], datasets},
+                        options,
+                    });
+                }
+            }
 
             const totalArea = `${pp(totals.area, 3)} hectares`;
             const outputElem = document.querySelector(`output.arvometsa-area`);

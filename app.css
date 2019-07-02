@@ -336,3 +336,8 @@ g.line rect {
 a:visited.pagination {
     color: inherit;
 }
+
+.arvometsa-chart {
+    width: 420px;
+    height: 150px;
+}
