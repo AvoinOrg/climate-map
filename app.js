@@ -1759,7 +1759,7 @@ map.on('load', () => {
 
         }
 
-        window.arvometsaInterval = window.setInterval(updateGraphs, 500);
+        window.arvometsaInterval = window.setInterval(updateGraphs, 1000);
         // Need to sleep a little first;
         // to allow mapbox GL to compute something first? Maybe it's a bug.
         sleep(200).then(updateGraphs);
