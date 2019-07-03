@@ -1,7 +1,8 @@
-import {default as turfBooleanWithin} from '@turf/boolean-within';
-import {feature as turfFeature} from '@turf/helpers';
-import {flattenReduce as turfFlattenReduce} from '@turf/meta';
+import { default as turfBooleanWithin } from '@turf/boolean-within';
+import { feature as turfFeature } from '@turf/helpers';
+import { flattenReduce as turfFlattenReduce } from '@turf/meta';
 import Chart from 'chart.js';
+import { linear_kryw_0_100_c71, linear_bgyw_20_98_c66 } from './colormap';
 
 // This must be set, but the value is not needed here.
 mapboxgl.accessToken = 'not-needed';
@@ -37,7 +38,7 @@ map.addControl(new mapboxgl.GeolocateControl({
     trackUserLocation: true,
 }));
 
-map.addControl(new mapboxgl.ScaleControl() , 'bottom-right');
+map.addControl(new mapboxgl.ScaleControl(), 'bottom-right');
 
 const backgroundLayerGroups = { 'terramonitor': true }
 const layerGroupState = {
@@ -45,7 +46,7 @@ const layerGroupState = {
 }
 
 // Pretty print to precision:
-const pp = (x, precision=2) => (+x.toPrecision(precision)).toLocaleString();
+const pp = (x, precision = 2) => (+x.toPrecision(precision)).toLocaleString();
 
 // Set up event handlers for layer toggles, etc.
 window.addEventListener('load', () => {
@@ -103,6 +104,11 @@ const layerGroups = {
         'arvometsa-fill',
         'arvometsa-boundary',
         'arvometsa-sym',
+    ],
+    'arvometsa-relative': [
+        'arvometsa-actionable-relative-fill',
+        'arvometsa-boundary',
+        'arvometsa-actionable-relative-sym',
     ],
     'mature-forests': [
         () => hideAllLayersMatchingFilter(x => /privately-owned-forests/.test(x)),
@@ -266,10 +272,10 @@ const roundToSignificantDigitsPos = (n, expr) => [
         'round', [
             '/',
             expr,
-            ['^', 10, ['+', -n+1, ['floor', ['log10', expr]]]],
+            ['^', 10, ['+', -n + 1, ['floor', ['log10', expr]]]],
         ],
     ],
-    ['^', 10, ['-', n-1, ['floor', ['log10', expr]]]],
+    ['^', 10, ['-', n - 1, ['floor', ['log10', expr]]]],
 ]
 const roundToSignificantDigits = (n, expr) => [
     'case',
@@ -290,7 +296,7 @@ const roundToSignificantDigits = (n, expr) => [
 // NB: Duplicated logic because I don't know how to interpret
 // Mapbox style expressions in outside contexts.
 const fieldPlotCO2eFn = props => {
-    const isHistosolType = t => [-104,195511,195512,195513,195514].indexOf(t) !== -1;
+    const isHistosolType = t => [-104, 195511, 195512, 195513, 195514].indexOf(t) !== -1;
     const histosolRatio = (
         + (isHistosolType(props.soil_type1) ? props.soil_type1_ratio : 0)
         + (isHistosolType(props.soil_type2) ? props.soil_type2_ratio : 0)
@@ -358,6 +364,34 @@ const fieldPlotTextField = [
 
 const fillOpacity = 0.65;
 
+const colormapToStepExpr = (colormap, minValue, maxValue, expr) => {
+    const cmapToRGBA = ([r, g, b]) => `rgb(${(r)},${g},${b})`;
+    const cmap = colormap
+        .map(x => x.map(c => Math.round(255 * c)))
+        .map(cmapToRGBA);
+
+    const delta = (maxValue - minValue) / (cmap.length - 1);
+    const ret = ['step', expr];
+    ret.push(cmap[0]);
+    let value = minValue;
+    for (const color of cmap.slice(1)) {
+        ret.push(value);
+        ret.push(color);
+        value += delta;
+    }
+    return ret;
+}
+
+// 'Fire' aka linear_kryw_0_100_c71 is a perceptually uniform color map.
+const fireColorMapStepExpr = colormapToStepExpr.bind(
+    null,
+    // The first few values are too white for my taste, hence the slice().
+    linear_kryw_0_100_c71.reverse().slice(5)
+);
+
+const cetL9ColorMapStepExpr = colormapToStepExpr.bind(null, linear_bgyw_20_98_c66.reverse());
+
+
 const areaCO2eFillColorInterp = expr => [
     'interpolate',
     ['linear'],
@@ -375,15 +409,7 @@ const areaCO2eFillColorStep = expr => [
 ];
 const areaCO2eFillColor = areaCO2eFillColorInterp;
 
-const arvometsaAreaCO2eFillColor = expr => [
-    'interpolate',
-    ['linear'],
-    expr,
-    -2, 'rgba(206, 3, 37, 0.65)',
-    0, 'rgba(255, 255, 0, 0.65)',
-    2, 'rgba(33, 228, 8, 0.65)',
-    5, 'rgba(4, 196, 221, 0.65)',
-];
+const arvometsaAreaCO2eFillColor = expr => cetL9ColorMapStepExpr(-30, 100, expr);
 
 
 const originalLayerDefs = {};
@@ -450,6 +476,9 @@ const gtkLukeSoilTypes = {
 };
 
 const genericPopupHandler = (layer, fn) => {
+    if (Array.isArray(layer)) {
+        return layer.forEach(l => genericPopupHandler(l, fn));
+    }
     map.on('click', layer, fn);
     map.on('mouseenter', layer, function () {
         map.getCanvas().style.cursor = 'pointer';
@@ -462,10 +491,10 @@ const genericPopupHandler = (layer, fn) => {
 // kg/ha/year
 const turkuAuraJokiEmissions = {
     untreated: {
-        totN: 16.5, totP:  1.3, PP:  1.0, DRP: 0.4, solidMatter: 696,
+        totN: 16.5, totP: 1.3, PP: 1.0, DRP: 0.4, solidMatter: 696,
     },
     treated: {
-        totN:  4.5, totP: 1.86, PP: 0.95, DRP: 0.91, solidMatter: 570,
+        totN: 4.5, totP: 1.86, PP: 0.95, DRP: 0.91, solidMatter: 570,
     },
 };
 
@@ -475,7 +504,7 @@ const turkuAuraJokiEmissions = {
 // The region was obtained from:
 // https://metsakeskus.maps.arcgis.com/apps/webappviewer/index.html?id=4ab572bdb631439d82f8aa8e0284f663
 // Also http://paikkatieto.ymparisto.fi/value/ (but it crashes the browser pretty easily!)
-const turkuAuraJokiValue = {"type":"Polygon","coordinates":[[[22.6103877990383,60.6344856066462],[22.5870539729996,60.6103588211101],[22.6233478269874,60.5751045114842],[22.6081371120958,60.5626995848525],[22.6246074790853,60.5589631167027],[22.611648617642,60.5406368750108],[22.6314716339555,60.5150340334038],[22.6092672609967,60.4938538962352],[22.4821141856954,60.4683242152806],[22.4659206330005,60.450887946384],[22.3802794072847,60.4674571656726],[22.3552912683436,60.4536851421538],[22.3834536221754,60.4463719123733],[22.3751925022249,60.4285164369009],[22.3333390617128,60.4151056439502],[22.3043323282709,60.4346888430041],[22.2864479797805,60.4347006782323],[22.2854431135939,60.416082779118],[22.2287674601729,60.4333815276613],[22.2759013480459,60.4641676815831],[22.2655255299015,60.4711140245897],[22.2847212938923,60.495795969575],[22.2673139070335,60.5176149346882],[22.3275866631243,60.5391575071753],[22.2614068872664,60.5673420543226],[22.2678055710792,60.5790404344835],[22.3609367082758,60.5887055316531],[22.3772772685066,60.603266563484],[22.3587439869585,60.6056855294338],[22.4099654349429,60.6259246878061],[22.3993092976892,60.6329568465254],[22.4175178677525,60.6469925120255],[22.5366813830571,60.6510082108548],[22.5450098508632,60.6360496225363],[22.6117183453645,60.6535058093237],[22.6103877990383,60.6344856066462]]]};
+const turkuAuraJokiValue = { "type": "Polygon", "coordinates": [[[22.6103877990383, 60.6344856066462], [22.5870539729996, 60.6103588211101], [22.6233478269874, 60.5751045114842], [22.6081371120958, 60.5626995848525], [22.6246074790853, 60.5589631167027], [22.611648617642, 60.5406368750108], [22.6314716339555, 60.5150340334038], [22.6092672609967, 60.4938538962352], [22.4821141856954, 60.4683242152806], [22.4659206330005, 60.450887946384], [22.3802794072847, 60.4674571656726], [22.3552912683436, 60.4536851421538], [22.3834536221754, 60.4463719123733], [22.3751925022249, 60.4285164369009], [22.3333390617128, 60.4151056439502], [22.3043323282709, 60.4346888430041], [22.2864479797805, 60.4347006782323], [22.2854431135939, 60.416082779118], [22.2287674601729, 60.4333815276613], [22.2759013480459, 60.4641676815831], [22.2655255299015, 60.4711140245897], [22.2847212938923, 60.495795969575], [22.2673139070335, 60.5176149346882], [22.3275866631243, 60.5391575071753], [22.2614068872664, 60.5673420543226], [22.2678055710792, 60.5790404344835], [22.3609367082758, 60.5887055316531], [22.3772772685066, 60.603266563484], [22.3587439869585, 60.6056855294338], [22.4099654349429, 60.6259246878061], [22.3993092976892, 60.6329568465254], [22.4175178677525, 60.6469925120255], [22.5366813830571, 60.6510082108548], [22.5450098508632, 60.6360496225363], [22.6117183453645, 60.6535058093237], [22.6103877990383, 60.6344856066462]]] };
 const turkuAuraJokiValueFeature = turfFeature(turkuAuraJokiValue);
 
 const setupPopupHandlerForMaviPeltolohko = layerName => {
@@ -529,16 +558,16 @@ const setupPopupHandlerForMaviPeltolohko = layerName => {
             Solid matter: ${pp(e.untreated.solidMatter * areaHa)} kg per year<br/>
 
             <abbr class="tooltip" title="Puustinen ym. (2005), Puustinen (2013)">Potential emission reductions</abbr>:<br/>
-            Nitrogen: ${pp( (e.untreated.totN - e.treated.totN) * areaHa )} kg per year<br/>
-            Phosphorus: ${pp( (e.untreated.totP - e.treated.totP) * areaHa )} kg per year (a small increase)<br/>
-            Solid matter: ${pp( (e.untreated.solidMatter - e.treated.solidMatter) * areaHa )} kg per year<br/>
+            Nitrogen: ${pp((e.untreated.totN - e.treated.totN) * areaHa)} kg per year<br/>
+            Phosphorus: ${pp((e.untreated.totP - e.treated.totP) * areaHa)} kg per year (a small increase)<br/>
+            Solid matter: ${pp((e.untreated.solidMatter - e.treated.solidMatter) * areaHa)} kg per year<br/>
             `;
         }
 
-        new mapboxgl.Popup({maxWidth: '360px'})
-        .setLngLat(ev.lngLat)
-        .setHTML(html)
-        .addTo(map);
+        new mapboxgl.Popup({ maxWidth: '360px' })
+            .setLngLat(ev.lngLat)
+            .setHTML(html)
+            .addTo(map);
     });
 }
 
@@ -572,47 +601,47 @@ const metsaanFiSoilTypes = [
 
 
 const metsaanFiDatasources = [
-    {'id': 1, 'code': '1', 'description': 'Maastossa mitattu'},
-    {'id': 2, 'code': '2', 'description': 'Kaukokartoitettu'},
-    {'id': 3, 'code': '3', 'description': 'Maastossa mitattu ja laskennallisesti kasvatettu'},
-    {'id': 4, 'code': '4', 'description': 'Kaukokartoitettu ja laskennallisesti kasvatettu'},
-    {'id': 5, 'code': '5', 'description': 'Taimikon perustamistiedosta laskennallisesti tuotettu uusi puusto'},
-    {'id': 6, 'code': '6', 'description': 'Kasvatettu laskennallisesti toteutuneen metsänhoitotyön perusteella'},
-    {'id': 7, 'code': '7', 'description': 'Kasvatettu laskennallisesti toteutuneen hakkuun perusteella'},
-    {'id': 8, 'code': '9', 'description': 'Puustotieto muodostettu eri lähteitä yhdistäen / ei määritelty'},
-    {'id': 9, 'code': '10', 'description': 'Metsävaratiedonkeruu'},
-    {'id': 10, 'code': '11', 'description': 'Metsävaratiedonkeruu, Aarni'},
-    {'id': 11, 'code': '12', 'description': 'Metsävaratiedonkeruu, Luotsi'},
-    {'id': 12, 'code': '13', 'description': 'Metsävaratiedonkeruu, TASO'},
-    {'id': 13, 'code': '14', 'description': 'Metsävaratiedonkeruu, muu MV-järjestelmä'},
-    {'id': 14, 'code': '20', 'description': 'Metsäsuunnittelu'},
-    {'id': 15, 'code': '21', 'description': 'Metsäsuunnittelu, uusi MS-järjestelmä'},
-    {'id': 16, 'code': '22', 'description': 'Metsäsuunnittelu, Luotsi'},
-    {'id': 17, 'code': '23', 'description': 'Metsäsuunnittelu, TASO'},
-    {'id': 18, 'code': '24', 'description': 'Metsäsuunnittelu, muu MS-järjestelmä'},
-    {'id': 19, 'code': '30', 'description': 'Arvokas elinympäristö'},
-    {'id': 20, 'code': '31', 'description': 'Arvokas elinympäristö, metsälaki'},
-    {'id': 21, 'code': '32', 'description': 'Arvokas elinympäristö, luonnonsuojelulaki'},
-    {'id': 22, 'code': '33', 'description': 'Arvokas elinympäristö, metsäsertifiointi'},
-    {'id': 23, 'code': '34', 'description': 'Arvokas elinympäristö, muu arvokas elinympäristö'},
-    {'id': 24, 'code': '35', 'description': 'Arvokas elinympäristö, METSO'},
-    {'id': 25, 'code': '36', 'description': 'Arvokas elinympäristö, ympäristötukikohde'},
-    {'id': 26, 'code': '101', 'description': 'Maastossa mitattu'},
-    {'id': 27, 'code': '102', 'description': 'Kaukokartoitettu'},
-    {'id': 28, 'code': '103', 'description': 'Taimikon perustamisilmoitus'},
-    {'id': 29, 'code': '104', 'description': 'Metsänkäyttöilmoitus'},
-    {'id': 30, 'code': '105', 'description': 'Monilähde-VMI'},
-    {'id': 31, 'code': '109', 'description': 'Metsävaratieto, ei määritelty'},
-    {'id': 32, 'code': '202', 'description': 'MKI-kuvio, suunniteltu hakkuu'},
-    {'id': 33, 'code': '212', 'description': 'MKI-kuvio, suunniteltu uudistaminen'},
-    {'id': 34, 'code': '213', 'description': 'MKI-kuvio, perustamistieto'},
-    {'id': 35, 'code': '201', 'description': 'TP-kuvio'},
-    {'id': 36, 'code': '203', 'description': 'TPI-kuvio'},
-    {'id': 37, 'code': '204', 'description': 'Kemera-kuvio'},
-    {'id': 38, 'code': '205', 'description': 'Luotsi-kuvio'},
-    {'id': 39, 'code': '206', 'description': 'Metsänomistaja'},
-    {'id': 40, 'code': '207', 'description': 'Toimija'},
-    {'id': 41, 'code': '208', 'description': 'Muu'},
+    { 'id': 1, 'code': '1', 'description': 'Maastossa mitattu' },
+    { 'id': 2, 'code': '2', 'description': 'Kaukokartoitettu' },
+    { 'id': 3, 'code': '3', 'description': 'Maastossa mitattu ja laskennallisesti kasvatettu' },
+    { 'id': 4, 'code': '4', 'description': 'Kaukokartoitettu ja laskennallisesti kasvatettu' },
+    { 'id': 5, 'code': '5', 'description': 'Taimikon perustamistiedosta laskennallisesti tuotettu uusi puusto' },
+    { 'id': 6, 'code': '6', 'description': 'Kasvatettu laskennallisesti toteutuneen metsänhoitotyön perusteella' },
+    { 'id': 7, 'code': '7', 'description': 'Kasvatettu laskennallisesti toteutuneen hakkuun perusteella' },
+    { 'id': 8, 'code': '9', 'description': 'Puustotieto muodostettu eri lähteitä yhdistäen / ei määritelty' },
+    { 'id': 9, 'code': '10', 'description': 'Metsävaratiedonkeruu' },
+    { 'id': 10, 'code': '11', 'description': 'Metsävaratiedonkeruu, Aarni' },
+    { 'id': 11, 'code': '12', 'description': 'Metsävaratiedonkeruu, Luotsi' },
+    { 'id': 12, 'code': '13', 'description': 'Metsävaratiedonkeruu, TASO' },
+    { 'id': 13, 'code': '14', 'description': 'Metsävaratiedonkeruu, muu MV-järjestelmä' },
+    { 'id': 14, 'code': '20', 'description': 'Metsäsuunnittelu' },
+    { 'id': 15, 'code': '21', 'description': 'Metsäsuunnittelu, uusi MS-järjestelmä' },
+    { 'id': 16, 'code': '22', 'description': 'Metsäsuunnittelu, Luotsi' },
+    { 'id': 17, 'code': '23', 'description': 'Metsäsuunnittelu, TASO' },
+    { 'id': 18, 'code': '24', 'description': 'Metsäsuunnittelu, muu MS-järjestelmä' },
+    { 'id': 19, 'code': '30', 'description': 'Arvokas elinympäristö' },
+    { 'id': 20, 'code': '31', 'description': 'Arvokas elinympäristö, metsälaki' },
+    { 'id': 21, 'code': '32', 'description': 'Arvokas elinympäristö, luonnonsuojelulaki' },
+    { 'id': 22, 'code': '33', 'description': 'Arvokas elinympäristö, metsäsertifiointi' },
+    { 'id': 23, 'code': '34', 'description': 'Arvokas elinympäristö, muu arvokas elinympäristö' },
+    { 'id': 24, 'code': '35', 'description': 'Arvokas elinympäristö, METSO' },
+    { 'id': 25, 'code': '36', 'description': 'Arvokas elinympäristö, ympäristötukikohde' },
+    { 'id': 26, 'code': '101', 'description': 'Maastossa mitattu' },
+    { 'id': 27, 'code': '102', 'description': 'Kaukokartoitettu' },
+    { 'id': 28, 'code': '103', 'description': 'Taimikon perustamisilmoitus' },
+    { 'id': 29, 'code': '104', 'description': 'Metsänkäyttöilmoitus' },
+    { 'id': 30, 'code': '105', 'description': 'Monilähde-VMI' },
+    { 'id': 31, 'code': '109', 'description': 'Metsävaratieto, ei määritelty' },
+    { 'id': 32, 'code': '202', 'description': 'MKI-kuvio, suunniteltu hakkuu' },
+    { 'id': 33, 'code': '212', 'description': 'MKI-kuvio, suunniteltu uudistaminen' },
+    { 'id': 34, 'code': '213', 'description': 'MKI-kuvio, perustamistieto' },
+    { 'id': 35, 'code': '201', 'description': 'TP-kuvio' },
+    { 'id': 36, 'code': '203', 'description': 'TPI-kuvio' },
+    { 'id': 37, 'code': '204', 'description': 'Kemera-kuvio' },
+    { 'id': 38, 'code': '205', 'description': 'Luotsi-kuvio' },
+    { 'id': 39, 'code': '206', 'description': 'Metsänomistaja' },
+    { 'id': 40, 'code': '207', 'description': 'Toimija' },
+    { 'id': 41, 'code': '208', 'description': 'Muu' },
 ];
 
 const metsaanFiDevelopmentClass = {
@@ -701,7 +730,7 @@ const setupPopupHandlerForMetsaanFiStandData = layerName => {
         const p = f.properties;
 
         const soilTypeInfo = metsaanFiSoilTypes.filter(x => x[0] === p.soiltype)[0];
-        let _id=null, soilEn='', soilFi='';
+        let _id = null, soilEn = '', soilFi = '';
         if (soilTypeInfo) {
             [_id, soilEn, soilFi] = soilTypeInfo;
         }
@@ -729,10 +758,10 @@ const setupPopupHandlerForMetsaanFiStandData = layerName => {
             <tr><th>Data source</th><td>${metsaanFiDatasources.filter(x => x.id === p.datasource)[0].description || ''}</td></tr>
         `;
 
-        new mapboxgl.Popup({maxWidth: '360px'})
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .addTo(map);
+        new mapboxgl.Popup({ maxWidth: '360px' })
+            .setLngLat(e.lngLat)
+            .setHTML(html)
+            .addTo(map);
     });
 }
 
@@ -980,9 +1009,9 @@ map.on('load', () => {
         <br/><strong>Plot ID:</strong>: ${lohko}
         `
         new mapboxgl.Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .addTo(map);
+            .setLngLat(e.lngLat)
+            .setHTML(html)
+            .addTo(map);
     });
 
 
@@ -1097,7 +1126,7 @@ map.on('load', () => {
             const buildingIdText = p.vtj_prt && p.ratu
                 ? `${p.vtj_prt} (${p.ratu})`
                 : p.vtj_prt || p.ratu;
-            const s =`
+            const s = `
             <p>
             XXX_BUILDING_ID_TEMPLATE_XXX
             <address>
@@ -1120,17 +1149,17 @@ map.on('load', () => {
             if (buildingIdText) buildingIdMap[s].push(buildingIdText);
         })
 
-        const html = htmlParts.reduce((a,b) => a+b.replace(
+        const html = htmlParts.reduce((a, b) => a + b.replace(
             'XXX_BUILDING_ID_TEMPLATE_XXX',
             buildingIdMap[b]
-            ? buildingIdMap[b].reduce( (a,b) => a?`${a}, ${b}` : `<strong>Building ID:</strong> ${b}`, '' )
-            : ''
+                ? buildingIdMap[b].reduce((a, b) => a ? `${a}, ${b}` : `<strong>Building ID:</strong> ${b}`, '')
+                : ''
         ), '')
 
-        new mapboxgl.Popup({maxWidth: '360px'})
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .addTo(map);
+        new mapboxgl.Popup({ maxWidth: '360px' })
+            .setLngLat(e.lngLat)
+            .setHTML(html)
+            .addTo(map);
     });
 
 
@@ -1279,6 +1308,8 @@ map.on('load', () => {
         'Thin from above – extended rotation',
         'Removal of tree cover',
     ];
+    const ARVOMETSA_TRADITIONAL_FORESTRY_METHOD = 2; // Thin from below – clearfell
+
     document.querySelectorAll('.arvometsa-projections button').forEach(e => {
         e.addEventListener('click', () => {
             window.arvometsaDataset = arvometsaDatasetClasses.indexOf(e.className);
@@ -1298,36 +1329,92 @@ map.on('load', () => {
     })
 
     const nC_to_CO2 = 3.6;
-    const arvometsaCO2eValue = (attr, expr) => [
-        'case', ['has', attr], [
+    const arvometsaCO2eValue = expr => [
+        'case', ['has', 'm0_cbt1'], [
             '*',
-            ['/', expr, 10], // C: tons/10 years -> C: tons/y
+            expr,
             nC_to_CO2, // C -> CO2
-            ['/', 1, ['get', 'area']], // divide total by area in hectares -> CO2/ha/y
         ],
         0,
     ];
 
-
-    window.arvometsaAttr = 'DEFAULT';
-    window.arvometsaDataset = 0; // 'BPHT003001_AlaharvennusAvohakkuu';
-    window.arvometsaInterval = null;
-
-    const cbtSumAttr = [
-        'let', 'p', ['concat', 'm', ['get', 'best_method'], '_'], [
-            '*', 1/50, [
+    const arvometsaSumMethodAttrs = (method, attrPrefix) => [
+        'let', 'p', ['concat', 'm', method, '_'], [
+            '*', 1 / 50, [
                 '+',
-                ['get', ['concat', ['var', 'p'], 'cbt1']],
-                ['get', ['concat', ['var', 'p'], 'cbt2']],
-                ['get', ['concat', ['var', 'p'], 'cbt3']],
-                ['get', ['concat', ['var', 'p'], 'cbt4']],
-                ['get', ['concat', ['var', 'p'], 'cbt5']],
+                ['get', ['concat', ['var', 'p'], `${attrPrefix}1`]],
+                ['get', ['concat', ['var', 'p'], `${attrPrefix}2`]],
+                ['get', ['concat', ['var', 'p'], `${attrPrefix}3`]],
+                ['get', ['concat', ['var', 'p'], `${attrPrefix}4`]],
+                ['get', ['concat', ['var', 'p'], `${attrPrefix}5`]],
             ],
         ],
     ];
 
-    const mAttr = `m${window.arvometsaDataset}_${window.arvometsaAttr}`;
-    const co2eValueExpr = arvometsaCO2eValue('m0_cbt1', cbtSumAttr);
+    const arvometsaSumMethodAttrsWithBioCarbon = (method, attrPrefix) => [
+        '+',
+        arvometsaSumMethodAttrs(method, attrPrefix),
+        ['*', 1/50, [
+            '+',
+            ['get', ['concat', 'm', method, '_bio5']],
+            ['get', ['concat', 'm', method, '_maa5']],
+        ]],
+    ];
+
+    const arvometsaBestMethodCumulativeSumCbt = arvometsaSumMethodAttrs(['get', 'best_method'], 'cbt');
+    const arvometsaBestMethodVsOther = (method, attrPrefix) => [
+        '-',
+        arvometsaSumMethodAttrsWithBioCarbon(method, attrPrefix),
+        arvometsaSumMethodAttrsWithBioCarbon(ARVOMETSA_TRADITIONAL_FORESTRY_METHOD, attrPrefix),
+    ];
+
+    const pickedRelativeMethod = ['get', 'best_method'];
+    const arvometsaRelativeCO2eValueExpr = arvometsaCO2eValue(arvometsaBestMethodVsOther(pickedRelativeMethod, 'cbt'));
+
+
+    const arvometsaRelativeCO2eFillColor = expr => fireColorMapStepExpr(0, 150, expr);
+
+    addLayer({
+        'id': 'arvometsa-actionable-relative-fill',
+        'source': 'arvometsa',
+        'source-layer': 'default',
+        'type': 'fill',
+        'paint': {
+            'fill-color': arvometsaRelativeCO2eFillColor(arvometsaRelativeCO2eValueExpr),
+        },
+    })
+    addLayer({
+        'id': 'arvometsa-actionable-relative-sym',
+        'source': 'arvometsa',
+        'source-layer': 'default',
+        'type': 'symbol',
+        "minzoom": 15.5,
+        "paint": {},
+        "layout": {
+            "text-size": 20,
+            "symbol-placement": "point",
+            "text-font": ["Open Sans Regular"],
+            "text-field": [
+                "case", ["has", 'm0_cbt1'], [
+                    "concat",
+                    roundToSignificantDigits(2, ['*', ['get', 'area'], arvometsaRelativeCO2eValueExpr]),
+                    " t CO2e/y",
+                    [
+                        'case', ['>', 0, ['*', ['get', 'area'], arvometsaRelativeCO2eValueExpr]],
+                        '\n(net carbon source)',
+                        '',
+                    ],
+                ], "",
+            ],
+        }
+    })
+
+
+    window.arvometsaAttr = 'DEFAULT';
+    window.arvometsaDataset = 0; // No cuttings
+    window.arvometsaInterval = null;
+
+    const arvometsaCumulativeCO2eValueExpr = arvometsaCO2eValue(arvometsaBestMethodCumulativeSumCbt);
 
     addLayer({
         'id': 'arvometsa-fill',
@@ -1335,9 +1422,7 @@ map.on('load', () => {
         'source-layer': 'default',
         'type': 'fill',
         'paint': {
-            // 'fill-color': 'red',
-            'fill-color': arvometsaAreaCO2eFillColor(co2eValueExpr),
-            // 'fill-opacity': fillOpacity, // Set by fill-color rgba
+            'fill-color': arvometsaAreaCO2eFillColor(arvometsaCumulativeCO2eValueExpr),
         },
     })
     addLayer({
@@ -1357,6 +1442,102 @@ map.on('load', () => {
         'type': 'symbol',
     })
 
+    const baseAttrs = `
+    cbf1 cbf2 cbf3 cbf4 cbf5
+    cbt1 cbt2 cbt3 cbt4 cbt5
+    bio0 bio1 bio2 bio3 bio4 bio5
+    maa0 maa1 maa2 maa3 maa4 maa5
+    npv2 npv3 npv4
+   `.trim();
+
+    const abbrTitles = {
+        cbf: 'Forest CO2e balance (trees + soil)',
+        cbt: 'Forestry CO2e balance (trees + soil + products)',
+        bio: 'Carbon stock in trees',
+        maa: 'Carbon stock in soil',
+        npv: 'Net present value of forest stock (3% discounting)',
+    }
+
+    const setupArvometsaPopupHandler = () => {
+        genericPopupHandler(['arvometsa-fill', 'arvometsa-actionable-relative-fill'], (e) => {
+            const f = e.features[0];
+            const p = f.properties;
+
+            const m = p.best_method;
+            const mAlt = ARVOMETSA_TRADITIONAL_FORESTRY_METHOD;
+
+            const co2eDiff = nC_to_CO2 * (
+                [1,2,3,4,5].map(x => p[`m${m}_cbt${x}`]).reduce((x,y) => x+y, 0)
+                + p[`m${m}_maa5`] + p[`m${m}_bio5`]
+                - [1,2,3,4,5].map(x => p[`m${mAlt}_cbt${x}`]).reduce((x,y) => x+y, 0)
+                - p[`m${mAlt}_maa5`] - p[`m${mAlt}_bio5`]
+            ) / 50;
+
+            const co2eStr = `${pp(p.area * co2eDiff)} tons CO2e/y <small>or ${pp(co2eDiff)} tons CO2e/ha/y</small>`;
+
+            let html = `
+            <strong>${p.area} hectares</strong><br/>
+            <strong>Potential CO2e savings with improved forestry methods:</strong> ${co2eStr}<br/>
+            <table>
+            <tr><th colspan="1" rowspan="2">Quantity<br/><small>carbon, tons</small></th><th colspan="6">Years from now</th></tr>
+            <tr><th>0</th><th>10</th><th>20</th><th>30</th><th>40</th><th>50</th></tr>
+            `;
+
+            const bestMethods = {};
+            const bestValues = {};
+            for (const a in p) {
+                if (!/^m\d_/.test(a)) continue;
+                const baseAttr = a.substr(3);
+                const datasetIdx = +a[1];
+                if (!(baseAttr in bestValues) || p[a] > bestValues[baseAttr]) {
+                    bestValues[baseAttr] = p[a];
+                    bestMethods[baseAttr] = datasetIdx;
+                }
+            }
+
+            arvometsaDatasetTitles.forEach((name, dataset) => {
+                html += `<tr><th colspan="7">${name}</th><th>`;
+
+                baseAttrs.split('\n').forEach(attrGroup => {
+                    const prefix = attrGroup.trim().slice(0, 3);
+                    if (prefix === 'npv') {
+                        if (dataset === 0) return; // NPV is not applicable when the forest is never cut.
+                        const attr = `m${dataset}_npv3`;
+                        const best = bestValues[attr.substr(3)] === p[attr];
+                        html += `
+                        <tr><td><abbr title="${abbrTitles[prefix]}">${prefix.toUpperCase()}</abbr></td>
+                        <td>${best ? '<strong>' : ''}${pp(p[attr] * p.area)}${best ? '</strong>' : ''} €</td>
+                        <td colspan="5"></td>
+                        </tr>
+                        `;
+                        return;
+                    }
+
+                    html += `<tr><td><abbr title="${abbrTitles[prefix]}">${prefix === 'maa' ? 'SOIL' : prefix.toUpperCase()}</abbr></td>`;
+                    const attrs = attrGroup.trim().split(/ /).map(attr => `m${dataset}_${attr}`);
+
+                    if (attrs[0][attrs[0].length - 1] !== '0') html += `<td></td>`;
+
+                    attrs.forEach(attr => {
+                        const best = bestValues[attr.substr(3)] === p[attr];
+                        html += `<td>${best ? '<strong>' : ''}${pp(p[attr] * p.area)}${best ? '</strong>' : ''}</td>`;
+                    })
+                    html += '</tr>';
+
+                });
+
+            });
+            html += `</table>`
+
+            new mapboxgl.Popup({ maxWidth: '360px' })
+                .setLngLat(e.lngLat)
+                .setHTML(html)
+                .addTo(map);
+        });
+    }
+
+    setupArvometsaPopupHandler();
+
     window.replaceArvometsa = () => {
         const attr = window.arvometsaAttr;
         const dataset = window.arvometsaDataset;
@@ -1366,9 +1547,12 @@ map.on('load', () => {
             window.clearInterval(window.arvometsaInterval);
         }
 
+        setupArvometsaPopupHandler();
+
         const co2eValueExpr = arvometsaCO2eValue(
-            attr === 'DEFAULT' ? 'm0_cbt1' : mAttr,
-            attr === 'DEFAULT' ? cbtSumAttr : ['get', mAttr],
+            attr === 'DEFAULT'
+                ? arvometsaBestMethodCumulativeSumCbt
+                : ['/', ['get', mAttr], 10],
         );
 
         // attr like 'cbt1', 'cbt2', 'bio0', 'maa0'
@@ -1379,9 +1563,7 @@ map.on('load', () => {
                 'source-layer': 'default',
                 'type': 'fill',
                 'paint': {
-                    // 'fill-color': 'red',
                     'fill-color': arvometsaAreaCO2eFillColor(co2eValueExpr),
-                    // 'fill-opacity': fillOpacity, // Set by fill-color rgba
                 },
             };
             map.removeLayer(layer.id);
@@ -1402,10 +1584,10 @@ map.on('load', () => {
                 "text-field": [
                     "case", ["has", 'm0_cbt1'], [
                         "concat",
-                        roundToSignificantDigits(2, co2eValueExpr),
+                        roundToSignificantDigits(2, ['*', ['get', 'area'], co2eValueExpr]),
                         " t CO2e/y",
                         [
-                            'case', ['>', 0, co2eValueExpr],
+                            'case', ['>', 0, ['*', ['get', 'area'], co2eValueExpr]],
                             '\n(net carbon source)',
                             '',
                         ],
@@ -1417,110 +1599,30 @@ map.on('load', () => {
         map.addLayer(layer);
 
 
-        const baseAttrs = `
-        cbf1 cbf2 cbf3 cbf4 cbf5
-        cbt1 cbt2 cbt3 cbt4 cbt5
-        bio0 bio1 bio2 bio3 bio4 bio5
-        maa0 maa1 maa2 maa3 maa4 maa5
-        npv2 npv3 npv4
-       `.trim();
 
-        const abbrTitles = {
-            cbf: 'Forest CO2e balance (trees + soil)',
-            cbt: 'Forestry CO2e balance (trees + soil + products)',
-            bio: 'Carbon stock in trees',
-            maa: 'Carbon stock in soil',
-            npv: 'Net present value of forest stock (3% discounting)',
-       }
-
-
-       genericPopupHandler('arvometsa-fill', e => {
-            const f = e.features[0];
-            const p = f.properties;
-
-            
-            let html = `<strong>${p.area} hectares</strong>
-            <table>
-            <tr><th colspan="1" rowspan="2">Quantity<br/><small>carbon, tons</small></th><th colspan="6">Years from now</th></tr>
-            <tr><th>0</th><th>10</th><th>20</th><th>30</th><th>40</th><th>50</th></tr>
-        `;
-
-            const bestMethods = {};
-            const bestValues = {};
-            for (const a in p) {
-                if (!/^m\d_/.test(a)) continue;
-                const baseAttr = a.substr(3);
-                const datasetIdx = +a[1];
-                if (!(baseAttr in bestValues) || p[a] > bestValues[baseAttr]) {
-                    bestValues[baseAttr] = p[a];
-                    bestMethods[baseAttr] = datasetIdx;
-                }
-            }
-
-            arvometsaDatasetTitles.forEach((name, dataset) => {
-                html += `<tr><th colspan="7">${name}</th><th>`;
-
-                baseAttrs.split('\n').forEach(attrGroup => {
-                    const prefix = attrGroup.trim().slice(0,3);
-                    if (prefix === 'npv') {
-                        if (dataset === 0) return; // NPV is not applicable when the forest is never cut.
-                        const attr = `m${dataset}_npv3`;
-                        const best = bestValues[attr.substr(3)] === p[attr];
-                        html += `
-                        <tr><td><abbr title="${abbrTitles[prefix]}">${prefix.toUpperCase()}</abbr></td>
-                        <td>${best?'<strong>':''}${ pp(p[attr]*p.area) }${best?'</strong>':''} €</td>
-                        <td colspan="5"></td>
-                        </tr>
-                        `;
-                        return;
-                    }
-
-                    html += `<tr><td><abbr title="${abbrTitles[prefix]}">${prefix==='maa' ? 'SOIL' : prefix.toUpperCase()}</abbr></td>`;
-                    const attrs = attrGroup.trim().split(/ /).map(attr => `m${dataset}_${attr}`);
-
-                    if (attrs[0][ attrs[0].length-1 ] !== '0') html += `<td></td>`;
-
-                    attrs.forEach(attr => {
-                        const best = bestValues[attr.substr(3)] === p[attr];
-                        html += `<td>${best?'<strong>':''}${pp(p[attr]*p.area)}${best?'</strong>':''}</td>`;
-                    })
-                    html += '</tr>';
-
-                });    
-
-            });
-            html += `</table>`
-
-            new mapboxgl.Popup({maxWidth: '360px'})
-            .setLngLat(e.lngLat)
-            .setHTML(html)
-            .addTo(map);
-        });
-    
-
-        function sleep (time) {
+        function sleep(time) {
             return new Promise((resolve) => setTimeout(resolve, time));
         }
 
         const arvometsaGraphs = {};
         const updateGraphs = () => {
             const dataset = window.arvometsaDataset;
-            const totals = {area:0};
+            const totals = { area: 0 };
             baseAttrs.split(/\s+/).forEach(attr => {
                 const mAttr = `m${dataset}_${attr}`;
                 totals[mAttr] = 0;
             });
 
             map.queryRenderedFeatures('arvometsa')
-            .filter(x => x.source === 'arvometsa' && x.layer.id === 'arvometsa-fill')
-            .forEach(x => {
-                const p = x.properties;
-                if (p.m0_cbt1 === null || p.m0_cbt1 === undefined) return;
-                if (!p.area) return; // hypothetical
-                for (const a in totals) {
-                    if (a in p) totals[a] += p[a] / p.area;
-                }
-            });
+                .filter(x => x.source === 'arvometsa' && x.layer.id === 'arvometsa-fill')
+                .forEach(x => {
+                    const p = x.properties;
+                    if (p.m0_cbt1 === null || p.m0_cbt1 === undefined) return;
+                    if (!p.area) return; // hypothetical
+                    for (const a in totals) {
+                        if (a in p) totals[a] += p[a] / p.area;
+                    }
+                });
 
             const carbonStockAttrPrefixes = ['bio', 'maa', 'cst'];
             const cumulativeFlag = document.getElementById('arvometsa-cumulative').checked;
@@ -1544,7 +1646,7 @@ map.on('load', () => {
 
             const attrGroups = baseAttrs.split('\n'); // .concat([carbonStockTotal]);
             attrGroups.forEach(attrGroup => {
-                const prefix = attrGroup.trim().slice(0,3);
+                const prefix = attrGroup.trim().slice(0, 3);
                 const attrs = attrGroup.trim().split(/ /).map(attr => `m${dataset}_${attr}`);
 
                 if (prefix === 'npv') {
@@ -1571,43 +1673,43 @@ map.on('load', () => {
                 let datasets;
                 const unit = getUnit(prefix);
                 switch (prefix) {
-                case 'cbf':
-                    datasets = [{
-                        label: 'CO2e balance',
-                        backgroundColor: 'green',
-                        data: attrValues.cbf,
-                    }];
-                    break;
-                case 'cbt':
-                    datasets = [{
-                        label: 'CO2e balance',
-                        backgroundColor: 'rgb(63, 90, 0)',
-                        data: attrValues.cbt,
-                    }];
-                    break;
-                case 'bio':
-                    datasets = [{
-                        label: 'Soil',
-                        backgroundColor: '#815f1c',
-                        data: attrValues.maa,
-                    }, {
-                        label: 'Trees',
-                        backgroundColor: '#00af5a',
-                        data: attrValues.bio,
-                    }];
-                    break;
+                    case 'cbf':
+                        datasets = [{
+                            label: 'CO2e balance',
+                            backgroundColor: 'green',
+                            data: attrValues.cbf,
+                        }];
+                        break;
+                    case 'cbt':
+                        datasets = [{
+                            label: 'CO2e balance',
+                            backgroundColor: 'rgb(63, 90, 0)',
+                            data: attrValues.cbt,
+                        }];
+                        break;
+                    case 'bio':
+                        datasets = [{
+                            label: 'Soil',
+                            backgroundColor: '#815f1c',
+                            data: attrValues.maa,
+                        }, {
+                            label: 'Trees',
+                            backgroundColor: '#00af5a',
+                            data: attrValues.bio,
+                        }];
+                        break;
                 }
 
                 const labels = {
-                    'cbf': ['10','20','30','40','50'],
-                    'cbt': ['10','20','30','40','50'],
-                    'bio': ['0','10','20','30','40','50'],
+                    'cbf': ['10', '20', '30', '40', '50'],
+                    'cbt': ['10', '20', '30', '40', '50'],
+                    'bio': ['0', '10', '20', '30', '40', '50'],
                 }
 
                 const outputElem = document.querySelector(`canvas.arvometsa-${prefix}`);
-                
+
                 const chart = arvometsaGraphs[prefix];
-                const labelCallback = function(tooltipItem, data) {
+                const labelCallback = function (tooltipItem, data) {
                     const label = data.datasets[tooltipItem.datasetIndex].label;
                     const v = pp(tooltipItem.yLabel, 2);
                     return `${label}: ${v} ${unit}`;
@@ -1628,7 +1730,7 @@ map.on('load', () => {
                         scales: {
                             xAxes: [{
                                 stacked: true,
-                                scaleLabel: { display: true, labelString: 'years from now'}, 
+                                scaleLabel: { display: true, labelString: 'years from now' },
                             }],
                             yAxes: [{
                                 stacked: true,
@@ -1644,7 +1746,7 @@ map.on('load', () => {
                     };
                     arvometsaGraphs[prefix] = new Chart(outputElem, {
                         type: 'bar',
-                        data: {labels: labels[prefix], datasets},
+                        data: { labels: labels[prefix], datasets },
                         options,
                     });
                 }
@@ -1687,7 +1789,7 @@ map.on('load', () => {
         'source': 'metsaan-stand',
         'source-layer': 'stand',
         'type': 'fill',
-        minzoom:12,
+        minzoom: 12,
         'paint': {
             // 'fill-color': fillColorFertilityClass,
             'fill-color': fillRegenerationFelling,
@@ -1696,7 +1798,7 @@ map.on('load', () => {
     })
     const treeSpeciesText = speciesId => [
         "match", speciesId,
-        ...(Object.entries(metsaanFiTreeSpecies).reduce( (x,y) => [...x, +y[0], y[1]], [])),
+        ...(Object.entries(metsaanFiTreeSpecies).reduce((x, y) => [...x, +y[0], y[1]], [])),
         "Unknown",
     ]
     addLayer({
@@ -1712,11 +1814,11 @@ map.on('load', () => {
             "symbol-placement": "point",
             "text-font": ["Open Sans Regular"],
             "text-field": [
-                        "concat",
-                        "Main species: ",treeSpeciesText(["get", "maintreespecies"]),
-                        "\navg.age: ",["get", "meanage"],
-                        "\navg.diameter: ",["get", "meandiameter"]," cm",
-                    ],
+                "concat",
+                "Main species: ", treeSpeciesText(["get", "maintreespecies"]),
+                "\navg.age: ", ["get", "meanage"],
+                "\navg.diameter: ", ["get", "meandiameter"], " cm",
+            ],
         }
     })
 
@@ -1823,7 +1925,7 @@ map.on('load', () => {
             "tiles": [`https://map.buttonprogram.org/fmi-enfuser/${varName}/{z}/{x}/{y}.png?v=2`],
             "minzoom": 9,
             "maxzoom": 13,
-            bounds: [ 24.579, 60.132, 25.200, 60.368 ], // Helsinki (FMI dataset bounds anyway)
+            bounds: [24.579, 60.132, 25.200, 60.368], // Helsinki (FMI dataset bounds anyway)
             attribution: '<a href="https://en.ilmatieteenlaitos.fi/environmental-information-fusion-service">© Finnish Meteorological Institute</a>',
         });
         addLayer({
@@ -2077,8 +2179,8 @@ map.on('load', () => {
             if (!/LGN\d/.test(x)) return;
             const base = x.replace(/LGN.*/, 'LGN0');
             // Most of the source images seem to fall in these categories.
-            const candidates = [0,1,2].map(x => {
-                results += `\n<li><a target="_blank" href="https://earthexplorer.usgs.gov/metadata/12864/${base+x}/">${base+x}</a></li>`;
+            const candidates = [0, 1, 2].map(x => {
+                results += `\n<li><a target="_blank" href="https://earthexplorer.usgs.gov/metadata/12864/${base + x}/">${base + x}</a></li>`;
             });
         })
 
@@ -2098,11 +2200,11 @@ map.on('load', () => {
         if (results) html += `Potential Landsat source images: <ul>${results}</ul>`;
 
         new mapboxgl.Popup()
-        .setLngLat(e.lngLat)
-        // Upstream X-Frame-Options prevents this iframe trick.
-        // .setHTML(`<iframe sandbox src="https://earthexplorer.usgs.gov/metadata/12864/${image}/"></iframe>`)
-        .setHTML(html)
-        .addTo(map);
+            .setLngLat(e.lngLat)
+            // Upstream X-Frame-Options prevents this iframe trick.
+            // .setHTML(`<iframe sandbox src="https://earthexplorer.usgs.gov/metadata/12864/${image}/"></iframe>`)
+            .setHTML(html)
+            .addTo(map);
     });
 
 
@@ -2128,7 +2230,7 @@ map.on('load', () => {
                 0, 'rgb(255,255,255)',
                 8, 'rgb(128,128,128)',
                 15, 'rgb(252,113,34)', // orange
-                21,'rgb(245,17,72)', // red
+                21, 'rgb(245,17,72)', // red
             ],
             'fill-opacity': fillOpacity,
         },
@@ -2563,7 +2665,7 @@ map.on('load', () => {
     })
 
     genericPopupHandler('hel-energiatodistukset-fill', e => {
-        let html='';
+        let html = '';
         e.features.forEach(f => {
             const p = f.properties;
 
@@ -2584,9 +2686,9 @@ map.on('load', () => {
         })
 
         new mapboxgl.Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .addTo(map);
+            .setLngLat(e.lngLat)
+            .setHTML(html)
+            .addTo(map);
     });
 
 
@@ -2671,7 +2773,7 @@ map.on('load', () => {
         },
     })
     genericPopupHandler('gtk-turvevarat-suot-fill', e => {
-        let html='';
+        let html = '';
         e.features.forEach(f => {
             const p = f.properties;
             html += `
@@ -2681,8 +2783,8 @@ map.on('load', () => {
             Peat volume: ${p.suon_turvemaara_mm3} million cubic metres<br/>
             Average peat depth: ${p.turvekerroksen_keskisyvyys_m} metres<br/>
             Evaluation of how close the bog is to its natural state (class ${
-                p.luonnontilaisuusluokka===-1 ? '?' : p.luonnontilaisuusluokka
-            } out of 5):<br/> ${gtkTurveVaratLuonnontilaisuusluokka[p.luonnontilaisuusluokka]}<br/>
+                p.luonnontilaisuusluokka === -1 ? '?' : p.luonnontilaisuusluokka
+                } out of 5):<br/> ${gtkTurveVaratLuonnontilaisuusluokka[p.luonnontilaisuusluokka]}<br/>
             `;
 
             if (!p.photos_json) return;
@@ -2690,7 +2792,7 @@ map.on('load', () => {
             html += '<div style="overflow:scroll; max-height: 500px">';
             const photos = JSON.parse(p.photos_json);
             photos.forEach(x => {
-                const {kuva_id, kuvausaika, kuvaaja} = x;
+                const { kuva_id, kuvausaika, kuvaaja } = x;
                 const imageURL = `https://gtkdata.gtk.fi/Turvevarojen_tilinpito/Turve_valokuvat/${kuva_id}.jpg`;
                 html += `<p>
                 <a target="_blank" href="${imageURL}">
@@ -2702,13 +2804,13 @@ map.on('load', () => {
                 Photographer: ${kuvaaja}
                 </p>`;
             })
-            html+='</div>';
+            html += '</div>';
         })
 
         new mapboxgl.Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .addTo(map);
+            .setLngLat(e.lngLat)
+            .setHTML(html)
+            .addTo(map);
     });
 
 
@@ -2804,12 +2906,12 @@ map.on('load', () => {
             `;
 
         })
-        html+='</div>';
+        html += '</div>';
 
         new mapboxgl.Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .addTo(map);
+            .setLngLat(e.lngLat)
+            .setHTML(html)
+            .addTo(map);
     });
     genericPopupHandler('fi-vayla-ratarummut-circle', e => {
         let html = '<div style="overflow:scroll; max-height: 500px">';
@@ -2826,12 +2928,12 @@ map.on('load', () => {
             `;
 
         })
-        html+='</div>';
+        html += '</div>';
 
         new mapboxgl.Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .addTo(map);
+            .setLngLat(e.lngLat)
+            .setHTML(html)
+            .addTo(map);
     });
 
 
@@ -2850,7 +2952,7 @@ map.on('load', () => {
 
 
     const queryPointsSource = {
-        type:'geojson',
+        type: 'geojson',
         data: { "type": "FeatureCollection", features: [], },
     };
 
@@ -2901,11 +3003,11 @@ map.on('load', () => {
 
     const addQueryPoint = async function (e) {
         if (!datasetQueryEnabledElem.checked) return;
-        const {lat, lng} = e.lngLat;
+        const { lat, lng } = e.lngLat;
         const queryPointMode = document.querySelector('input[name="dataset-query-point-type"]:checked').value;
         queryPointsSource.data.features.push({
             "type": "Feature",
-            "properties": {"type": queryPointMode },
+            "properties": { "type": queryPointMode },
             "geometry": {
                 "type": "Point",
                 "coordinates": [lng, lat],
@@ -2930,9 +3032,9 @@ map.on('load', () => {
         let html = '';
         window.setDatasetQueryPage = async p => { await refreshDatasetQuery(p); };
         if (page > 2) html += `<a class="pagination" href="#" onclick="setDatasetQueryPage(1);">Page 1</a> … `
-        if (page > 1) html += `<a class="pagination" href="#" onclick="setDatasetQueryPage(${page-1});">Page ${page-1}</a> `
+        if (page > 1) html += `<a class="pagination" href="#" onclick="setDatasetQueryPage(${page - 1});">Page ${page - 1}</a> `
         html += ` Page ${page} `;
-        if (results.length === 100) html += ` <a class="pagination" href="#" onclick="setDatasetQueryPage(${page+1});">Page ${page+1}</a>`
+        if (results.length === 100) html += ` <a class="pagination" href="#" onclick="setDatasetQueryPage(${page + 1});">Page ${page + 1}</a>`
         html += '<hr/>'
 
         results.forEach(x => {
@@ -2945,8 +3047,8 @@ map.on('load', () => {
             html += `
             <p>
             <strong>${x.title || x.name || ''}</strong>${urlText}<br/>
-            ${x.orgName ? (x.orgName+'<br/>') : ''}
-            ${x.description ? (sanitizeInputHTML(x.description)+'<br/>') : ''}
+            ${x.orgName ? (x.orgName + '<br/>') : ''}
+            ${x.description ? (sanitizeInputHTML(x.description) + '<br/>') : ''}
             </p>
             `;
         });
@@ -2960,8 +3062,8 @@ map.on('load', () => {
         const f = queryPointsSource.data.features;
         const pointsInc = f.filter(x => x.properties.type === 'included').map(x => x.geometry.coordinates);
         const pointsExc = f.filter(x => x.properties.type !== 'included').map(x => x.geometry.coordinates);
-        const included = pointsInc.reduce((v,point) => `${v},${point[0]},${point[1]}`, '').slice(1);
-        const excluded = pointsExc.reduce((v,point) => `${v},${point[0]},${point[1]}`, '').slice(1);
+        const included = pointsInc.reduce((v, point) => `${v},${point[0]},${point[1]}`, '').slice(1);
+        const excluded = pointsExc.reduce((v, point) => `${v},${point[0]},${point[1]}`, '').slice(1);
 
         const currentQuery = datasetQueryNum++;
         // TODO: abort pending queries
@@ -2976,7 +3078,7 @@ map.on('load', () => {
 
         const features = results.map(x => ({
             "type": "Feature",
-            "properties": {"type": x },
+            "properties": { "type": x },
             "geometry": {
                 "type": "Polygon",
                 "coordinates": [[
@@ -2992,7 +3094,7 @@ map.on('load', () => {
         map.getLayer('dataset-query-results-outline') && map.removeLayer('dataset-query-results-outline');
         map.getSource('dataset-query-results') && map.removeSource('dataset-query-results');
         map.addSource('dataset-query-results', {
-            type:'geojson',
+            type: 'geojson',
             data: { "type": "FeatureCollection", features: features, },
         });
 
@@ -3149,14 +3251,14 @@ map.on('click', updateNO2Reading); // for mobile devices etc.
 // > i.e. N is 0.5 here because alpha is 0.5.
 
 window.exportLayerGroup = groupName => {
-    const e = {"version": 8, "name": "export", sources:{}, layers:[]}
+    const e = { "version": 8, "name": "export", sources: {}, layers: [] }
     e.layers = layerGroups[groupName]
         .filter(x => typeof x === 'string')
         .map(x => originalLayerDefs[x])
         .filter(x => x.type !== 'symbol')
         .filter(x => x.type !== 'raster')
         ;
-    e.layers.forEach(({source}) => {
+    e.layers.forEach(({ source }) => {
         e.sources[source] = originalSourceDefs[source];
     });
 
