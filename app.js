@@ -94,9 +94,15 @@ const layerGroups = {
         'valio-fields-boundary', 'valio-fields-fill', 'valio-plohko-co2',
     ],
     'forest-grid': ['metsaan-hila-c', 'metsaan-hila-sym', 'metsaan-hila-outline'],
-    'privately-owned-forests': [
+    'forests': [
         () => hideAllLayersMatchingFilter(x => /mature-forests/.test(x)),
-        'metsaan-stand-raster', 'metsaan-stand-fill', 'metsaan-stand-co2', 'metsaan-stand-outline',
+
+        'arvometsa-actionable-relative-raster',
+        'arvometsa-actionable-relative-fill',
+        'arvometsa-boundary',
+        'arvometsa-actionable-relative-sym',
+        // 'metsaan-stand-raster', 'metsaan-stand-fill', 'metsaan-stand-co2', 'metsaan-stand-outline',
+
         // Norway. TODO: refactor mavi-fields to a more generic name?
         'nibio-ar50-forests-fill', 'nibio-ar50-forests-outline', 'nibio-ar50-forests-sym',
     ],
@@ -105,13 +111,8 @@ const layerGroups = {
         'arvometsa-boundary',
         'arvometsa-sym',
     ],
-    'arvometsa-relative': [
-        'arvometsa-actionable-relative-fill',
-        'arvometsa-boundary',
-        'arvometsa-actionable-relative-sym',
-    ],
     'mature-forests': [
-        () => hideAllLayersMatchingFilter(x => /privately-owned-forests/.test(x)),
+        () => hideAllLayersMatchingFilter(x => /^forests$/.test(x)),
         'metsaan-stand-mature-fill', 'metsaan-stand-outline', 'metsaan-stand-mature-sym', 'metsaan-stand-mature-raster',
     ],
     'zonation6': ['zonation-v6-raster'],
@@ -1289,6 +1290,7 @@ map.on('load', () => {
         "type": "vector",
         "tiles": [`https://map.buttonprogram.org/arvometsa/{z}/{x}/{y}.pbf.gz?v=0`],
         // "minzoom": 12,
+        'minzoom': 14,
         "maxzoom": 14,
         bounds: [19, 59, 32, 71], // Finland
         attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
@@ -1328,7 +1330,7 @@ map.on('load', () => {
         })
     })
 
-    const nC_to_CO2 = 3.6;
+    const nC_to_CO2 = 44 / 12;
     const arvometsaCO2eValue = expr => [
         'case', ['has', 'm0_cbt1'], [
             '*',
@@ -1351,31 +1353,22 @@ map.on('load', () => {
         ],
     ];
 
-    const arvometsaSumMethodAttrsWithBioCarbon = (method, attrPrefix) => [
-        '+',
-        arvometsaSumMethodAttrs(method, attrPrefix),
-        ['*', 1/50, [
-            '+',
-            ['get', ['concat', 'm', method, '_bio5']],
-            ['get', ['concat', 'm', method, '_maa5']],
-        ]],
-    ];
-
     const arvometsaBestMethodCumulativeSumCbt = arvometsaSumMethodAttrs(['get', 'best_method'], 'cbt');
     const arvometsaBestMethodVsOther = (method, attrPrefix) => [
         '-',
-        arvometsaSumMethodAttrsWithBioCarbon(method, attrPrefix),
-        arvometsaSumMethodAttrsWithBioCarbon(ARVOMETSA_TRADITIONAL_FORESTRY_METHOD, attrPrefix),
+        arvometsaSumMethodAttrs(method, attrPrefix),
+        arvometsaSumMethodAttrs(ARVOMETSA_TRADITIONAL_FORESTRY_METHOD, attrPrefix),
     ];
 
     const pickedRelativeMethod = ['get', 'best_method'];
     const arvometsaRelativeCO2eValueExpr = arvometsaCO2eValue(arvometsaBestMethodVsOther(pickedRelativeMethod, 'cbt'));
 
 
-    const arvometsaRelativeCO2eFillColor = expr => fireColorMapStepExpr(0, 150, expr);
+    const arvometsaRelativeCO2eFillColor = expr => fireColorMapStepExpr(0, 50, expr);
 
     addLayer({
         'id': 'arvometsa-actionable-relative-fill',
+        'minzoom': 12,
         'source': 'arvometsa',
         'source-layer': 'default',
         'type': 'fill',
@@ -1397,10 +1390,10 @@ map.on('load', () => {
             "text-field": [
                 "case", ["has", 'm0_cbt1'], [
                     "concat",
-                    roundToSignificantDigits(2, ['*', ['get', 'area'], arvometsaRelativeCO2eValueExpr]),
-                    " t CO2e/y",
+                    roundToSignificantDigits(2, arvometsaRelativeCO2eValueExpr),
+                    " t CO2e/ha/y",
                     [
-                        'case', ['>', 0, ['*', ['get', 'area'], arvometsaRelativeCO2eValueExpr]],
+                        'case', ['>', 0, arvometsaRelativeCO2eValueExpr],
                         '\n(net carbon source)',
                         '',
                     ],
@@ -1468,9 +1461,7 @@ map.on('load', () => {
 
             const co2eDiff = nC_to_CO2 * (
                 [1,2,3,4,5].map(x => p[`m${m}_cbt${x}`]).reduce((x,y) => x+y, 0)
-                + p[`m${m}_maa5`] + p[`m${m}_bio5`]
                 - [1,2,3,4,5].map(x => p[`m${mAlt}_cbt${x}`]).reduce((x,y) => x+y, 0)
-                - p[`m${mAlt}_maa5`] - p[`m${mAlt}_bio5`]
             ) / 50;
 
             const co2eStr = `${pp(p.area * co2eDiff)} tons CO2e/y <small>or ${pp(co2eDiff)} tons CO2e/ha/y</small>`;
@@ -1624,7 +1615,7 @@ map.on('load', () => {
                     }
                 });
 
-            const carbonStockAttrPrefixes = ['bio', 'maa', 'cst'];
+            const carbonStockAttrPrefixes = ['bio', 'maa'];
             const cumulativeFlag = document.getElementById('arvometsa-cumulative').checked;
 
             function getUnit(prefix) {
@@ -1766,21 +1757,21 @@ map.on('load', () => {
     };
 
 
-    addSource('metsaan-stand-raster', {
+    addSource('arvometsa-actionable-relative-raster', {
         "type": "raster",
-        'tiles': ['https://map.buttonprogram.org/stand2/{z}/{x}/{y}.png?v=3'],
+        'tiles': ['https://map.buttonprogram.org/arvometsa/{z}/{x}/{y}.png?v=0'],
         'tileSize': 512,
-        "maxzoom": 12,
+        "maxzoom": 13,
         bounds: [19, 59, 32, 71], // Finland
         attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
     });
 
     addLayer({
-        'id': 'metsaan-stand-raster',
-        'source': 'metsaan-stand-raster',
+        'id': 'arvometsa-actionable-relative-raster',
+        'source': 'arvometsa-actionable-relative-raster',
         'type': 'raster',
         'minzoom': 0,
-        'maxzoom': 12,
+        'maxzoom': 13,
     });
 
 

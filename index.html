@@ -184,14 +184,29 @@
         <div class='layer-card'>
             <div class='title'>Forests</div>
             <div class="onoffswitch">
-                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="privately-owned-forests" checked>
-                <label class="onoffswitch-label" for="privately-owned-forests"></label>
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="forests" checked>
+                <label class="onoffswitch-label" for="forests"></label>
             </div>
+            <legend id='legend-co2e'>
+                <div class='legend-title'><abbr title='CO₂ equivalent'>CO₂e</abbr> savings potential</div>
+                <div class='legend-scale'>
+                    <ul class='legend-labels'>
+                        <li><span style='background:rgb(255, 254, 168)'>0</span></li>
+                        <li><span style='background:rgb(251, 59, 0)'>25</span></li>
+                        <li><span style='background:rgb(37, 1, 0);color:#ddd'>50+</span></li>
+                        <li>tons CO2e/ha/year</li>
+                    </ul>
+                </div>
+                <div class='legend-footer'>
+                    This layer shows the impact of improved forestry operations on the CO2e impact of forest's carbon balance over a 50 year period, compared to traditional forestry methods.
+                    <br/>
+                    The calculation of the CO2 impact comes from extensively verified models developed by <a href="https://arvometsa.fi/">Arvometsä</a>.
+                </div>
+            </legend>
             <p>
-                This layer shows forest resources catalogued by the Finnish Forest Centre.
-                Most forests shown here are privately owned.
+                The data covers around 75% of Finland's forests. Most of the forest stands shown are privately owned.
                 <br/>
-                The data covers around 75% of Finland's forests.
+                Norway's forests are also shown, but their CO2 saving potential has not been calculated yet.
             </p>
         </div>
 
@@ -357,35 +372,6 @@
 
 
         <div class='layer-card'>
-            <div class='title'>Forestry carbon saving potential</div>
-            <div class="onoffswitch">
-                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="arvometsa-relative">
-                <label class="onoffswitch-label" for="arvometsa-relative"></label>
-            </div>
-            <legend id='legend-co2e'>
-                <div class='legend-title'><abbr title='CO₂ equivalent'>CO₂e</abbr> savings potential</div>
-                <div class='legend-scale'>
-                    <ul class='legend-labels'>
-                        <li><span style='background:rgb(255, 254, 168)'>0</span></li>
-                        <!-- <li><span style='background:rgb(255, 203, 5)'>25</span></li> -->
-                        <li><span style='background:rgb(255, 142, 0)'>50</span></li>
-                        <!-- <li><span style='background:rgb(251, 59, 0)'>75</span></li> -->
-                        <li><span style='background:rgb(198, 8, 0)'>100</span></li>
-                        <!-- <li><span style='background:rgb(136, 3, 0)'>125</span></li> -->
-                        <li><span style='background:rgb(37, 1, 0)'>150+</span></li>
-                        <li>tons CO2e/ha/year</li>
-                    </ul>
-                </div>
-                <div class='legend-footer'>
-                    This layer shows the impact of improved forestry operations on the CO2e impact of forest's carbon balance over a 50 year period.
-                </div>
-            </legend>
-            <p>
-            </p>
-        </div>
-
-
-        <div class='layer-card'>
             <div class='title'>Arvometsä CO2e Preview</div>
             <div class="onoffswitch">
                 <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="arvometsa">
@@ -449,24 +435,6 @@
             <div style="margin-top: 10px">
                 <strong>Total area:</strong>
                 <output class='arvometsa-area'></output>
-            </div>
-        </div>
-
-
-        <div class='layer-card layer-disabled'>
-            <div class='title'>Municipal forests</div>
-            <div class="onoffswitch">
-                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="municipal-forests" disabled>
-                <label class="onoffswitch-label" for="municipal-forests"></label>
-            </div>
-        </div>
-
-
-        <div class='layer-card layer-disabled'>
-            <div class='title'>Pasture fields</div>
-            <div class="onoffswitch">
-                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="pasture-fields" disabled>
-                <label class="onoffswitch-label" for="pasture-fields"></label>
             </div>
         </div>
 
