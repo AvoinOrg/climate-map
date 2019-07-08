@@ -1452,7 +1452,7 @@ map.on('load', () => {
     }
 
     const setupArvometsaPopupHandler = () => {
-        genericPopupHandler(['arvometsa-fill', 'arvometsa-actionable-relative-fill'], (e) => {
+        genericPopupHandler(['arvometsa-fill'], (e) => {
             const f = e.features[0];
             const p = f.properties;
 
@@ -1831,7 +1831,7 @@ map.on('load', () => {
     })
 
 
-    setupPopupHandlerForMetsaanFiStandData('metsaan-stand-fill');
+    setupPopupHandlerForMetsaanFiStandData('arvometsa-actionable-relative-fill');
     setupPopupHandlerForMetsaanFiStandData('metsaan-stand-mature-fill');
 
     const no2Tileset = Number.parseInt(window.location.search.substring(1)) || 0
