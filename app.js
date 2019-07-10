@@ -54,7 +54,9 @@ window.addEventListener('load', () => {
         if (el.disabled) return;
         if (el.hasAttribute("data-special")) return; // disable automatic handling
 
-        el.addEventListener('change', () => toggleGroup(el.id));
+        el.addEventListener('change', () => {
+            const newState = toggleGroup(el.id);
+        });
 
         // Populate layer state from DOM.
         layerGroupState[el.id] = el.checked;
@@ -180,6 +182,11 @@ const toggleGroup = (group, forcedState = undefined) => {
         }
     })
     layerGroupState[group] = newState;
+
+    const layerCard = el.parentElement.parentElement;
+    if (layerCard.classList.contains('layer-active') !== newState) {
+        layerCard.classList.toggle('layer-active');
+    }
 }
 
 window.toggleSatellite = function () {
@@ -412,7 +419,7 @@ const areaCO2eFillColorStep = expr => [
 ];
 const areaCO2eFillColor = areaCO2eFillColorInterp;
 
-const arvometsaAreaCO2eFillColor = expr => cetL9ColorMapStepExpr(-30/nC_to_CO2, 100/nC_to_CO2, expr);
+const arvometsaAreaCO2eFillColor = expr => cetL9ColorMapStepExpr(-30 / nC_to_CO2, 100 / nC_to_CO2, expr);
 
 
 const originalLayerDefs = {};
@@ -1355,7 +1362,7 @@ map.on('load', () => {
     const arvometsaRelativeCO2eValueExpr = arvometsaBestMethodVsOther(pickedRelativeMethod, 'cbt');
 
 
-    const arvometsaRelativeCO2eFillColor = expr => fireColorMapStepExpr(0, 50/nC_to_CO2, expr);
+    const arvometsaRelativeCO2eFillColor = expr => fireColorMapStepExpr(0, 50 / nC_to_CO2, expr);
 
     addLayer({
         'id': 'arvometsa-actionable-relative-fill',
@@ -1459,8 +1466,8 @@ map.on('load', () => {
             const mAlt = ARVOMETSA_TRADITIONAL_FORESTRY_METHOD;
 
             const co2eDiff = (
-                [1,2,3,4,5].map(x => p[`m${m}_cbt${x}`]).reduce((x,y) => x+y, 0)
-                - [1,2,3,4,5].map(x => p[`m${mAlt}_cbt${x}`]).reduce((x,y) => x+y, 0)
+                [1, 2, 3, 4, 5].map(x => p[`m${m}_cbt${x}`]).reduce((x, y) => x + y, 0)
+                - [1, 2, 3, 4, 5].map(x => p[`m${mAlt}_cbt${x}`]).reduce((x, y) => x + y, 0)
             ) / 50;
 
             const co2eStr = `${pp(p.area * co2eDiff)} tons CO2e/y <small>or ${pp(co2eDiff)} tons CO2e/ha/y</small>`;
@@ -1530,6 +1537,9 @@ map.on('load', () => {
 
     const arvometsaGraphs = {};
     window.replaceArvometsa = () => {
+        // Ensure the UI state is consistent with the activation of this:
+        document.querySelector('input#arvometsa').checked = true;
+
         // const attr = window.arvometsaAttr;
         const dataset = window.arvometsaDataset;
         // const mAttr = `m${dataset}_${attr}`
@@ -1597,8 +1607,8 @@ map.on('load', () => {
         }
 
         const woodFiberAttrs = [
-            [1,2,3,4,5].map(x => `kasittely_${x}_tukki`).join(' '),
-            [1,2,3,4,5].map(x => `kasittely_${x}_kuitu`).join(' '),
+            [1, 2, 3, 4, 5].map(x => `kasittely_${x}_tukki`).join(' '),
+            [1, 2, 3, 4, 5].map(x => `kasittely_${x}_kuitu`).join(' '),
         ]
         const updateGraphs = () => {
             const dataset = window.arvometsaDataset;
@@ -1619,8 +1629,8 @@ map.on('load', () => {
                         for (const a in totals) {
                             const attr = (
                                 a.startsWith('kasittely')
-                                ? `kasittely_${p.best_method}${a.slice(12)}`
-                                : `m${p.best_method}${a.slice(3)}`
+                                    ? `kasittely_${p.best_method}${a.slice(12)}`
+                                    : `m${p.best_method}${a.slice(3)}`
                             );
                             if (attr in p && a !== 'area') totals[a] += p[attr] * p.area;
                         }
@@ -1713,7 +1723,7 @@ map.on('load', () => {
                         }];
                         break;
                     case 'harvested-material':
-                            datasets = [{
+                        datasets = [{
                             label: 'Wood',
                             backgroundColor: 'brown',
                             data: attrValues.tukki,

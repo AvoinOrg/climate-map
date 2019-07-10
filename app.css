@@ -341,3 +341,12 @@ a:visited.pagination {
     width: 420px;
     height: 150px;
 }
+
+.layer-details {
+    visibility: hidden;
+    display: none;
+}
+.layer-active .layer-details {
+    visibility: visible;
+    display: inherit;
+}

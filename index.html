@@ -396,51 +396,53 @@
                 </div>
             </legend>
 
-            <p>
-                Projections for:
-                <div class="arvometsa-projections">
-                    <button class="arvometsa_eihakata">No cuttings</button>
-                    <button class="arvometsa_bestmethod">Best forestry method (default)</button>
-                    <button class="arvometsa_jatkuva">Continuous cover forestry</button>
-                    <button class="arvometsa_alaharvennus">Thin from below – clearfell</button>
-                    <button class="arvometsa_ylaharvennus">Thin from above – extended rotation</button>
-                    <button class="arvometsa_maxhakkuu">Removal of tree cover</button>
-                </div>
-            </p>
+            <div class="layer-details">
+                <p>
+                    Projections for:
+                    <div class="arvometsa-projections">
+                        <button class="arvometsa_eihakata">No cuttings</button>
+                        <button class="arvometsa_bestmethod">Best forestry method (default)</button>
+                        <button class="arvometsa_jatkuva">Continuous cover forestry</button>
+                        <button class="arvometsa_alaharvennus">Thin from below – clearfell</button>
+                        <button class="arvometsa_ylaharvennus">Thin from above – extended rotation</button>
+                        <button class="arvometsa_maxhakkuu">Removal of tree cover</button>
+                    </div>
+                </p>
 
-            <label>Show cumulative carbon balance
-                <input id="arvometsa-cumulative" type="checkbox" checked/>
-            </label>
+                <label>Show cumulative carbon balance
+                    <input id="arvometsa-cumulative" type="checkbox" checked/>
+                </label>
 
-            <br/>
-
-            <p class="info">
-                <strong>Carbon balance</strong>: Carbon balance is defined as the amount of carbon sequestered minus the amount released.
                 <br/>
-                Therefore a negative carbon balance means a plot of land that is a net carbon source,
-                and a positive value indicates a net carbon sink.
-            </p>
 
-            <strong>Forest CO2e balance (trees + soil)</strong>
-            <canvas class="arvometsa-chart arvometsa-cbf"></canvas>
+                <p class="info">
+                    <strong>Carbon balance</strong>: Carbon balance is defined as the amount of carbon sequestered minus the amount released.
+                    <br/>
+                    Therefore a negative carbon balance means a plot of land that is a net carbon source,
+                    and a positive value indicates a net carbon sink.
+                </p>
 
-            <strong>Forestry CO2e balance (trees + soil + products)</strong>
-            <canvas class="arvometsa-chart arvometsa-cbt"></canvas>
+                <strong>Forest CO2e balance (trees + soil)</strong>
+                <canvas class="arvometsa-chart arvometsa-cbf"></canvas>
 
-            <strong>Forest carbon stock (trees + soil)</strong>
-            <canvas class="arvometsa-chart arvometsa-bio"></canvas>
+                <strong>Forestry CO2e balance (trees + soil + products)</strong>
+                <canvas class="arvometsa-chart arvometsa-cbt"></canvas>
 
-            <strong>Harvested material (m<sup>3</sup>)</strong>
-            <canvas class="arvometsa-chart arvometsa-harvested-material"></canvas>
+                <strong>Forest carbon stock (trees + soil)</strong>
+                <canvas class="arvometsa-chart arvometsa-bio"></canvas>
 
-            <div style="margin-top: 10px">
-                <strong><abbr title="NPV, 3% annual discounting">Net present value</abbr>:</strong>
-                <output class='arvometsa-npv'></output>
-            </div>
+                <strong>Harvested material (m<sup>3</sup>)</strong>
+                <canvas class="arvometsa-chart arvometsa-harvested-material"></canvas>
 
-            <div style="margin-top: 10px">
-                <strong>Total area:</strong>
-                <output class='arvometsa-area'></output>
+                <div style="margin-top: 10px">
+                    <strong><abbr title="NPV, 3% annual discounting">Net present value</abbr>:</strong>
+                    <output class='arvometsa-npv'></output>
+                </div>
+
+                <div style="margin-top: 10px">
+                    <strong>Total area:</strong>
+                    <output class='arvometsa-area'></output>
+                </div>
             </div>
         </div>
 
