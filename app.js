@@ -1291,8 +1291,6 @@ map.on('load', () => {
     addSource('arvometsa', {
         "type": "vector",
         "tiles": [`https://map.buttonprogram.org/arvometsa/{z}/{x}/{y}.pbf.gz?v=0`],
-        // "minzoom": 12,
-        'minzoom': 14,
         "maxzoom": 14,
         bounds: [19, 59, 32, 71], // Finland
         attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
@@ -1360,7 +1358,7 @@ map.on('load', () => {
 
     addLayer({
         'id': 'arvometsa-actionable-relative-fill',
-        'minzoom': 12,
+        // 'minzoom': 10,
         'source': 'arvometsa',
         'source-layer': 'default',
         'type': 'fill',
@@ -1419,6 +1417,7 @@ map.on('load', () => {
     })
     addLayer({
         'id': 'arvometsa-boundary',
+        'minzoom': 12,
         'source': 'arvometsa',
         'source-layer': 'default',
         'type': 'line',
