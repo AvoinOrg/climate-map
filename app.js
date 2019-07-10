@@ -1315,6 +1315,7 @@ map.on('load', () => {
     document.querySelectorAll('.arvometsa-projections button').forEach(e => {
         e.addEventListener('click', () => {
             window.arvometsaDataset = arvometsaDatasetClasses.indexOf(e.className);
+            // window.arvometsaAttr = 'cbt';
             window.replaceArvometsa();
         })
     });
@@ -1325,7 +1326,7 @@ map.on('load', () => {
         const years = e.textContent.trim();
         const suffix = years === 'Now' ? '0' : years[0];
         e.addEventListener('click', () => {
-            window.arvometsaAttr = attr + suffix;
+            // window.arvometsaAttr = attr + suffix;
             window.replaceArvometsa();
         })
     })
@@ -1400,8 +1401,8 @@ map.on('load', () => {
     })
 
 
-    window.arvometsaAttr = 'DEFAULT';
-    window.arvometsaDataset = 0; // No cuttings
+    // window.arvometsaAttr = 'DEFAULT';
+    window.arvometsaDataset = -1; // Best method [No cuttings]
     window.arvometsaInterval = null;
 
     const arvometsaCumulativeCO2eValueExpr = arvometsaBestMethodCumulativeSumCbt;
@@ -1527,10 +1528,11 @@ map.on('load', () => {
 
     setupArvometsaPopupHandler();
 
+    const arvometsaGraphs = {};
     window.replaceArvometsa = () => {
-        const attr = window.arvometsaAttr;
+        // const attr = window.arvometsaAttr;
         const dataset = window.arvometsaDataset;
-        const mAttr = `m${dataset}_${attr}`
+        // const mAttr = `m${dataset}_${attr}`
 
         if (window.arvometsaInterval !== null) {
             window.clearInterval(window.arvometsaInterval);
@@ -1539,9 +1541,9 @@ map.on('load', () => {
         setupArvometsaPopupHandler();
 
         const co2eValueExpr = (
-            attr === 'DEFAULT'
+            dataset === -1
                 ? arvometsaBestMethodCumulativeSumCbt
-                : ['/', ['get', mAttr], 10]
+                : arvometsaSumMethodAttrs(dataset, 'cbt')
         );
 
         // attr like 'cbt1', 'cbt2', 'bio0', 'maa0'
@@ -1594,11 +1596,14 @@ map.on('load', () => {
             return new Promise((resolve) => setTimeout(resolve, time));
         }
 
-        const arvometsaGraphs = {};
+        const woodFiberAttrs = [
+            [1,2,3,4,5].map(x => `kasittely_${x}_tukki`).join(' '),
+            [1,2,3,4,5].map(x => `kasittely_${x}_kuitu`).join(' '),
+        ]
         const updateGraphs = () => {
             const dataset = window.arvometsaDataset;
             const totals = { area: 0 };
-            baseAttrs.split(/\s+/).forEach(attr => {
+            (woodFiberAttrs.join(' ') + ' ' + baseAttrs).split(/\s+/).forEach(attr => {
                 const mAttr = `m${dataset}_${attr}`;
                 totals[mAttr] = 0;
             });
@@ -1609,8 +1614,20 @@ map.on('load', () => {
                     const p = x.properties;
                     if (p.m0_cbt1 === null || p.m0_cbt1 === undefined) return;
                     if (!p.area) return; // hypothetical
+                    totals.area += p.area;
+                    if (dataset === -1) {
+                        for (const a in totals) {
+                            const attr = (
+                                a.startsWith('kasittely')
+                                ? `kasittely_${p.best_method}${a.slice(12)}`
+                                : `m${p.best_method}${a.slice(3)}`
+                            );
+                            if (attr in p && a !== 'area') totals[a] += p[attr] * p.area;
+                        }
+                        return;
+                    }
                     for (const a in totals) {
-                        if (a in p) totals[a] += p[a] / p.area;
+                        if (a in p && a !== 'area') totals[a] += p[a] * p.area;
                     }
                 });
 
@@ -1618,7 +1635,9 @@ map.on('load', () => {
             const cumulativeFlag = document.getElementById('arvometsa-cumulative').checked;
 
             function getUnit(prefix) {
-                if (carbonStockAttrPrefixes.indexOf(prefix) !== -1) {
+                if (prefix === 'harvested-material') {
+                    return 'm³';
+                } else if (carbonStockAttrPrefixes.indexOf(prefix) !== -1) {
                     return 'tons carbon';
                 } else if (isCumulative(prefix)) {
                     return 'tons CO2e';
@@ -1634,9 +1653,13 @@ map.on('load', () => {
 
             const attrValues = {};
 
-            const attrGroups = baseAttrs.split('\n'); // .concat([carbonStockTotal]);
+            const attrGroups = baseAttrs.split('\n').concat(woodFiberAttrs);
             attrGroups.forEach(attrGroup => {
-                const prefix = attrGroup.trim().slice(0, 3);
+                const prefix = (
+                    attrGroup.indexOf('kasittely') !== -1
+                        ? attrGroup.trim().split(/[_ ]/)[2]
+                        : attrGroup.trim().slice(0, 3)
+                );
                 const attrs = attrGroup.trim().split(/ /).map(attr => `m${dataset}_${attr}`);
 
                 if (prefix === 'npv') {
@@ -1659,9 +1682,10 @@ map.on('load', () => {
 
 
 
-            for (const prefix of ['cbf', 'cbt', 'bio']) {
+            for (const prefix of ['cbf', 'cbt', 'bio', 'harvested-material']) {
                 let datasets;
                 const unit = getUnit(prefix);
+                let stacked = true;
                 switch (prefix) {
                     case 'cbf':
                         datasets = [{
@@ -1688,15 +1712,29 @@ map.on('load', () => {
                             data: attrValues.bio,
                         }];
                         break;
+                    case 'harvested-material':
+                            datasets = [{
+                            label: 'Wood',
+                            backgroundColor: 'brown',
+                            data: attrValues.tukki,
+                        }, {
+                            label: 'Fiber',
+                            backgroundColor: 'green',
+                            data: attrValues.kuitu,
+                        }];
+                        stacked = false;
+                        break;
                 }
 
                 const labels = {
                     'cbf': ['10', '20', '30', '40', '50'],
                     'cbt': ['10', '20', '30', '40', '50'],
                     'bio': ['0', '10', '20', '30', '40', '50'],
+                    'harvested-material': ['10', '20', '30', '40', '50'],
                 }
 
-                const outputElem = document.querySelector(`canvas.arvometsa-${prefix}`);
+
+                let outputElem = document.querySelector(`canvas.arvometsa-${prefix}`);
 
                 const chart = arvometsaGraphs[prefix];
                 const labelCallback = function (tooltipItem, data) {
@@ -1712,18 +1750,20 @@ map.on('load', () => {
                     });
                     chart.options.arvometsaCumulative = isCumulative(prefix);
                     chart.options.tooltips.callbacks.label = labelCallback;
-                    if (changed) chart.update();
+                    if (changed) {
+                        chart.update();
+                    }
                 } else {
                     const options = {
                         arvometsaCumulative: isCumulative(prefix),
                         animation: { duration: 0 },
                         scales: {
                             xAxes: [{
-                                stacked: true,
+                                stacked,
                                 scaleLabel: { display: true, labelString: 'years from now' },
                             }],
                             yAxes: [{
-                                stacked: true,
+                                stacked,
                                 ticks: {
                                     beginAtZero: true,
                                     callback: (value, index, values) => value.toLocaleString(),
@@ -2661,7 +2701,7 @@ map.on('load', () => {
 
             const energyUse = p.e_luku * p.lämmitetty_nettoala
             const energyPerVolume = p.i_raktilav
-                ? `<br/>Energy use per m<sup>3</sup>: ${pp(energyUse / p.i_raktilav)} kWh per year`
+                ? `<br/>Energy use per m³: ${pp(energyUse / p.i_raktilav)} kWh per year`
                 : '';
 
             const url = `https://www.energiatodistusrekisteri.fi/public_html?energiatodistus-id=${p.todistustunnus}&command=access&t=energiatodistus&p=energiatodistukset`
@@ -2669,7 +2709,7 @@ map.on('load', () => {
             <p>
             Certificate ID: <a href="${url}">${p.todistustunnus}</a><br/>
             Total energy consumption: ${pp(energyUse)} kWh per year<br/>
-            Energy use per m<sup>2</sup>: ${p.e_luku} kWh per year
+            Energy use per m²: ${p.e_luku} kWh per year
             ${energyPerVolume}
             </p>
             `
@@ -3207,7 +3247,7 @@ window.setNO2 = function (currentRequestNum, e, lat, lon) {
         elem.innerHTML = `NO2: ${e.error}${coords}`
     } else {
         const n = e.no2_concentration
-        elem.innerHTML = `NO2: ${pp(n * 1e6, 2)} µmol/m<sup>2</sup>${coords}`
+        elem.innerHTML = `NO2: ${pp(n * 1e6, 2)} µmol/m²${coords}`
     }
 }
 
