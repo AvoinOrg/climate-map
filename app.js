@@ -363,6 +363,8 @@ const fieldPlotTextField = [
 ];
 
 
+const nC_to_CO2 = 44 / 12;
+
 const fillOpacity = 0.65;
 
 const colormapToStepExpr = (colormap, minValue, maxValue, expr) => {
@@ -410,7 +412,7 @@ const areaCO2eFillColorStep = expr => [
 ];
 const areaCO2eFillColor = areaCO2eFillColorInterp;
 
-const arvometsaAreaCO2eFillColor = expr => cetL9ColorMapStepExpr(-30, 100, expr);
+const arvometsaAreaCO2eFillColor = expr => cetL9ColorMapStepExpr(-30/nC_to_CO2, 100/nC_to_CO2, expr);
 
 
 const originalLayerDefs = {};
@@ -1330,16 +1332,6 @@ map.on('load', () => {
         })
     })
 
-    const nC_to_CO2 = 44 / 12;
-    const arvometsaCO2eValue = expr => [
-        'case', ['has', 'm0_cbt1'], [
-            '*',
-            expr,
-            nC_to_CO2, // C -> CO2
-        ],
-        0,
-    ];
-
     const arvometsaSumMethodAttrs = (method, attrPrefix) => [
         'let', 'p', ['concat', 'm', method, '_'], [
             '*', 1 / 50, [
@@ -1361,10 +1353,10 @@ map.on('load', () => {
     ];
 
     const pickedRelativeMethod = ['get', 'best_method'];
-    const arvometsaRelativeCO2eValueExpr = arvometsaCO2eValue(arvometsaBestMethodVsOther(pickedRelativeMethod, 'cbt'));
+    const arvometsaRelativeCO2eValueExpr = arvometsaBestMethodVsOther(pickedRelativeMethod, 'cbt');
 
 
-    const arvometsaRelativeCO2eFillColor = expr => fireColorMapStepExpr(0, 50, expr);
+    const arvometsaRelativeCO2eFillColor = expr => fireColorMapStepExpr(0, 50/nC_to_CO2, expr);
 
     addLayer({
         'id': 'arvometsa-actionable-relative-fill',
@@ -1382,7 +1374,13 @@ map.on('load', () => {
         'source-layer': 'default',
         'type': 'symbol',
         "minzoom": 15.5,
-        "paint": {},
+        paint: {
+            "text-color": [
+                'case', ['>', arvometsaRelativeCO2eValueExpr, 6],
+                "#ddd",
+                "#000",
+            ],
+        },
         "layout": {
             "text-size": 20,
             "symbol-placement": "point",
@@ -1390,8 +1388,9 @@ map.on('load', () => {
             "text-field": [
                 "case", ["has", 'm0_cbt1'], [
                     "concat",
-                    roundToSignificantDigits(2, arvometsaRelativeCO2eValueExpr),
-                    " t CO2e/ha/y",
+                    "stand CO2e: ",
+                    roundToSignificantDigits(2, ['*', ['get', 'area'], arvometsaRelativeCO2eValueExpr]),
+                    " t/y",
                     [
                         'case', ['>', 0, arvometsaRelativeCO2eValueExpr],
                         '\n(net carbon source)',
@@ -1407,7 +1406,7 @@ map.on('load', () => {
     window.arvometsaDataset = 0; // No cuttings
     window.arvometsaInterval = null;
 
-    const arvometsaCumulativeCO2eValueExpr = arvometsaCO2eValue(arvometsaBestMethodCumulativeSumCbt);
+    const arvometsaCumulativeCO2eValueExpr = arvometsaBestMethodCumulativeSumCbt;
 
     addLayer({
         'id': 'arvometsa-fill',
@@ -1459,7 +1458,7 @@ map.on('load', () => {
             const m = p.best_method;
             const mAlt = ARVOMETSA_TRADITIONAL_FORESTRY_METHOD;
 
-            const co2eDiff = nC_to_CO2 * (
+            const co2eDiff = (
                 [1,2,3,4,5].map(x => p[`m${m}_cbt${x}`]).reduce((x,y) => x+y, 0)
                 - [1,2,3,4,5].map(x => p[`m${mAlt}_cbt${x}`]).reduce((x,y) => x+y, 0)
             ) / 50;
@@ -1540,10 +1539,10 @@ map.on('load', () => {
 
         setupArvometsaPopupHandler();
 
-        const co2eValueExpr = arvometsaCO2eValue(
+        const co2eValueExpr = (
             attr === 'DEFAULT'
                 ? arvometsaBestMethodCumulativeSumCbt
-                : ['/', ['get', mAttr], 10],
+                : ['/', ['get', mAttr], 10]
         );
 
         // attr like 'cbt1', 'cbt2', 'bio0', 'maa0'
@@ -1575,8 +1574,9 @@ map.on('load', () => {
                 "text-field": [
                     "case", ["has", 'm0_cbt1'], [
                         "concat",
+                        "stand CO2e: ",
                         roundToSignificantDigits(2, ['*', ['get', 'area'], co2eValueExpr]),
-                        " t CO2e/y",
+                        " t/y",
                         [
                             'case', ['>', 0, ['*', ['get', 'area'], co2eValueExpr]],
                             '\n(net carbon source)',
