@@ -54,9 +54,7 @@ window.addEventListener('load', () => {
         if (el.disabled) return;
         if (el.hasAttribute("data-special")) return; // disable automatic handling
 
-        el.addEventListener('change', () => {
-            const newState = toggleGroup(el.id);
-        });
+        el.addEventListener('change', () => { toggleGroup(el.id); });
 
         // Populate layer state from DOM.
         layerGroupState[el.id] = el.checked;
@@ -1606,14 +1604,14 @@ map.on('load', () => {
             return new Promise((resolve) => setTimeout(resolve, time));
         }
 
-        const woodFiberAttrs = [
+        const harvestedWoodAttrs = [
             [1, 2, 3, 4, 5].map(x => `kasittely_${x}_tukki`).join(' '),
             [1, 2, 3, 4, 5].map(x => `kasittely_${x}_kuitu`).join(' '),
         ]
         const updateGraphs = () => {
             const dataset = window.arvometsaDataset;
             const totals = { area: 0 };
-            (woodFiberAttrs.join(' ') + ' ' + baseAttrs).split(/\s+/).forEach(attr => {
+            (harvestedWoodAttrs.join(' ') + ' ' + baseAttrs).split(/\s+/).forEach(attr => {
                 const mAttr = `m${dataset}_${attr}`;
                 totals[mAttr] = 0;
             });
@@ -1645,7 +1643,7 @@ map.on('load', () => {
             const cumulativeFlag = document.getElementById('arvometsa-cumulative').checked;
 
             function getUnit(prefix) {
-                if (prefix === 'harvested-material') {
+                if (prefix === 'harvested-wood') {
                     return 'm³';
                 } else if (carbonStockAttrPrefixes.indexOf(prefix) !== -1) {
                     return 'tons carbon';
@@ -1663,7 +1661,7 @@ map.on('load', () => {
 
             const attrValues = {};
 
-            const attrGroups = baseAttrs.split('\n').concat(woodFiberAttrs);
+            const attrGroups = baseAttrs.split('\n').concat(harvestedWoodAttrs);
             attrGroups.forEach(attrGroup => {
                 const prefix = (
                     attrGroup.indexOf('kasittely') !== -1
@@ -1692,10 +1690,10 @@ map.on('load', () => {
 
 
 
-            for (const prefix of ['cbf', 'cbt', 'bio', 'harvested-material']) {
+            for (const prefix of ['cbf', 'cbt', 'bio', 'harvested-wood']) {
                 let datasets;
                 const unit = getUnit(prefix);
-                let stacked = true;
+                const stacked = true;
                 switch (prefix) {
                     case 'cbf':
                         datasets = [{
@@ -1722,17 +1720,16 @@ map.on('load', () => {
                             data: attrValues.bio,
                         }];
                         break;
-                    case 'harvested-material':
+                    case 'harvested-wood':
                         datasets = [{
-                            label: 'Wood',
+                            label: 'Sawlog',
                             backgroundColor: 'brown',
                             data: attrValues.tukki,
                         }, {
-                            label: 'Fiber',
+                            label: 'Pulpwood',
                             backgroundColor: 'green',
                             data: attrValues.kuitu,
                         }];
-                        stacked = false;
                         break;
                 }
 
@@ -1740,7 +1737,7 @@ map.on('load', () => {
                     'cbf': ['10', '20', '30', '40', '50'],
                     'cbt': ['10', '20', '30', '40', '50'],
                     'bio': ['0', '10', '20', '30', '40', '50'],
-                    'harvested-material': ['10', '20', '30', '40', '50'],
+                    'harvested-wood': ['10', '20', '30', '40', '50'],
                 }
 
 
