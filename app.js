@@ -1628,8 +1628,8 @@ map.on('load', () => {
         }
 
         const harvestedWoodAttrs = [
-            [1, 2, 3, 4, 5].map(x => `kasittely_${x}_tukki`).join(' '),
-            [1, 2, 3, 4, 5].map(x => `kasittely_${x}_kuitu`).join(' '),
+            [0,1,2,3,4].map(x => `kasittely_${x}_tukki`).join(' '),
+            [0,1,2,3,4].map(x => `kasittely_${x}_kuitu`).join(' '),
         ]
         const updateGraphs = () => {
             const dataset = window.arvometsaDataset;
@@ -1649,7 +1649,7 @@ map.on('load', () => {
                     if (dataset === -1) {
                         for (const a in totals) {
                             const attr = (
-                                a.startsWith('kasittely')
+                                a.indexOf('kasittely') !== -1
                                     ? `kasittely_${p.best_method}${a.slice(12)}`
                                     : `m${p.best_method}${a.slice(3)}`
                             );
