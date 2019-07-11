@@ -1317,7 +1317,15 @@ map.on('load', () => {
     ];
     const ARVOMETSA_TRADITIONAL_FORESTRY_METHOD = 2; // Thin from below – clearfell
 
+    // Make sure the graphs are rendered the first time the layer is enabled.
+    const arvometsaInit = e => {
+        window.replaceArvometsa();
+        e.target.removeEventListener('change', arvometsaInit);
+    }
+    document.querySelector('input#arvometsa').addEventListener('change', arvometsaInit);
+
     document.querySelectorAll('.arvometsa-projections button').forEach(e => {
+
         e.addEventListener('click', () => {
             window.arvometsaDataset = arvometsaDatasetClasses.indexOf(e.className);
             // window.arvometsaAttr = 'cbt';
