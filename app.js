@@ -160,6 +160,14 @@ const layerGroups = {
     'berries-bilberry': ['berries-bilberry-raster'],
 };
 
+function getFirstAncestorMatching(el, filter) {
+    while (el !== null) {
+        el = el.parentElement;
+        if (el !== null && filter(el)) return el;
+    }
+    return null;
+}
+
 const toggleGroup = (group, forcedState = undefined) => {
     const oldState = layerGroupState[group];
     const newState = forcedState === undefined ? !oldState : forcedState;
@@ -181,8 +189,13 @@ const toggleGroup = (group, forcedState = undefined) => {
     })
     layerGroupState[group] = newState;
 
-    const layerCard = el.parentElement.parentElement;
-    if (layerCard.classList.contains('layer-active') !== newState) {
+    if (group in backgroundLayerGroups) return;
+
+    const layerCard = getFirstAncestorMatching(el, el => el.classList.contains('layer-card'));
+    if (!layerCard) {
+        console.error('Could not find a .layer-card for layer:', group, el);
+    }
+    if (layerCard && layerCard.classList.contains('layer-active') !== newState) {
         layerCard.classList.toggle('layer-active');
     }
 }
@@ -417,7 +430,7 @@ const areaCO2eFillColorStep = expr => [
 ];
 const areaCO2eFillColor = areaCO2eFillColorInterp;
 
-const arvometsaAreaCO2eFillColor = expr => cetL9ColorMapStepExpr(-30 / nC_to_CO2, 100 / nC_to_CO2, expr);
+const arvometsaAreaCO2eFillColor = expr => cetL9ColorMapStepExpr(-5, 15, expr);
 
 
 const originalLayerDefs = {};
@@ -1468,19 +1481,21 @@ map.on('load', () => {
             const f = e.features[0];
             const p = f.properties;
 
-            const m = p.best_method;
+            const m = window.arvometsaDataset === -1 ? p.best_method : window.arvometsaDataset;
             const mAlt = ARVOMETSA_TRADITIONAL_FORESTRY_METHOD;
 
-            const co2eDiff = (
-                [1, 2, 3, 4, 5].map(x => p[`m${m}_cbt${x}`]).reduce((x, y) => x + y, 0)
-                - [1, 2, 3, 4, 5].map(x => p[`m${mAlt}_cbt${x}`]).reduce((x, y) => x + y, 0)
-            ) / 50;
+            const co2eBalance = [1, 2, 3, 4, 5].map(x => p[`m${m}_cbt${x}`]).reduce((x, y) => x + y, 0);
+            const co2eBalanceAlt = [1, 2, 3, 4, 5].map(x => p[`m${mAlt}_cbt${x}`]).reduce((x, y) => x + y, 0);
 
+            const years = 50;
+            const co2eDiff = co2eBalance - co2eBalanceAlt / years;
             const co2eStr = `${pp(p.area * co2eDiff)} tons CO2e/y <small>or ${pp(co2eDiff)} tons CO2e/ha/y</small>`;
+            const co2eBalanceStr = `${pp(p.area * co2eBalance / years)} tons CO2e/y <small>or ${pp(co2eBalance / years)} tons CO2e/ha/y</small>`;
 
             let html = `
             <strong>${p.area} hectares</strong><br/>
-            <strong>Potential CO2e savings with improved forestry methods:</strong> ${co2eStr}<br/>
+            <strong>Potential CO2e savings with ${arvometsaDatasetTitles[m]}:</strong> ${co2eStr}<br/>
+            <strong>Forest CO2 balance with ${arvometsaDatasetTitles[m]}:</strong> ${co2eBalanceStr}<br/>
             <table>
             <tr><th colspan="1" rowspan="2">Quantity<br/><small>carbon, tons</small></th><th colspan="6">Years from now</th></tr>
             <tr><th>0</th><th>10</th><th>20</th><th>30</th><th>40</th><th>50</th></tr>
