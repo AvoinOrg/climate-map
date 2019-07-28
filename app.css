@@ -321,6 +321,7 @@ g.line rect {
     background: #ffffff;
     overflow-y: scroll;
     z-index: 10; /* Shadow mapbox-gl controls (z-index 2) */
+    word-wrap: break-word;
 }
 
 .button {
@@ -349,4 +350,14 @@ a:visited.pagination {
 .layer-active .layer-details {
     visibility: visible;
     display: inherit;
+}
+
+.dataset-query-result {
+    clear: both;
+}
+.dataset-query-button {
+    float: left;
+}
+.dataset-query-thumbnail {
+    float: right;
 }

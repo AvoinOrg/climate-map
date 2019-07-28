@@ -3329,32 +3329,31 @@ map.on('load', () => {
 
     const updateDatasetQueryResultsList = (page, results) => {
         queryResultsElem.removeAttribute('hidden');
-        let html = '';
         window.setDatasetQueryPage = async p => { await refreshDatasetQuery(p); };
-        if (page > 2) html += `<a class="pagination" href="#" onclick="setDatasetQueryPage(1);">Page 1</a> … `
-        if (page > 1) html += `<a class="pagination" href="#" onclick="setDatasetQueryPage(${page - 1});">Page ${page - 1}</a> `
-        html += ` Page ${page} `;
-        if (results.length === 100) html += ` <a class="pagination" href="#" onclick="setDatasetQueryPage(${page + 1});">Page ${page + 1}</a>`
-        html += '<hr/>'
 
-        results.forEach((x,idx) => {
-            const url = x.url;
-            // let url = x.fullpath || x.absolute_path || x.url
-            // if (x.urls && x.urls[0]) url = x.urls[0].url;
-            // if (!url && x.source === 'arcgis-opendata')
-            //     // url = `https://www.arcgis.com/home/webmap/viewer.html?webmap=${x.id}`;
-            //     url = `https://www.arcgis.com/home/item.html?id=${x.id}`;
-            // const urlText = url ? `<br/><a href="${url}">${url}</a>` : '';
+        let pagination = '';
+        if (page > 2) pagination += `<a class="pagination" href="#" onclick="setDatasetQueryPage(1);">Page 1</a> … `
+        if (page > 1) pagination += `<a class="pagination" href="#" onclick="setDatasetQueryPage(${page - 1});">Page ${page - 1}</a> `
+        pagination += ` Page ${page} `;
+        if (results.length === 100) pagination += ` <a class="pagination" href="#" onclick="setDatasetQueryPage(${page + 1});">Page ${page + 1}</a>`
+
+        let html = `${pagination}<hr/>`;
+        for (const [idx, x] of Object.entries(results)) {
+            const thumbnailUrl = encodeURI(`${x.service_url}/info/thumbnail`).replace('"', '\"');
+            const thumbnailImg = x.service_url && `<img class="dataset-query-thumbnail" onerror="this.style.display='none';" src="${thumbnailUrl}" />`
             const urlText = '';
             html += `
-            <p>
+            <p class="dataset-query-result">
             <strong>${x.service.name || ''} ${x.layer.name || ''}</strong>${urlText}<br/>
             ${x.orgName ? (x.orgName + '<br/>') : ''}
             ${x.service.description ? (sanitizeInputHTML(x.service.description) + '<br/>') : ''}
-            <button data-idx="${idx}">Show data on map</button>
+            <button class="button" data-idx="${idx}">Show data on map</button>
+            ${thumbnailImg}
             </p>
             `;
-        });
+        }
+        html += `<hr/>${pagination}`;
+
         async function showData(stuff) {
             const bbox = stuff.bbox;
             const exts = stuff.service.supportedExtensions || '';
@@ -3373,8 +3372,11 @@ map.on('load', () => {
         queryResultsElem.innerHTML = html;
         queryResultsElem.querySelectorAll('button').forEach(e => {
             e.addEventListener('click', event => {
-                const idx = event.target.getAttribute('data-idx');
+                const el = event.target;
+                const idx = el.getAttribute('data-idx');
                 showData(results[idx]);
+                el.classList.toggle('active')
+                el.innerText = el.classList.contains('active') ? 'Hide data' : 'Show data on map';
             })
         })
     };
