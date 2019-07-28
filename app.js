@@ -3,6 +3,8 @@ import { feature as turfFeature } from '@turf/helpers';
 import { flattenReduce as turfFlattenReduce } from '@turf/meta';
 import Chart from 'chart.js';
 import { linear_kryw_0_100_c71, linear_bgyw_20_98_c66 } from './colormap';
+import { arcgisToGeoJSON } from '@esri/arcgis-to-geojson-utils';
+
 
 // This must be set, but the value is not needed here.
 mapboxgl.accessToken = 'not-needed';
@@ -74,8 +76,7 @@ const toggleBaseMapSymbols = () => {
         } else {
             invertLayerTextHalo(layer);
         }
-        map.removeLayer(layer.id);
-        map.addLayer(layer);
+        replaceLayer(layer);
     })
 }
 
@@ -201,8 +202,8 @@ const toggleGroup = (group, forcedState = undefined) => {
 }
 
 window.toggleSatellite = function () {
-    [...document.querySelectorAll('.satellite-button-container img')].forEach(x => x.toggleAttribute('hidden'));
     toggleGroup('terramonitor');
+    [...document.querySelectorAll('.satellite-button-container img')].forEach(x => x.toggleAttribute('hidden'));
 }
 window.toggleMenu = function () {
     [...document.querySelectorAll('.menu-toggle')].forEach(x => x.toggleAttribute('hidden'))
@@ -220,6 +221,11 @@ const eteBasicLabels = [
     15150, "METSO II",
     "",
 ]
+
+function replaceLayer(layer) {
+    map.getLayer(layer.id) && map.removeLayer(layer.id);
+    map.addLayer(layer);
+}
 
 const setEteCodes = (codes) => {
     const id = 'metsaan-ete-all-sym'
@@ -1269,6 +1275,242 @@ map.on('load', () => {
     })
 
 
+    const arcgisSources = {};
+    const arcgisLayers = {};
+
+    async function genericArcgisWMSServer(serviceRestUrl, bbox) {
+        console.log('Showing ArcGIS WMS Server:', serviceRestUrl);
+
+        // const serviceRestUrl = 'http://geogis.kiev.ua/arcgis/rest/services/Aukc/Boreholes/MapServer';
+        const idx = serviceRestUrl.toLowerCase().indexOf('/rest/');
+        const soapUrl = serviceRestUrl.slice(0, idx) + serviceRestUrl.slice(idx + 5) // only remove the first occurrence of '/rest'
+        const tileSize = 256;
+
+        // const serviceInfo = await cachedFetchJSON(`${serviceRestUrl}?f=pjson`);
+        // format can be one of: PNG, PNG32, PNG8, JPEG, LERC, MIXED, ...
+        // const format = serviceInfo.format === 'JPEG' ? 'image/jpeg' : 'image/png';
+
+        const layers = '0' // TODO set somehow
+        const url2 = `${soapUrl}/WMSServer?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=${tileSize}&height=${tileSize}&layers=${layers}&styles=default`;
+
+        if (map.getLayer(serviceRestUrl)) {
+            map.getLayer(serviceRestUrl) && map.removeLayer(serviceRestUrl); // TODO: does the source still work ok?
+            return; // Toggle visibility
+        }
+        map.addLayer({  
+            id: serviceRestUrl,
+            source: {
+                type: 'raster',
+                'tiles': [url2],
+                tileSize,
+                // "maxzoom": 18, // TODO figure out some sensible value here
+                bounds: bbox,
+            },
+            'type': 'raster',
+            paint: {
+                'raster-opacity': 0.7,
+            },
+        });
+        arcgisLayers[serviceRestUrl] = true;
+
+        // Fetch legend last. Any failure here is non-fatal.
+        // TODO: show the legend somewhere.
+        const legend = await cachedFetchJSON(`${serviceRestUrl}/legend?f=pjson`);
+    }
+
+    function getViewportGeoEnvelope() {
+        const bounds = map.getBounds();
+        return {
+            xmin: bounds.getWest(),
+            xmax: bounds.getEast(),
+            ymin: bounds.getSouth(),
+            ymax: bounds.getNorth(),
+        };
+    }
+
+    const __cachedFetchJSON_cache = {};
+    async function cachedFetchJSON(url) {
+        if (url in __cachedFetchJSON_cache) {
+            return __cachedFetchJSON_cache[url];
+        }
+        const response = await fetch(url);
+        const json = await response.json();
+        __cachedFetchJSON_cache[url] = json;
+        return json;
+    }
+
+    function boundsIntersect(b1, b2) {
+        const noIntersection = (
+            b1[0] > b2[2] ||
+            b2[0] > b1[2] ||
+            b1[1] > b2[3] ||
+            b2[1] > b1[3]
+        );
+        return !noIntersection;
+    }
+
+    async function genericArcgisFeatureServer(layerUrl, bbox) {
+        // const layerUrl = 'https://services5.arcgis.com/QJebCdoMf4PF8fJP/ArcGIS/rest/services/Strava_Commuters/FeatureServer/0';
+
+        // NB: this is tricky. WFS is not supported by mapbox-gl,
+        // and we'd have to refresh the features each time we move around in the map
+        // (unless there are sufficiently few features in total!)
+        // const url2 = `${url}?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=0&styles=default`;
+
+        console.log('Showing ArcGIS Feature Server:', layerUrl);
+        const layerInfo = await cachedFetchJSON(`${layerUrl}?f=pjson`);
+
+        // PBF is apparently not MVT :/
+        // https://community.esri.com/thread/226299-feature-service-layer-query-pbf-format-mapbox-vt-spec-compliant
+        const preferredFormats = ['geoJSON', 'JSON'];
+        const supportedQueryFormats = layerInfo.supportedQueryFormats === null ? [] : layerInfo.supportedQueryFormats.split(', ')
+        const queryFormat = preferredFormats.filter(x => supportedQueryFormats.indexOf(x) !== -1)[0];
+
+        if (supportedQueryFormats.length && !queryFormat) {
+            console.error('Unsupported query format:', layerInfo.supportedQueryFormats);
+            return;
+        } else if (!queryFormat) {
+            console.error('No supportedQueryFormats:', layerInfo);
+            // No formats to use whatsoever
+            return;
+        }
+
+        const viewportEnvelope = getViewportGeoEnvelope();
+
+        const queryParams = `
+        geometry=${encodeURIComponent(JSON.stringify(viewportEnvelope))}
+        &geometryType=esriGeometryEnvelope
+        &inSR=4326
+        &outSR=4326
+        &spatialRel=esriSpatialRelIntersects
+        `.trim().replace(/\s+/g, '')
+
+        // TODO: When a FeatureServer like this is in use,
+        // display a button for refetching active FeatureServer layers.
+        const v = viewportEnvelope
+        const viewportBounds = [v.xmin, v.ymin, v.xmax, v.ymax];
+        if (!boundsIntersect(viewportBounds, bbox)) {
+            console.log('Layer does not intersect with viewport: Not showing:', layerUrl)
+            // TODO: Maybe just skip the request altogether?
+            return;
+        }
+
+        const formatString = queryFormat === 'JSON' ? 'pjson' : queryFormat.toLowerCase();
+        const queryUrl = `${layerUrl}/query?where=1=1&f=${formatString}&${queryParams}`;
+
+        let source;
+        if (queryFormat === 'geoJSON') {
+            source = {
+                type: 'geojson',
+                "data": queryUrl,
+            };
+        } else if (queryFormat === 'JSON') {
+            const response = await fetch(queryUrl);
+            const data = await response.json();
+            source = {
+                type: 'geojson',
+                data: arcgisToGeoJSON(data),
+            };
+        } else {
+            console.error('Unknown queryFormat:', queryFormat);
+            return;
+        }
+
+        for (const type of ['point', 'line', 'edge', 'poly']) {
+            const id = `${layerUrl}--${type}`;
+            map.getLayer(id) && map.removeLayer(id);
+        }
+        if (map.getSource(layerUrl)) {
+            map.getSource(layerUrl) && map.removeSource(layerUrl);
+            return; // Toggle visibility
+        }
+        addSource(layerUrl, source);
+
+        // TODO: try to style these like the original style?
+        // TODO: refresh these when the viewpoint changes, or manually?
+        map.addLayer({
+            id: `${layerUrl}--poly`,
+            source: layerUrl,
+            'type': 'fill',
+            paint: {
+                'fill-color': 'cyan',
+                'fill-opacity': 0.7,
+            },
+            "filter": ["==", "$type", "Polygon"],
+        });
+        map.addLayer({
+            id: `${layerUrl}--edge`,
+            source: layerUrl,
+            'type': 'line',
+            paint: {
+                'line-color': 'black',
+                'line-opacity': 0.5,
+            },
+            "filter": ["==", "$type", "Polygon"],
+        });
+        map.addLayer({
+            id: `${layerUrl}--point`,
+            source: layerUrl,
+            'type': 'circle',
+            paint: {
+                'circle-color': 'green',
+                'circle-opacity': 0.7,
+                'circle-radius': 15,
+            },
+            "filter": ["==", "$type", "Point"],
+        });
+        map.addLayer({
+            id: `${layerUrl}--line`,
+            source: layerUrl,
+            'type': 'line',
+            paint: {
+                'line-color': 'red',
+                'line-opacity': 0.7,
+            },
+            "filter": ["==", "$type", "LineString"],
+        });
+        arcgisSources[layerUrl] = true;
+        arcgisLayers[`${layerUrl}--poly`] = true;
+        arcgisLayers[`${layerUrl}--line`] = true;
+        arcgisLayers[`${layerUrl}--edge`] = true;
+        arcgisLayers[`${layerUrl}--point`] = true;
+
+    }
+    async function genericArcgisTileServer(serviceRestUrl, bbox) {
+        console.log('Showing ArcGIS Tile Server:', serviceRestUrl);
+        // const serviceRestUrl = 'http://ags.cuzk.cz/arcgis/rest/services/jmena_statu/MapServer';
+
+        const url2 = `${serviceRestUrl}/tile/{z}/{y}/{x}?blankTile=true`; // blankTile=false would cause a lot of 404 warnings in the logs
+
+        const serviceInfo = await cachedFetchJSON(`${serviceRestUrl}?f=pjson`);
+
+        const minzoom = Math.min(...serviceInfo.tileInfo.lods.map(x => x.level));
+        const maxzoom = Math.max(...serviceInfo.tileInfo.lods.map(x => x.level));
+        const tileSize = tileInfo.rows
+
+        if (map.getLayer(serviceRestUrl)) {
+            map.getLayer(serviceRestUrl) && map.removeLayer(serviceRestUrl); // TODO: does the source still work ok?
+            return; // Toggle visibility
+        }
+
+        map.addLayer({
+            id: serviceRestUrl,
+            source: {
+                type: 'raster',
+                'tiles': [url2],
+                tileSize,
+                minzoom,
+                maxzoom,
+                bounds: bbox,
+            },
+            'type': 'raster',
+            paint: {
+                'raster-opacity': 0.7,
+            },
+        });
+        arcgisLayers[serviceRestUrl] = true;
+    }
+
     // Forecasts are made using data from the National Forest Inventory at http://kartta.metla.fi/
     // License: http://kartta.metla.fi/MVMI-Lisenssi.pdf
     addSource('berries-lingonberry', {
@@ -1588,8 +1830,7 @@ map.on('load', () => {
                     'fill-color': arvometsaAreaCO2eFillColor(co2eValueExpr),
                 },
             };
-            map.removeLayer(layer.id);
-            map.addLayer(layer);
+            replaceLayer(layer);
         }
         const layer = {
             'id': 'arvometsa-sym',
@@ -1618,8 +1859,7 @@ map.on('load', () => {
                 ],
             }
         };
-        map.removeLayer(layer.id);
-        map.addLayer(layer);
+        replaceLayer(layer);
 
 
 
@@ -3004,8 +3244,7 @@ map.on('load', () => {
         // Rework Stadia default style to look nicer on top of satellite imagery
         layerOriginalPaint[layer.id] = { ...layer.paint }
         invertLayerTextHalo(layer)
-        map.removeLayer(layer.id)
-        map.addLayer(layer)
+        replaceLayer(layer)
         // map.moveLayer(layer.id)
     });
 
@@ -3017,6 +3256,7 @@ map.on('load', () => {
     };
 
     const refreshQueryPointsUI = () => {
+        // These must be removed first before removing/replacing the dependent source.
         map.getLayer('query-points-included') && map.removeLayer('query-points-included');
         map.getLayer('query-points-excluded') && map.removeLayer('query-points-excluded');
 
@@ -3097,23 +3337,46 @@ map.on('load', () => {
         if (results.length === 100) html += ` <a class="pagination" href="#" onclick="setDatasetQueryPage(${page + 1});">Page ${page + 1}</a>`
         html += '<hr/>'
 
-        results.forEach(x => {
-            let url = x.fullpath || x.absolute_path || x.url
-            if (x.urls && x.urls[0]) url = x.urls[0].url;
-            if (!url && x.source === 'arcgis-opendata')
-                // url = `https://www.arcgis.com/home/webmap/viewer.html?webmap=${x.id}`;
-                url = `https://www.arcgis.com/home/item.html?id=${x.id}`;
-            const urlText = url ? `<br/><a href="${url}">${url}</a>` : '';
+        results.forEach((x,idx) => {
+            const url = x.url;
+            // let url = x.fullpath || x.absolute_path || x.url
+            // if (x.urls && x.urls[0]) url = x.urls[0].url;
+            // if (!url && x.source === 'arcgis-opendata')
+            //     // url = `https://www.arcgis.com/home/webmap/viewer.html?webmap=${x.id}`;
+            //     url = `https://www.arcgis.com/home/item.html?id=${x.id}`;
+            // const urlText = url ? `<br/><a href="${url}">${url}</a>` : '';
+            const urlText = '';
             html += `
             <p>
-            <strong>${x.title || x.name || ''}</strong>${urlText}<br/>
+            <strong>${x.service.name || ''} ${x.layer.name || ''}</strong>${urlText}<br/>
             ${x.orgName ? (x.orgName + '<br/>') : ''}
-            ${x.description ? (sanitizeInputHTML(x.description) + '<br/>') : ''}
+            ${x.service.description ? (sanitizeInputHTML(x.service.description) + '<br/>') : ''}
+            <button data-idx="${idx}">Show data on map</button>
             </p>
             `;
         });
+        async function showData(stuff) {
+            const bbox = stuff.bbox;
+            const exts = stuff.service.supportedExtensions || '';
+            if (exts.indexOf('WMSServer') !== -1) {
+                await genericArcgisWMSServer(stuff.service_url, bbox);
+            } else if (stuff.tileInfo) {
+                await genericArcgisTileServer(stuff.service_url, bbox);
+            } else if (exts.indexOf('FeatureServer') !== -1) {
+                await genericArcgisFeatureServer(stuff.url, bbox);
+            } else if (stuff.layer.type === 'Feature Layer') {
+                await genericArcgisFeatureServer(stuff.url, bbox);
+            } else {
+                console.error('Unsupported type??', exts, stuff)
+            }
+        }
         queryResultsElem.innerHTML = html;
-
+        queryResultsElem.querySelectorAll('button').forEach(e => {
+            e.addEventListener('click', event => {
+                const idx = event.target.getAttribute('data-idx');
+                showData(results[idx]);
+            })
+        })
     };
 
     let datasetQueryNum = 0;
@@ -3131,7 +3394,7 @@ map.on('load', () => {
 
         const results = await response.json();
 
-        if (latestDatasetResultsNum > currentQuery) return; // Hack: discard late-arriving requests.
+        if (latestDatasetResultsNum > currentQuery) return; // Hack: discard late-arriving responses.
         latestDatasetResultsNum = currentQuery;
 
         if (!datasetQueryEnabledElem.checked) return; // Hack: disabled already, so discard any results.
@@ -3142,11 +3405,11 @@ map.on('load', () => {
             "geometry": {
                 "type": "Polygon",
                 "coordinates": [[
-                    [x.bbox[0][0], x.bbox[0][1]],
-                    [x.bbox[1][0], x.bbox[0][1]],
-                    [x.bbox[1][0], x.bbox[1][1]],
-                    [x.bbox[0][0], x.bbox[1][1]],
-                    [x.bbox[0][0], x.bbox[0][1]],
+                    [x.bbox[0], x.bbox[1]],
+                    [x.bbox[2], x.bbox[1]],
+                    [x.bbox[2], x.bbox[3]],
+                    [x.bbox[0], x.bbox[3]],
+                    [x.bbox[0], x.bbox[1]],
                 ]],
             },
         }));

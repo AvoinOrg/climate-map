@@ -13,6 +13,7 @@
     "parcel-bundler": "^1.12.1"
   },
   "dependencies": {
+    "@esri/arcgis-to-geojson-utils": "^1.3.0",
     "@turf/boolean-within": "^6.0.1",
     "@turf/helpers": "^6.1.4",
     "@turf/meta": "^6.0.2",
