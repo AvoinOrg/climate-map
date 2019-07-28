@@ -321,7 +321,7 @@ g.line rect {
     background: #ffffff;
     overflow-y: scroll;
     z-index: 10; /* Shadow mapbox-gl controls (z-index 2) */
-    word-wrap: break-word;
+    word-break: break-word;
 }
 
 .button {
@@ -360,4 +360,14 @@ a:visited.pagination {
 }
 .dataset-query-thumbnail {
     float: right;
+}
+
+.dataset-query-attributes > tbody > tr > td:nth-child(1) {
+    text-align: right;
+    font-weight: bold;
+    padding-right: 8px;
+}
+.dataset-query-attributes > tbody > tr > td:nth-child(2) {
+    text-align: left;
+    word-break: break-word;
 }

@@ -1277,6 +1277,7 @@ map.on('load', () => {
 
     const arcgisSources = {};
     const arcgisLayers = {};
+    const arcgisLayerCache = {};
 
     async function genericArcgisWMSServer(serviceRestUrl, bbox) {
         console.log('Showing ArcGIS WMS Server:', serviceRestUrl);
@@ -1297,7 +1298,7 @@ map.on('load', () => {
             map.getLayer(serviceRestUrl) && map.removeLayer(serviceRestUrl); // TODO: does the source still work ok?
             return; // Toggle visibility
         }
-        map.addLayer({  
+        map.addLayer({
             id: serviceRestUrl,
             source: {
                 type: 'raster',
@@ -1375,38 +1376,52 @@ map.on('load', () => {
             return;
         }
 
-        const viewportEnvelope = getViewportGeoEnvelope();
-
-        const queryParams = `
-        geometry=${encodeURIComponent(JSON.stringify(viewportEnvelope))}
-        &geometryType=esriGeometryEnvelope
-        &inSR=4326
-        &outSR=4326
-        &spatialRel=esriSpatialRelIntersects
-        `.trim().replace(/\s+/g, '')
-
-        // TODO: When a FeatureServer like this is in use,
-        // display a button for refetching active FeatureServer layers.
-        const v = viewportEnvelope
-        const viewportBounds = [v.xmin, v.ymin, v.xmax, v.ymax];
-        if (!boundsIntersect(viewportBounds, bbox)) {
-            console.log('Layer does not intersect with viewport: Not showing:', layerUrl)
-            // TODO: Maybe just skip the request altogether?
-            return;
+        // returnCountOnly would also work but requires arcgis 10.0 or 10.6+
+        if (!(layerUrl in arcgisLayerCache)) {
+            const countUrl = `${layerUrl}/query/?where=1=1&f=pjson&returnIdsOnly=true`;
+            const response = await fetch(countUrl);
+            const {objectIds} = await response.json();
+            arcgisLayerCache[layerUrl] = { hasMoreData: objectIds.length > layerInfo.maxRecordCount };
         }
+        const hasMoreData = arcgisLayerCache[layerUrl].hasMoreData;
 
         const formatString = queryFormat === 'JSON' ? 'pjson' : queryFormat.toLowerCase();
-        const queryUrl = `${layerUrl}/query?where=1=1&f=${formatString}&${queryParams}`;
+        const queryUrl = `${layerUrl}/query?where=1=1&f=${formatString}&outSR=4326&outFields=*`;
+        let data;
+        if (hasMoreData) {
+            // TODO: When a FeatureServer like this is in use,
+            // display a button for refetching active FeatureServer layers.
+            const viewportEnvelope = getViewportGeoEnvelope();
+            const v = viewportEnvelope
+            const viewportBounds = [v.xmin, v.ymin, v.xmax, v.ymax];
+            if (!boundsIntersect(viewportBounds, bbox)) {
+                console.log('Layer does not intersect with viewport: Not showing:', layerUrl)
+                // TODO: Maybe just skip the request altogether?
+                return;
+            }
+
+            const queryParams = `
+            geometry=${encodeURIComponent(JSON.stringify(viewportEnvelope))}
+            &geometryType=esriGeometryEnvelope
+            &inSR=4326
+            &spatialRel=esriSpatialRelIntersects
+            `.trim().replace(/\s+/g, '');
+
+            const response = await fetch(`${queryUrl}&${queryParams}`);
+            data = await response.json();
+        } else {
+            data = await cachedFetchJSON(queryUrl);
+        }
 
         let source;
         if (queryFormat === 'geoJSON') {
+            // hasMoreData = data.properties && data.properties.exceededTransferLimit;
             source = {
                 type: 'geojson',
-                "data": queryUrl,
+                "data": data,
             };
         } else if (queryFormat === 'JSON') {
-            const response = await fetch(queryUrl);
-            const data = await response.json();
+            // hasMoreData = data.exceededTransferLimit;
             source = {
                 type: 'geojson',
                 data: arcgisToGeoJSON(data),
@@ -1416,13 +1431,14 @@ map.on('load', () => {
             return;
         }
 
-        for (const type of ['point', 'line', 'edge', 'poly']) {
+        const layerTypes = ['point', 'line', 'edge', 'poly'];
+        for (const type of layerTypes) {
             const id = `${layerUrl}--${type}`;
             map.getLayer(id) && map.removeLayer(id);
         }
         if (map.getSource(layerUrl)) {
             map.getSource(layerUrl) && map.removeSource(layerUrl);
-            return; // Toggle visibility
+            return true; // Toggle visibility
         }
         addSource(layerUrl, source);
 
@@ -1464,18 +1480,43 @@ map.on('load', () => {
             source: layerUrl,
             'type': 'line',
             paint: {
+                'line-width': 8,
                 'line-color': 'red',
                 'line-opacity': 0.7,
             },
             "filter": ["==", "$type", "LineString"],
         });
-        arcgisSources[layerUrl] = true;
-        arcgisLayers[`${layerUrl}--poly`] = true;
-        arcgisLayers[`${layerUrl}--line`] = true;
-        arcgisLayers[`${layerUrl}--edge`] = true;
-        arcgisLayers[`${layerUrl}--point`] = true;
 
+        arcgisSources[layerUrl] = true;
+        for (const type of layerTypes) {
+            arcgisLayers[`${layerUrl}--${type}`] = true;
+
+            if (type === 'edge') continue;
+            genericPopupHandler(`${layerUrl}--${type}`, e => {
+                const f = e.features[0];
+                const p = f.properties;
+
+                let html = `
+                <table class="dataset-query-attributes"><thead>
+                    <tr><th>Attribute</th><th>Value</th></tr>
+                </thead><tbody>
+                `;
+                for (const [k,v] of Object.entries(f.properties)) {
+                    if (v === null || v === '' || v === 'null') continue;
+                    if (typeof v === 'string' && v.trim() === '') continue;
+                    html += `<tr><td>${k}</td><td>${v}</td></tr>`; // TODO escape stuff
+                }
+                html += '</tbody></table>'
+
+                new mapboxgl.Popup({ maxWidth: '420px' })
+                    .setLngLat(e.lngLat)
+                    .setHTML(html)
+                    .addTo(map);
+            });
+        }
+        return true;
     }
+
     async function genericArcgisTileServer(serviceRestUrl, bbox) {
         console.log('Showing ArcGIS Tile Server:', serviceRestUrl);
         // const serviceRestUrl = 'http://ags.cuzk.cz/arcgis/rest/services/jmena_statu/MapServer';
@@ -1935,7 +1976,7 @@ map.on('load', () => {
 
                 if (prefix === 'npv') {
                     const outputElem = document.querySelector(`output.arvometsa-npv`);
-                    // NPV does not really apply for CBF i.e. "no cuttings" 
+                    // NPV does not really apply for CBF i.e. "no cuttings"
                     const value = dataset === 0 ? null : totals[`m${dataset}_npv3`];
                     const out = value === 0 || value ? `${pp(value)} €` : '-';
                     if (outputElem.sourceHTML !== out)
@@ -3303,6 +3344,8 @@ map.on('load', () => {
 
     const addQueryPoint = async function (e) {
         if (!datasetQueryEnabledElem.checked) return;
+        if (isDatasetQueryViewMode()) return; // Disable while viewing datasets.
+
         const { lat, lng } = e.lngLat;
         const queryPointMode = document.querySelector('input[name="dataset-query-point-type"]:checked').value;
         queryPointsSource.data.features.push({
@@ -3326,6 +3369,13 @@ map.on('load', () => {
         elem.innerHTML = html;
         return elem.textContent || elem.innerText || '';
     };
+
+    const isDatasetQueryViewMode = () => {
+        for (const layer in arcgisLayers) {
+            if (map.getLayer(layer)) return true;
+        }
+        return false;
+    }
 
     const updateDatasetQueryResultsList = (page, results) => {
         queryResultsElem.removeAttribute('hidden');
@@ -3368,15 +3418,24 @@ map.on('load', () => {
             } else {
                 console.error('Unsupported type??', exts, stuff)
             }
+
+            // Hide and show result bounds as necessary:
+
+            const queryPointsVisibility = isDatasetQueryViewMode() ? 'none' : 'visible';
+            const queryPointsLayers = ['query-points-included', 'query-points-excluded', 'dataset-query-results-outline'];
+            for (const layer of queryPointsLayers) {
+                map.setLayoutProperty(layer, 'visibility', queryPointsVisibility);
+            }
         }
         queryResultsElem.innerHTML = html;
         queryResultsElem.querySelectorAll('button').forEach(e => {
             e.addEventListener('click', event => {
                 const el = event.target;
                 const idx = el.getAttribute('data-idx');
-                showData(results[idx]);
-                el.classList.toggle('active')
-                el.innerText = el.classList.contains('active') ? 'Hide data' : 'Show data on map';
+                if (showData(results[idx])) {
+                    el.classList.toggle('active')
+                    el.innerText = el.classList.contains('active') ? 'Hide data' : 'Show data on map';
+                }
             })
         })
     };
