@@ -4,7 +4,7 @@ import { flattenReduce as turfFlattenReduce } from '@turf/meta';
 import Chart from 'chart.js';
 import { linear_kryw_0_100_c71, linear_bgyw_20_98_c66 } from './colormap';
 import { arcgisToGeoJSON } from '@esri/arcgis-to-geojson-utils';
-
+import WMSCapabilities from 'ol/format/WMSCapabilities.js'
 
 // This must be set, but the value is not needed here.
 mapboxgl.accessToken = 'not-needed';
@@ -1279,6 +1279,19 @@ map.on('load', () => {
     const arcgisLayers = {};
     const arcgisLayerCache = {};
 
+
+    function wmsGetAllLayers(wmsCapabilities) {
+        if ('Name' in wmsCapabilities) {
+            return [ [wmsCapabilities.Name, wmsCapabilities.Style[0].Name] ];
+        } else if ('Layer' in wmsCapabilities) {
+            return wmsGetAllLayers(wmsCapabilities.Layer);
+        } else if (wmsCapabilities instanceof Array) {
+            return Array.concat(...wmsCapabilities.map(wmsGetAllLayers));
+        } else {
+            console.error('Unknown WMS type:', wmsCapabilities);
+        }
+    }
+
     async function genericArcgisWMSServer(serviceRestUrl, bbox) {
         console.log('Showing ArcGIS WMS Server:', serviceRestUrl);
 
@@ -1289,24 +1302,41 @@ map.on('load', () => {
 
         // const serviceInfo = await cachedFetchJSON(`${serviceRestUrl}?f=pjson`);
         // format can be one of: PNG, PNG32, PNG8, JPEG, LERC, MIXED, ...
-        // const format = serviceInfo.format === 'JPEG' ? 'image/jpeg' : 'image/png';
+        // const imageFormat = serviceInfo.format === 'JPEG' ? 'image/jpeg' : 'image/png';
+        const imageFormat = 'image/png';
 
-        const layers = '0' // TODO set somehow
-        const url2 = `${soapUrl}/WMSServer?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=${tileSize}&height=${tileSize}&layers=${layers}&styles=default`;
+        const parser = new WMSCapabilities();
+        const capabilitiesUrl = `${soapUrl}/WMSServer?request=GetCapabilities&service=WMS`
+        const response = await cachedFetchText(capabilitiesUrl);
+        const capabilities = parser.read(response);
+        console.log('WMS server capabilities:', capabilities);
+
+        // TODO: this is a bit questionable
+        // const layerData = Array.concat(...capabilities.Capability.Layer.Layer.map(x => x.Layer));
+
+        const layersAndStyles = wmsGetAllLayers(capabilities.Capability);
+        const layers = layersAndStyles.map(x => x[0]);
+        const styles = layersAndStyles.map(x => x[1]);
+        // const layers = layerData.map(x => x.Name).join(',');
+        // const styles = layerData.map(x => x.Style[0].Name).join(','); // TODO: get legend URLs also?
+        const url2 = `${soapUrl}/WMSServer?bbox={bbox-epsg-3857}&format=${imageFormat}&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=${tileSize}&height=${tileSize}&layers=${layers}&styles=${styles}`;
 
         if (map.getLayer(serviceRestUrl)) {
-            map.getLayer(serviceRestUrl) && map.removeLayer(serviceRestUrl); // TODO: does the source still work ok?
+            map.getLayer(serviceRestUrl) && map.removeLayer(serviceRestUrl);
             return; // Toggle visibility
         }
+        map.getSource(serviceRestUrl) && map.removeSource(serviceRestUrl);
+        map.addSource(serviceRestUrl, {
+            type: 'raster',
+            'tiles': [url2],
+            tileSize,
+            // "maxzoom": 18, // TODO figure out some sensible value here
+            bounds: bbox,
+        });
+
         map.addLayer({
             id: serviceRestUrl,
-            source: {
-                type: 'raster',
-                'tiles': [url2],
-                tileSize,
-                // "maxzoom": 18, // TODO figure out some sensible value here
-                bounds: bbox,
-            },
+            source: serviceRestUrl,
             'type': 'raster',
             paint: {
                 'raster-opacity': 0.7,
@@ -1335,9 +1365,18 @@ map.on('load', () => {
             return __cachedFetchJSON_cache[url];
         }
         const response = await fetch(url);
-        const json = await response.json();
-        __cachedFetchJSON_cache[url] = json;
-        return json;
+        __cachedFetchJSON_cache[url] = await response.json();
+        return __cachedFetchJSON_cache[url];
+    }
+
+    const __cachedFetchText_cache = {};
+    async function cachedFetchText(url) {
+        if (url in __cachedFetchText_cache) {
+            return __cachedFetchText_cache[url];
+        }
+        const response = await fetch(url);
+        __cachedFetchText_cache[url] = await response.text();
+        return __cachedFetchText_cache[url];
     }
 
     function boundsIntersect(b1, b2) {
@@ -1376,12 +1415,22 @@ map.on('load', () => {
             return;
         }
 
+        if (layerInfo.capabilities.indexOf('Query') === -1) {
+            console.error('Layer does not support querying!', layerInfo);
+            // TODO: do something about this. Display a UI error?
+        }
+
         // returnCountOnly would also work but requires arcgis 10.0 or 10.6+
         if (!(layerUrl in arcgisLayerCache)) {
             const countUrl = `${layerUrl}/query/?where=1=1&f=pjson&returnIdsOnly=true`;
             const response = await fetch(countUrl);
-            const {objectIds} = await response.json();
-            arcgisLayerCache[layerUrl] = { hasMoreData: objectIds.length > layerInfo.maxRecordCount };
+            const {error, objectIds} = await response.json();
+            if (error) {
+                console.error('Unexpected error while querying data:', error)
+                arcgisLayerCache[layerUrl] = { hasMoreData: true }; // TODO
+            } else {
+                arcgisLayerCache[layerUrl] = { hasMoreData: objectIds.length > layerInfo.maxRecordCount };
+            }
         }
         const hasMoreData = arcgisLayerCache[layerUrl].hasMoreData;
 
@@ -1444,6 +1493,9 @@ map.on('load', () => {
 
         // TODO: try to style these like the original style?
         // TODO: refresh these when the viewpoint changes, or manually?
+        // TODO follow rendered coloring where possible?
+        // TODO auto-color polygons/lines/points by the only numeric non-ID attribute, if there is just one.
+        // TODO display organization info, or at least the data owner info
         map.addLayer({
             id: `${layerUrl}--poly`,
             source: layerUrl,
@@ -1504,7 +1556,10 @@ map.on('load', () => {
                 for (const [k,v] of Object.entries(f.properties)) {
                     if (v === null || v === '' || v === 'null') continue;
                     if (typeof v === 'string' && v.trim() === '') continue;
-                    html += `<tr><td>${k}</td><td>${v}</td></tr>`; // TODO escape stuff
+                    // TODO escape values, except for img tags
+                    // TODO turn "obvious" URLs into a href tags.
+                    // TODO maybe have special handling for SHAPE_* attributes
+                    html += `<tr><td>${k}</td><td>${v}</td></tr>`;
                 }
                 html += '</tbody></table>'
 
@@ -1527,23 +1582,26 @@ map.on('load', () => {
 
         const minzoom = Math.min(...serviceInfo.tileInfo.lods.map(x => x.level));
         const maxzoom = Math.max(...serviceInfo.tileInfo.lods.map(x => x.level));
-        const tileSize = tileInfo.rows
+        const tileSize = serviceInfo.tileInfo.rows
 
         if (map.getLayer(serviceRestUrl)) {
-            map.getLayer(serviceRestUrl) && map.removeLayer(serviceRestUrl); // TODO: does the source still work ok?
+            map.getLayer(serviceRestUrl) && map.removeLayer(serviceRestUrl);
             return; // Toggle visibility
         }
 
+        map.getSource(serviceRestUrl) && map.removeSource(serviceRestUrl);
+        map.addSource(serviceRestUrl, {
+            type: 'raster',
+            'tiles': [url2],
+            tileSize,
+            minzoom,
+            maxzoom,
+            bounds: bbox,
+        });
+
         map.addLayer({
             id: serviceRestUrl,
-            source: {
-                type: 'raster',
-                'tiles': [url2],
-                tileSize,
-                minzoom,
-                maxzoom,
-                bounds: bbox,
-            },
+            source: serviceRestUrl,
             'type': 'raster',
             paint: {
                 'raster-opacity': 0.7,
@@ -3391,12 +3449,19 @@ map.on('load', () => {
         for (const [idx, x] of Object.entries(results)) {
             const thumbnailUrl = encodeURI(`${x.service_url}/info/thumbnail`).replace('"', '\"');
             const thumbnailImg = x.service_url && `<img class="dataset-query-thumbnail" onerror="this.style.display='none';" src="${thumbnailUrl}" />`
-            const urlText = '';
+
+            let layerName;
+            if (x.layer && x.layer.name) {
+                layerName = x.layer.name;
+            } else if (x.service) {
+                layerName = x.service.layers[0].name;
+            }
+
             html += `
             <p class="dataset-query-result">
-            <strong>${x.service.name || ''} ${x.layer.name || ''}</strong>${urlText}<br/>
+            <strong>${x.service && x.service.name || ''} ${layerName || ''}</strong><br/>
             ${x.orgName ? (x.orgName + '<br/>') : ''}
-            ${x.service.description ? (sanitizeInputHTML(x.service.description) + '<br/>') : ''}
+            ${x.service && x.service.description ? (sanitizeInputHTML(x.service.description) + '<br/>') : ''}
             <button class="button" data-idx="${idx}">Show data on map</button>
             ${thumbnailImg}
             </p>
@@ -3404,19 +3469,19 @@ map.on('load', () => {
         }
         html += `<hr/>${pagination}`;
 
-        async function showData(stuff) {
-            const bbox = stuff.bbox;
-            const exts = stuff.service.supportedExtensions || '';
+        async function showData(x) {
+            const bbox = x.bbox;
+            const exts = x.service && x.service.supportedExtensions || '';
             if (exts.indexOf('WMSServer') !== -1) {
-                await genericArcgisWMSServer(stuff.service_url, bbox);
-            } else if (stuff.tileInfo) {
-                await genericArcgisTileServer(stuff.service_url, bbox);
+                await genericArcgisWMSServer(x.service_url, bbox);
+            } else if (x.service.tileInfo) {
+                await genericArcgisTileServer(x.service_url, bbox);
             } else if (exts.indexOf('FeatureServer') !== -1) {
-                await genericArcgisFeatureServer(stuff.url, bbox);
-            } else if (stuff.layer.type === 'Feature Layer') {
-                await genericArcgisFeatureServer(stuff.url, bbox);
+                await genericArcgisFeatureServer(x.url, bbox);
+            } else if (x.layer && x.layer.type === 'Feature Layer') {
+                await genericArcgisFeatureServer(x.url, bbox);
             } else {
-                console.error('Unsupported type??', exts, stuff)
+                console.error('Unsupported type??', exts, x)
             }
 
             // Hide and show result bounds as necessary:
