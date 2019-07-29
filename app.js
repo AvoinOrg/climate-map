@@ -1389,7 +1389,7 @@ map.on('load', () => {
         return !noIntersection;
     }
 
-    async function genericArcgisFeatureServer(layerUrl, bbox) {
+    async function genericArcgisFeatureServer(layerUrl, bbox, x) {
         // const layerUrl = 'https://services5.arcgis.com/QJebCdoMf4PF8fJP/ArcGIS/rest/services/Strava_Commuters/FeatureServer/0';
 
         // NB: this is tricky. WFS is not supported by mapbox-gl,
@@ -1546,9 +1546,16 @@ map.on('load', () => {
             if (type === 'edge') continue;
             genericPopupHandler(`${layerUrl}--${type}`, e => {
                 const f = e.features[0];
-                const p = f.properties;
 
+                let layerName;
+                if (x.layer && x.layer.name) {
+                    layerName = x.layer.name;
+                } else if (x.service) {
+                    layerName = x.service.layers[0].name;
+                }
+                const title = `${x.service && x.service.name || ''} ${layerName || ''}`.trim();
                 let html = `
+                <strong>${title}</strong>
                 <table class="dataset-query-attributes"><thead>
                     <tr><th>Attribute</th><th>Value</th></tr>
                 </thead><tbody>
@@ -3473,13 +3480,13 @@ map.on('load', () => {
             const bbox = x.bbox;
             const exts = x.service && x.service.supportedExtensions || '';
             if (exts.indexOf('WMSServer') !== -1) {
-                await genericArcgisWMSServer(x.service_url, bbox);
+                await genericArcgisWMSServer(x.service_url, bbox, x);
             } else if (x.service.tileInfo) {
-                await genericArcgisTileServer(x.service_url, bbox);
+                await genericArcgisTileServer(x.service_url, bbox, x);
             } else if (exts.indexOf('FeatureServer') !== -1) {
-                await genericArcgisFeatureServer(x.url, bbox);
+                await genericArcgisFeatureServer(x.url, bbox, x);
             } else if (x.layer && x.layer.type === 'Feature Layer') {
-                await genericArcgisFeatureServer(x.url, bbox);
+                await genericArcgisFeatureServer(x.url, bbox, x);
             } else {
                 console.error('Unsupported type??', exts, x)
             }
