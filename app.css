@@ -110,6 +110,17 @@ body {
     }
 }
 
+.layer-group > label {
+    display: block;
+}
+/* TODO The h4 bit is a hack */
+.layer-group > .layer-card, .layer-group > h4 {
+    display: none;
+}
+.layer-group.active > .layer-card, .layer-group.active > h4 {
+    display: initial;
+}
+
 .layer-card {
     margin-bottom: 30px;
     font-size: 20px;

@@ -52,7 +52,8 @@ const pp = (x, precision = 2) => (+x.toPrecision(precision)).toLocaleString();
 
 // Set up event handlers for layer toggles, etc.
 window.addEventListener('load', () => {
-    [...document.querySelectorAll('.layer-card input[name="onoffswitch"]')].forEach(el => {
+    const layerToggles = document.querySelectorAll('.layer-card input[name="onoffswitch"]');
+    Array.from(layerToggles).forEach(el => {
         if (el.disabled) return;
         if (el.hasAttribute("data-special")) return; // disable automatic handling
 
@@ -64,7 +65,14 @@ window.addEventListener('load', () => {
         if (!known) {
             console.log('ERROR: Unknown layer in menu .layer-cards:', el.id, el);
         }
-    })
+    });
+
+    const layerGroupElems = document.querySelectorAll('.layer-group > label > input');
+    Array.from(layerGroupElems).forEach(el => {
+        el.addEventListener('change', () => {
+            el.parentElement.parentElement.classList.toggle('active');
+        });
+    });
 })
 
 const layerOriginalPaint = {}
@@ -2142,7 +2150,7 @@ map.on('load', () => {
                                 stacked,
                                 ticks: {
                                     beginAtZero: true,
-                                    callback: (value, index, values) => value.toLocaleString(),
+                                    callback: (value, _index, _values) => value.toLocaleString(),
                                 },
                             }],
                         },
@@ -3574,7 +3582,7 @@ map.on('load', () => {
 
 const privateDatasets = {}
 
-privateDatasets.valio = (map, secret) => {
+privateDatasets.valio = (_map, secret) => {
     addSource('valio_fields', {
         "type": "vector",
         "tiles": [`https://map.buttonprogram.org/private/${secret}/valio_fields/{z}/{x}/{y}.pbf?v=3`],
