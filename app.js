@@ -1038,7 +1038,7 @@ map.on('load', () => {
         const { pinta_ala, ymparys, lohko } = f.properties;
         const areaHa = 0.01 * +pinta_ala;
 
-        html = `<strong>A former field plot</strong>
+        const html = `<strong>A former field plot</strong>
         <br/><strong>Area</strong>: ${areaHa.toFixed(1)} hectares
         <br/><strong>Perimeter</strong>: ${(+ymparys).toFixed(0)} metres
         <br/><strong>Plot ID:</strong>: ${lohko}
@@ -1290,7 +1290,7 @@ map.on('load', () => {
 
     function wmsGetAllLayers(wmsCapabilities) {
         if ('Name' in wmsCapabilities) {
-            return [ [wmsCapabilities.Name, wmsCapabilities.Style[0].Name] ];
+            return [[wmsCapabilities.Name, wmsCapabilities.Style[0].Name]];
         } else if ('Layer' in wmsCapabilities) {
             return wmsGetAllLayers(wmsCapabilities.Layer);
         } else if (wmsCapabilities instanceof Array) {
@@ -1432,7 +1432,7 @@ map.on('load', () => {
         if (!(layerUrl in arcgisLayerCache)) {
             const countUrl = `${layerUrl}/query/?where=1=1&f=pjson&returnIdsOnly=true`;
             const response = await fetch(countUrl);
-            const {error, objectIds} = await response.json();
+            const { error, objectIds } = await response.json();
             if (error) {
                 console.error('Unexpected error while querying data:', error)
                 arcgisLayerCache[layerUrl] = { hasMoreData: true }; // TODO
@@ -1568,7 +1568,7 @@ map.on('load', () => {
                     <tr><th>Attribute</th><th>Value</th></tr>
                 </thead><tbody>
                 `;
-                for (const [k,v] of Object.entries(f.properties)) {
+                for (const [k, v] of Object.entries(f.properties)) {
                     if (v === null || v === '' || v === 'null') continue;
                     if (typeof v === 'string' && v.trim() === '') continue;
                     // TODO escape values, except for img tags
@@ -1693,11 +1693,10 @@ map.on('load', () => {
     }
     document.querySelector('input#arvometsa').addEventListener('change', arvometsaInit);
 
-    document.querySelectorAll('.arvometsa-projections button').forEach(e => {
+    document.querySelectorAll('.arvometsa-projections > label > input').forEach(e => {
 
-        e.addEventListener('click', () => {
-            window.arvometsaDataset = arvometsaDatasetClasses.indexOf(e.className);
-            // window.arvometsaAttr = 'cbt';
+        e.addEventListener('change', e => {
+            window.arvometsaDataset = arvometsaDatasetClasses.indexOf(e.target.value);
             window.replaceArvometsa();
         })
     });
@@ -1832,11 +1831,47 @@ map.on('load', () => {
         npv: 'Net present value of forest stock (3% discounting)',
     }
 
+    const harvestedWoodAttrs = [
+        [0, 1, 2, 3, 4].map(x => `kasittely_${x}_tukki`).join(' '),
+        [0, 1, 2, 3, 4].map(x => `kasittely_${x}_kuitu`).join(' '),
+    ]
+
     const setupArvometsaPopupHandler = () => {
+        const createPopup = (e, html) => (
+            new mapboxgl.Popup({ maxWidth: '360px' })
+                .setLngLat(e.lngLat)
+                .setHTML(html)
+                .addTo(map)
+        );
+
+        // TODO: maybe make the popup respond to global controls
         genericPopupHandler(['arvometsa-fill'], (e) => {
             const f = e.features[0];
             const p = f.properties;
+            const carbonStockAttrPrefixes = ['bio', 'maa'];
+            const cumulativeFlag = document.getElementById('arvometsa-cumulative').checked;
 
+            function getUnit(prefix) {
+                if (prefix === 'harvested-wood') {
+                    return 'm³';
+                } else if (carbonStockAttrPrefixes.indexOf(prefix) !== -1) {
+                    return 'tons carbon';
+                } else if (isCumulative(prefix)) {
+                    return 'tons CO2e';
+                } else {
+                    return 'tons CO2e/y';
+                }
+            }
+            function isCumulative(prefix) {
+                // carbon stock is not counted cumulatively.
+                const isCarbonStock = carbonStockAttrPrefixes.indexOf(prefix) !== -1;
+                return cumulativeFlag && !isCarbonStock
+            }
+
+            const attrValues = {};
+
+            let npv;
+            const attrGroups = baseAttrs.split('\n').concat(harvestedWoodAttrs);
             const m = window.arvometsaDataset === -1 ? p.best_method : window.arvometsaDataset;
             const mAlt = ARVOMETSA_TRADITIONAL_FORESTRY_METHOD;
 
@@ -1848,69 +1883,148 @@ map.on('load', () => {
             const co2eStr = `${pp(p.area * co2eDiff)} tons CO2e/y <small>or ${pp(co2eDiff)} tons CO2e/ha/y</small>`;
             const co2eBalanceStr = `${pp(p.area * co2eBalance / years)} tons CO2e/y <small>or ${pp(co2eBalance / years)} tons CO2e/ha/y</small>`;
 
+            attrGroups.forEach(attrGroup => {
+                const prefix = (
+                    attrGroup.indexOf('kasittely') !== -1
+                        ? attrGroup.trim().split(/[_ ]/)[2]
+                        : attrGroup.trim().slice(0, 3)
+                );
+                const attrs = attrGroup.trim().split(/ /).map(attr => `m${m}_${attr}`);
+
+                if (prefix === 'npv') {
+                    // NPV does not really apply for CBF i.e. "no cuttings"
+                    const value = metsaanFiTreeSpecies === 0 ? null : p[`m${m}_npv3`];
+                    npv = value === 0 || value ? `${pp(value)} €` : '-';
+                    return;
+                }
+
+                const attrV = [];
+                for (const attr of attrs) {
+                    const prev = isCumulative(prefix) && attrV.length > 0 ? attrV[attrV.length - 1] : 0;
+                    attrV.push(prev + p[attr]);
+                }
+                attrValues[prefix] = attrV;
+            });
+
             let html = `
-            <strong>${p.area} hectares</strong><br/>
+            <strong>Forest parcel</strong><br/>
+            Area: ${pp(p.area, 3)} hectares<br/>
+            Net Present Value: ${npv}<br/>
+            <strong>Shown:</strong> ${cumulativeFlag ? 'Cumulative carbon balance' : 'Incremental carbon balance per decade'}<br/>
+
             <strong>Potential CO2e savings with ${arvometsaDatasetTitles[m]}:</strong> ${co2eStr}<br/>
             <strong>Forest CO2 balance with ${arvometsaDatasetTitles[m]}:</strong> ${co2eBalanceStr}<br/>
-            <table>
-            <tr><th colspan="1" rowspan="2">Quantity<br/><small>carbon, tons</small></th><th colspan="6">Years from now</th></tr>
-            <tr><th>0</th><th>10</th><th>20</th><th>30</th><th>40</th><th>50</th></tr>
             `;
+            for (const prefix of ['cbf', 'cbt', 'bio', 'harvested-wood']) {
+                html += `<canvas class="arvometsa-popup-${prefix}"></canvas><br/>`;
+            }
+            const popup = createPopup(e, html);
+            // console.log(popup)
+            window.popup123 = popup;
+            const popupElem = popup._content;
 
-            const bestMethods = {};
-            const bestValues = {};
-            for (const a in p) {
-                if (!/^m\d_/.test(a)) continue;
-                const baseAttr = a.substr(3);
-                const datasetIdx = +a[1];
-                if (!(baseAttr in bestValues) || p[a] > bestValues[baseAttr]) {
-                    bestValues[baseAttr] = p[a];
-                    bestMethods[baseAttr] = datasetIdx;
+            for (const prefix of ['cbf', 'cbt', 'bio', 'harvested-wood']) {
+                let datasets;
+                const unit = getUnit(prefix);
+                const stacked = true;
+                switch (prefix) {
+                    case 'cbf':
+                        datasets = [{
+                            label: 'CO2e balance',
+                            backgroundColor: 'green',
+                            data: attrValues.cbf,
+                        }];
+                        break;
+                    case 'cbt':
+                        datasets = [{
+                            label: 'CO2e balance',
+                            backgroundColor: 'rgb(63, 90, 0)',
+                            data: attrValues.cbt,
+                        }];
+                        break;
+                    case 'bio':
+                        datasets = [{
+                            label: 'Soil',
+                            backgroundColor: '#815f1c',
+                            data: attrValues.maa,
+                        }, {
+                            label: 'Trees',
+                            backgroundColor: '#00af5a',
+                            data: attrValues.bio,
+                        }];
+                        break;
+                    case 'harvested-wood':
+                        datasets = [{
+                            label: 'Sawlog',
+                            backgroundColor: 'brown',
+                            data: attrValues.tukki,
+                        }, {
+                            label: 'Pulpwood',
+                            backgroundColor: 'green',
+                            data: attrValues.kuitu,
+                        }];
+                        break;
+                }
+
+                const labels = {
+                    'cbf': ['10', '20', '30', '40', '50'],
+                    'cbt': ['10', '20', '30', '40', '50'],
+                    'bio': ['0', '10', '20', '30', '40', '50'],
+                    'harvested-wood': ['10', '20', '30', '40', '50'],
+                }
+
+
+                let outputElem = popupElem.querySelector(`canvas.arvometsa-popup-${prefix}`);
+
+                const chart = null; // arvometsaGraphs[prefix];
+                const labelCallback = function (tooltipItem, data) {
+                    const label = data.datasets[tooltipItem.datasetIndex].label;
+                    const v = pp(tooltipItem.yLabel, 2);
+                    return `${label}: ${v} ${unit}`;
+                };
+                if (chart) {
+                    let changed = chart.options.arvometsaCumulative !== isCumulative(prefix);
+                    chart.data.datasets.forEach((dataset, i) => {
+                        changed |= JSON.stringify(dataset.data) !== JSON.stringify(datasets[i].data);
+                        dataset.data = datasets[i].data;
+                    });
+                    chart.options.arvometsaCumulative = isCumulative(prefix);
+                    chart.options.tooltips.callbacks.label = labelCallback;
+                    if (changed) {
+                        chart.update();
+                    }
+                } else {
+                    const options = {
+                        arvometsaCumulative: isCumulative(prefix),
+                        animation: { duration: 0 },
+                        scales: {
+                            xAxes: [{
+                                stacked,
+                                scaleLabel: { display: true, labelString: 'years from now' },
+                            }],
+                            yAxes: [{
+                                stacked,
+                                ticks: {
+                                    beginAtZero: true,
+                                    callback: (value, _index, _values) => value.toLocaleString(),
+                                },
+                            }],
+                        },
+                        tooltips: {
+                            callbacks: { label: labelCallback },
+                        },
+                    };
+                    new Chart(outputElem, {
+                        type: 'bar',
+                        data: { labels: labels[prefix], datasets },
+                        options,
+                    });
                 }
             }
 
-            arvometsaDatasetTitles.forEach((name, dataset) => {
-                html += `<tr><th colspan="7">${name}</th><th>`;
-
-                baseAttrs.split('\n').forEach(attrGroup => {
-                    const prefix = attrGroup.trim().slice(0, 3);
-                    if (prefix === 'npv') {
-                        if (dataset === 0) return; // NPV is not applicable when the forest is never cut.
-                        const attr = `m${dataset}_npv3`;
-                        const best = bestValues[attr.substr(3)] === p[attr];
-                        html += `
-                        <tr><td><abbr title="${abbrTitles[prefix]}">${prefix.toUpperCase()}</abbr></td>
-                        <td>${best ? '<strong>' : ''}${pp(p[attr] * p.area)}${best ? '</strong>' : ''} €</td>
-                        <td colspan="5"></td>
-                        </tr>
-                        `;
-                        return;
-                    }
-
-                    html += `<tr><td><abbr title="${abbrTitles[prefix]}">${prefix === 'maa' ? 'SOIL' : prefix.toUpperCase()}</abbr></td>`;
-                    const attrs = attrGroup.trim().split(/ /).map(attr => `m${dataset}_${attr}`);
-
-                    if (attrs[0][attrs[0].length - 1] !== '0') html += `<td></td>`;
-
-                    attrs.forEach(attr => {
-                        const best = bestValues[attr.substr(3)] === p[attr];
-                        html += `<td>${best ? '<strong>' : ''}${pp(p[attr] * p.area)}${best ? '</strong>' : ''}</td>`;
-                    })
-                    html += '</tr>';
-
-                });
-
-            });
-            html += `</table>`
-
-            new mapboxgl.Popup({ maxWidth: '360px' })
-                .setLngLat(e.lngLat)
-                .setHTML(html)
-                .addTo(map);
-        });
+            // const totalArea = `${pp(p.area, 3)} hectares`;
+        })
     }
-
-    setupArvometsaPopupHandler();
 
     const arvometsaGraphs = {};
     window.replaceArvometsa = () => {
@@ -1981,11 +2095,22 @@ map.on('load', () => {
             return new Promise((resolve) => setTimeout(resolve, time));
         }
 
-        const harvestedWoodAttrs = [
-            [0,1,2,3,4].map(x => `kasittely_${x}_tukki`).join(' '),
-            [0,1,2,3,4].map(x => `kasittely_${x}_kuitu`).join(' '),
-        ]
+        const getArvometsaFunctionalDependencies = () => {
+            const bounds = map.getBounds();
+            const dataset = window.arvometsaDataset;
+            const cumulativeFlag = document.getElementById('arvometsa-cumulative').checked;
+            const numFeatures = map.queryRenderedFeatures({layers:['arvometsa-fill']}).length;
+            return [bounds.getNorth(), bounds.getSouth(), bounds.getEast(), bounds.getWest(), dataset, cumulativeFlag, numFeatures];
+        }
+        let arvometsaPrevState = [];
         const updateGraphs = () => {
+            const newState = getArvometsaFunctionalDependencies();
+            const allSame =
+                arvometsaPrevState.length === newState.length &&
+                arvometsaPrevState.map((x, i) => x === newState[i]).reduce((a, b) => a && b, true);
+            if (allSame) return; // nothing to do
+            arvometsaPrevState = newState;
+
             const dataset = window.arvometsaDataset;
             const totals = { area: 0 };
             (harvestedWoodAttrs.join(' ') + ' ' + baseAttrs).split(/\s+/).forEach(attr => {
@@ -1993,8 +2118,8 @@ map.on('load', () => {
                 totals[mAttr] = 0;
             });
 
-            map.queryRenderedFeatures('arvometsa')
-                .filter(x => x.source === 'arvometsa' && x.layer.id === 'arvometsa-fill')
+            const reMatchAttr = /m-?\d_(.*)/;
+            map.queryRenderedFeatures({"layers": ['arvometsa-fill']})
                 .forEach(x => {
                     const p = x.properties;
                     if (p.m0_cbt1 === null || p.m0_cbt1 === undefined) return;
@@ -2002,12 +2127,12 @@ map.on('load', () => {
                     totals.area += p.area;
                     if (dataset === -1) {
                         for (const a in totals) {
-                            const attr = (
-                                a.indexOf('kasittely') !== -1
-                                    ? `kasittely_${p.best_method}${a.slice(12)}`
-                                    : `m${p.best_method}${a.slice(3)}`
-                            );
-                            if (attr in p && a !== 'area') totals[a] += p[attr] * p.area;
+                            if (a === 'area') continue;
+                            const attr = `m${p.best_method}_${reMatchAttr.exec(a)[1]}`;
+                            if (!(attr in p)) {
+                                console.error('Invalid attr:', attr, 'orig:', a, 'props:', p)
+                            }
+                            totals[a] += p[attr] * p.area;
                         }
                         return;
                     }

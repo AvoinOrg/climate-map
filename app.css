@@ -351,16 +351,10 @@ a:visited.pagination {
 
 .arvometsa-chart {
     width: 420px;
-    height: 150px;
+    height: 1px; /* initial height when no graphs are shown yet */
 }
-
-.layer-details {
-    visibility: hidden;
-    display: none;
-}
-.layer-active .layer-details {
-    visibility: visible;
-    display: inherit;
+.arvometsa-projections > label {
+    display:block;
 }
 
 .dataset-query-result {

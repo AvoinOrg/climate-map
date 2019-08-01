@@ -204,14 +204,32 @@
 
                 <div class="layer-details">
                     <p>
-                        Projections for:
+                        Show projections for:
                         <div class="arvometsa-projections">
-                            <button class="arvometsa_eihakata">No cuttings</button>
-                            <button class="arvometsa_bestmethod">Best forestry method (default)</button>
-                            <button class="arvometsa_jatkuva">Continuous cover forestry</button>
-                            <button class="arvometsa_alaharvennus">Thin from below – clearfell</button>
-                            <button class="arvometsa_ylaharvennus">Thin from above – extended rotation</button>
-                            <button class="arvometsa_maxhakkuu">Removal of tree cover</button>
+                            <label>
+                                <input type="radio" name="arvometsa-scenario" value="arvometsa_eihakata"/>
+                                No cuttings
+                            </label>
+                            <label>
+                                <input type="radio" name="arvometsa-scenario" value="arvometsa_bestmethod" checked />
+                                Best forestry method for each parcel CO2-wise
+                            </label>
+                            <label>
+                                <input type="radio" name="arvometsa-scenario" value="arvometsa_jatkuva"/>
+                                Continuous cover forestry
+                            </label>
+                            <label>
+                                <input type="radio" name="arvometsa-scenario" value="arvometsa_alaharvennus"/>
+                                Thin from below – clearfell
+                            </label>
+                            <label>
+                                <input type="radio" name="arvometsa-scenario" value="arvometsa_ylaharvennus"/>
+                                Thin from above – extended rotation
+                            </label>
+                            <label>
+                                <input type="radio" name="arvometsa-scenario" value="arvometsa_maxhakkuu"/>
+                                Removal of tree cover
+                            </label>
                         </div>
                     </p>
 
