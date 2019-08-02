@@ -112,7 +112,7 @@ const layerGroups = {
         'arvometsa-actionable-relative-sym',
         // 'metsaan-stand-raster', 'metsaan-stand-fill', 'metsaan-stand-co2', 'metsaan-stand-outline',
 
-        // Norway. TODO: refactor mavi-fields to a more generic name?
+        // Norway
         'nibio-ar50-forests-fill', 'nibio-ar50-forests-outline', 'nibio-ar50-forests-sym',
     ],
     'arvometsa': [
@@ -134,12 +134,7 @@ const layerGroups = {
         ...Object.keys(natura2000_mappings).map(x => x),
         ...Object.keys(natura2000_mappings).map(x => `${x}-sym`),
     ],
-    'mavi-fields': [
-        () => hideAllLayersMatchingFilter(x => x === 'valio'),
-        'mavi-plohko-fill', 'mavi-plohko-outline', 'mavi-plohko-co2',
-        'mavi-plohko-removed-fill',
-        'mavi-plohko-removed-outline',
-        // Norway. TODO: refactor mavi-fields to a more generic name?
+    'fields': [
         'nibio-soils-fill', 'nibio-soils-outline', 'nibio-soils-sym',
     ],
     'helsinki-buildings': [
