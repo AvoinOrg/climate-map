@@ -2672,8 +2672,8 @@ map.on('load', () => {
         'paint': {
             'fill-color': [
                 'case', ['<', 0.4, ['get', 'peat_ratio']],
+                'rgb(214, 7, 7)',
                 'rgb(109, 41, 7)',
-                'rgb(188, 167, 177)',
             ],
             'fill-opacity': fillOpacity,
         },
@@ -2720,7 +2720,10 @@ map.on('load', () => {
 
         const peatInfo = peat_ratio < 0.4 ? '' : `<strong>Tropical peatland</strong><br/>\nAverage peat depth: ${avg_peatdepth.toFixed(1)} metres<br/>`;
 
+        const co2eStr = peat_ratio < 0.4 ? '' : `Emission reduction potential when ground water level is raised by 40 cm: <strong>${pp(19.4 * area_ha)}</strong> tons CO2e/year<br/>`;
+
         let html = `
+            <strong>Tree plantation (Global Forest Watch)</strong><br/>
             ${spec_simp}
             <br/>
             ${type_text}
@@ -2728,12 +2731,13 @@ map.on('load', () => {
             ${peatInfo}
             Area:${pp(area_ha, 3)} hectares
             <br/>
+            ${co2eStr}
             Landsat source ID: <code>${image}</code>
             <br/>
         `
         if (results) html += `Potential Landsat source images: <ul>${results}</ul>`;
 
-        new mapboxgl.Popup()
+        new mapboxgl.Popup({ maxWidth: '360px' })
             .setLngLat(e.lngLat)
             // Upstream X-Frame-Options prevents this iframe trick.
             // .setHTML(`<iframe sandbox src="https://earthexplorer.usgs.gov/metadata/12864/${image}/"></iframe>`)
