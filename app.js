@@ -122,6 +122,9 @@ const layerGroups = {
     'ethiopia-forests': [
         'ethiopia_forest_change_2003_2013-raster',
     ],
+    'madagascar-land-cover': [
+        'madagascar-2017-mosaic-raster',
+    ],
     'arvometsa': [
         'arvometsa-fill',
         'arvometsa-boundary',
@@ -3493,6 +3496,8 @@ map.on('load', () => {
             .addTo(map);
     });
 
+
+
     addSource('ethiopia_forest_change_2003_2013', {
         "type": "raster",
         'tiles': ['https://map.buttonprogram.org/eth_forest_change_2000-2013_20161019/{z}/{x}/{y}.png?v=1'],
@@ -3507,6 +3512,24 @@ map.on('load', () => {
         'source': 'ethiopia_forest_change_2003_2013',
         'type': 'raster',
     });
+
+
+
+    addSource('madagascar-2017-mosaic', {
+        "type": "raster",
+        'tiles': ['https://map.buttonprogram.org/madagascar-mosaic/{z}/{x}/{y}.png?v=0'],
+        'tileSize': 512,
+        "minzoom": 0,
+        "maxzoom": 13,
+        // bounds: [-27, 37, -9, 54], // Madagascar
+    });
+
+    addLayer({
+        'id': 'madagascar-2017-mosaic-raster',
+        'source': 'madagascar-2017-mosaic',
+        'type': 'raster',
+    });
+
 
 
 
