@@ -786,6 +786,7 @@ const setupPopupHandlerForMetsaanFiStandData = layerName => {
             <tr><th>Subgroup</th><td>${metsaanFiSubgroups[p.subgroup] || ''}</td></tr>
             <tr><th>Ditching</th><td>${ditching}</td></tr>
             <tr><th>Data source</th><td>${metsaanFiDatasources.filter(x => x.id === p.datasource)[0].description || ''}</td></tr>
+            <tr><th>Identifier</th><td>StandID=${p.standid}</td></tr>
         `;
 
         new mapboxgl.Popup({ maxWidth: '360px' })
