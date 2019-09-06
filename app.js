@@ -3499,7 +3499,7 @@ map.on('load', () => {
         'tileSize': 512,
         "minzoom": 0,
         "maxzoom": 12,
-        bounds: [2, 31, 17, 53], // Ethiopia
+        // bounds: [2, 31, 17, 53], // Ethiopia -- Somehow this breaks higher zooms???
     });
 
     addLayer({
