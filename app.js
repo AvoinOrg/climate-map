@@ -115,6 +115,9 @@ const layerGroups = {
         // Norway
         'nibio-ar50-forests-fill', 'nibio-ar50-forests-outline', 'nibio-ar50-forests-sym',
     ],
+    'ethiopia-forests': [
+        'ethiopia_forest_change_2003_2013-raster',
+    ],
     'arvometsa': [
         'arvometsa-fill',
         'arvometsa-boundary',
@@ -3474,6 +3477,21 @@ map.on('load', () => {
             .setHTML(html)
             .addTo(map);
     });
+
+    addSource('ethiopia_forest_change_2003_2013', {
+        "type": "raster",
+        'tiles': ['https://map.buttonprogram.org/eth_forest_change_2000-2013_20161019/{z}/{x}/{y}.png?v=1'],
+        'tileSize': 512,
+        "minzoom": 0,
+        "maxzoom": 12,
+    });
+
+    addLayer({
+        'id': 'ethiopia_forest_change_2003_2013-raster',
+        'source': 'ethiopia_forest_change_2003_2013',
+        'type': 'raster',
+    });
+
 
 
     enableDefaultLayers();
