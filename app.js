@@ -6,6 +6,10 @@ import { linear_kryw_0_100_c71, linear_bgyw_20_98_c66 } from './colormap';
 import { arcgisToGeoJSON } from '@esri/arcgis-to-geojson-utils';
 import WMSCapabilities from 'ol/format/WMSCapabilities.js'
 
+function assert(expr, message) {
+    if (!expr) throw new Error(`Assertion error: ${message}`);
+}
+
 // This must be set, but the value is not needed here.
 mapboxgl.accessToken = 'not-needed';
 
@@ -1878,7 +1882,7 @@ map.on('load', () => {
             const co2eBalanceAlt = [1, 2, 3, 4, 5].map(x => p[`m${mAlt}_cbt${x}`]).reduce((x, y) => x + y, 0);
 
             const years = 50;
-            const co2eDiff = co2eBalance - co2eBalanceAlt / years;
+            const co2eDiff = (co2eBalance - co2eBalanceAlt) / years;
             const co2eStr = `${pp(p.area * co2eDiff)} tons CO2e/y <small>or ${pp(co2eDiff)} tons CO2e/ha/y</small>`;
             const co2eBalanceStr = `${pp(p.area * co2eBalance / years)} tons CO2e/y <small>or ${pp(co2eBalance / years)} tons CO2e/ha/y</small>`;
 
@@ -1912,10 +1916,21 @@ map.on('load', () => {
             <strong>Shown:</strong> ${cumulativeFlag ? 'Cumulative carbon balance' : 'Incremental carbon balance per decade'}<br/>
 
             <strong>Potential CO2e savings with ${arvometsaDatasetTitles[m]}:</strong> ${co2eStr}<br/>
-            <strong>Forest CO2 balance with ${arvometsaDatasetTitles[m]}:</strong> ${co2eBalanceStr}<br/>
+            <strong>Forestry CO2 balance with ${arvometsaDatasetTitles[m]}:</strong> ${co2eBalanceStr}<br/>
             `;
+
+            const chartTitles = {
+                cbf: 'Forest CO2e balance (trees + soil)',
+                cbt: 'Forestry CO2e balance (trees + soil + products)',
+                bio: 'Forest carbon stock (trees + soil)',
+                'harvested-wood': 'Harvested wood (m<sup>3</sup>)',
+            }
             for (const prefix of ['cbf', 'cbt', 'bio', 'harvested-wood']) {
-                html += `<canvas class="arvometsa-popup-${prefix}"></canvas><br/>`;
+                assert(prefix in chartTitles, `Missing message for: ${prefix}`);
+                html += `
+                <strong>${chartTitles[prefix]}</strong>
+                <canvas class="arvometsa-popup-${prefix}"></canvas><br/>
+                `;
             }
             const popup = createPopup(e, html);
             // console.log(popup)
