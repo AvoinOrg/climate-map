@@ -329,7 +329,7 @@ const roundToSignificantDigits = (n, expr) => [
 // non-histosol: 2.2 CO2e/ha/year as an average for the period of 10 years.
 // -> 0.22kg/m2/y
 //
-// NB: dataset attribute "pinta_ala" (area) is in acres, not m2 or hectares.
+// NB: dataset attribute "pinta_ala" (area) is in "ares" (i.e. units of 100 m2), not m2 or hectares.
 
 // NB: Duplicated logic because I don't know how to interpret
 // Mapbox style expressions in outside contexts.
