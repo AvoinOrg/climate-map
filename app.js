@@ -105,6 +105,8 @@ const layerGroups = {
     'valio': [
         () => hideAllLayersMatchingFilter(x => !/valio/.test(x)),
         'valio-fields-boundary', 'valio-fields-fill', 'valio-plohko-co2',
+        'mavi-plohko-removed-fill',
+        'mavi-plohko-removed-outline',
     ],
     'forest-grid': ['metsaan-hila-c', 'metsaan-hila-sym', 'metsaan-hila-outline'],
     'forests': [
@@ -145,7 +147,18 @@ const layerGroups = {
         ...Object.keys(natura2000_mappings).map(x => `${x}-sym`),
     ],
     'fields': [
+        'mavi-plohko-removed-fill', 'mavi-plohko-removed-outline',
         'nibio-soils-fill', 'nibio-soils-outline', 'nibio-soils-sym',
+    ],
+    'fields-peatland': [
+        'mavi-plohko-peatland-fill',
+        'mavi-plohko-peatland-outline',
+        'mavi-plohko-peatland-co2',
+    ],
+    'fields-mineral': [
+        'mavi-plohko-mineral-fill',
+        'mavi-plohko-mineral-outline',
+        'mavi-plohko-mineral-co2',
     ],
     'helsinki-buildings': [
         'helsinki-buildings-fill', 'helsinki-buildings-outline', 'helsinki-buildings-co2',
@@ -449,7 +462,26 @@ const areaCO2eFillColorStep = expr => [
 ];
 const areaCO2eFillColor = areaCO2eFillColorInterp;
 
-const arvometsaAreaCO2eFillColor = expr => cetL9ColorMapStepExpr(-5, 15, expr);
+const fieldAreaCO2eFillColorNumeric = expr => [
+    'interpolate',
+    ['linear'],
+    expr,
+    0, 'hsla(52, 100%, 25%, 1)',
+    5, 'hsla(52, 100%, 50%, 1)',
+];
+
+const fieldColorHistosol = 'rgb(148, 114, 81)';
+const fieldColorDefault = 'hsla(52, 100%, 50%, 1)';
+
+// const arvometsaAreaCO2eFillColor = expr => cetL9ColorMapStepExpr(-5, 15, expr);
+const arvometsaAreaCO2eFillColor = expr => [
+    'interpolate',
+    ['linear'],
+    expr,
+    -5, 'hsla(159, 100%, 75%, 1)',
+    0, 'hsla(159, 100%, 50%, 1)',
+    15, 'hsla(159, 100%, 25%, 1)',
+];
 
 
 const originalLayerDefs = {};
@@ -976,14 +1008,16 @@ map.on('load', () => {
         bounds: [19, 59, 32, 71], // Finland
         attribution: '<a href="https://www.ruokavirasto.fi/">© Finnish Food Authority</a>',
     });
+
     addLayer({
         'id': 'mavi-plohko-fill',
         'source': 'mavi-peltolohko',
         'source-layer': 'plohko_cd_2017B_2_MapInfo',
         'type': 'fill',
         'paint': {
+            'fill-color': ["case", [">=", fieldPlotHistosolRatio, 0.4], fieldColorHistosol, fieldColorDefault],
+            // 'fill-color': fieldAreaCO2eFillColor(fieldPlotCO2ePerHectare),
             // 'fill-color': '#FFC300',
-            'fill-color': areaCO2eFillColor(fieldPlotCO2ePerHectare),
             // 'fill-opacity': fillOpacity, // Set by fill-color rgba
         }
     })
@@ -1010,7 +1044,83 @@ map.on('load', () => {
         }
     })
 
-    setupPopupHandlerForMaviPeltolohko('mavi-plohko-fill');
+    addLayer({
+        'id': 'mavi-plohko-mineral-fill',
+        'source': 'mavi-peltolohko',
+        'source-layer': 'plohko_cd_2017B_2_MapInfo',
+        'filter': ["<", fieldPlotHistosolRatio, 0.4],
+        'type': 'fill',
+        'paint': {
+            'fill-color': ["case", [">=", fieldPlotHistosolRatio, 0.4], fieldColorHistosol, fieldColorDefault],
+            // 'fill-color': fieldAreaCO2eFillColor(fieldPlotCO2ePerHectare),
+            // 'fill-color': '#FFC300',
+            // 'fill-opacity': fillOpacity, // Set by fill-color rgba
+        }
+    })
+    addLayer({
+        'id': 'mavi-plohko-mineral-outline',
+        'source': 'mavi-peltolohko',
+        'source-layer': 'plohko_cd_2017B_2_MapInfo',
+        'filter': ["<", fieldPlotHistosolRatio, 0.4],
+        'type': 'line',
+        "minzoom": 11,
+        'paint': {
+            'line-opacity': 0.75,
+        }
+    })
+    addLayer({
+        'id': 'mavi-plohko-mineral-co2',
+        'source': 'mavi-peltolohko',
+        'source-layer': 'plohko_cd_2017B_2_MapInfo',
+        'filter': ["<", fieldPlotHistosolRatio, 0.4],
+        'type': 'symbol',
+        minzoom: 14.5,
+        'paint': {},
+        'layout': {
+            "text-font": ["Open Sans Regular"],
+            'text-field': fieldPlotTextField,
+        }
+    })
+
+    addLayer({
+        'id': 'mavi-plohko-peatland-fill',
+        'source': 'mavi-peltolohko',
+        'source-layer': 'plohko_cd_2017B_2_MapInfo',
+        'filter': [">=", fieldPlotHistosolRatio, 0.4],
+        'type': 'fill',
+        'paint': {
+            'fill-color': ["case", [">=", fieldPlotHistosolRatio, 0.4], fieldColorHistosol, fieldColorDefault],
+            // 'fill-color': fieldAreaCO2eFillColor(fieldPlotCO2ePerHectare),
+            // 'fill-color': '#FFC300',
+            // 'fill-opacity': fillOpacity, // Set by fill-color rgba
+        }
+    })
+    addLayer({
+        'id': 'mavi-plohko-peatland-outline',
+        'source': 'mavi-peltolohko',
+        'source-layer': 'plohko_cd_2017B_2_MapInfo',
+        'filter': [">=", fieldPlotHistosolRatio, 0.4],
+        'type': 'line',
+        "minzoom": 11,
+        'paint': {
+            'line-opacity': 0.75,
+        }
+    })
+    addLayer({
+        'id': 'mavi-plohko-peatland-co2',
+        'source': 'mavi-peltolohko',
+        'source-layer': 'plohko_cd_2017B_2_MapInfo',
+        'filter': [">=", fieldPlotHistosolRatio, 0.4],
+        'type': 'symbol',
+        minzoom: 14.5,
+        'paint': {},
+        'layout': {
+            "text-font": ["Open Sans Regular"],
+            'text-field': fieldPlotTextField,
+        }
+    })
+
+    setupPopupHandlerForMaviPeltolohko(['mavi-plohko-fill', 'mavi-plohko-peatland-fill', 'mavi-plohko-mineral-fill']);
 
     addSource('mavi-peltolohko-removed', {
         "type": "vector",
@@ -1025,8 +1135,16 @@ map.on('load', () => {
         'source-layer': 'default',
         'type': 'fill',
         'paint': {
-            'fill-color': 'rgb(150, 52, 52)',
-            'fill-opacity': fillOpacity,
+            'fill-color': [
+                'case', ['has', 'soil_type1_ratio'], [
+                    "case", [">=", fieldPlotHistosolRatio, 0.4],
+                    'rgb(150, 52, 52)', // histosol
+                    'rgb(194, 21, 207)', // mineral land
+                ],
+                'rgb(150, 52, 52)', // default -- TODO: update dataset with soil info later
+            ],
+            // 'fill-color': 'rgb(150, 52, 52)',
+            // 'fill-opacity': fillOpacity,
         }
     })
     addLayer({
@@ -1213,21 +1331,21 @@ map.on('load', () => {
         attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
     });
 
-    // TODO: maybe enable this in the future?
-    const fillColorCO2e = areaCO2eFillColor([
-        'case',
-        ['has', 'co2'],
-        [
-            'let',
-            'co2', ['to-number', ['get', 'co2'], 0],
-            'area', ['*', 1e-4, ['to-number', ['get', 'st_area'], 0]],
-            [
-                'case', ['==', ['var', 'area'], 0], 0,
-                ['/', ['var', 'co2'], ['var', 'area']],
-            ],
-        ],
-        0,
-    ]);
+    // // TODO: maybe enable this in the future?
+    // const fillColorCO2e = areaCO2eFillColor([
+    //     'case',
+    //     ['has', 'co2'],
+    //     [
+    //         'let',
+    //         'co2', ['to-number', ['get', 'co2'], 0],
+    //         'area', ['*', 1e-4, ['to-number', ['get', 'st_area'], 0]],
+    //         [
+    //             'case', ['==', ['var', 'area'], 0], 0,
+    //             ['/', ['var', 'co2'], ['var', 'area']],
+    //         ],
+    //     ],
+    //     0,
+    // ]);
     // The original fill color. Consistent with the raster overview images at the moment.
     const fillColorFertilityClass = [
         'interpolate',
@@ -1742,7 +1860,16 @@ map.on('load', () => {
     const arvometsaRelativeCO2eValueExpr = arvometsaBestMethodVsOther(pickedRelativeMethod, 'cbt');
 
 
-    const arvometsaRelativeCO2eFillColor = expr => fireColorMapStepExpr(0, 50 / nC_to_CO2, expr);
+    // const arvometsaRelativeCO2eFillColor = expr => fireColorMapStepExpr(0, 50 / nC_to_CO2, expr);
+
+    const arvometsaRelativeCO2eFillColor = expr => [
+        'interpolate',
+        ['linear'],
+        expr,
+        0, 'hsla(159, 100%, 25%, 1)',
+        50 / nC_to_CO2, 'hsla(159, 100%, 50%, 1)',
+    ];
+
 
     addLayer({
         'id': 'arvometsa-actionable-relative-fill',
@@ -1751,7 +1878,11 @@ map.on('load', () => {
         'source-layer': 'default',
         'type': 'fill',
         'paint': {
-            'fill-color': arvometsaRelativeCO2eFillColor(arvometsaRelativeCO2eValueExpr),
+            'fill-color': [
+                'case', ['has', 'm0_cbt1'],
+                arvometsaRelativeCO2eFillColor(arvometsaRelativeCO2eValueExpr),
+                'black',
+            ],
         },
     })
     addLayer({
@@ -1761,11 +1892,7 @@ map.on('load', () => {
         'type': 'symbol',
         "minzoom": 15.5,
         paint: {
-            "text-color": [
-                'case', ['>', arvometsaRelativeCO2eValueExpr, 6],
-                "#ddd",
-                "#000",
-            ],
+            "text-color": "#000",
         },
         "layout": {
             "text-size": 20,
@@ -2116,7 +2243,7 @@ map.on('load', () => {
             const bounds = map.getBounds();
             const dataset = window.arvometsaDataset;
             const cumulativeFlag = document.getElementById('arvometsa-cumulative').checked;
-            const numFeatures = map.queryRenderedFeatures({layers:['arvometsa-fill']}).length;
+            const numFeatures = map.queryRenderedFeatures({ layers: ['arvometsa-fill'] }).length;
             return [bounds.getNorth(), bounds.getSouth(), bounds.getEast(), bounds.getWest(), dataset, cumulativeFlag, numFeatures];
         }
         let arvometsaPrevState = [];
@@ -2136,7 +2263,7 @@ map.on('load', () => {
             });
 
             const reMatchAttr = /m-?\d_(.*)/;
-            map.queryRenderedFeatures({"layers": ['arvometsa-fill']})
+            map.queryRenderedFeatures({ "layers": ['arvometsa-fill'] })
                 .forEach(x => {
                     const p = x.properties;
                     if (p.m0_cbt1 === null || p.m0_cbt1 === undefined) return;
@@ -3033,7 +3160,8 @@ map.on('load', () => {
             'source-layer': 'default',
             'type': 'fill',
             'paint': {
-                'fill-color': areaCO2eFillColor(fieldPlotCO2ePerHectare),
+                'fill-color': ['case', isHistosol, fieldColorHistosol, fieldColorDefault],
+                // 'fill-color': fieldAreaCO2eFillColor(fieldPlotCO2ePerHectare),
                 // 'fill-color': 'yellow',
                 // 'fill-opacity': fillOpacity,
             },
@@ -3778,7 +3906,8 @@ privateDatasets.valio = (_map, secret) => {
         'source-layer': 'valio_fields',
         'type': 'fill',
         'paint': {
-            'fill-color': areaCO2eFillColor(fieldPlotCO2ePerHectare),
+            'fill-color': ["case", [">=", fieldPlotHistosolRatio, 0.4], fieldColorHistosol, fieldColorDefault],
+            // 'fill-color': fieldAreaCO2eFillColor(fieldPlotCO2ePerHectare),
             // 'fill-opacity': fillOpacity, // Set by fill-color rgba
         },
     })
