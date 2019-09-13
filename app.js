@@ -113,6 +113,7 @@ const layerGroups = {
         'arvometsa-fill',
         'arvometsa-boundary',
         'arvometsa-sym',
+        'arvometsa-highlighted',
     ],
     'mature-forests': [
         () => hideAllLayersMatchingFilter(x => /^forests$/.test(x)),
@@ -189,10 +190,7 @@ const toggleGroup = (group, forcedState = undefined) => {
         if (typeof layer === 'function') {
             layer();
         } else {
-            const layerIsInBackground = group in backgroundLayerGroups;
-            if (!layerIsInBackground) {
-                map.moveLayer(layer); // Make this the topmost layer.
-            }
+            map.moveLayer(layer, layer.BEFORE); // Make this the topmost layer.
             map.setLayoutProperty(layer, 'visibility', newState ? 'visible' : 'none');
         }
     })
@@ -231,8 +229,9 @@ const eteBasicLabels = [
 ]
 
 function replaceLayer(layer) {
+    // assert('BEFORE' in layer, `Layer ${layer.id} is missing a BEFORE declaration`);
     map.getLayer(layer.id) && map.removeLayer(layer.id);
-    map.addLayer(layer);
+    map.addLayer(layer, layer.BEFORE);
 }
 
 const setEteCodes = (codes) => {
@@ -468,12 +467,15 @@ const arvometsaAreaCO2eFillColor = expr => [
 
 const originalLayerDefs = {};
 const addLayer = (layer, visibility = 'none') => {
+    assert('BEFORE' in layer, `Layer ${layer.id} is missing a BEFORE declaration`);
+    assert(map.getLayer(layer.BEFORE), `getLayer(${layer.BEFORE}) failed`);
+
     const layout = layer.layout || {}
     layout.visibility = visibility
     layer.paint = layer.paint || {};
     if (layer.type === 'raster')
         layer.paint['raster-resampling'] = layer.paint['raster-resampling'] || 'nearest';
-    map.addLayer({ layout, ...layer });
+    map.addLayer({ layout, ...layer }, layer.BEFORE);
     originalLayerDefs[layer.id] = layer;
 }
 
@@ -820,8 +822,18 @@ const setupPopupHandlerForMetsaanFiStandData = layerName => {
     });
 }
 
-
 map.on('load', () => {
+
+    const emptyGeoJson = { type: 'geojson', data: { "type": "FeatureCollection", features: [], } };
+
+    // Add empty pseudo-layers to make Z-ordering much easier:
+    map.addLayer({ id: 'BACKGROUND', type: 'fill', source: emptyGeoJson });
+    map.addLayer({ id: 'FILL', type: 'fill', source: emptyGeoJson, BEFORE: 'BACKGROUND' });
+    map.addLayer({ id: 'OUTLINE', type: 'fill', source: emptyGeoJson, BEFORE: 'FILL' }); // Outlines go on top of fills, etc. But below labels
+    map.addLayer({ id: 'BG_LABEL', type: 'fill', source: emptyGeoJson, BEFORE: 'OUTLINE' }); // Background map labels are less important than custom labels
+    map.addLayer({ id: 'LABEL', type: 'fill', source: emptyGeoJson, BEFORE: 'BG_LABEL' }); // Labels go on top of almost everything
+    map.addLayer({ id: 'TOP', type: 'fill', source: emptyGeoJson, BEFORE: 'LABEL' }); // TOP goes on top of labels too
+
     const originalMapLayerIds = {}
 
     addLayer({
@@ -837,6 +849,7 @@ map.on('load', () => {
             attribution: '<a href="https://www.terramonitor.com">© Terramonitor</a>',
         },
         'paint': {},
+        BEFORE: 'BACKGROUND',
     });
 
 
@@ -866,6 +879,7 @@ map.on('load', () => {
             ],
             'fill-opacity': fillOpacity,
         },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'metsaan-hila-outline',
@@ -875,7 +889,8 @@ map.on('load', () => {
         "minzoom": 14,
         'paint': {
             'line-opacity': 0.75,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
     addLayer({
         'id': 'metsaan-hila-sym',
@@ -890,7 +905,8 @@ map.on('load', () => {
             "text-font": ["Open Sans Regular"],
             "text-field": 'Age:{age} Avg.Diameter:{meandiameter}',
             "text-size": 10,
-        }
+        },
+        BEFORE: 'LABEL',
     })
 
 
@@ -912,6 +928,7 @@ map.on('load', () => {
                 'fill-color': x.color,
                 'fill-opacity': 0.45,
             },
+            BEFORE: 'FILL',
         })
         addLayer({
             'id': `${baseName}-sym`,
@@ -934,6 +951,7 @@ map.on('load', () => {
                 'text-halo-color': "rgb(242,243,240)",
                 'text-halo-width': 2,
             },
+            BEFORE: 'LABEL',
         })
     })
 
@@ -954,6 +972,7 @@ map.on('load', () => {
             'fill-color': 'cyan',
             'fill-opacity': fillOpacity,
         },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'metsaan-ete-all-outline',
@@ -963,7 +982,8 @@ map.on('load', () => {
         "minzoom": 12,
         'paint': {
             'line-opacity': 1,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
     addLayer({
         'id': 'metsaan-ete-all-sym',
@@ -980,6 +1000,7 @@ map.on('load', () => {
             'text-halo-color': "rgb(242,243,240)",
             'text-halo-width': 2,
         },
+        BEFORE: 'LABEL',
     })
 
 
@@ -1001,7 +1022,8 @@ map.on('load', () => {
             // 'fill-color': fieldAreaCO2eFillColor(fieldPlotCO2ePerHectare),
             // 'fill-color': '#FFC300',
             // 'fill-opacity': fillOpacity, // Set by fill-color rgba
-        }
+        },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'mavi-plohko-outline',
@@ -1011,7 +1033,8 @@ map.on('load', () => {
         "minzoom": 11,
         'paint': {
             'line-opacity': 0.75,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
     addLayer({
         'id': 'mavi-plohko-co2',
@@ -1023,7 +1046,8 @@ map.on('load', () => {
         'layout': {
             "text-font": ["Open Sans Regular"],
             'text-field': fieldPlotTextField,
-        }
+        },
+        BEFORE: 'LABEL',
     })
 
     addLayer({
@@ -1037,7 +1061,8 @@ map.on('load', () => {
             // 'fill-color': fieldAreaCO2eFillColor(fieldPlotCO2ePerHectare),
             // 'fill-color': '#FFC300',
             // 'fill-opacity': fillOpacity, // Set by fill-color rgba
-        }
+        },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'mavi-plohko-mineral-outline',
@@ -1048,7 +1073,8 @@ map.on('load', () => {
         "minzoom": 11,
         'paint': {
             'line-opacity': 0.75,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
     addLayer({
         'id': 'mavi-plohko-mineral-co2',
@@ -1061,7 +1087,8 @@ map.on('load', () => {
         'layout': {
             "text-font": ["Open Sans Regular"],
             'text-field': fieldPlotTextField,
-        }
+        },
+        BEFORE: 'LABEL',
     })
 
     addLayer({
@@ -1075,7 +1102,8 @@ map.on('load', () => {
             // 'fill-color': fieldAreaCO2eFillColor(fieldPlotCO2ePerHectare),
             // 'fill-color': '#FFC300',
             // 'fill-opacity': fillOpacity, // Set by fill-color rgba
-        }
+        },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'mavi-plohko-peatland-outline',
@@ -1086,7 +1114,8 @@ map.on('load', () => {
         "minzoom": 11,
         'paint': {
             'line-opacity': 0.75,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
     addLayer({
         'id': 'mavi-plohko-peatland-co2',
@@ -1099,7 +1128,8 @@ map.on('load', () => {
         'layout': {
             "text-font": ["Open Sans Regular"],
             'text-field': fieldPlotTextField,
-        }
+        },
+        BEFORE: 'LABEL',
     })
 
     setupPopupHandlerForMaviPeltolohko(['mavi-plohko-fill', 'mavi-plohko-peatland-fill', 'mavi-plohko-mineral-fill']);
@@ -1127,7 +1157,8 @@ map.on('load', () => {
             ],
             // 'fill-color': 'rgb(150, 52, 52)',
             // 'fill-opacity': fillOpacity,
-        }
+        },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'mavi-plohko-removed-outline',
@@ -1137,7 +1168,8 @@ map.on('load', () => {
         "minzoom": 11,
         'paint': {
             'line-opacity': 0.75,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
     genericPopupHandler('mavi-plohko-removed-fill', e => {
         const f = e.features[0];
@@ -1174,7 +1206,8 @@ map.on('load', () => {
         'paint': {
             'fill-color': 'cyan',
             'fill-opacity': fillOpacity,
-        }
+        },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'helsinki-buildings-outline',
@@ -1184,7 +1217,8 @@ map.on('load', () => {
         "minzoom": 11,
         'paint': {
             'line-opacity': 0.75,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
 
     // (60 kWh/m3)  * (0.250 CO2e kg/kWh) -> 15kg/m3
@@ -1211,6 +1245,7 @@ map.on('load', () => {
                 ], "",
             ],
         },
+        BEFORE: 'LABEL',
     })
 
 
@@ -1232,7 +1267,8 @@ map.on('load', () => {
         'paint': {
             'fill-color': 'red',
             'fill-opacity': fillOpacity,
-        }
+        },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'helsinki-puretut-outline',
@@ -1242,7 +1278,8 @@ map.on('load', () => {
         "minzoom": 11,
         'paint': {
             'line-opacity': 0.75,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
 
     addLayer({
@@ -1258,6 +1295,7 @@ map.on('load', () => {
             "text-size": 20,
             "text-field": "",
         },
+        BEFORE: 'LABEL',
     })
     genericPopupHandler('helsinki-puretut-fill', e => {
         const htmlParts = [];
@@ -1352,6 +1390,7 @@ map.on('load', () => {
             'fill-color': fillColorFertilityClass,
             // 'fill-opacity': fillOpacity, // Set by fill-color rgba
         },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'metsaan-stand-outline',
@@ -1362,7 +1401,8 @@ map.on('load', () => {
         // 'maxzoom': zoomThreshold,
         'paint': {
             'line-opacity': 0.5,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
     addLayer({
         'id': 'metsaan-stand-co2',
@@ -1385,7 +1425,8 @@ map.on('load', () => {
                     ],
                 ], "",
             ],
-        }
+        },
+        BEFORE: 'LABEL',
     })
 
 
@@ -1455,7 +1496,8 @@ map.on('load', () => {
             paint: {
                 'raster-opacity': 0.7,
             },
-        });
+            BEFORE: 'FILL',
+        }, 'FILL');
         arcgisLayers[serviceRestUrl] = true;
 
         // Fetch legend last. Any failure here is non-fatal.
@@ -1619,7 +1661,8 @@ map.on('load', () => {
                 'fill-opacity': 0.7,
             },
             "filter": ["==", "$type", "Polygon"],
-        });
+            BEFORE: 'FILL',
+        }, 'FILL');
         map.addLayer({
             id: `${layerUrl}--edge`,
             source: layerUrl,
@@ -1629,7 +1672,8 @@ map.on('load', () => {
                 'line-opacity': 0.5,
             },
             "filter": ["==", "$type", "Polygon"],
-        });
+            BEFORE: 'OUTLINE',
+        }, 'OUTLINE');
         map.addLayer({
             id: `${layerUrl}--point`,
             source: layerUrl,
@@ -1640,7 +1684,8 @@ map.on('load', () => {
                 'circle-radius': 15,
             },
             "filter": ["==", "$type", "Point"],
-        });
+            BEFORE: 'FILL',
+        }, 'FILL');
         map.addLayer({
             id: `${layerUrl}--line`,
             source: layerUrl,
@@ -1651,7 +1696,8 @@ map.on('load', () => {
                 'line-opacity': 0.7,
             },
             "filter": ["==", "$type", "LineString"],
-        });
+            BEFORE: 'OUTLINE',
+        }, 'OUTLINE');
 
         arcgisSources[layerUrl] = true;
         for (const type of layerTypes) {
@@ -1727,7 +1773,8 @@ map.on('load', () => {
             paint: {
                 'raster-opacity': 0.7,
             },
-        });
+            BEFORE: 'FILL',
+        }, 'FILL');
         arcgisLayers[serviceRestUrl] = true;
     }
 
@@ -1748,6 +1795,7 @@ map.on('load', () => {
         paint: {
             'raster-opacity': 0.7,
         },
+        BEFORE: 'FILL',
     });
 
     addSource('berries-bilberry', {
@@ -1765,6 +1813,7 @@ map.on('load', () => {
         paint: {
             'raster-opacity': 0.7,
         },
+        BEFORE: 'FILL',
     });
 
 
@@ -1866,6 +1915,7 @@ map.on('load', () => {
                 'black',
             ],
         },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'arvometsa-actionable-relative-sym',
@@ -1893,7 +1943,8 @@ map.on('load', () => {
                     ],
                 ], "",
             ],
-        }
+        },
+        BEFORE: 'LABEL',
     })
 
 
@@ -1903,6 +1954,9 @@ map.on('load', () => {
 
     const arvometsaCumulativeCO2eValueExpr = arvometsaBestMethodCumulativeSumCbt;
 
+    // Keep saved features separate from anything related to rendering and data loading.
+    let arvometsaSavedFeatures = {};
+
     addLayer({
         'id': 'arvometsa-fill',
         'source': 'arvometsa',
@@ -1911,6 +1965,7 @@ map.on('load', () => {
         'paint': {
             'fill-color': arvometsaAreaCO2eFillColor(arvometsaCumulativeCO2eValueExpr),
         },
+        BEFORE: 'OUTLINE',
     })
     addLayer({
         'id': 'arvometsa-boundary',
@@ -1920,7 +1975,8 @@ map.on('load', () => {
         'type': 'line',
         'paint': {
             'line-opacity': 0.5,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
     // Dummy initial symbol layer to prevent warnings:
     addLayer({
@@ -1928,7 +1984,54 @@ map.on('load', () => {
         'source': 'arvometsa',
         'source-layer': 'default',
         'type': 'symbol',
+        BEFORE: 'LABEL',
     })
+
+    const arvometsaHighlighted = {
+        'id': 'arvometsa-highlighted',
+        "type": 'fill',
+        "source": "arvometsa",
+        "source-layer": "default",
+        "paint": {
+            "fill-outline-color": "#484896",
+            "fill-color": "#6e599f",
+            "fill-opacity": 0.75
+        },
+        "filter": ["in", "standid"],
+        BEFORE: 'OUTLINE',
+    }
+    addLayer(arvometsaHighlighted)
+
+    map.on('click', 'arvometsa-fill', function (e) {
+        const selectedEnabled = document.querySelector('#arvometsa-toggle-forest-parcel-select').checked
+        if (!selectedEnabled) return;
+
+        // Toggle select features +-5 pixels around the clicked point.
+        const bbox = [[e.point.x - 5, e.point.y - 5], [e.point.x + 5, e.point.y + 5]];
+        const features = map.queryRenderedFeatures(bbox, { layers: ['arvometsa-fill'] });
+
+        const ids = features.map(f => f.properties.standid);
+
+        const curFilter = map.getFilter("arvometsa-highlighted").slice(2)
+        const newFilter = ['in', 'standid']
+        .concat(curFilter.filter(id => ids.indexOf(id) === -1))
+        .concat(ids.filter(id => curFilter.indexOf(id) === -1))
+
+        map.setFilter("arvometsa-highlighted", newFilter);
+        // Save new features
+        for (const feature of features) {
+            arvometsaSavedFeatures[feature.properties.standid] = feature.properties;
+        }
+        // Only copy over currently selected features:
+        const newFeatures = {}
+        for (const id of newFilter.slice(2)) {
+            newFeatures[id] = arvometsaSavedFeatures[id];
+        }
+
+        // Replace the graphs immediately:
+        arvometsaSavedFeatures = newFeatures;
+        arvometsaManualUpdateGraphs();
+    });
 
     const baseAttrs = `
     cbf1 cbf2 cbf3 cbf4 cbf5
@@ -1961,6 +2064,9 @@ map.on('load', () => {
 
         // TODO: maybe make the popup respond to global controls
         genericPopupHandler(['arvometsa-fill'], (e) => {
+            const selectorEnabled = document.querySelector('#arvometsa-toggle-forest-parcel-select').checked
+            if (selectorEnabled) return;
+
             const f = e.features[0];
             const p = f.properties;
             const carbonStockAttrPrefixes = ['bio', 'maa'];
@@ -2045,8 +2151,6 @@ map.on('load', () => {
                 `;
             }
             const popup = createPopup(e, html);
-            // console.log(popup)
-            window.popup123 = popup;
             const popupElem = popup._content;
 
             for (const prefix of ['cbf', 'cbt', 'bio', 'harvested-wood']) {
@@ -2147,11 +2251,10 @@ map.on('load', () => {
                     });
                 }
             }
-
-            // const totalArea = `${pp(p.area, 3)} hectares`;
         })
     }
 
+    let arvometsaManualUpdateGraphs = () => {};
     const arvometsaGraphs = {};
     window.replaceArvometsa = () => {
         // Ensure the UI state is consistent with the activation of this:
@@ -2183,6 +2286,7 @@ map.on('load', () => {
                 'paint': {
                     'fill-color': arvometsaAreaCO2eFillColor(co2eValueExpr),
                 },
+                BEFORE: 'FILL',
             };
             replaceLayer(layer);
         }
@@ -2211,7 +2315,8 @@ map.on('load', () => {
                         ],
                     ], "",
                 ],
-            }
+            },
+            BEFORE: 'LABEL',
         };
         replaceLayer(layer);
 
@@ -2230,11 +2335,18 @@ map.on('load', () => {
         }
         let arvometsaPrevState = [];
         const updateGraphs = () => {
-            const newState = getArvometsaFunctionalDependencies();
+            const selectorEnabled = document.querySelector('#arvometsa-toggle-forest-parcel-select').checked
+
+            const newState = selectorEnabled
+                ? Object.keys(arvometsaSavedFeatures)
+                : getArvometsaFunctionalDependencies();
+
             const allSame =
                 arvometsaPrevState.length === newState.length &&
                 arvometsaPrevState.map((x, i) => x === newState[i]).reduce((a, b) => a && b, true);
+
             if (allSame) return; // nothing to do
+
             arvometsaPrevState = newState;
 
             const dataset = window.arvometsaDataset;
@@ -2245,27 +2357,29 @@ map.on('load', () => {
             });
 
             const reMatchAttr = /m-?\d_(.*)/;
-            map.queryRenderedFeatures({ "layers": ['arvometsa-fill'] })
-                .forEach(x => {
-                    const p = x.properties;
-                    if (p.m0_cbt1 === null || p.m0_cbt1 === undefined) return;
-                    if (!p.area) return; // hypothetical
-                    totals.area += p.area;
-                    if (dataset === -1) {
-                        for (const a in totals) {
-                            if (a === 'area') continue;
-                            const attr = `m${p.best_method}_${reMatchAttr.exec(a)[1]}`;
-                            if (!(attr in p)) {
-                                console.error('Invalid attr:', attr, 'orig:', a, 'props:', p)
-                            }
-                            totals[a] += p[attr] * p.area;
-                        }
-                        return;
-                    }
+            const props = selectorEnabled
+                ? Object.values(arvometsaSavedFeatures)
+                : map.queryRenderedFeatures({ "layers": ['arvometsa-fill'] }).map(x => x.properties);
+
+            props.forEach(p => {
+                if (p.m0_cbt1 === null || p.m0_cbt1 === undefined) return;
+                if (!p.area) return; // hypothetical
+                totals.area += p.area;
+                if (dataset === -1) {
                     for (const a in totals) {
-                        if (a in p && a !== 'area') totals[a] += p[a] * p.area;
+                        if (a === 'area') continue;
+                        const attr = `m${p.best_method}_${reMatchAttr.exec(a)[1]}`;
+                        if (!(attr in p)) {
+                            console.error('Invalid attr:', attr, 'orig:', a, 'props:', p)
+                        }
+                        totals[a] += p[attr] * p.area;
                     }
-                });
+                    return;
+                }
+                for (const a in totals) {
+                    if (a in p && a !== 'area') totals[a] += p[a] * p.area;
+                }
+            });
 
             const carbonStockAttrPrefixes = ['bio', 'maa'];
             const cumulativeFlag = document.getElementById('arvometsa-cumulative').checked;
@@ -2428,11 +2542,12 @@ map.on('load', () => {
         // Need to sleep a little first;
         // to allow mapbox GL to compute something first? Maybe it's a bug.
         sleep(200).then(updateGraphs);
+        arvometsaManualUpdateGraphs = updateGraphs;
     };
 
 
     addSource('arvometsa-actionable-relative-raster', {
-        "type": "raster",
+        "type": 'raster',
         'tiles': ['https://map.buttonprogram.org/arvometsa/{z}/{x}/{y}.png?v=0'],
         'tileSize': 512,
         "maxzoom": 13,
@@ -2446,6 +2561,7 @@ map.on('load', () => {
         'type': 'raster',
         'minzoom': 0,
         'maxzoom': 13,
+        BEFORE: 'FILL',
     });
 
 
@@ -2460,6 +2576,7 @@ map.on('load', () => {
             'fill-color': fillRegenerationFelling,
             // 'fill-opacity': fillOpacity, // Set by fill-color rgba
         },
+        BEFORE: 'FILL',
     })
     const treeSpeciesText = speciesId => [
         "match", speciesId,
@@ -2484,11 +2601,12 @@ map.on('load', () => {
                 "\navg.age: ", ["get", "meanage"],
                 "\navg.diameter: ", ["get", "meandiameter"], " cm",
             ],
-        }
+        },
+        BEFORE: 'LABEL',
     })
 
     addSource('metsaan-stand-mature-raster', {
-        "type": "raster",
+        "type": 'raster',
         'tiles': ['https://map.buttonprogram.org/stand2-mature/{z}/{x}/{y}.png'],
         'tileSize': 512,
         "maxzoom": 12,
@@ -2502,6 +2620,7 @@ map.on('load', () => {
         'type': 'raster',
         'minzoom': 0,
         'maxzoom': 12,
+        BEFORE: 'FILL',
     })
 
 
@@ -2511,7 +2630,7 @@ map.on('load', () => {
     const no2Tileset = Number.parseInt(window.location.search.substring(1)) || 0
     const timestampHour = Math.round(+new Date() / 1e6)
     addSource('no2-tiles', {
-        "type": "raster",
+        "type": 'raster',
         "tiles": ["https://map.buttonprogram.org/atmoshack/mbtiles-dump/" + no2Tileset + "/{z}/{x}/{y}.png?v=5&_=" + timestampHour],
         "maxzoom": 5,
         attribution: '<a href="https://www.esa.int/ESA">ESA</a>',
@@ -2526,6 +2645,7 @@ map.on('load', () => {
         paint: {
             'raster-opacity': 0.7,
         },
+        BEFORE: 'FILL',
     })
 
 
@@ -2543,7 +2663,8 @@ map.on('load', () => {
             // http://data.unep-wcmc.org/pdfs/45/WCMC-043-GlobalCH-IFCPS6-2017.pdf
             attribution: '<a href="https://www.eorc.jaxa.jp/ALOS/en/kyoto/mangrovewatch.htm">Global Mangrove Watch</a>',
         },
-        'paint': {}
+        'paint': {},
+        BEFORE: 'FILL',
     })
 
 
@@ -2552,7 +2673,7 @@ map.on('load', () => {
         const sourceName = `zonation-v${v}`
         const id = `${sourceName}-raster`
         addSource(sourceName, {
-            "type": "raster",
+            "type": 'raster',
             "tiles": [`https://map.buttonprogram.org/suot/zonation/MetZa2018_VMA0${v}/{z}/{x}/{y}.png?v=7`],
             "minzoom": 5,
             "maxzoom": 9,
@@ -2570,6 +2691,7 @@ map.on('load', () => {
             paint: {
                 'raster-opacity': 0.6,
             },
+            BEFORE: 'FILL',
         })
     })
 
@@ -2586,7 +2708,7 @@ map.on('load', () => {
         const sourceName = `fmi-enfuser-${key}`;
         const varName = fmiEnfuserSets[key];
         addSource(sourceName, {
-            "type": "raster",
+            "type": 'raster',
             "tiles": [`https://map.buttonprogram.org/fmi-enfuser/${varName}/{z}/{x}/{y}.png?v=2`],
             "minzoom": 9,
             "maxzoom": 13,
@@ -2600,6 +2722,7 @@ map.on('load', () => {
             paint: {
                 'raster-opacity': 0.8,
             },
+            BEFORE: 'FILL',
         })
     }
 
@@ -2633,6 +2756,7 @@ map.on('load', () => {
             // areaCO2eFillColor(['*', 1e-3, ['get', 'CO2']]), // The variable CO2 is not documented at all!
             'fill-opacity': fillOpacity,
         },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'hsy-solar-potential-outline',
@@ -2643,7 +2767,8 @@ map.on('load', () => {
         // 'maxzoom': zoomThreshold,
         'paint': {
             'line-opacity': 0.5,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
     addLayer({
         'id': 'hsy-solar-potential-sym',
@@ -2671,12 +2796,13 @@ map.on('load', () => {
                 ],
                 "",
             ],
-        }
+        },
+        BEFORE: 'LABEL',
     })
 
 
     addSource('cifor-peatdepth', {
-        "type": "raster",
+        "type": 'raster',
         "tiles": ["https://map.buttonprogram.org/cifor/TROP-SUBTROP_PeatDepthV2_2016_CIFOR/{z}/{x}/{y}.png?v=3"],
         bounds: [-180, -60, 180, 40],
         "minzoom": 0,
@@ -2684,7 +2810,7 @@ map.on('load', () => {
         attribution: '<a href="https://www.cifor.org/">© Center for International Forestry Research (CIFOR)</a>',
     });
     addSource('cifor-wetlands', {
-        "type": "raster",
+        "type": 'raster',
         "tiles": ["https://map.buttonprogram.org/cifor/TROP-SUBTROP_WetlandV2_2016_CIFOR/{z}/{x}/{y}.png?v=3"],
         bounds: [-180, -60, 180, 40],
         "minzoom": 0,
@@ -2698,6 +2824,7 @@ map.on('load', () => {
         paint: {
             'raster-opacity': 0.7,
         },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'cifor-wetlands-raster',
@@ -2706,6 +2833,7 @@ map.on('load', () => {
         paint: {
             'raster-opacity': 0.7,
         },
+        BEFORE: 'FILL',
     })
 
 
@@ -2727,6 +2855,7 @@ map.on('load', () => {
             'fill-color': 'rgb(188, 167, 177)',
             'fill-opacity': fillOpacity,
         },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'gtk-mp20k-maalajit-outline',
@@ -2736,7 +2865,8 @@ map.on('load', () => {
         "minzoom": 9,
         'paint': {
             'line-opacity': 0.5,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
     addLayer({
         'id': 'gtk-mp20k-maalajit-sym',
@@ -2758,7 +2888,8 @@ map.on('load', () => {
                     '\nsubsoil: ', ['get', 'pohjamaalaji'],
                 ],
             ],
-        }
+        },
+        BEFORE: 'LABEL',
     })
 
 
@@ -2774,7 +2905,7 @@ map.on('load', () => {
     ]
     const waqiAqi = 'usepa-aqi';
     addSource('waqi', {
-        "type": "raster",
+        "type": 'raster',
         "tiles": [`https://tiles.waqi.info/tiles/${waqiAqi}/{z}/{x}/{y}.png?token=${process.env.WAQI_TOKEN}`],
         attribution: '<a href="https://www.cifor.org/">© The World Air Quality Project</a>',
     });
@@ -2785,6 +2916,7 @@ map.on('load', () => {
         paint: {
             'raster-opacity': 1.0,
         },
+        BEFORE: 'FILL',
     });
 
 
@@ -2808,6 +2940,7 @@ map.on('load', () => {
             ],
             'fill-opacity': fillOpacity,
         },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'gfw_tree_plantations-outline',
@@ -2817,7 +2950,8 @@ map.on('load', () => {
         "minzoom": 9,
         'paint': {
             'line-opacity': 0.5,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
     addLayer({
         'id': 'gfw_tree_plantations-sym',
@@ -2831,7 +2965,8 @@ map.on('load', () => {
             "symbol-placement": "point",
             "text-font": ["Open Sans Regular"],
             "text-field": ['get', 'spec3'],
-        }
+        },
+        BEFORE: 'LABEL',
     })
 
     genericPopupHandler('gfw_tree_plantations-fill', e => {
@@ -2903,6 +3038,7 @@ map.on('load', () => {
             ],
             'fill-opacity': fillOpacity,
         },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'snow_cover_loss-sym',
@@ -2923,7 +3059,8 @@ map.on('load', () => {
                 "\n",
                 "Days with snow (1996..2016): ", ["get", "avg_snow_cover_1996_2016"],
             ],
-        }
+        },
+        BEFORE: 'LABEL',
     })
 
 
@@ -2960,6 +3097,7 @@ map.on('load', () => {
             ],
             'fill-opacity': fillOpacity,
         },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'corine_clc2018-outline',
@@ -2969,7 +3107,8 @@ map.on('load', () => {
         "minzoom": 6,
         'paint': {
             'line-opacity': 0.5,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
 
     const corine2018ValueToLabel = v => [
@@ -3041,7 +3180,8 @@ map.on('load', () => {
                 corine2018ValueToLabel(['get', 'dn']),
                 '\n', roundToSignificantDigits(2, ['*', 1e-4, ['get', 'st_area']]), ' ha',
             ],
-        }
+        },
+        BEFORE: 'LABEL',
     })
 
 
@@ -3147,6 +3287,7 @@ map.on('load', () => {
                 // 'fill-color': 'yellow',
                 // 'fill-opacity': fillOpacity,
             },
+            BEFORE: 'FILL',
         })
         addLayer({
             'id': 'nibio-soils-outline',
@@ -3156,7 +3297,8 @@ map.on('load', () => {
             "minzoom": 9,
             'paint': {
                 'line-opacity': 0.5,
-            }
+            },
+            BEFORE: 'OUTLINE',
         })
         addLayer({
             'id': 'nibio-soils-sym',
@@ -3178,7 +3320,8 @@ map.on('load', () => {
                 //         '\nsubsoil: ', ['get', 'pohjamaalaji'],
                 //     ],
                 // ],
-            }
+            },
+            BEFORE: 'LABEL',
         })
     }
 
@@ -3200,6 +3343,7 @@ map.on('load', () => {
             'fill-color': 'rgba(200,0,0,0.5)',
             'fill-opacity': fillOpacity,
         },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'nibio-ar50-outline',
@@ -3209,7 +3353,8 @@ map.on('load', () => {
         "minzoom": 9,
         'paint': {
             'line-opacity': 0.5,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
     addLayer({
         'id': 'nibio-ar50-sym',
@@ -3223,7 +3368,8 @@ map.on('load', () => {
             "symbol-placement": "point",
             "text-font": ["Open Sans Regular"],
             "text-field": '',
-        }
+        },
+        BEFORE: 'LABEL',
     })
 
     // AR50: arealtype (ARTYPE)
@@ -3247,6 +3393,7 @@ map.on('load', () => {
             'fill-color': 'rgba(200,2000,0,0.5)',
             'fill-opacity': fillOpacity,
         },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'nibio-ar50-forests-outline',
@@ -3257,7 +3404,8 @@ map.on('load', () => {
         "minzoom": 9,
         'paint': {
             'line-opacity': 0.5,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
     addLayer({
         'id': 'nibio-ar50-forests-sym',
@@ -3272,7 +3420,8 @@ map.on('load', () => {
             "symbol-placement": "point",
             "text-font": ["Open Sans Regular"],
             "text-field": '',
-        }
+        },
+        BEFORE: 'LABEL',
     })
 
 
@@ -3304,7 +3453,8 @@ map.on('load', () => {
                 'white',
             ],
             'fill-opacity': fillOpacity,
-        }
+        },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'hel-energiatodistukset-outline',
@@ -3314,7 +3464,8 @@ map.on('load', () => {
         "minzoom": 11,
         'paint': {
             'line-opacity': 0.75,
-        }
+        },
+        BEFORE: 'OUTLINE',
     })
 
     addLayer({
@@ -3332,6 +3483,7 @@ map.on('load', () => {
                 "case", ["has", "e_luokka"], ["get", "e_luokka"], ""
             ],
         },
+        BEFORE: 'LABEL',
     })
 
     genericPopupHandler('hel-energiatodistukset-fill', e => {
@@ -3380,6 +3532,7 @@ map.on('load', () => {
             'fill-color': 'orange',
             'fill-opacity': fillOpacity,
         },
+        BEFORE: 'FILL',
     })
 
     /* Attributes in 'gtk-turvevarat':
@@ -3441,6 +3594,7 @@ map.on('load', () => {
             // 'fill-color': fillRegenerationFelling,
             'fill-opacity': fillOpacity,
         },
+        BEFORE: 'FILL',
     })
     genericPopupHandler('gtk-turvevarat-suot-fill', e => {
         let html = '';
@@ -3511,6 +3665,7 @@ map.on('load', () => {
             'circle-radius': culvertCircleRadius,
             'circle-opacity': fillOpacity,
         },
+        BEFORE: 'OUTLINE',
     })
 
     addSource('fi-vayla-ratarummut', {
@@ -3532,6 +3687,7 @@ map.on('load', () => {
             'circle-radius': culvertCircleRadius,
             'circle-opacity': fillOpacity,
         },
+        BEFORE: 'OUTLINE',
     })
 
     const fiVaylaTierumpuTyyppi = {
@@ -3609,7 +3765,7 @@ map.on('load', () => {
 
 
     addSource('ethiopia_forest_change_2003_2013', {
-        "type": "raster",
+        "type": 'raster',
         'tiles': ['https://map.buttonprogram.org/eth_forest_change_2000-2013_20161019/{z}/{x}/{y}.png?v=1'],
         'tileSize': 512,
         "minzoom": 0,
@@ -3621,12 +3777,13 @@ map.on('load', () => {
         'id': 'ethiopia_forest_change_2003_2013-raster',
         'source': 'ethiopia_forest_change_2003_2013',
         'type': 'raster',
+        BEFORE: 'FILL',
     });
 
 
 
     addSource('madagascar-2017-mosaic', {
-        "type": "raster",
+        "type": 'raster',
         'tiles': ['https://map.buttonprogram.org/madagascar-mosaic/{z}/{x}/{y}.png?v=0'],
         'tileSize': 512,
         "minzoom": 0,
@@ -3638,6 +3795,7 @@ map.on('load', () => {
         'id': 'madagascar-2017-mosaic-raster',
         'source': 'madagascar-2017-mosaic',
         'type': 'raster',
+        BEFORE: 'FILL',
     });
 
 
@@ -3650,6 +3808,7 @@ map.on('load', () => {
         // Rework Stadia default style to look nicer on top of satellite imagery
         layerOriginalPaint[layer.id] = { ...layer.paint }
         invertLayerTextHalo(layer)
+        layer.BEFORE = layer.BEFORE || 'BG_LABEL';
         replaceLayer(layer)
         // map.moveLayer(layer.id)
     });
@@ -3677,8 +3836,9 @@ map.on('load', () => {
             "paint": {
                 "circle-radius": 20,
                 "circle-color": "green"
-            }
-        });
+            },
+            BEFORE: 'TOP',
+        }, 'TOP');
 
         map.addLayer({
             "id": "query-points-excluded",
@@ -3688,8 +3848,9 @@ map.on('load', () => {
             "paint": {
                 "circle-radius": 20,
                 "circle-color": "red"
-            }
-        });
+            },
+            BEFORE: 'TOP',
+        }, 'TOP');
     }
 
     const clearQueryPoints = event => {
@@ -3861,8 +4022,9 @@ map.on('load', () => {
             'paint': {
                 'line-width': 2.5,
                 'line-opacity': 0.5,
-            }
-        });
+            },
+            BEFORE: 'TOP',
+        }, 'TOP');
 
         updateDatasetQueryResultsList(pageNum, results);
     };
@@ -3892,6 +4054,7 @@ privateDatasets.valio = (_map, secret) => {
             // 'fill-color': fieldAreaCO2eFillColor(fieldPlotCO2ePerHectare),
             // 'fill-opacity': fillOpacity, // Set by fill-color rgba
         },
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'valio-fields-boundary',
@@ -3902,6 +4065,7 @@ privateDatasets.valio = (_map, secret) => {
             'line-opacity': 0.75,
         },
         "minzoom": 11,
+        BEFORE: 'OUTLINE',
     })
 
     addLayer({
@@ -3920,7 +4084,8 @@ privateDatasets.valio = (_map, secret) => {
             // NB: 400t CO2eq/ha/20yrs -> 2kg/m2/y
             // round(0.0002*total_area) -> reduce precision -> *10 -> 2kg/m2
             "text-field": fieldPlotTextField,
-        }
+        },
+        BEFORE: 'LABEL',
     })
 
     setupPopupHandlerForMaviPeltolohko('valio-fields-fill');
@@ -4053,13 +4218,13 @@ const queryKiinteistoTunnus = async query => {
     if (!coords) return { matches: 0 };
 
     const bounds = coords
-    .reduce(
-        ([a,b,c,d], [lon,lat]) =>
-            [Math.min(lon, a), Math.min(lat, b), Math.max(lon, c), Math.max(lat, d)]
-        , coords[0].concat(coords[0]) // Initial value
-    );
+        .reduce(
+            ([a, b, c, d], [lon, lat]) =>
+                [Math.min(lon, a), Math.min(lat, b), Math.max(lon, c), Math.max(lat, d)]
+            , coords[0].concat(coords[0]) // Initial value
+        );
 
-    return {nQuery: q, bounds, matches: coords.length, fs, sampleId: geojson.features[0].properties.tpteksti, exact}
+    return { nQuery: q, bounds, matches: coords.length, fs, sampleId: geojson.features[0].properties.tpteksti, exact }
 }
 
 
@@ -4081,8 +4246,9 @@ const enableMMLPalstatLayer = () => {
         'type': 'line',
         'paint': {
             'line-opacity': 0.7,
-        }
-    })
+        },
+        BEFORE: 'OUTLINE',
+    }, 'OUTLINE')
 
     map.addLayer({
         'id': 'mml-palstat-sym',
@@ -4095,13 +4261,14 @@ const enableMMLPalstatLayer = () => {
             "symbol-placement": "point",
             "text-font": ["Open Sans Regular"],
             "text-field": ['get', 'tpteksti'],
-        }
-    })
+        },
+        BEFORE: 'LABEL',
+    }, 'LABEL')
 
 }
 
 const kiinteistorekisteriTunnusGeocoder = async query => {
-    const {nQuery, bounds, matches, fs, sampleId, exact} = await queryKiinteistoTunnus(query);
+    const { nQuery, bounds, matches, fs, sampleId, exact } = await queryKiinteistoTunnus(query);
     if (matches === 0) return [];
     if (matches === 1) return [{
         place_name: `[P] ${sampleId}`,
@@ -4121,12 +4288,12 @@ const kiinteistorekisteriTunnusGeocoder = async query => {
         }];
 
         const parts = fs
-        .map((f,i) => ({
-            partNumber: i+1,
-            place_name: `[P] ${f.properties.tpteksti} #${i+1}`,
-            center: f.geometry.coordinates,
-        }))
-        .filter(f => queryPartNumber === null || (""+f.partNumber).startsWith(""+queryPartNumber))
+            .map((f, i) => ({
+                partNumber: i + 1,
+                place_name: `[P] ${f.properties.tpteksti} #${i + 1}`,
+                center: f.geometry.coordinates,
+            }))
+            .filter(f => queryPartNumber === null || ("" + f.partNumber).startsWith("" + queryPartNumber))
 
         return res.concat(parts);
     }
