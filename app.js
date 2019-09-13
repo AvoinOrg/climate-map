@@ -4079,7 +4079,6 @@ const enableMMLPalstatLayer = () => {
         'source': 'mml-palstat',
         'source-layer': 'default',
         'type': 'line',
-        "minzoom": 11,
         'paint': {
             'line-opacity': 0.7,
         }
@@ -4089,7 +4088,6 @@ const enableMMLPalstatLayer = () => {
         'id': 'mml-palstat-sym',
         'source': 'mml-palstat',
         'source-layer': 'default',
-        "minzoom": 11,
         'type': 'symbol',
         "paint": {},
         "layout": {
@@ -4151,6 +4149,7 @@ if (MapboxGeocoder !== undefined) {
 
     // Monkey-patch the geocoder to deal with async local queries:
     const geocoderOrigGeocode = geocoder._geocode;
+    const geocoderOrigZoom = geocoder.options.zoom;
     geocoder._geocode = async searchInput => {
         let localResults = [];
         try {
@@ -4159,8 +4158,10 @@ if (MapboxGeocoder !== undefined) {
         } catch (e) {
             console.error(e);
         }
+        geocoder.options.zoom = 14; // A reasonable limit for Property Registry queries
         geocoder.options.localGeocoder = (_dummyQuery) => localResults;
         geocoderOrigGeocode.call(geocoder, searchInput);
+        geocoder.options.zoom = geocoderOrigZoom;
     }
 }
 
