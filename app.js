@@ -27,24 +27,6 @@ map.on('error', (e) => {
     console.error(e.error.message, e.error.stack, e.target);
 })
 
-// Only add the geocoding widget if it's been loaded.
-if (MapboxGeocoder !== undefined) {
-    map.addControl(new MapboxGeocoder({
-        accessToken: process.env.GEOCODING_ACCESS_TOKEN,
-        countries: 'fi',
-    }));
-}
-
-map.addControl(new mapboxgl.NavigationControl());
-
-map.addControl(new mapboxgl.GeolocateControl({
-    positionOptions: {
-        enableHighAccuracy: true,
-    },
-    trackUserLocation: true,
-}));
-
-map.addControl(new mapboxgl.ScaleControl(), 'bottom-right');
 
 const backgroundLayerGroups = { 'terramonitor': true }
 const layerGroupState = {
@@ -4039,3 +4021,156 @@ window.exportLayerGroup = groupName => {
 
     console.log(JSON.stringify(e));
 }
+
+
+const queryKiinteistoTunnus = async query => {
+    const q = query
+        .replace(/\([^)]*\)/g, '')
+        .replace(/\[[^\]]*\]/g, '')
+        .split('#')[0]
+        .trim();
+    // Valid formats for kiinteistötunnus (property identifier): 00589500020002 or 5-895-2-2
+    let re = /^([0-9]{1,3})(-[0-9]+){1,3}$/.exec(q) || /^([0-9]{3})[0-9]{11}$/.exec(q)
+    if (!re) return { matches: 0 };
+    const ktunnus = re[1].padStart(3, '0'); // '5' -> '005'
+    const response = await fetch(`https://map.buttonprogram.org/kiinteistorekisteri/lookup/${ktunnus}.geojson.gz`);
+    const geojson = await response.json();
+    let fs = geojson.features
+        .filter(f => f.properties.tpteksti.startsWith(q) || f.properties.tunnus.startsWith(q))
+
+    let exact = false;
+    // Display the closest possible match:
+    if (fs.filter(f => f.properties.tpteksti === q).length > 0) {
+        fs = fs.filter(f => f.properties.tpteksti === q);
+        exact = true;
+    }
+    if (fs.filter(f => f.properties.tunnus === q).length > 0) {
+        fs = fs.filter(f => f.properties.tunnus === q);
+        exact = true;
+    }
+    const coords = fs.map(f => f.geometry.coordinates);
+
+    if (!coords) return { matches: 0 };
+
+    const bounds = coords
+    .reduce(
+        ([a,b,c,d], [lon,lat]) =>
+            [Math.min(lon, a), Math.min(lat, b), Math.max(lon, c), Math.max(lat, d)]
+        , coords[0].concat(coords[0]) // Initial value
+    );
+
+    return {nQuery: q, bounds, matches: coords.length, fs, sampleId: geojson.features[0].properties.tpteksti, exact}
+}
+
+
+const enableMMLPalstatLayer = () => {
+    if (map.getLayer('mml-palstat-outline')) return;
+
+    map.addSource('mml-palstat', {
+        "type": "vector",
+        "tiles": ["https://map.buttonprogram.org/palstat/{z}/{x}/{y}.pbf.gz?v=0"],
+        "minzoom": 14,
+        "maxzoom": 14,
+        bounds: [19, 59, 32, 71], // Finland
+    });
+
+    map.addLayer({
+        'id': 'mml-palstat-outline',
+        'source': 'mml-palstat',
+        'source-layer': 'default',
+        'type': 'line',
+        "minzoom": 11,
+        'paint': {
+            'line-opacity': 0.7,
+        }
+    })
+
+    map.addLayer({
+        'id': 'mml-palstat-sym',
+        'source': 'mml-palstat',
+        'source-layer': 'default',
+        "minzoom": 11,
+        'type': 'symbol',
+        "paint": {},
+        "layout": {
+            "text-size": 20,
+            "symbol-placement": "point",
+            "text-font": ["Open Sans Regular"],
+            "text-field": ['get', 'tpteksti'],
+        }
+    })
+
+}
+
+const kiinteistorekisteriTunnusGeocoder = async query => {
+    const {nQuery, bounds, matches, fs, sampleId, exact} = await queryKiinteistoTunnus(query);
+    if (matches === 0) return [];
+    if (matches === 1) return [{
+        place_name: `[P] ${sampleId}`,
+        center: bounds[0],
+    }];
+
+    // Multiple exact matches:
+    // These may be road segments OR some other properties
+    // scattered around in geographically discontiguous parts.
+    if (exact) {
+        const rePart = /#([0-9]+)/.exec(query);
+        const queryPartNumber = rePart ? +rePart[1] : null;
+
+        const res = [{
+            place_name: `[P] ${nQuery} (All parts, total:${matches})`,
+            bbox: bounds,
+        }];
+
+        const parts = fs
+        .map((f,i) => ({
+            partNumber: i+1,
+            place_name: `[P] ${f.properties.tpteksti} #${i+1}`,
+            center: f.geometry.coordinates,
+        }))
+        .filter(f => queryPartNumber === null || (""+f.partNumber).startsWith(""+queryPartNumber))
+
+        return res.concat(parts);
+    }
+
+    return [{
+        place_name: `[P] ${nQuery} (${matches} matching properties)`,
+        bbox: bounds,
+    }];
+}
+
+
+// Only add the geocoding widget if it's been loaded.
+if (MapboxGeocoder !== undefined) {
+    const geocoder = new MapboxGeocoder({
+        accessToken: process.env.GEOCODING_ACCESS_TOKEN,
+        countries: 'fi',
+        localGeocoder: kiinteistorekisteriTunnusGeocoder,
+    })
+    map.addControl(geocoder);
+
+    // Monkey-patch the geocoder to deal with async local queries:
+    const geocoderOrigGeocode = geocoder._geocode;
+    geocoder._geocode = async searchInput => {
+        let localResults = [];
+        try {
+            localResults = await kiinteistorekisteriTunnusGeocoder(searchInput);
+            if (localResults.length > 0) enableMMLPalstatLayer();
+        } catch (e) {
+            console.error(e);
+        }
+        geocoder.options.localGeocoder = (_dummyQuery) => localResults;
+        geocoderOrigGeocode.call(geocoder, searchInput);
+    }
+}
+
+map.addControl(new mapboxgl.NavigationControl());
+
+map.addControl(new mapboxgl.GeolocateControl({
+    positionOptions: {
+        enableHighAccuracy: true,
+    },
+    trackUserLocation: true,
+}));
+
+map.addControl(new mapboxgl.ScaleControl(), 'bottom-right');
