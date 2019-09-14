@@ -2341,12 +2341,18 @@ map.on('load', () => {
             const numFeatures = map.queryRenderedFeatures({ layers: ['arvometsa-fill'] }).length;
             return [bounds.getNorth(), bounds.getSouth(), bounds.getEast(), bounds.getWest(), dataset, cumulativeFlag, numFeatures];
         }
+        const getArvometsaFunctionalDependenciesForSelectedParcels = () => {
+            const dataset = window.arvometsaDataset;
+            const cumulativeFlag = document.getElementById('arvometsa-cumulative').checked;
+            const selectedFeatures = Object.keys(arvometsaSavedFeatures);
+            return [dataset, cumulativeFlag].concat(selectedFeatures);
+        }
         let arvometsaPrevState = [];
         const updateGraphs = () => {
             const selectorEnabled = document.querySelector('#arvometsa-toggle-forest-parcel-select').checked
 
             const newState = selectorEnabled
-                ? Object.keys(arvometsaSavedFeatures)
+                ? getArvometsaFunctionalDependenciesForSelectedParcels()
                 : getArvometsaFunctionalDependencies();
 
             const allSame =
