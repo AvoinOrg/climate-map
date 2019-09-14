@@ -2054,7 +2054,7 @@ map.on('load', () => {
         cbt: 'Forestry CO2e balance (trees + soil + products)',
         bio: 'Carbon stock in trees',
         maa: 'Carbon stock in soil',
-        npv: 'Net present value of forest stock (3% discounting)',
+        npv: 'Net present value of wood production (3% discounting)',
     }
 
     const harvestedWoodAttrs = [
@@ -2138,7 +2138,7 @@ map.on('load', () => {
             let html = `
             <strong>Forest parcel</strong><br/>
             Area: ${pp(p.area, 3)} hectares<br/>
-            Net Present Value: ${npv}<br/>
+            Net present value of wood production: ${npv}<br/>
             <strong>Shown:</strong> ${cumulativeFlag ? 'Cumulative carbon balance' : 'Incremental carbon balance per decade'}<br/>
 
             <strong>Potential CO2e savings with ${arvometsaDatasetTitles[m]}:</strong> ${co2eStr}<br/>
