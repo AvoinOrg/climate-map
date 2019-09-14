@@ -63,14 +63,9 @@ window.addEventListener('load', () => {
 
 const layerOriginalPaint = {}
 const toggleBaseMapSymbols = () => {
+    if (!initialMapLoaded) return;
     map.getStyle().layers.filter(x => x.type === 'symbol').forEach(layer => {
-        if (layerGroupState.terramonitor) {
-            // TODO: somehow delay this until after the layer style has fully loaded
-            if (layerOriginalPaint[layer.id].paint === undefined) return;
-        } else {
-            invertLayerTextHalo(layer);
-        }
-        replaceLayer(layer);
+        invertLayerTextHalo(layer);
     })
 }
 
@@ -186,11 +181,16 @@ const toggleGroup = (group, forcedState = undefined) => {
     const el = document.querySelector(`.layer-card input#${group}`)
     if (el) el.checked = newState
 
+    if (!initialMapLoaded) return;
+
     layerGroups[group].forEach(layer => {
         if (typeof layer === 'function') {
             layer();
         } else {
-            map.moveLayer(layer, layer.BEFORE); // Make this the topmost layer.
+            assert(layer in originalLayerDefs, JSON.stringify(layer));
+            const {BEFORE} = originalLayerDefs[layer];
+            assert(BEFORE, JSON.stringify(originalLayerDefs[layer]));
+            map.moveLayer(layer, BEFORE); // Make this the topmost layer.
             map.setLayoutProperty(layer, 'visibility', newState ? 'visible' : 'none');
         }
     })
@@ -278,10 +278,16 @@ const invertLayerTextHalo = (layer) => {
         // text-halo-blur: 1
         // text-halo-color: "rgb(242,243,240)"
         // text-halo-width: 2
-        layer.paint['text-halo-blur'] = 1
-        layer.paint['text-halo-width'] = 2.5
-        layer.paint['text-color'] = '#fff'
-        layer.paint['text-halo-color'] = '#000'
+        const props = {
+            'text-halo-blur': 1,
+            'text-halo-width': 2.5,
+            'text-color': '#fff',
+            'text-halo-color': '#000',
+        }
+
+        for (const [k,v] of Object.entries(props)) {
+            map.setPaintProperty(layer.id, k, v, {validate: false});
+        }
     }
 }
 
@@ -822,7 +828,9 @@ const setupPopupHandlerForMetsaanFiStandData = layerName => {
     });
 }
 
+let initialMapLoaded = false;
 map.on('load', () => {
+    initialMapLoaded = true;
 
     const emptyGeoJson = { type: 'geojson', data: { "type": "FeatureCollection", features: [], } };
 
@@ -3809,8 +3817,7 @@ map.on('load', () => {
         layerOriginalPaint[layer.id] = { ...layer.paint }
         invertLayerTextHalo(layer)
         layer.BEFORE = layer.BEFORE || 'BG_LABEL';
-        replaceLayer(layer)
-        // map.moveLayer(layer.id)
+        map.moveLayer(layer.id, layer.BEFORE)
     });
 
 
@@ -4215,7 +4222,7 @@ const queryKiinteistoTunnus = async query => {
     }
     const coords = fs.map(f => f.geometry.coordinates);
 
-    if (!coords) return { matches: 0 };
+    if (coords.length === 0) return { matches: 0 };
 
     const bounds = coords
         .reduce(
@@ -4224,14 +4231,14 @@ const queryKiinteistoTunnus = async query => {
             , coords[0].concat(coords[0]) // Initial value
         );
 
-    return { nQuery: q, bounds, matches: coords.length, fs, sampleId: geojson.features[0].properties.tpteksti, exact }
+    return { nQuery: q, bounds, matches: coords.length, fs, sampleId: fs[0].properties.tpteksti, exact }
 }
 
 
 const enableMMLPalstatLayer = () => {
-    if (map.getLayer('mml-palstat-outline')) return;
+    if (map.getLayer('fi-mml-palstat-outline')) return;
 
-    map.addSource('mml-palstat', {
+    map.addSource('fi-mml-palstat', {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/palstat/{z}/{x}/{y}.pbf.gz?v=0"],
         "minzoom": 14,
@@ -4240,19 +4247,20 @@ const enableMMLPalstatLayer = () => {
     });
 
     map.addLayer({
-        'id': 'mml-palstat-outline',
-        'source': 'mml-palstat',
+        'id': 'fi-mml-palstat-outline',
+        'source': 'fi-mml-palstat',
         'source-layer': 'default',
         'type': 'line',
         'paint': {
             'line-opacity': 0.7,
+            'line-width': 2,
         },
         BEFORE: 'OUTLINE',
     }, 'OUTLINE')
 
     map.addLayer({
-        'id': 'mml-palstat-sym',
-        'source': 'mml-palstat',
+        'id': 'fi-mml-palstat-sym',
+        'source': 'fi-mml-palstat',
         'source-layer': 'default',
         'type': 'symbol',
         "paint": {},
@@ -4270,9 +4278,10 @@ const enableMMLPalstatLayer = () => {
 const kiinteistorekisteriTunnusGeocoder = async query => {
     const { nQuery, bounds, matches, fs, sampleId, exact } = await queryKiinteistoTunnus(query);
     if (matches === 0) return [];
+
     if (matches === 1) return [{
         place_name: `[P] ${sampleId}`,
-        center: bounds[0],
+        center: bounds.slice(0,2),
     }];
 
     // Multiple exact matches:
@@ -4298,10 +4307,17 @@ const kiinteistorekisteriTunnusGeocoder = async query => {
         return res.concat(parts);
     }
 
+    // Multiple partial matches (e.g. matching prefix like "5-2" for "5-2-9901-2" etc.)
+    const results = fs
+    .map(f => ({
+        place_name: `[P] ${f.properties.tpteksti}`,
+        center: f.geometry.coordinates,
+    }))
+
     return [{
         place_name: `[P] ${nQuery} (${matches} matching properties)`,
         bbox: bounds,
-    }];
+    }].concat(results)
 }
 
 
@@ -4311,6 +4327,7 @@ if (MapboxGeocoder !== undefined) {
         accessToken: process.env.GEOCODING_ACCESS_TOKEN,
         countries: 'fi',
         localGeocoder: kiinteistorekisteriTunnusGeocoder,
+        mapboxgl,
     })
     map.addControl(geocoder);
 
@@ -4321,13 +4338,20 @@ if (MapboxGeocoder !== undefined) {
         let localResults = [];
         try {
             localResults = await kiinteistorekisteriTunnusGeocoder(searchInput);
-            if (localResults.length > 0) enableMMLPalstatLayer();
+            if (localResults.length > 0) {
+                enableMMLPalstatLayer();
+                // Don't invoke the external API here. It would have no useful results anyway.
+                geocoder.options.localGeocoderOnly = true;
+                geocoder.options.zoom = 14;
+            }
         } catch (e) {
             console.error(e);
         }
-        geocoder.options.zoom = 14; // A reasonable limit for Property Registry queries
+        // A reasonable limit for Property Registry queries
         geocoder.options.localGeocoder = (_dummyQuery) => localResults;
         geocoderOrigGeocode.call(geocoder, searchInput);
+
+        geocoder.options.localGeocoderOnly = false;
         geocoder.options.zoom = geocoderOrigZoom;
     }
 }
