@@ -1973,7 +1973,7 @@ map.on('load', () => {
         'paint': {
             'fill-color': arvometsaAreaCO2eFillColor(arvometsaCumulativeCO2eValueExpr),
         },
-        BEFORE: 'OUTLINE',
+        BEFORE: 'FILL',
     })
     addLayer({
         'id': 'arvometsa-boundary',
