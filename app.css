@@ -82,7 +82,14 @@ body {
 }
 
 #menu-container h1 {
-    font-size: 50px;
+    font-size: 25px;
+    width: 50%;
+    white-space: nowrap;
+}
+#menu-container h1 img {
+    clip-path: inset(15px 0px 15px 0px); /* The logo is too high */
+    width: 50%;
+    vertical-align: middle;
 }
 @media (max-width: 750px) {
     :root {
