@@ -84,6 +84,7 @@ const layerGroups = {
         'valio-fields-boundary', 'valio-fields-fill', 'valio-plohko-co2',
         'mavi-plohko-removed-fill',
         'mavi-plohko-removed-outline',
+        'mavi-plohko-removed-co2',
     ],
     'forest-grid': ['metsaan-hila-c', 'metsaan-hila-sym', 'metsaan-hila-outline'],
     'forests': [
@@ -569,7 +570,7 @@ const turkuAuraJokiEmissions = {
 const turkuAuraJokiValue = { "type": "Polygon", "coordinates": [[[22.6103877990383, 60.6344856066462], [22.5870539729996, 60.6103588211101], [22.6233478269874, 60.5751045114842], [22.6081371120958, 60.5626995848525], [22.6246074790853, 60.5589631167027], [22.611648617642, 60.5406368750108], [22.6314716339555, 60.5150340334038], [22.6092672609967, 60.4938538962352], [22.4821141856954, 60.4683242152806], [22.4659206330005, 60.450887946384], [22.3802794072847, 60.4674571656726], [22.3552912683436, 60.4536851421538], [22.3834536221754, 60.4463719123733], [22.3751925022249, 60.4285164369009], [22.3333390617128, 60.4151056439502], [22.3043323282709, 60.4346888430041], [22.2864479797805, 60.4347006782323], [22.2854431135939, 60.416082779118], [22.2287674601729, 60.4333815276613], [22.2759013480459, 60.4641676815831], [22.2655255299015, 60.4711140245897], [22.2847212938923, 60.495795969575], [22.2673139070335, 60.5176149346882], [22.3275866631243, 60.5391575071753], [22.2614068872664, 60.5673420543226], [22.2678055710792, 60.5790404344835], [22.3609367082758, 60.5887055316531], [22.3772772685066, 60.603266563484], [22.3587439869585, 60.6056855294338], [22.4099654349429, 60.6259246878061], [22.3993092976892, 60.6329568465254], [22.4175178677525, 60.6469925120255], [22.5366813830571, 60.6510082108548], [22.5450098508632, 60.6360496225363], [22.6117183453645, 60.6535058093237], [22.6103877990383, 60.6344856066462]]] };
 const turkuAuraJokiValueFeature = turfFeature(turkuAuraJokiValue);
 
-const setupPopupHandlerForMaviPeltolohko = layerName => {
+const setupPopupHandlerForMaviPeltolohko = (title, layerName) => {
     genericPopupHandler(layerName, ev => {
         const f = ev.features[0];
         const { soil_type1, soil_type1_ratio, soil_type2, soil_type2_ratio, pinta_ala } = f.properties;
@@ -584,7 +585,7 @@ const setupPopupHandlerForMaviPeltolohko = layerName => {
             soil_type2_ratio <= 0 ? 1 : soil_type1_ratio / (soil_type1_ratio + soil_type2_ratio)
         );
         const normalizedSoilRatioPct = Math.round(100 * normalizedSoilRatio);
-        let html = '<strong>Field plot</strong><br/>'
+        let html = `<strong>${title}</strong><br/>`
         if (soil_type1 !== -1) {
             html += `
                 Primary soil: ${gtkLukeSoilTypes[soil_type1]} (${normalizedSoilRatioPct} %)
@@ -1140,28 +1141,28 @@ map.on('load', () => {
         BEFORE: 'LABEL',
     })
 
-    setupPopupHandlerForMaviPeltolohko(['mavi-plohko-fill', 'mavi-plohko-peatland-fill', 'mavi-plohko-mineral-fill']);
+    setupPopupHandlerForMaviPeltolohko('Field plot', ['mavi-plohko-fill', 'mavi-plohko-peatland-fill', 'mavi-plohko-mineral-fill']);
 
     addSource('mavi-peltolohko-removed', {
         "type": "vector",
-        "tiles": ["https://map.buttonprogram.org/mavi-peltolohko-removed-2017b/{z}/{x}/{y}.pbf.gz?v=4"],
+        "tiles": ["https://map.buttonprogram.org/fi-peltolohko2012/{z}/{x}/{y}.pbf.gz?v=0"],
         "maxzoom": 11,
         bounds: [19, 59, 32, 71], // Finland
         attribution: '<a href="https://www.ruokavirasto.fi/">© Finnish Food Authority</a>',
     });
+
+    const fiFieldPlotRemovedFilter = ['>', 0.2, ['get', 'area_ratio']];
     addLayer({
         'id': 'mavi-plohko-removed-fill',
         'source': 'mavi-peltolohko-removed',
         'source-layer': 'default',
         'type': 'fill',
+        'filter': fiFieldPlotRemovedFilter,
         'paint': {
             'fill-color': [
-                'case', ['has', 'soil_type1_ratio'], [
-                    "case", [">=", fieldPlotHistosolRatio, 0.4],
-                    'rgb(150, 52, 52)', // histosol
-                    'rgb(194, 21, 207)', // mineral land
-                ],
-                'rgb(150, 52, 52)', // default -- TODO: update dataset with soil info later
+                "case", [">=", fieldPlotHistosolRatio, 0.4],
+                'rgb(150, 52, 52)', // histosol
+                'rgb(194, 21, 207)', // mineral land
             ],
             // 'fill-color': 'rgb(150, 52, 52)',
             // 'fill-opacity': fillOpacity,
@@ -1172,6 +1173,7 @@ map.on('load', () => {
         'id': 'mavi-plohko-removed-outline',
         'source': 'mavi-peltolohko-removed',
         'source-layer': 'default',
+        'filter': fiFieldPlotRemovedFilter,
         'type': 'line',
         "minzoom": 11,
         'paint': {
@@ -1179,21 +1181,23 @@ map.on('load', () => {
         },
         BEFORE: 'OUTLINE',
     })
-    genericPopupHandler('mavi-plohko-removed-fill', e => {
-        const f = e.features[0];
-        const { pinta_ala, ymparys, lohko } = f.properties;
-        const areaHa = 0.01 * +pinta_ala;
+    addLayer({
+        'id': 'mavi-plohko-removed-co2',
+        'source': 'mavi-peltolohko-removed',
+        'source-layer': 'default',
+        'filter': fiFieldPlotRemovedFilter,
+        'type': 'symbol',
+        minzoom: 14.5,
+        'paint': {},
+        'layout': {
+            "text-font": ["Open Sans Regular"],
+            'text-field': fieldPlotTextField,
+        },
+        BEFORE: 'LABEL',
+    })
 
-        const html = `<strong>A former field plot</strong>
-        <br/><strong>Area</strong>: ${areaHa.toFixed(1)} hectares
-        <br/><strong>Perimeter</strong>: ${(+ymparys).toFixed(0)} metres
-        <br/><strong>Plot ID:</strong>: ${lohko}
-        `
-        new mapboxgl.Popup()
-            .setLngLat(e.lngLat)
-            .setHTML(html)
-            .addTo(map);
-    });
+
+    setupPopupHandlerForMaviPeltolohko('A potentially abandoned field plot', 'mavi-plohko-removed-fill')
 
 
     addSource('helsinki-buildings', {
@@ -4101,7 +4105,7 @@ privateDatasets.valio = (_map, secret) => {
         BEFORE: 'LABEL',
     })
 
-    setupPopupHandlerForMaviPeltolohko('valio-fields-fill');
+    setupPopupHandlerForMaviPeltolohko('Field plot (Valio)', 'valio-fields-fill');
 };
 
 
