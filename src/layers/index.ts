@@ -20,5 +20,7 @@ import './fi_property_id';
 import './fi_soils';
 import './snow_cover_loss';
 
+import './hedge_pilot_area';
+
 // Special:
 import './dataset_query';

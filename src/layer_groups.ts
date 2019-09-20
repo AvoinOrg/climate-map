@@ -132,6 +132,8 @@ export const layerGroups = {
     'bogs': ['gtk-turvevarat-suot-fill', 'fi-mml-suot-fill'],
 
     'culverts': ['fi-vayla-tierummut-circle', 'fi-vayla-ratarummut-circle'],
+
+    'hedge-pilot-area': ['hedge-pilot-area-raster'],
 };
 
 export const originalSourceDefs = {}
