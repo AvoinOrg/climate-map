@@ -10,6 +10,7 @@
     "favicon": "real-favicon generate faviconDescription.json faviconData.json favicon/"
   },
   "devDependencies": {
+    "@types/chart.js": "^2.8.5",
     "parcel-bundler": "^1.12.1",
     "typescript": "^3.6.3"
   },

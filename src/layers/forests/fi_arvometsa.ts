@@ -1,9 +1,9 @@
-import Chart from 'chart.js';
-import { addLayer, addSource } from '../../layer_groups';
+import { Chart } from 'chart.js';
+import { Expression, Layer } from 'mapbox-gl';
 import { roundToSignificantDigits, replaceLayer, genericPopupHandler, assert, pp, createPopup } from '../../utils';
+import { addLayer, addSource } from '../../layer_groups';
 import { map } from '../../map';
 import { setupPopupHandlerForMetsaanFiStandData } from './fi_forest_common';
-import { Expression, Layer, MapLayerMouseEvent } from 'mapbox-gl';
 
 const nC_to_CO2 = 44 / 12;
 
@@ -200,7 +200,7 @@ const arvometsaHighlighted: Layer = {
 }
 addLayer(arvometsaHighlighted)
 
-map.on('click', 'arvometsa-fill', function(e) {
+map.on('click', 'arvometsa-fill', function (e) {
     const selectedEnabled = (document.querySelector('#arvometsa-toggle-forest-parcel-select') as HTMLInputElement).checked
     if (!selectedEnabled) { return; }
 
@@ -401,7 +401,7 @@ const setupArvometsaPopupHandler = () => {
             const outputElem = popupElem.querySelector(`canvas.arvometsa-popup-${prefix}`);
 
             const chart = null; // arvometsaGraphs[prefix];
-            const labelCallback = function(tooltipItem, data) {
+            const labelCallback = function (tooltipItem, data) {
                 const label = data.datasets[tooltipItem.datasetIndex].label;
                 const v = pp(tooltipItem.yLabel, 2);
                 return `${label}: ${v} ${unit}`;
@@ -520,7 +520,7 @@ const replaceArvometsa = () => {
 
     const getArvometsaFunctionalDependencies = () => {
         const bounds = map.getBounds();
-        const cumulativeFlag = ( document.getElementById('arvometsa-cumulative') as HTMLInputElement).checked;
+        const cumulativeFlag = (document.getElementById('arvometsa-cumulative') as HTMLInputElement).checked;
         // @ts-ignore TODO
         const numFeatures = map.queryRenderedFeatures({ layers: ['arvometsa-fill'] }).length;
         return [bounds.getNorth(), bounds.getSouth(), bounds.getEast(), bounds.getWest(), arvometsaDataset, cumulativeFlag, numFeatures];
@@ -580,7 +580,7 @@ const replaceArvometsa = () => {
         });
 
         const carbonStockAttrPrefixes = ['bio', 'maa'];
-        const cumulativeFlag = ( document.getElementById('arvometsa-cumulative') as HTMLInputElement).checked;
+        const cumulativeFlag = (document.getElementById('arvometsa-cumulative') as HTMLInputElement).checked;
 
         function getUnit(prefix: string) {
             if (prefix === 'harvested-wood') {
@@ -684,7 +684,7 @@ const replaceArvometsa = () => {
             const outputElem = document.querySelector(`canvas.arvometsa-${prefix}`);
 
             const chart = arvometsaGraphs[prefix];
-            const labelCallback = function(tooltipItem, data) {
+            const labelCallback = function (tooltipItem, data) {
                 const label = data.datasets[tooltipItem.datasetIndex].label;
                 const v = pp(tooltipItem.yLabel, 2);
                 return `${label}: ${v} ${unit}`;
