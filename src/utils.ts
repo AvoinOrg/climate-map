@@ -1,10 +1,11 @@
 import { sanitize } from 'dompurify';
-import { Layer, MapLayerMouseEvent, PopupOptions, Popup, Expression } from 'mapbox-gl';
+import { Layer, MapLayerMouseEvent, PopupOptions, Expression } from 'mapbox-gl';
 import { linear_kryw_0_100_c71, linear_bgyw_20_98_c66 } from './colormap';
 import { map } from './map';
 
+
 // @ts-ignore
-const mapboxgl0 = mapboxgl;
+const mapboxgl0: mapboxgl = mapboxgl;
 
 const colormapToStepExpr = (colormap: number[][], minValue: number, maxValue: number, expr: Expression) => {
     // @ts-ignore TODO
@@ -108,7 +109,7 @@ export const replaceLayer = (layer: Layer) => {
 }
 
 export const createPopup = (ev: MapLayerMouseEvent, html: string, options?: PopupOptions) =>
-    new Popup()
+    new mapboxgl0.Popup()
         .setLngLat(ev.lngLat)
         .setHTML( sanitize(html) )
         .addTo(map);
