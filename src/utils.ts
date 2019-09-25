@@ -107,7 +107,7 @@ export const replaceLayer = (layer: Layer) => {
     map.addLayer(layer, layer.BEFORE);
 }
 
-export const createPopup = (ev: MapLayerMouseEvent, html: string, options?: PopupOptions) => 
+export const createPopup = (ev: MapLayerMouseEvent, html: string, options?: PopupOptions) =>
     new Popup()
         .setLngLat(ev.lngLat)
         .setHTML( sanitize(html) )

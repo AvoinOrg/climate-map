@@ -483,7 +483,7 @@ const replaceArvometsa = () => {
         BEFORE: 'FILL',
     };
     replaceLayer(fillLayer);
- 
+
     const symLayer: Layer = {
         'id': 'arvometsa-sym',
         'source': 'arvometsa',
