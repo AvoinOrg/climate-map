@@ -1,5 +1,4 @@
-import { map } from '../../map'
-import { Popup, genericPopupHandler, pp } from '../../utils';
+import { genericPopupHandler, pp, createPopup } from '../../utils';
 
 const metsaanFiSoilTypes = [
     [10, 'Rough or medium grade soil of heathland', 'Keskikarkea tai karkea kangasmaa'],
@@ -188,9 +187,6 @@ export const setupPopupHandlerForMetsaanFiStandData = layerName => {
             <tr><th>Identifier</th><td>StandID=${p.standid}</td></tr>
         `;
 
-        new Popup({ maxWidth: '360px' })
-            .setLngLat(e.lngLat)
-            .setHTML(html)
-            .addTo(map);
+        createPopup(e, html, { maxWidth: '360px' });
     });
 }

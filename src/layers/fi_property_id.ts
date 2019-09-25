@@ -1,6 +1,18 @@
 import { map } from '../map'
 
-export const queryKiinteistoTunnus = async query => {
+interface IProperties {
+    tpteksti: string;
+    tunnus: string;
+}
+interface IFeature {
+    properties: IProperties;
+    geometry: GeoJSON.Point;
+}
+interface IGeoJSON {
+    features: IFeature[];
+}
+
+export const queryKiinteistoTunnus = async (query: string) => {
     const q = query
         .replace(/\([^)]*\)/g, '')
         .replace(/\[[^\]]*\]/g, '')
@@ -9,11 +21,14 @@ export const queryKiinteistoTunnus = async query => {
     // Valid formats for kiinteistötunnus (property identifier): 00589500020002 or 5-895-2-2
     const re = /^([0-9]{1,3})(-[0-9]+){1,3}$/.exec(q) || /^([0-9]{3})[0-9]{11}$/.exec(q)
     if (!re) return { matches: 0 };
+
     const ktunnus = re[1].padStart(3, '0'); // '5' -> '005'
     const response = await fetch(`https://map.buttonprogram.org/kiinteistorekisteri/lookup/${ktunnus}.geojson.gz`);
-    const geojson = await response.json();
+    const geojson = await response.json() as IGeoJSON;
     let fs = geojson.features
-        .filter(f => f.properties.tpteksti.startsWith(q) || f.properties.tunnus.startsWith(q))
+    .filter(f => f.properties && (
+        f.properties.tpteksti.startsWith(q)
+        || f.properties.tunnus.startsWith(q)))
 
     let exact = false;
     // Display the closest possible match:
@@ -79,13 +94,13 @@ export const enableMMLPalstatLayer = () => {
 
 }
 
-export const kiinteistorekisteriTunnusGeocoder = async query => {
+export const kiinteistorekisteriTunnusGeocoder = async (query: string) => {
     const { nQuery, bounds, matches, fs, sampleId, exact } = await queryKiinteistoTunnus(query);
     if (matches === 0) return [];
 
     if (matches === 1) return [{
         place_name: `[P] ${sampleId}`,
-        center: bounds.slice(0, 2),
+        center: bounds!.slice(0, 2),
     }];
 
     // Multiple exact matches:
@@ -95,12 +110,12 @@ export const kiinteistorekisteriTunnusGeocoder = async query => {
         const rePart = /#([0-9]+)/.exec(query);
         const queryPartNumber = rePart ? +rePart[1] : null;
 
-        const res = [{
+        const res: Object[] = [{
             place_name: `[P] ${nQuery} (All parts, total:${matches})`,
             bbox: bounds,
         }];
 
-        const parts = fs
+        const parts = fs!
             .map((f, i) => ({
                 partNumber: i + 1,
                 place_name: `[P] ${f.properties.tpteksti} #${i + 1}`,
@@ -112,14 +127,16 @@ export const kiinteistorekisteriTunnusGeocoder = async query => {
     }
 
     // Multiple partial matches (e.g. matching prefix like "5-2" for "5-2-9901-2" etc.)
-    const results = fs
+    const results: Object[] = fs!
         .map(f => ({
             place_name: `[P] ${f.properties.tpteksti}`,
             center: f.geometry.coordinates,
         }))
 
-    return [{
+    const resultsHeader: Object[] = [{
         place_name: `[P] ${nQuery} (${matches} matching properties)`,
         bbox: bounds,
-    }].concat(results)
+    }]
+
+    return resultsHeader.concat(results);
 }

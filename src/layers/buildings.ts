@@ -1,6 +1,5 @@
 import { addSource, addLayer } from '../layer_groups'
-import { map } from '../map'
-import { fillOpacity, roundToSignificantDigits, genericPopupHandler, Popup } from '../utils'
+import { fillOpacity, roundToSignificantDigits, genericPopupHandler, createPopup } from '../utils'
 
 addSource('helsinki-buildings', {
     "type": "vector",
@@ -146,12 +145,9 @@ genericPopupHandler('helsinki-puretut-fill', e => {
         buildingIdMap[b]
             ? buildingIdMap[b].reduce((c: string, d: string) =>
                 c ? `${c}, ${d}`
-                : `<strong>Building ID:</strong> ${d}`, '')
+                    : `<strong>Building ID:</strong> ${d}`, '')
             : ''
     ), '')
 
-    new Popup({ maxWidth: '360px' })
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .addTo(map);
+    createPopup(e, html, { maxWidth: '360px' });
 });

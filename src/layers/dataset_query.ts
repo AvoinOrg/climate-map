@@ -1,8 +1,9 @@
 import { arcgisToGeoJSON } from '@esri/arcgis-to-geojson-utils';
 import WMSCapabilities from 'ol/format/WMSCapabilities.js'
+import { sanitize } from 'dompurify';
 import { map } from '../map'
 import { addSource, addLayer } from '../layer_groups'
-import { Popup, genericPopupHandler } from '../utils'
+import { genericPopupHandler, createPopup } from '../utils'
 
 declare module "mapbox-gl" {
     interface Layer {
@@ -310,10 +311,7 @@ async function genericArcgisFeatureServer(layerUrl, bbox, x) {
             }
             html += '</tbody></table>'
 
-            new Popup({ maxWidth: '420px' })
-                .setLngLat(e.lngLat)
-                .setHTML(html)
-                .addTo(map);
+            createPopup(e, html, { maxWidth: '420px' });
         });
     }
     return true;
@@ -411,7 +409,7 @@ document.querySelectorAll('.dataset-query-clear-points').forEach(el => {
     el.addEventListener('click', clearQueryPoints);
 });
 
-const addQueryPoint = async function(e) {
+const addQueryPoint = async function (e) {
     if (!datasetQueryEnabledElem.checked) { return; }
     if (isDatasetQueryViewMode()) { return; } // Disable while viewing datasets.
 
@@ -435,7 +433,7 @@ datasetQueryEnabledElem.addEventListener('change', e => {
 
 const sanitizeInputHTML = html => {
     const elem = document.createElement("div");
-    elem.innerHTML = html;
+    elem.innerHTML = sanitize(html);
     return elem.textContent || elem.innerText || '';
 };
 
@@ -521,7 +519,7 @@ const updateDatasetQueryResultsList = (page, results: IResultRow[]) => {
             map.setLayoutProperty(layer, 'visibility', queryPointsVisibility);
         }
     }
-    queryResultsElem.innerHTML = html;
+    queryResultsElem.innerHTML = sanitize(html);
     queryResultsElem.querySelectorAll('button').forEach(e => {
         e.addEventListener('click', event => {
             const el = event.target as HTMLInputElement;
@@ -536,7 +534,7 @@ const updateDatasetQueryResultsList = (page, results: IResultRow[]) => {
 
 let datasetQueryNum = 0;
 let latestDatasetResultsNum = 0;
-const refreshDatasetQuery = async function(pageNum) {
+const refreshDatasetQuery = async function (pageNum) {
     const f = queryPointsSource.data.features;
     const pointsInc = f.filter(x => x.properties.type === 'included').map(x => x.geometry.coordinates);
     const pointsExc = f.filter(x => x.properties.type !== 'included').map(x => x.geometry.coordinates);

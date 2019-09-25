@@ -2,7 +2,7 @@ import { default as turfBooleanWithin } from '@turf/boolean-within';
 import { feature as turfFeature } from '@turf/helpers';
 import { flattenReduce as turfFlattenReduce } from '@turf/meta';
 import { map } from '../../map'
-import { roundToSignificantDigits, genericPopupHandler, pp, Popup } from '../../utils'
+import { roundToSignificantDigits, genericPopupHandler, pp, createPopup } from '../../utils'
 import { Expression } from 'mapbox-gl';
 
 // Ruokavirasto field plots CO2e formulas:
@@ -203,10 +203,7 @@ export const setupPopupHandlerForMaviPeltolohko = (title, layerName) => {
             `;
         }
 
-        new Popup({ maxWidth: '360px' })
-            .setLngLat(ev.lngLat)
-            .setHTML(html)
-            .addTo(map);
+        createPopup(ev, html, { maxWidth: '360px' });
     });
 }
 

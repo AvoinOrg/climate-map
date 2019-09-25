@@ -1,6 +1,5 @@
-import { map } from '../map'
 import { addSource, addLayer } from '../layer_groups'
-import { genericPopupHandler, Popup, fillOpacity, pp } from '../utils'
+import { genericPopupHandler, fillOpacity, pp, createPopup } from '../utils'
 
 addSource('hel-energiatodistukset', {
     "type": "vector",
@@ -63,9 +62,9 @@ addLayer({
     BEFORE: 'LABEL',
 })
 
-genericPopupHandler('hel-energiatodistukset-fill', e => {
+genericPopupHandler('hel-energiatodistukset-fill', ev => {
     let html = '';
-    e.features.forEach(f => {
+    for (const f of ev.features) {
         const p = f.properties;
 
         const energyUse = p.e_luku * p.lämmitetty_nettoala
@@ -82,10 +81,7 @@ genericPopupHandler('hel-energiatodistukset-fill', e => {
         ${energyPerVolume}
         </p>
         `
-    })
+    }
 
-    new Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .addTo(map);
+    createPopup(ev, html);
 });

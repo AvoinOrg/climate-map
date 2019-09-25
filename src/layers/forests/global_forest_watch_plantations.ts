@@ -1,6 +1,5 @@
-import { map } from '../../map'
 import { addSource, addLayer } from '../../layer_groups'
-import { Popup, genericPopupHandler, fillOpacity, pp } from '../../utils'
+import { genericPopupHandler, fillOpacity, pp, createPopup } from '../../utils'
 
 addSource('gfw_tree_plantations', {
     "type": "vector",
@@ -55,16 +54,16 @@ genericPopupHandler('gfw_tree_plantations-fill', e => {
     const f = e.features[0];
     const { image, spec_simp, type_text, area_ha, peat_ratio, avg_peatdepth } = f.properties;
 
-    const images = image.replace(/\.(tif|img|_)/g, '').toUpperCase().split(/[,; ]+/);
+    const images: string[] = image.replace(/\.(tif|img|_)/g, '').toUpperCase().split(/[,; ]+/);
     let results = '';
-    images.forEach(x => {
+    for (const x of images) {
         if (!/LGN\d/.test(x)) { return; }
         const base = x.replace(/LGN.*/, 'LGN0');
         // Most of the source images seem to fall in these categories.
         const candidates = [0, 1, 2].map(z => {
             results += `\n<li><a target="_blank" href="https://earthexplorer.usgs.gov/metadata/12864/${base + z}/">${base + x}</a></li>`;
         });
-    })
+    }
 
     const peatInfo = peat_ratio < 0.4 ? '' : `<strong>Tropical peatland</strong><br/>\nAverage peat depth: ${avg_peatdepth.toFixed(1)} metres<br/>`;
 
@@ -85,10 +84,5 @@ genericPopupHandler('gfw_tree_plantations-fill', e => {
     `
     if (results) html += `Potential Landsat source images: <ul>${results}</ul>`;
 
-    new Popup({ maxWidth: '360px' })
-        .setLngLat(e.lngLat)
-        // Upstream X-Frame-Options prevents this iframe trick.
-        // .setHTML(`<iframe sandbox src="https://earthexplorer.usgs.gov/metadata/12864/${image}/"></iframe>`)
-        .setHTML(html)
-        .addTo(map);
+    createPopup(e, html, { maxWidth: '360px' });
 });

@@ -829,6 +829,11 @@
   dependencies:
     "@turf/helpers" "6.x"
 
+"@types/dompurify@^0.0.33":
+  version "0.0.33"
+  resolved "https://registry.yarnpkg.com/@types/dompurify/-/dompurify-0.0.33.tgz#bec490ba5a5b4b31679fb9e5a70e4d2f405516bd"
+  integrity sha512-lUN9iC6b4txeaEef2PW7zIdhEKAp0Sw9bymOcXXZ7BaepB0nsDJYcLIrFfgpIkRSoZWBJ8IcYunB2hAXuHL1NA==
+
 "@types/geojson@*":
   version "7946.0.7"
   resolved "https://registry.yarnpkg.com/@types/geojson/-/geojson-7946.0.7.tgz#c8fa532b60a0042219cdf173ca21a975ef0666ad"
@@ -2141,6 +2146,11 @@ domhandler@^2.3.0:
   integrity sha512-JiK04h0Ht5u/80fdLMCEmV4zkNh2BcoMFBmZ/91WtYZ8qVXSKjiw7fXMgFPnHcSZgOo3XdinHvmnDUeMf5R4wA==
   dependencies:
     domelementtype "1"
+
+dompurify@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.0.2.tgz#42d709484aad6732db053f7db6ededea37376a8f"
+  integrity sha512-ehPzk0IiRtJQkrKqENyGHy/+jJoAmXi50fEb0bsdxzEytdb2mob5QjyQjMAXBGeBCRE+k0/MDD1caBg5X/JLBA==
 
 domutils@1.5.1:
   version "1.5.1"

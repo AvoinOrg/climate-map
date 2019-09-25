@@ -1,18 +1,20 @@
+import { sanitize } from 'dompurify';
+import { Layer, MapLayerMouseEvent, PopupOptions, Popup, Expression } from 'mapbox-gl';
 import { linear_kryw_0_100_c71, linear_bgyw_20_98_c66 } from './colormap';
 import { map } from './map';
-import { Layer, MapLayerMouseEvent } from 'mapbox-gl';
 
 // @ts-ignore
 const mapboxgl0 = mapboxgl;
 
-const colormapToStepExpr = (colormap, minValue, maxValue, expr) => {
+const colormapToStepExpr = (colormap: number[][], minValue: number, maxValue: number, expr: Expression) => {
+    // @ts-ignore TODO
     const cmapToRGBA = ([r, g, b]) => `rgb(${(r)},${g},${b})`;
     const cmap = colormap
         .map(x => x.map(c => Math.round(255 * c)))
         .map(cmapToRGBA);
 
     const delta = (maxValue - minValue) / (cmap.length - 1);
-    const ret = ['step', expr];
+    const ret: Expression = ['step', expr];
     ret.push(cmap[0]);
     let value = minValue;
     for (const color of cmap.slice(1)) {
@@ -34,7 +36,8 @@ const cetL9ColorMapStepExpr = colormapToStepExpr.bind(null, linear_bgyw_20_98_c6
 
 export const fillOpacity = 0.65;
 
-export const genericPopupHandler = (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => {
+export const genericPopupHandler: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => void
+= (layer, fn) => {
     if (Array.isArray(layer)) {
         return layer.forEach(l => genericPopupHandler(l, fn));
     }
@@ -48,7 +51,7 @@ export const genericPopupHandler = (layer: string | string[], fn: (e: MapLayerMo
 }
 
 // NB: By using the '/' operator instead of '*', we get rid of float bugs like 1.2000000000004.
-export const roundToSignificantDigitsPos = (n, expr) => [
+export const roundToSignificantDigitsPos = (n: number, expr: Expression) => [
     // Multiply back by true scale
     '/',
     // Round to two significant digits:
@@ -61,7 +64,7 @@ export const roundToSignificantDigitsPos = (n, expr) => [
     ],
     ['^', 10, ['-', n - 1, ['floor', ['log10', expr]]]],
 ]
-export const roundToSignificantDigits = (n, expr) => [
+export const roundToSignificantDigits = (n: number, expr: Expression) => [
     'case',
     ['==', 0, expr], 0,
     ['>', 0, expr], ['*', -1, roundToSignificantDigitsPos(n, ['*', -1, expr])],
@@ -69,7 +72,7 @@ export const roundToSignificantDigits = (n, expr) => [
 ]
 
 // Pretty print to precision:
-export const pp = (x, precision = 2) => (+x.toPrecision(precision)).toLocaleString();
+export const pp = (x: number, precision = 2) => (+x.toPrecision(precision)).toLocaleString();
 
 export const assert = (expr: any, message: any) => {
     if (!expr) throw new Error(`Assertion error: ${message}`);
@@ -77,6 +80,7 @@ export const assert = (expr: any, message: any) => {
 
 export const invertLayerTextHalo = (layer: Layer) => {
     layer.paint = { ...layer.paint }
+    // @ts-ignore TODO
     if (layer.paint && layer.paint["text-halo-width"]) {
         // Original style is something like:
         // text-color: "#999"
@@ -103,4 +107,8 @@ export const replaceLayer = (layer: Layer) => {
     map.addLayer(layer, layer.BEFORE);
 }
 
-export const Popup = mapboxgl0.Popup;
+export const createPopup = (ev: MapLayerMouseEvent, html: string, options?: PopupOptions) => 
+    new Popup()
+        .setLngLat(ev.lngLat)
+        .setHTML( sanitize(html) )
+        .addTo(map);

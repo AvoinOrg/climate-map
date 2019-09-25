@@ -1,6 +1,5 @@
-import { map } from '../map'
 import { addSource, addLayer } from '../layer_groups'
-import { genericPopupHandler, Popup, fillOpacity } from '../utils'
+import { genericPopupHandler, fillOpacity, createPopup } from '../utils'
 
 addSource('fi-mml-suot', {
     "type": "vector",
@@ -86,7 +85,7 @@ addLayer({
 })
 genericPopupHandler('gtk-turvevarat-suot-fill', e => {
     let html = '';
-    e.features.forEach(f => {
+    for (const f of e.features) {
         const p = f.properties;
         html += `
         Name: ${p.suon_nimi}<br/>
@@ -117,10 +116,7 @@ genericPopupHandler('gtk-turvevarat-suot-fill', e => {
             </p>`;
         })
         html += '</div>';
-    })
+    }
 
-    new Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .addTo(map);
+    createPopup(e, html)
 });

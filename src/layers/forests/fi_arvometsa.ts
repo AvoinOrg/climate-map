@@ -1,6 +1,6 @@
 import Chart from 'chart.js';
 import { addLayer, addSource } from '../../layer_groups';
-import { Popup, roundToSignificantDigits, replaceLayer, genericPopupHandler, assert, pp } from '../../utils';
+import { roundToSignificantDigits, replaceLayer, genericPopupHandler, assert, pp, createPopup } from '../../utils';
 import { map } from '../../map';
 import { setupPopupHandlerForMetsaanFiStandData } from './fi_forest_common';
 import { Expression, Layer, MapLayerMouseEvent } from 'mapbox-gl';
@@ -254,12 +254,6 @@ const harvestedWoodAttrs = [
 ]
 
 const setupArvometsaPopupHandler = () => {
-    const createPopup = (ev: MapLayerMouseEvent, html: string) => (
-        new Popup({ maxWidth: '360px' })
-            .setLngLat(ev.lngLat)
-            .setHTML(html)
-            .addTo(map)
-    );
 
     // TODO: maybe make the popup respond to global controls
     genericPopupHandler(['arvometsa-fill'], (ev) => {
@@ -350,7 +344,7 @@ const setupArvometsaPopupHandler = () => {
             <canvas class="arvometsa-popup-${prefix}"></canvas><br/>
             `;
         }
-        const popup = createPopup(ev, html);
+        const popup = createPopup(ev, html, { maxWidth: '360px' });
         // @ts-ignore TODO
         const popupElem = popup._content;
 

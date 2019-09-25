@@ -1,14 +1,22 @@
 import { map } from './map';
 import { assert, invertLayerTextHalo } from './utils';
+import { Layer } from 'mapbox-gl';
+
+declare module "mapbox-gl" {
+    export interface Layer {
+        BEFORE?: string
+    }
+}
 
 const backgroundLayerGroups = { 'terramonitor': true }
-export const layerGroupState = {
+interface ILayerGroupState { [s: string]: boolean; }
+export const layerGroupState: ILayerGroupState = {
     terramonitor: true,
     ete: false,
 }
 
 // delayedMapOperations are executed as soon as the map is loaded.
-const delayedMapOperations = [];
+const delayedMapOperations: (() => void)[] = [];
 export const executeDelayedMapOperations = () => {
     for (const op of delayedMapOperations) { op(); }
     delayedMapOperations.length = 0; // Free memory
@@ -21,20 +29,19 @@ const execWithMapLoaded = (fn: () => void) => {
 
 const toggleBaseMapSymbols = () => {
     execWithMapLoaded(() =>
-        map
-            .getStyle()
-            .layers
-            .filter(x => x.type === 'symbol')
-            .forEach(invertLayerTextHalo)
+        (map.getStyle().layers || [])
+        .filter(x => x.type === 'symbol')
+        .forEach(invertLayerTextHalo)
     )
 }
 
-export const hideAllLayersMatchingFilter = (filterFn) => {
-    Object.keys(layerGroupState).forEach(group => {
+export const hideAllLayersMatchingFilter: (filterFn: (group: string) => boolean) => void
+= (filterFn) => {
+    for (const group of Object.keys(layerGroupState)) {
         if (group in backgroundLayerGroups) return;
         if (filterFn && !filterFn(group)) return;
         toggleGroup(group, false);
-    })
+    }
 }
 
 // TODO: move elsewhere?
@@ -47,7 +54,8 @@ export const natura2000_mappings = {
     "natura2000-impl-r": { layer: "NaturaTotTapa_r", color: 'brown' },
 }
 
-export const layerGroups = {
+interface ILayerGroups { [s: string]: (string | (() => void))[] }
+export const layerGroups: ILayerGroups = {
     'valio': [
         () => hideAllLayersMatchingFilter(x => !/valio/.test(x)),
         'valio-fields-boundary', 'valio-fields-fill', 'valio-plohko-co2',
@@ -136,13 +144,14 @@ export const layerGroups = {
     'hedge-pilot-area': ['hedge-pilot-area-raster'],
 };
 
-export const originalSourceDefs = {}
+interface ISourceDefs { [s: string]: mapboxgl.AnySourceData }
+export const originalSourceDefs: ISourceDefs = {}
 export const addSource = (name: string, source: mapboxgl.AnySourceData) => {
     originalSourceDefs[name] = source;
     execWithMapLoaded(() => map.addSource(name, source));
 }
 
-function getFirstAncestorMatching(el: Element, filter: (el: Element) => boolean) {
+function getFirstAncestorMatching(el: (Element | null), filter: (el: Element) => boolean) {
     while (el !== null) {
         el = el.parentElement;
         if (el !== null && filter(el)) return el;
@@ -150,7 +159,7 @@ function getFirstAncestorMatching(el: Element, filter: (el: Element) => boolean)
     return null;
 }
 
-export const toggleGroup = (group, forcedState = undefined) => {
+export const toggleGroup = (group: string, forcedState?: boolean) => {
     const oldState = layerGroupState[group];
     const newState = forcedState === undefined ? !oldState : forcedState;
     if (oldState === newState) return;
@@ -185,10 +194,11 @@ export const toggleGroup = (group, forcedState = undefined) => {
     }
 }
 
-export const originalLayerDefs = {};
+interface ILayerDefs { [s: string]: Layer}
+export const originalLayerDefs: ILayerDefs = {};
 export const addLayer = (layer: mapboxgl.Layer, visibility = 'none') => {
     assert('BEFORE' in layer, `Layer ${layer.id} is missing a BEFORE declaration`);
-    assert(!window.initialMapLoaded || map.getLayer(layer.BEFORE), `getLayer(${layer.BEFORE}) failed`);
+    assert(!window.initialMapLoaded || map.getLayer(layer.BEFORE!), `getLayer(${layer.BEFORE}) failed`);
 
     const layout = layer.layout || {}
     // @ts-ignore TODO
@@ -196,6 +206,7 @@ export const addLayer = (layer: mapboxgl.Layer, visibility = 'none') => {
 
     layer.paint = layer.paint || {};
     if (layer.type === 'raster') {
+        // @ts-ignore TODO
         layer.paint['raster-resampling'] = layer.paint['raster-resampling'] || 'nearest';
     }
     originalLayerDefs[layer.id] = layer;

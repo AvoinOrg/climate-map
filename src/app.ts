@@ -4,11 +4,6 @@ import { layerGroups, layerGroupState, toggleGroup, executeDelayedMapOperations 
 import { map } from './map';
 import { kiinteistorekisteriTunnusGeocoder, enableMMLPalstatLayer } from './layers/fi_property_id';
 
-declare module "mapbox-gl" {
-    interface Layer {
-        BEFORE?: string
-    }
-}
 declare global {
     interface Window { initialMapLoaded: boolean; }
 }
@@ -39,7 +34,7 @@ window.addEventListener('load', () => {
     const layerGroupElems = document.querySelectorAll('.layer-group > label > input');
     for (const el of Array.from(layerGroupElems)) {
         el.addEventListener('change', () => {
-            el.parentElement.parentElement.classList.toggle('active');
+            el.parentElement!.parentElement!.classList.toggle('active');
         });
     }
 })
@@ -59,7 +54,8 @@ window.toggleMenu = function() {
 const enableDefaultLayers = () => {
     const enabledGroups = Object.keys(layerGroupState).filter(g => layerGroupState[g])
     for (const group of enabledGroups) {
-        const normalLayers = layerGroups[group].filter((l: any) => typeof l === 'string')
+        const normalLayers = layerGroups[group]
+        .filter((l: any) => typeof l === 'string') as string[]
         for (const layer of normalLayers) {
             map.setLayoutProperty(layer, 'visibility', 'visible');
         }
@@ -84,7 +80,9 @@ map.on('load', () => {
     enableDefaultLayers();
 
     // Ensure all symbol layers appear on top of satellite imagery.
-    map.getStyle().layers.filter(x => x.type === 'symbol').forEach(layer => {
+    (map.getStyle().layers || [])
+    .filter(x => x.type === 'symbol')
+    .forEach(layer => {
         // Rework Stadia default style to look nicer on top of satellite imagery
         invertLayerTextHalo(layer)
         layer.BEFORE = layer.BEFORE || 'BG_LABEL';
@@ -107,8 +105,8 @@ if (MapboxGeocoder0 !== undefined) {
     // Monkey-patch the geocoder to deal with async local queries:
     const geocoderOrigGeocode = geocoder._geocode;
     const geocoderOrigZoom = geocoder.options.zoom;
-    geocoder._geocode = async searchInput => {
-        let localResults = [];
+    geocoder._geocode = async (searchInput: string) => {
+        let localResults: Object[] = [];
         try {
             localResults = await kiinteistorekisteriTunnusGeocoder(searchInput);
             if (localResults.length > 0) {
@@ -121,7 +119,7 @@ if (MapboxGeocoder0 !== undefined) {
             console.error(e);
         }
         // A reasonable limit for Property Registry queries
-        geocoder.options.localGeocoder = (_dummyQuery) => localResults;
+        geocoder.options.localGeocoder = (_dummyQuery: any) => localResults;
         geocoderOrigGeocode.call(geocoder, searchInput);
 
         geocoder.options.localGeocoderOnly = false;

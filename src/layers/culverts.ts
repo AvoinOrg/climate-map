@@ -1,6 +1,6 @@
 import { map } from '../map'
 import { addSource, addLayer } from '../layer_groups'
-import { fillOpacity, genericPopupHandler, Popup } from '../utils'
+import { fillOpacity, genericPopupHandler, createPopup } from '../utils'
 import { Expression } from 'mapbox-gl';
 
 addSource('fi-vayla-tierummut', {
@@ -73,9 +73,9 @@ const fiVaylaTierumpuMateriaali = {
     9: 'muu materiaali',
 };
 
-genericPopupHandler('fi-vayla-tierummut-circle', e => {
+genericPopupHandler('fi-vayla-tierummut-circle', ev => {
     let html = '<div style="overflow:scroll; max-height: 500px">';
-    e.features.forEach(f => {
+    for (const f of ev.features) {
         const p = f.properties;
         let puoli = ''
         switch (p.PUOLI) {
@@ -94,18 +94,14 @@ genericPopupHandler('fi-vayla-tierummut-circle', e => {
         Yksilöivä tunniste: ${p.TUNNISTE}<br/>
         Rakennettu: ${p.ALKUPVM}<br/>
         `;
-
-    })
+    }
     html += '</div>';
 
-    new Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .addTo(map);
+    createPopup(ev, html);
 });
-genericPopupHandler('fi-vayla-ratarummut-circle', e => {
+genericPopupHandler('fi-vayla-ratarummut-circle', ev => {
     let html = '<div style="overflow:scroll; max-height: 500px">';
-    e.features.forEach(f => {
+    for (const f of ev.features) {
         const p = f.properties;
         html += `
         <strong>Ratarumpu</strong><br/>
@@ -116,12 +112,8 @@ genericPopupHandler('fi-vayla-ratarummut-circle', e => {
         Yksilöivä tunniste: ${p.OBJECTID}<br/>
         Rakennettu: ${p.ALKUPVM}<br/>
         `;
-
-    })
+    }
     html += '</div>';
 
-    new Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .addTo(map);
+    createPopup(ev, html);
 });
