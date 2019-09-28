@@ -386,7 +386,7 @@ const setupArvometsaPopupHandler = (layerName: string) => {
             const attrV = [];
             for (const attr of attrs) {
                 const prev = isCumulative(prefix) && attrV.length > 0 ? attrV[attrV.length - 1] : 0;
-                attrV.push(prev + p[attr]);
+                attrV.push(prev + p.area * p[attr]);
             }
             attrValues[prefix] = attrV;
         }
