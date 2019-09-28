@@ -89,6 +89,37 @@ map.on('load', () => {
         map.moveLayer(layer.id, layer.BEFORE)
     });
 
+
+    // A simple way to open the map in a certain location with certain layers enabled.
+
+    interface IHashParams {
+        lat: string
+        lon: string
+        zoom: string
+        layers: string
+    }
+    // @ts-ignore TODO
+    const hashParams: IHashParams = location.hash.replace(/^[#?]*/, '').split('&').reduce((prev, item) => (
+        Object.assign({ [item.split('=')[0]]: item.split('=')[1] }, prev)
+    ), {});
+
+    try {
+        const lat = Number.parseFloat(hashParams.lat);
+        const lon = Number.parseFloat(hashParams.lon);
+        // @ts-ignore TODO
+        map.panTo(new mapboxgl.LngLat(lon, lat));
+    } catch (e) {}
+
+    try {
+        const zoom = Number.parseFloat(hashParams.zoom);
+        if (zoom >= 0 && zoom < 25 && zoom === zoom) { map.zoomTo(zoom); }
+    } catch(e) {}
+
+    try {
+        const layers = hashParams.layers.split(',')
+        for (const layer of layers) { toggleGroup(layer, true); }
+    } catch (e) {}
+
 });  // /map onload
 
 // Only add the geocoding widget if it's been loaded.
