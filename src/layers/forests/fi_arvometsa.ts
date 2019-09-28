@@ -31,14 +31,50 @@ interface ArvometsaObjProperties extends Object {
 
 const nC_to_CO2 = 44 / 12;
 
+// Hue 54..159, saturation 57..4
+const colorboxStepsNeg = [
+    '#FFEC42',
+    '#FDF259',
+    '#FCF670',
+    '#F0F596',
+]
+// Hue 159 defaults. TODO: re-think this at some point
+const colorboxStepsPos = [
+    '#F2FFFA',
+    '#CAFDEC',
+    '#A4FCDD',
+    '#5DF5C0',
+    '#27EBA6',
+    '#04DB90',
+    '#00C480',
+    '#00A76D',
+    '#008758',
+];
+const stepsToLinear = (min, max, steps) => {
+    const step = (max-min)/(steps.length - 1);
+    const res = [];
+    let cur = min;
+    for (const s of steps) {
+        res.push(cur);
+        res.push(s);
+        cur += step;
+    }
+    return res;
+}
+
 // const arvometsaAreaCO2eFillColor = expr => cetL9ColorMapStepExpr(-5, 15, expr);
 const arvometsaAreaCO2eFillColor: (expr: Expression) => Expression = expr => [
     'interpolate',
     ['linear'],
     expr,
-    -5, 'hsla(159, 100%, 75%, 1)',
-    0, 'hsla(159, 100%, 50%, 1)',
-    15, 'hsla(159, 100%, 25%, 1)',
+    ...(
+        stepsToLinear(-5, 0, colorboxStepsNeg)
+        .concat([
+            0.01, 'hsla(159, 100%, 50%, 1)',
+            15, 'hsla(159, 100%, 25%, 1)',
+        ])
+    ),
+
 ];
 
 addSource('arvometsa', {
