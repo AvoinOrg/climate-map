@@ -109,7 +109,7 @@ export const replaceLayer = (layer: Layer) => {
 }
 
 export const createPopup = (ev: MapLayerMouseEvent, html: string, options?: PopupOptions) =>
-    new mapboxgl0.Popup()
+    new mapboxgl0.Popup(options)
         .setLngLat(ev.lngLat)
         .setHTML( sanitize(html) )
         .addTo(map);
