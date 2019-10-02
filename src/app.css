@@ -40,16 +40,16 @@ body {
     padding: var(--menu-button-padding);
 }
 :root {
-    --menu-padding: 30px;
+    --menu-padding: 12px;
     --menu-button-padding: 15px;
     --button-border-offset: 50px;
 }
 #menu-container{
-    font-size: 30px;
+    font-size: 20px;
     position: absolute;
     top: 0;
     left: 0;
-    width: 500px;
+    width: 350px;
     /* TODO: I couldn't get CSS var expressions to work here: */
     max-width: calc(100vw - 60px);
     height: 100%;
@@ -60,7 +60,7 @@ body {
 }
 #menu-container .ui-button {
     z-index: 5;
-    left: 550px;
+    left: 350px;
 }
 .ui-button {
     padding: var(--button-border-offset);
@@ -82,12 +82,11 @@ body {
 }
 
 #menu-container h1 {
-    font-size: 25px;
+    font-size: 18px;
     width: 50%;
     white-space: nowrap;
 }
 #menu-container h1 img {
-    clip-path: inset(15px 0px 15px 0px); /* The logo is too high */
     width: 50%;
     vertical-align: middle;
 }
@@ -130,10 +129,10 @@ body {
 
 .layer-card {
     margin-bottom: 30px;
-    font-size: 20px;
+    font-size: 13px;
 }
 .layer-card .title {
-    font-size: 30px;
+    font-size: 16px;
     display: inline-block;
     max-width: calc(100% - 48px); /* 48px is the width of the toggle switch, below */
 }
@@ -158,6 +157,9 @@ body {
     border: 2px solid #FFFFFF; border-radius: 20px;
     background-color: #A8A8A8;
     transition: background-color 0.15s ease-in;
+    /*
+    TODO: color rgb(25,166,156)
+    */
 }
 .onoffswitch-label:before {
     content: "";
@@ -186,7 +188,7 @@ body {
 #btn-logout, #btn-login {
     background: #333;
     color: #eee;
-    font-size: 24px;
+    font-size: 18px;
     position: absolute;
     top:65px;
     right: 60px;
@@ -278,17 +280,6 @@ legend li {
     border: 1px solid black;
 }
 
-.arvometsa li span:hover {
-    cursor: pointer;
-}
-g.bar rect {
-    fill: rgba(31, 34, 80, 0.8);
-}
-g.line rect {
-    fill: rgba(87, 95, 66, 0.5);
-}
-
-
 .tooltip {
     cursor: help;
     position: relative;
@@ -356,12 +347,41 @@ a:visited.pagination {
     color: inherit;
 }
 
+
+.arvometsa li span:hover {
+    cursor: pointer;
+}
+g.bar rect {
+    fill: rgba(31, 34, 80, 0.8);
+}
+g.line rect {
+    fill: rgba(87, 95, 66, 0.5);
+}
 .arvometsa-chart {
     width: 420px;
     height: 1px; /* initial height when no graphs are shown yet */
 }
 .arvometsa-projections > label {
     display:block;
+}
+#arvometsa-title {
+    font-size: 16px;
+    font-weight: bold;
+}
+.arvometsa-info {
+    margin: 10px 0;
+}
+#arvometsa-goto-location img {
+    height: 16px;
+}
+#arvometsa-goto-location:hover {
+    cursor: pointer;
+}
+.arvometsa-output {
+    margin: 50px 0;
+}
+.arvometsa-empty {
+    margin: 50px 0;
 }
 
 .dataset-query-result {

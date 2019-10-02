@@ -146,36 +146,6 @@
                 <input type="checkbox"/>
                 <caption>Forests</caption>
             </label>
-            <div class='layer-card'>
-                <div class='title'>Forest CO2 savings potential</div>
-                <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="forests" checked/>
-                    <label class="onoffswitch-label" for="forests"></label>
-                </div>
-                <legend id='legend-co2e'>
-                    <div class='legend-title'><abbr title='CO₂ equivalent'>CO₂e</abbr> savings potential</div>
-                    <div class='legend-scale'>
-                        <ul class='legend-labels'>
-                            <li><span style='background:hsla(159, 100%, 25%, 1)'>0</span></li>
-                            <li><span style='background:hsla(159, 100%, 33%, 1);'>5</span></li>
-                            <li><span style='background:hsla(159, 100%, 42%, 1);'>10</span></li>
-                            <li><span style='background:hsla(159, 100%, 50%, 1);'>15+</span></li>
-                            <li>tons CO2e/ha/year</li>
-                        </ul>
-                    </div>
-                    <div class='legend-footer'>
-                        This layer shows the impact of improved forestry operations on the CO2e impact of forest's carbon balance over a 50 year period, compared to traditional forestry methods.
-                        <br/>
-                        The calculation of the CO2 impact comes from extensively verified models developed by <a href="https://arvometsa.fi/">Arvometsä</a>.
-                    </div>
-                </legend>
-                <p>
-                    The data covers around 75% of Finland's forests. Most of the forest plots ("stands") shown are privately owned.
-                    <br/>
-                    Norway's forests are also shown, but their CO2 saving potential has not been calculated yet.
-                </p>
-            </div>
-
 
             <div class='layer-card'>
                 <div class='title'>Forestry CO2e balance</div>
@@ -188,7 +158,8 @@
                     <div class='legend-title'><abbr title='CO₂ equivalent'>CO₂e</abbr> net balance</div>
                     <div class='legend-scale'>
                         <ul class='legend-labels'>
-                            <li><span style='background:#FFEC42'>-5</span></li>
+                            <!-- TODO maybe hide the first one when carbon balance difference is selected -->
+                            <li><span class="hide-for-co2-savings-potential" style='background:#FFEC42'>-5</span></li>
                             <li><span style='background:hsla(159, 100%, 62.5%, 1)'>0</span></li>
                             <li><span style='background:hsla(159, 100%, 50%, 1)'>5</span></li>
                             <li><span style='background:hsla(159, 100%, 32.5%, 1)'>10</span></li>
@@ -197,16 +168,14 @@
                         </ul>
                     </div>
                     <div class='legend-footer'>
-                        Values are indicated per hectare per annum over a 10 year period.
-                        The color coding corresponds to the scenario that maximizes CO2 sequestering for the given forest.
+                        This layer shows the impact of improved forestry operations on
+                        the CO2e impact of forest's carbon balance over a 50 year period,
+                        compared to traditional forestry methods.
+                        <br/>
+                        The calculation of the CO2 impact comes from extensively verified
+                        models developed by <a href="https://arvometsa.fi/">Arvometsä</a>.
                     </div>
                 </legend>
-
-                <div>
-                    <input type="checkbox" name="arvometsa-toggle-forest-parcel-select" id="arvometsa-toggle-forest-parcel-select"/>
-                    <label for="arvometsa-toggle-forest-parcel-select">Show projections only for selected forest plots</label>
-                    <p>Select a forest plot by clicking it.</p>
-                </div>
 
 
                 <div class="layer-details">
@@ -218,11 +187,7 @@
                                 No cuttings
                             </label>
                             <label>
-                                <input type="radio" name="arvometsa-scenario" value="arvometsa_bestmethod" checked />
-                                Best forestry method for each parcel CO2-wise
-                            </label>
-                            <label>
-                                <input type="radio" name="arvometsa-scenario" value="arvometsa_jatkuva"/>
+                                <input type="radio" name="arvometsa-scenario" value="arvometsa_jatkuva" checked />
                                 Continuous cover forestry
                             </label>
                             <label>
@@ -240,39 +205,74 @@
                         </div>
                     </p>
 
-                    <label>Show cumulative carbon balance
-                        <input id="arvometsa-cumulative" type="checkbox" checked/>
-                    </label>
-
-                    <br/>
-
-                    <p class="info">
-                        <strong>Carbon balance</strong>: Carbon balance is defined as the amount of carbon sequestered minus the amount released.
-                        <br/>
-                        Therefore a negative carbon balance means a plot of land that is a net carbon source,
-                        and a positive value indicates a net carbon sink.
-                    </p>
-
-                    <strong>Forest CO2e balance (trees + soil)</strong>
-                    <canvas class="arvometsa-chart arvometsa-cbf"></canvas>
-
-                    <strong>Forestry CO2e balance (trees + soil + products)</strong>
-                    <canvas class="arvometsa-chart arvometsa-cbt"></canvas>
-
-                    <strong>Forest carbon stock (trees + soil)</strong>
-                    <canvas class="arvometsa-chart arvometsa-bio"></canvas>
-
-                    <strong>Harvested wood (m<sup>3</sup>)</strong>
-                    <canvas class="arvometsa-chart arvometsa-harvested-wood"></canvas>
-
-                    <div style="margin-top: 10px">
-                        <strong><abbr title="NPV, 3% annual discounting">Net present value of wood production</abbr>:</strong>
-                        <output class='arvometsa-npv'></output>
+                    <div>
+                        <label>Show cumulative carbon balance
+                            <input id="arvometsa-cumulative" type="checkbox" checked/>
+                        </label>
                     </div>
 
-                    <div style="margin-top: 10px">
-                        <strong>Total area:</strong>
-                        <output class='arvometsa-area'></output>
+                    <div>
+                        <label>Show values per hectare
+                            <input id="arvometsa-per-hectare" type="checkbox" checked/>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label>Show carbon balance improvement potential
+                            <input id="arvometsa-carbon-balance-difference" type="checkbox" />
+                        </label>
+                    </div>
+
+                    <p class="info">
+                        <div>
+                            <strong>Carbon balance</strong>:
+                            Carbon balance is defined as the amount of carbon sequestered
+                            minus the amount released.
+                            <br/>
+                            Therefore a negative carbon balance means a plot of land that is a
+                            net carbon source, and a positive value indicates a net carbon sink.
+                        </div>
+                        <div>
+                            <strong>Carbon balance improvement potential</strong>:
+                            The carbon balance improvement potential defined as the difference between
+                            the selected forestry method under the <em>projections</em> list and
+                            the most commonly used method today (thin from below – clearfell).
+                        </div>
+                    </p>
+
+                    <h3 class="arvometsa-empty">
+                        View forest information by selecting any area on the map.
+                    </h3>
+
+                    <div class="arvometsa-output" hidden>
+                        <p>
+                            <span id="arvometsa-title"></span>
+                            <span id="arvometsa-goto-location">
+                                <img src='_ionicons_svg_md-contract.svg'/>
+                            </span>
+                        </p>
+
+                        <div class="arvometsa-info">
+                            <div>
+                                <strong>Forest area:</strong>
+                                <output class='arvometsa-area'></output>
+                            </div>
+
+                            <div>
+                                <strong><abbr title="NPV, 3% annual discounting">Net present value of wood production</abbr>:</strong>
+                                <output class='arvometsa-npv'></output>
+                            </div>
+                        </div>
+
+                        <strong>CO2 balance</strong>
+                        <canvas class="arvometsa-chart arvometsa-cbt"></canvas>
+
+                        <strong>Forest carbon stock</strong>
+                        <canvas class="arvometsa-chart arvometsa-bio"></canvas>
+
+                        <strong>Harvested wood (m<sup>3</sup>)</strong>
+                        <canvas class="arvometsa-chart arvometsa-harvested-wood"></canvas>
+
                     </div>
                 </div>
             </div>

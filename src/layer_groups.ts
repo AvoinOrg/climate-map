@@ -67,12 +67,6 @@ export const layerGroups: ILayerGroups = {
     'forests': [
         () => hideAllLayersMatchingFilter(x => /mature-forests/.test(x)),
 
-        'arvometsa-actionable-relative-raster',
-        'arvometsa-actionable-relative-fill',
-        'arvometsa-boundary',
-        'arvometsa-actionable-relative-sym',
-        // 'metsaan-stand-raster', 'metsaan-stand-fill', 'metsaan-stand-co2', 'metsaan-stand-outline',
-
         // Norway
         'nibio-ar50-forests-fill', 'nibio-ar50-forests-outline', 'nibio-ar50-forests-sym',
     ],
@@ -85,18 +79,23 @@ export const layerGroups: ILayerGroups = {
     'arvometsa': [
         'arvometsa-country-fill',
         'arvometsa-country-boundary',
+        'arvometsa-country-highlighted',
         'arvometsa-regional-state-fill',
         'arvometsa-regional-state-boundary',
+        'arvometsa-regional-state-highlighted',
         'arvometsa-region-fill',
         'arvometsa-region-boundary',
+        'arvometsa-region-highlighted',
         'arvometsa-municipality-fill',
         'arvometsa-municipality-boundary',
+        'arvometsa-municipality-highlighted',
         'arvometsa-property-fill',
         'arvometsa-property-boundary',
+        'arvometsa-property-highlighted',
         'arvometsa-fill',
         'arvometsa-boundary',
-        'arvometsa-sym',
         'arvometsa-highlighted',
+        'arvometsa-sym',
     ],
     'mature-forests': [
         () => hideAllLayersMatchingFilter(x => /^forests$/.test(x)),

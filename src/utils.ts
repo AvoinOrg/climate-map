@@ -113,3 +113,20 @@ export const createPopup = (ev: MapLayerMouseEvent, html: string, options?: Popu
         .setLngLat(ev.lngLat)
         .setHTML( sanitize(html) )
         .addTo(map);
+
+export function getGeoJsonGeometryBounds(coordinates: any) {
+    if (typeof coordinates[0] === 'number') {
+        const [lon, lat] = coordinates;
+        return [lon, lat, lon, lat];
+    }
+
+    const bounds = [999,999,-999,-999];
+    for (const x of coordinates) {
+        const bounds2 = getGeoJsonGeometryBounds(x)
+        bounds[0] = Math.min(bounds[0], bounds2[0]);
+        bounds[1] = Math.min(bounds[1], bounds2[1]);
+        bounds[2] = Math.max(bounds[2], bounds2[2]);
+        bounds[3] = Math.max(bounds[3], bounds2[3]);
+    }
+    return bounds;
+}
