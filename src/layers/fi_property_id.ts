@@ -1,4 +1,4 @@
-import { map } from '../map'
+import { directAddSource, directAddLayer, getLayer } from '../map';
 
 interface IProperties {
     tpteksti: string;
@@ -55,9 +55,9 @@ export const queryKiinteistoTunnus = async (query: string) => {
 }
 
 export const enableMMLPalstatLayer = () => {
-    if (map.getLayer('fi-mml-palstat-outline')) { return; }
+    if (getLayer('fi-mml-palstat-outline')) { return; }
 
-    map.addSource('fi-mml-palstat', {
+    directAddSource('fi-mml-palstat', {
         "type": "vector",
         "tiles": ["https://map.buttonprogram.org/palstat/{z}/{x}/{y}.pbf.gz?v=0"],
         "minzoom": 14,
@@ -65,7 +65,7 @@ export const enableMMLPalstatLayer = () => {
         bounds: [19, 59, 32, 71], // Finland
     });
 
-    map.addLayer({
+    directAddLayer({
         'id': 'fi-mml-palstat-outline',
         'source': 'fi-mml-palstat',
         'source-layer': 'default',
@@ -77,7 +77,7 @@ export const enableMMLPalstatLayer = () => {
         BEFORE: 'OUTLINE',
     }, 'OUTLINE')
 
-    map.addLayer({
+    directAddLayer({
         'id': 'fi-mml-palstat-sym',
         'source': 'fi-mml-palstat',
         'source-layer': 'default',

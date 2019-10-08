@@ -1,4 +1,5 @@
-import { layerGroups, originalLayerDefs, originalSourceDefs } from './layer_groups'
+import { layerGroups } from './layer_groups'
+import { originalLayerDefs, originalSourceDefs } from './utils';
 
 // TODO: export pre-multiplied alpha colors:
 // https://github.com/mapbox/mapbox-gl-native/issues/193#issuecomment-43077841

@@ -1,5 +1,5 @@
-import { addSource, addLayer } from '../../layer_groups'
-import { genericPopupHandler, fillOpacity, pp, createPopup } from '../../utils'
+import { fillOpacity, pp } from '../../utils'
+import { addSource, addLayer, genericPopupHandler, createPopup } from '../../map';
 
 addSource('gfw_tree_plantations', {
     "type": "vector",

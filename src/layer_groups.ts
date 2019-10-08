@@ -1,12 +1,8 @@
-import { map } from './map';
-import { assert, invertLayerTextHalo } from './utils';
-import { Layer } from 'mapbox-gl';
+import { assert, execWithMapLoaded, originalLayerDefs } from './utils';
+import { 
+    toggleBaseMapSymbols, setLayoutProperty, moveLayer
+ } from './map';
 
-declare module "mapbox-gl" {
-    export interface Layer {
-        BEFORE?: string
-    }
-}
 
 const backgroundLayerGroups = { 'terramonitor': true }
 interface ILayerGroupState { [s: string]: boolean; }
@@ -15,25 +11,6 @@ export const layerGroupState: ILayerGroupState = {
     ete: false,
 }
 
-// delayedMapOperations are executed as soon as the map is loaded.
-const delayedMapOperations: (() => void)[] = [];
-export const executeDelayedMapOperations = () => {
-    for (const op of delayedMapOperations) { op(); }
-    delayedMapOperations.length = 0; // Free memory
-}
-
-const execWithMapLoaded = (fn: () => void) => {
-    if (window.initialMapLoaded) { fn(); }
-    else { delayedMapOperations.push(fn); }
-}
-
-const toggleBaseMapSymbols = () => {
-    execWithMapLoaded(() =>
-        (map.getStyle().layers || [])
-        .filter(x => x.type === 'symbol')
-        .forEach(invertLayerTextHalo)
-    )
-}
 
 export const hideAllLayersMatchingFilter: (filterFn: (group: string) => boolean) => void
 = (filterFn) => {
@@ -153,12 +130,6 @@ export const layerGroups: ILayerGroups = {
     'hedge-pilot-area': ['hedge-pilot-area-raster'],
 };
 
-interface ISourceDefs { [s: string]: mapboxgl.AnySourceData }
-export const originalSourceDefs: ISourceDefs = {}
-export const addSource = (name: string, source: mapboxgl.AnySourceData) => {
-    originalSourceDefs[name] = source;
-    execWithMapLoaded(() => map.addSource(name, source));
-}
 
 function getFirstAncestorMatching(el: (Element | null), filter: (el: Element) => boolean) {
     while (el !== null) {
@@ -185,8 +156,8 @@ export const toggleGroup = (group: string, forcedState?: boolean) => {
             assert(BEFORE, JSON.stringify(originalLayerDefs[layer]));
 
             execWithMapLoaded(() => {
-                map.moveLayer(layer, BEFORE); // Make this the topmost layer.
-                map.setLayoutProperty(layer, 'visibility', newState ? 'visible' : 'none');
+                moveLayer(layer, BEFORE); // Make this the topmost layer.
+                setLayoutProperty(layer, 'visibility', newState ? 'visible' : 'none');
             })
         }
     }
@@ -203,21 +174,3 @@ export const toggleGroup = (group: string, forcedState?: boolean) => {
     }
 }
 
-interface ILayerDefs { [s: string]: Layer}
-export const originalLayerDefs: ILayerDefs = {};
-export const addLayer = (layer: mapboxgl.Layer, visibility = 'none') => {
-    assert('BEFORE' in layer, `Layer ${layer.id} is missing a BEFORE declaration`);
-    assert(!window.initialMapLoaded || map.getLayer(layer.BEFORE!), `getLayer(${layer.BEFORE}) failed`);
-
-    const layout = layer.layout || {}
-    // @ts-ignore TODO
-    layout.visibility = visibility
-
-    layer.paint = layer.paint || {};
-    if (layer.type === 'raster') {
-        // @ts-ignore TODO
-        layer.paint['raster-resampling'] = layer.paint['raster-resampling'] || 'nearest';
-    }
-    originalLayerDefs[layer.id] = layer;
-    execWithMapLoaded(() => map.addLayer({ layout, ...layer }, layer.BEFORE));
-}

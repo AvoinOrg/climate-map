@@ -1,18 +1,7 @@
-import { GeoJSONSourceRaw } from "mapbox-gl";
 import { invertLayerTextHalo } from './utils';
-import { layerGroups, layerGroupState, toggleGroup, executeDelayedMapOperations } from './layer_groups';
-import { map } from './map';
-import { kiinteistorekisteriTunnusGeocoder, enableMMLPalstatLayer } from './layers/fi_property_id';
+import { layerGroups, layerGroupState, toggleGroup } from './layer_groups';
+import { setLayoutProperty, getMapLayers, moveLayer, zoomTo, mapInit, panTo, onMapLoad } from "./map";
 
-declare global {
-    interface Window { initialMapLoaded: boolean; }
-}
-
-// External dependencies:
-// @ts-ignore
-const mapboxgl0 = mapboxgl;
-// @ts-ignore
-const MapboxGeocoder0 = MapboxGeocoder
 
 // Set up event handlers for layer toggles, etc.
 window.addEventListener('load', () => {
@@ -57,36 +46,22 @@ const enableDefaultLayers = () => {
         const normalLayers = layerGroups[group]
         .filter((l: any) => typeof l === 'string') as string[]
         for (const layer of normalLayers) {
-            map.setLayoutProperty(layer, 'visibility', 'visible');
+            setLayoutProperty(layer, 'visibility', 'visible');
         }
     }
 }
 
-window.initialMapLoaded = false;
-map.on('load', () => {
-    window.initialMapLoaded = true;
-
-    const emptyGeoJson: GeoJSONSourceRaw = { type: 'geojson', data: { type: "FeatureCollection", features: [], } };
-
-    // Add empty pseudo-layers to make Z-ordering much easier:
-    map.addLayer({ id: 'BACKGROUND', type: 'fill', source: emptyGeoJson });
-    map.addLayer({ id: 'FILL', type: 'fill', source: emptyGeoJson, BEFORE: 'BACKGROUND' });
-    map.addLayer({ id: 'OUTLINE', type: 'fill', source: emptyGeoJson, BEFORE: 'FILL' }); // Outlines go on top of fills, etc. But below labels
-    map.addLayer({ id: 'BG_LABEL', type: 'fill', source: emptyGeoJson, BEFORE: 'OUTLINE' }); // Background map labels are less important than custom labels
-    map.addLayer({ id: 'LABEL', type: 'fill', source: emptyGeoJson, BEFORE: 'BG_LABEL' }); // Labels go on top of almost everything
-    map.addLayer({ id: 'TOP', type: 'fill', source: emptyGeoJson, BEFORE: 'LABEL' }); // TOP goes on top of labels too
-
-    executeDelayedMapOperations();
+onMapLoad(() => {
     enableDefaultLayers();
 
     // Ensure all symbol layers appear on top of satellite imagery.
-    (map.getStyle().layers || [])
+    getMapLayers()
     .filter(x => x.type === 'symbol')
     .forEach(layer => {
         // Rework Stadia default style to look nicer on top of satellite imagery
         invertLayerTextHalo(layer)
         layer.BEFORE = layer.BEFORE || 'BG_LABEL';
-        map.moveLayer(layer.id, layer.BEFORE)
+        moveLayer(layer.id, layer.BEFORE)
     });
 
 
@@ -103,16 +78,16 @@ map.on('load', () => {
         Object.assign({ [item.split('=')[0]]: item.split('=')[1] }, prev)
     ), {});
 
+    // TODO: fix command race condition here when using mapbox-gl
     try {
         const lat = Number.parseFloat(hashParams.lat);
         const lon = Number.parseFloat(hashParams.lon);
-        // @ts-ignore TODO
-        map.panTo(new mapboxgl.LngLat(lon, lat));
+        panTo(lon, lat);
     } catch (e) {}
 
     try {
         const zoom = Number.parseFloat(hashParams.zoom);
-        if (zoom >= 0 && zoom < 25 && zoom === zoom) { map.zoomTo(zoom); }
+        if (zoom >= 0 && zoom < 25 && zoom === zoom) { zoomTo(zoom); }
     } catch(e) {}
 
     try {
@@ -120,51 +95,6 @@ map.on('load', () => {
         for (const layer of layers) { toggleGroup(layer, true); }
     } catch (e) {}
 
-});  // /map onload
+}); // /map onload
 
-// Only add the geocoding widget if it's been loaded.
-// @ts-ignore
-if (MapboxGeocoder0 !== undefined) {
-    const geocoder = new MapboxGeocoder0({
-        accessToken: process.env.GEOCODING_ACCESS_TOKEN,
-        countries: 'fi',
-        localGeocoder: kiinteistorekisteriTunnusGeocoder,
-        mapboxgl: mapboxgl0,
-    })
-    map.addControl(geocoder);
-
-    // Monkey-patch the geocoder to deal with async local queries:
-    const geocoderOrigGeocode = geocoder._geocode;
-    const geocoderOrigZoom = geocoder.options.zoom;
-    geocoder._geocode = async (searchInput: string) => {
-        let localResults: Object[] = [];
-        try {
-            localResults = await kiinteistorekisteriTunnusGeocoder(searchInput);
-            if (localResults.length > 0) {
-                enableMMLPalstatLayer();
-                // Don't invoke the external API here. It would have no useful results anyway.
-                geocoder.options.localGeocoderOnly = true;
-                geocoder.options.zoom = 14;
-            }
-        } catch (e) {
-            console.error(e);
-        }
-        // A reasonable limit for Property Registry queries
-        geocoder.options.localGeocoder = (_dummyQuery: any) => localResults;
-        geocoderOrigGeocode.call(geocoder, searchInput);
-
-        geocoder.options.localGeocoderOnly = false;
-        geocoder.options.zoom = geocoderOrigZoom;
-    }
-}
-
-map.addControl(new mapboxgl0.NavigationControl());
-
-map.addControl(new mapboxgl0.GeolocateControl({
-    positionOptions: {
-        enableHighAccuracy: true,
-    },
-    trackUserLocation: true,
-}));
-
-map.addControl(new mapboxgl0.ScaleControl(), 'bottom-right');
+mapInit();

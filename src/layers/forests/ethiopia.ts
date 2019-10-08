@@ -1,4 +1,4 @@
-import { addLayer, addSource } from '../../layer_groups';
+import { addLayer, addSource } from '../../map';
 
 addSource('ethiopia_forest_change_2003_2013', {
     "type": 'raster',

@@ -1,4 +1,5 @@
-import { genericPopupHandler, pp, createPopup } from '../../utils';
+import { pp } from '../../utils';
+import { genericPopupHandler, createPopup } from '../../map';
 
 const metsaanFiSoilTypes = [
     [10, 'Rough or medium grade soil of heathland', 'Keskikarkea tai karkea kangasmaa'],

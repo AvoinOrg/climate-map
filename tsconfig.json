@@ -5,7 +5,32 @@
         "sourceMap": true,
         "outDir": "ts-out/",
         "noImplicitAny": true,
-        "strictNullChecks": true
+        "strictNullChecks": true,
+        // OpenLayers:
+        "allowJs": true,
+        "checkJs": true,
+        "baseUrl": "./",
+        "paths": {
+            "ol": [
+                "node_modules/ol/src"
+            ],
+            "ol/*": [
+                "node_modules/ol/src/*"
+            ],
+            "ol-mapbox-style": [
+                "node_modules/ol-mapbox-style"
+            ]
+        }
     },
-    "files": ["src/app.ts"]
+    "files": [
+        "src/app.ts"
+    ],
+    "include": [
+        "**/*.js",
+        "node_modules/ol-mapbox-style/**/*.js",
+        "node_modules/ol/**/*.js"
+    ],
+    "exclude": [
+        "dist/"
+    ]
 }

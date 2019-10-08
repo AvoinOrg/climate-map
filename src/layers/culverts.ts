@@ -1,6 +1,5 @@
-import { map } from '../map'
-import { addSource, addLayer } from '../layer_groups'
-import { fillOpacity, genericPopupHandler, createPopup } from '../utils'
+import { addSource, addLayer, genericPopupHandler, createPopup } from '../map'
+import { fillOpacity } from '../utils'
 import { Expression } from 'mapbox-gl';
 
 addSource('fi-vayla-tierummut', {

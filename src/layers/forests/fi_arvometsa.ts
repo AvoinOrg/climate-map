@@ -1,8 +1,8 @@
 import { Chart } from 'chart.js';
 import { Expression, MapboxGeoJSONFeature } from 'mapbox-gl';
-import { roundToSignificantDigits, genericPopupHandler, assert, pp, fillOpacity, getGeoJsonGeometryBounds } from '../../utils';
-import { addLayer, addSource } from '../../layer_groups';
-import { map } from '../../map';
+import { roundToSignificantDigits, assert, pp, fillOpacity, getGeoJsonGeometryBounds } from '../../utils';
+import { addLayer, addSource, setPaintProperty, setLayoutProperty, setFilter, querySourceFeatures, fitBounds, genericPopupHandler } from '../../map';
+import RenderFeature from 'ol/render/Feature';
 
 
 interface ILayerOption { minzoom: number, maxzoom?: number, id: string }
@@ -10,11 +10,18 @@ interface ILayerOptions { [s: string]: ILayerOption }
 const layerOptions: ILayerOptions = {
     'arvometsa': { minzoom: 14, id: 'standid' },
     'arvometsa-property': { minzoom: 12, maxzoom: 14, id: 'localid' },
-    'arvometsa-municipality': { minzoom: 8, maxzoom: 12, id: 'localid' },
-    'arvometsa-region': { minzoom: 6, maxzoom: 8, id: 'localid' },
-    'arvometsa-regional-state': { minzoom: 4.5, maxzoom: 6, id: 'localid' },
-    'arvometsa-country': { minzoom: 0, maxzoom: 4.5, id: 'localid' },
+    'arvometsa-municipality': { minzoom: 7.5, maxzoom: 12, id: 'localid' },
+    'arvometsa-region': { minzoom: 5.5, maxzoom: 7.5, id: 'localid' },
+    'arvometsa-regional-state': { minzoom: 4, maxzoom: 5.5, id: 'localid' },
+    'arvometsa-country': { minzoom: 0, maxzoom: 4, id: 'localid' },
 }
+
+// In theory, we could display just the properties as MVT,
+// but Mapbox-GL is too buggy so it's more reliable to also have munis as MVT.
+// const mvtLayers = ['arvometsa', 'arvometsa-property', 'arvometsa-municipality'];
+
+// geojson fetch not yet implemented:
+const mvtLayers = Object.keys(layerOptions);
 
 const nC_to_CO2 = 44 / 12;
 
@@ -84,13 +91,21 @@ const sources = {
 for (const [source,path] of Object.entries(sources)) {
     const sourceName = `arvometsa-${source}`
     const opts = layerOptions[sourceName];
+    const sourceOpts = mvtLayers.indexOf(sourceName) !== -1
+        ? {
+            "type": "vector",
+            "tiles": [`https://map.buttonprogram.org/arvometsa/${path}/tiles/{z}/{x}/{y}.pbf.gz?v=2`],
+            minzoom: 0, // Math.floor(opts.minzoom), // minzoom 0 for all is useful for highlights!
+            maxzoom: Math.ceil(opts.maxzoom!),
+            bounds: [19, 59, 32, 71], // Finland
+        } : {
+            "type": "geojson",
+            "data": `https://map.buttonprogram.org/arvometsa/${path}.geojson.gz?v=0`,
+        };
+    // @ts-ignore
     addSource(sourceName, {
-        "type": "vector",
-        "tiles": [`https://map.buttonprogram.org/arvometsa/${path}/tiles/{z}/{x}/{y}.pbf.gz?v=1`],
-        minzoom: 0, // Math.floor(opts.minzoom), // minzoom 0 for all is useful for highlights!
-        maxzoom: Math.ceil(opts.maxzoom!),
-        bounds: [19, 59, 32, 71], // Finland
         attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
+        ...sourceOpts,
     });
 }
 
@@ -101,6 +116,7 @@ const arvometsaDatasetClasses = [
     'arvometsa_ylaharvennus',
     'arvometsa_maxhakkuu',
 ];
+const BEST_METHOD_FOR_EACH = -1;
 const ARVOMETSA_TRADITIONAL_FORESTRY_METHOD = 2; // Thin from below – clearfell
 
 
@@ -120,7 +136,7 @@ const updateGraphs = (f?: MapboxGeoJSONFeature) => {
     const carbonBalanceDifferenceFlag = (document.getElementById('arvometsa-carbon-balance-difference') as HTMLInputElement).checked;
 
     const co2eValueExpr = (
-        arvometsaDataset === -1
+        arvometsaDataset === BEST_METHOD_FOR_EACH
             ? arvometsaBestMethodCumulativeSumCbt
             : arvometsaSumMethodAttrs(arvometsaDataset, 'cbt')
     );
@@ -132,21 +148,24 @@ const updateGraphs = (f?: MapboxGeoJSONFeature) => {
         : arvometsaAreaCO2eFillColor(co2eValueExpr);
 
     for (const type of Object.keys(layerOptions)) {
-        map.setPaintProperty(`${type}-fill`, 'fill-color', fillColor);
+        setPaintProperty(`${type}-fill`, 'fill-color', fillColor);
     }
 
-    map.setLayoutProperty('arvometsa-sym', 'text-field', arvometsaTextfieldExpression(co2eValueExpr));
+    setLayoutProperty('arvometsa-sym', 'text-field', arvometsaTextfieldExpression(co2eValueExpr));
 
     if (!selectedFeature) return;
 
     const dataset = arvometsaDataset;
-    const totals = { area: 0 };
-    const totalsAttrs = (harvestedWoodAttrs.join(' ') + ' ' + baseAttrs).split(/\s+/);
+    const totals = { area: 0, st_area: 0 };
+    const totalBaseAttrs = (harvestedWoodAttrs.join(' ') + ' ' + baseAttrs).split(/\s+/);
     for (const dsNum of [dataset, ARVOMETSA_TRADITIONAL_FORESTRY_METHOD]) {
-        for (const attr of totalsAttrs) {
+        for (const attr of totalBaseAttrs) {
             totals[`m${dsNum}_${attr}`] = 0;
         }
     }
+    const areaProportionalAttrs =
+        Object.keys(totals)
+        .filter(x => x !== 'area' && x !== 'st_area');
 
     const reMatchAttr = /m-?\d_(.*)/;
 
@@ -165,10 +184,10 @@ const updateGraphs = (f?: MapboxGeoJSONFeature) => {
         seenIds[id] = true;
 
         totals.area += p.area;
+        totals.st_area += p.st_area || p.area;
 
-        if (dataset === -1) {
-            for (const a in totals) {
-                if (a === 'area') { continue; }
+        if (dataset === BEST_METHOD_FOR_EACH) {
+            for (const a of areaProportionalAttrs) {
                 const attr = `m${p.best_method}_${reMatchAttr.exec(a)[1]}`;
                 if (!(attr in p)) {
                     console.error('Invalid attr:', attr, 'orig:', a, 'props:', p)
@@ -178,8 +197,8 @@ const updateGraphs = (f?: MapboxGeoJSONFeature) => {
             continue;
         }
 
-        for (const a in totals) {
-            if (a in p && a !== 'area') { totals[a] += p[a] * p.area; }
+        for (const a of areaProportionalAttrs) {
+            if (a in p) { totals[a] += p[a] * p.area; }
         }
     }
 
@@ -375,9 +394,11 @@ const updateGraphs = (f?: MapboxGeoJSONFeature) => {
 
     document.getElementById('arvometsa-title').textContent = title;
 
-    const totalArea = `${pp(totals.area, 3)} hectares`;
-    const areaElem = document.querySelector(`output.arvometsa-area`);
-    areaElem.textContent = totalArea;
+    const forestArea = `${pp(totals.area, 3)} hectares`;
+    document.querySelector(`output.arvometsa-area-forest`).textContent = forestArea;
+
+    const totalArea = `${pp(1e-4 * totals.st_area, 3)} hectares`;
+    document.querySelector(`output.arvometsa-area-total`).textContent = totalArea;
 }
 
 
@@ -423,10 +444,10 @@ const arvometsaCumulativeCO2eValueExpr = arvometsaBestMethodCumulativeSumCbt;
 let selectedFeature, selectedFeatureLayer, selectedFeatureBounds;
 
 for (const [type, opts] of Object.entries(layerOptions)) {
+    const extraOpts = mvtLayers.indexOf(type) === -1 ? {} : {"source-layer": "default"};
     addLayer({
         'id': `${type}-fill`,
         'source': type,
-        'source-layer': 'default',
         'type': 'fill',
         'paint': {
             'fill-color': arvometsaAreaCO2eFillColor(arvometsaCumulativeCO2eValueExpr),
@@ -435,11 +456,11 @@ for (const [type, opts] of Object.entries(layerOptions)) {
         minzoom: opts.minzoom,
         maxzoom: opts.maxzoom || 24,
         BEFORE: 'FILL',
+        ...extraOpts,
     });
     addLayer({
         'id': `${type}-boundary`,
         'source': type,
-        'source-layer': 'default',
         'type': 'line',
         'paint': {
             'line-opacity': 0.5,
@@ -447,12 +468,12 @@ for (const [type, opts] of Object.entries(layerOptions)) {
         minzoom: opts.minzoom,
         maxzoom: opts.maxzoom || 24,
         BEFORE: 'OUTLINE',
+        ...extraOpts,
     });
 
     addLayer({
         'id': `${type}-highlighted`,
         "source": type,
-        "source-layer": "default",
         "type": 'fill',
         "paint": {
             "fill-outline-color": "#484896",
@@ -461,6 +482,7 @@ for (const [type, opts] of Object.entries(layerOptions)) {
         },
         "filter": ["in", opts.id],
         BEFORE: 'OUTLINE',
+        ...extraOpts,
     });
 }
 
@@ -509,7 +531,7 @@ const updateDetailVisibility = () => {
 const clearHighlights = () => {
     for (const sourceName of Object.keys(layerOptions)) {
         const idName = layerOptions[sourceName].id;
-        map.setFilter(`${sourceName}-highlighted`, ['in', idName]);
+        setFilter(`${sourceName}-highlighted`, ['in', idName]);
     }
     selectedFeature = selectedFeatureBounds = selectedFeatureLayer = null;
     updateDetailVisibility();
@@ -517,8 +539,8 @@ const clearHighlights = () => {
 
 for (const sourceName of Object.keys(layerOptions)) {
     const layerName = `${sourceName}-fill`;
-    genericPopupHandler(layerName, ev => {
-        const f = ev.features[0]
+    genericPopupHandler(layerName, (ev) => {
+        const f = ev.features[0];
 
         // Only copy over currently selected features:
         const idName = layerOptions[sourceName].id;
@@ -527,9 +549,10 @@ for (const sourceName of Object.keys(layerOptions)) {
 
         clearHighlights();
         const newFilter = ['in', idName, id];
-        map.setFilter(`${sourceName}-highlighted`, newFilter);
+        setFilter(`${sourceName}-highlighted`, newFilter);
+        console.log(`${sourceName}-highlighted`, newFilter);
 
-        selectedFeatureBounds = map.querySourceFeatures(sourceName, {sourceLayer: 'default'})
+        selectedFeatureBounds = querySourceFeatures(sourceName, 'default')
         .filter(f => f.properties[idName] === id)
         .map(f => f.bbox || getGeoJsonGeometryBounds((f.geometry as any).coordinates))
         .reduce(
@@ -568,12 +591,5 @@ document.getElementById('arvometsa-carbon-balance-difference').addEventListener(
 
 document.getElementById('arvometsa-goto-location').addEventListener('click', () => {
     const bbox = selectedFeatureBounds;
-    if (!bbox) return;
-    const flyOptions = {};
-    const lonDiff = bbox[2] - bbox[0];
-    const latDiff = bbox[3] - bbox[1];
-    map.fitBounds([
-        [bbox[0] - 0.4*lonDiff, bbox[1] - 0.15*latDiff],
-        [bbox[2] + 0.4*lonDiff, bbox[3] + 0.15*latDiff]
-    ], flyOptions);
+    if (bbox) { fitBounds(bbox, 0.4, 0.15); }
 });

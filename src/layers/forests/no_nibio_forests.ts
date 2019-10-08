@@ -1,4 +1,4 @@
-import { addSource, addLayer } from '../../layer_groups'
+import { addLayer, addSource } from '../../map';
 import { roundToSignificantDigits, fillOpacity } from '../../utils'
 import { fieldColorDefault, fieldColorHistosol } from '../fields/common'
 

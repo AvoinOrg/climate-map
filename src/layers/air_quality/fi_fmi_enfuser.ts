@@ -1,4 +1,4 @@
-import { addLayer, addSource } from '../../layer_groups';
+import { addLayer, addSource } from '../../map';
 
 const fmiEnfuserSets = {
     'airquality': 'index_of_airquality_194',

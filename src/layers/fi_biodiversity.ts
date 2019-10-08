@@ -1,7 +1,7 @@
-import { map } from '../map';
 import { fillOpacity } from '../utils';
-import { toggleGroup, layerGroupState, addLayer, addSource, natura2000_mappings } from '../layer_groups';
+import { toggleGroup, layerGroupState, natura2000_mappings } from '../layer_groups';
 import { Expression } from 'mapbox-gl';
+import { getMapLayers, removeLayer, addLayer, addSource } from '../map';
 
 let eteAllState = false;
 const eteBasicLabels: Expression = [
@@ -17,7 +17,7 @@ const eteBasicLabels: Expression = [
 
 const setEteCodes = (codes) => {
     const id = 'metsaan-ete-all-sym'
-    const layer = map.getStyle().layers.filter(x => x.id === id)[0]
+    const layer = getMapLayers().filter(x => x.id === id)[0]
 
     const eteAllLabels = [
         "match",
@@ -27,7 +27,7 @@ const setEteCodes = (codes) => {
     ];
     layer.layout['text-field'] = eteAllState ? eteBasicLabels : eteAllLabels;
     eteAllState = !eteAllState;
-    map.removeLayer(id)
+    removeLayer(id)
     addLayer(layer, layerGroupState.ete ? 'visible' : 'none')
     toggleGroup('ete', layerGroupState.ete);
 }

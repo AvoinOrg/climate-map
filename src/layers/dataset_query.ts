@@ -1,9 +1,7 @@
 import { arcgisToGeoJSON } from '@esri/arcgis-to-geojson-utils';
 import WMSCapabilities from 'ol/format/WMSCapabilities.js'
 import { sanitize } from 'dompurify';
-import { map } from '../map'
-import { addSource, addLayer } from '../layer_groups'
-import { genericPopupHandler, createPopup } from '../utils'
+import { addSource, directAddSource, directAddLayer, getLayer, removeLayer, getSource, removeSource, getBounds, addMapEventHandler, setLayoutProperty, genericPopupHandler, createPopup } from '../map'
 
 declare module "mapbox-gl" {
     interface Layer {
@@ -57,12 +55,12 @@ async function genericArcgisWMSServer(serviceRestUrl, bbox, _) {
     // const styles = layerData.map(x => x.Style[0].Name).join(','); // TODO: get legend URLs also?
     const url2 = `${soapUrl}/WMSServer?bbox={bbox-epsg-3857}&format=${imageFormat}&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=${tileSize}&height=${tileSize}&layers=${layers}&styles=${styles}`;
 
-    if (map.getLayer(serviceRestUrl)) {
-        map.getLayer(serviceRestUrl) && map.removeLayer(serviceRestUrl);
+    if (getLayer(serviceRestUrl)) {
+        if (getLayer(serviceRestUrl)) { removeLayer(serviceRestUrl); }
         return; // Toggle visibility
     }
-    map.getSource(serviceRestUrl) && map.removeSource(serviceRestUrl);
-    map.addSource(serviceRestUrl, {
+    getSource(serviceRestUrl) && removeSource(serviceRestUrl);
+    directAddSource(serviceRestUrl, {
         type: 'raster',
         'tiles': [url2],
         tileSize,
@@ -70,7 +68,7 @@ async function genericArcgisWMSServer(serviceRestUrl, bbox, _) {
         bounds: bbox,
     });
 
-    map.addLayer({
+    directAddLayer({
         id: serviceRestUrl,
         source: serviceRestUrl,
         'type': 'raster',
@@ -87,7 +85,7 @@ async function genericArcgisWMSServer(serviceRestUrl, bbox, _) {
 }
 
 function getViewportGeoEnvelope() {
-    const bounds = map.getBounds();
+    const bounds = getBounds();
     return {
         xmin: bounds.getWest(),
         xmax: bounds.getEast(),
@@ -220,10 +218,10 @@ async function genericArcgisFeatureServer(layerUrl, bbox, x) {
     const layerTypes = ['point', 'line', 'edge', 'poly'];
     for (const type of layerTypes) {
         const id = `${layerUrl}--${type}`;
-        map.getLayer(id) && map.removeLayer(id);
+        if (getLayer(id)) { removeLayer(id); }
     }
-    if (map.getSource(layerUrl)) {
-        map.getSource(layerUrl) && map.removeSource(layerUrl);
+    if (getSource(layerUrl)) {
+        getSource(layerUrl) && removeSource(layerUrl);
         return true; // Toggle visibility
     }
     addSource(layerUrl, source);
@@ -233,7 +231,7 @@ async function genericArcgisFeatureServer(layerUrl, bbox, x) {
     // TODO follow rendered coloring where possible?
     // TODO auto-color polygons/lines/points by the only numeric non-ID attribute, if there is just one.
     // TODO display organization info, or at least the data owner info
-    map.addLayer({
+    directAddLayer({
         id: `${layerUrl}--poly`,
         source: layerUrl,
         'type': 'fill',
@@ -244,7 +242,7 @@ async function genericArcgisFeatureServer(layerUrl, bbox, x) {
         "filter": ["==", "$type", "Polygon"],
         BEFORE: 'FILL',
     }, 'FILL');
-    map.addLayer({
+    directAddLayer({
         id: `${layerUrl}--edge`,
         source: layerUrl,
         'type': 'line',
@@ -255,7 +253,7 @@ async function genericArcgisFeatureServer(layerUrl, bbox, x) {
         "filter": ["==", "$type", "Polygon"],
         BEFORE: 'OUTLINE',
     }, 'OUTLINE');
-    map.addLayer({
+    directAddLayer({
         id: `${layerUrl}--point`,
         source: layerUrl,
         'type': 'circle',
@@ -267,7 +265,7 @@ async function genericArcgisFeatureServer(layerUrl, bbox, x) {
         "filter": ["==", "$type", "Point"],
         BEFORE: 'FILL',
     }, 'FILL');
-    map.addLayer({
+    directAddLayer({
         id: `${layerUrl}--line`,
         source: layerUrl,
         'type': 'line',
@@ -329,13 +327,13 @@ async function genericArcgisTileServer(serviceRestUrl, bbox, _) {
     const maxzoom = Math.max(...serviceInfo.tileInfo.lods.map(x => x.level));
     const tileSize = serviceInfo.tileInfo.rows
 
-    if (map.getLayer(serviceRestUrl)) {
-        map.getLayer(serviceRestUrl) && map.removeLayer(serviceRestUrl);
+    if (getLayer(serviceRestUrl)) {
+        if (getLayer(serviceRestUrl)) { removeLayer(serviceRestUrl); }
         return; // Toggle visibility
     }
 
-    map.getSource(serviceRestUrl) && map.removeSource(serviceRestUrl);
-    map.addSource(serviceRestUrl, {
+    getSource(serviceRestUrl) && removeSource(serviceRestUrl);
+    directAddSource(serviceRestUrl, {
         type: 'raster',
         'tiles': [url2],
         tileSize,
@@ -344,7 +342,7 @@ async function genericArcgisTileServer(serviceRestUrl, bbox, _) {
         bounds: bbox,
     });
 
-    map.addLayer({
+    directAddLayer({
         id: serviceRestUrl,
         source: serviceRestUrl,
         'type': 'raster',
@@ -363,14 +361,14 @@ const queryPointsSource = {
 
 const refreshQueryPointsUI = () => {
     // These must be removed first before removing/replacing the dependent source.
-    map.getLayer('query-points-included') && map.removeLayer('query-points-included');
-    map.getLayer('query-points-excluded') && map.removeLayer('query-points-excluded');
+    if (getLayer('query-points-included')) { removeLayer('query-points-included'); }
+    if (getLayer('query-points-excluded')) { removeLayer('query-points-excluded'); }
 
-    map.getSource('query-points') && map.removeSource('query-points');
+    getSource('query-points') && removeSource('query-points');
     // @ts-ignore TODO
-    map.addSource('query-points', queryPointsSource);
+    directAddSource('query-points', queryPointsSource);
 
-    map.addLayer({
+    directAddLayer({
         "id": "query-points-included",
         "type": "circle",
         filter: ['==', ['get', 'type'], 'included'],
@@ -382,7 +380,7 @@ const refreshQueryPointsUI = () => {
         BEFORE: 'TOP',
     }, 'TOP');
 
-    map.addLayer({
+    directAddLayer({
         "id": "query-points-excluded",
         "type": "circle",
         filter: ['!=', ['get', 'type'], 'included'],
@@ -400,7 +398,7 @@ const clearQueryPoints = event => {
     queryPointsSource.data.features = [];
     queryResultsElem.setAttribute('hidden', '');
     refreshQueryPointsUI();
-    map.getLayer('dataset-query-results-outline') && map.removeLayer('dataset-query-results-outline');
+    if (getLayer('dataset-query-results-outline')) { removeLayer('dataset-query-results-outline'); }
 }
 
 const queryResultsElem = document.querySelector('#dataset-query-results');
@@ -439,7 +437,7 @@ const sanitizeInputHTML = html => {
 
 const isDatasetQueryViewMode = () => {
     for (const layer in arcgisLayers) {
-        if (map.getLayer(layer)) { return true; }
+        if (getLayer(layer)) { return true; }
     }
     return false;
 }
@@ -516,7 +514,7 @@ const updateDatasetQueryResultsList = (page, results: IResultRow[]) => {
         const queryPointsVisibility = isDatasetQueryViewMode() ? 'none' : 'visible';
         const queryPointsLayers = ['query-points-included', 'query-points-excluded', 'dataset-query-results-outline'];
         for (const layer of queryPointsLayers) {
-            map.setLayoutProperty(layer, 'visibility', queryPointsVisibility);
+            setLayoutProperty(layer, 'visibility', queryPointsVisibility);
         }
     }
     queryResultsElem.innerHTML = sanitize(html);
@@ -567,14 +565,14 @@ const refreshDatasetQuery = async function (pageNum) {
         },
     }));
 
-    map.getLayer('dataset-query-results-outline') && map.removeLayer('dataset-query-results-outline');
-    map.getSource('dataset-query-results') && map.removeSource('dataset-query-results');
-    map.addSource('dataset-query-results', {
+    if (getLayer('dataset-query-results-outline')) { removeLayer('dataset-query-results-outline'); }
+    getSource('dataset-query-results') && removeSource('dataset-query-results');
+    directAddSource('dataset-query-results', {
         type: 'geojson',
         data: { "type": "FeatureCollection", features: features, },
     });
 
-    map.addLayer({
+    directAddLayer({
         'id': 'dataset-query-results-outline',
         'source': 'dataset-query-results',
         'type': 'line',
@@ -588,4 +586,4 @@ const refreshDatasetQuery = async function (pageNum) {
     updateDatasetQueryResultsList(pageNum, results);
 };
 
-map.on('click', addQueryPoint);
+addMapEventHandler('click', addQueryPoint);

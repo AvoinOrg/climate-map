@@ -1,4 +1,4 @@
-import { addSource, addLayer } from '../../layer_groups'
+import { addLayer, addSource } from '../../map';
 
 addSource('madagascar-2017-mosaic', {
     "type": 'raster',

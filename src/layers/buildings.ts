@@ -1,5 +1,5 @@
-import { addSource, addLayer } from '../layer_groups'
-import { fillOpacity, roundToSignificantDigits, genericPopupHandler, createPopup } from '../utils'
+import { fillOpacity, roundToSignificantDigits } from '../utils'
+import { genericPopupHandler, createPopup, addSource, addLayer } from '../map';
 
 addSource('helsinki-buildings', {
     "type": "vector",

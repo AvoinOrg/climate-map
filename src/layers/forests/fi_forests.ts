@@ -1,4 +1,4 @@
-import { addSource, addLayer } from '../../layer_groups'
+import { addLayer, addSource } from '../../map';
 import { Expression } from 'mapbox-gl';
 
 addSource('metsaan-stand', {

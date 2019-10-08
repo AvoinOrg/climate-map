@@ -1,4 +1,4 @@
-import { addSource, addLayer } from '../../layer_groups'
+import { addLayer, addSource } from '../../map';
 import { fillOpacity } from '../../utils'
 
 addSource('metsaan-hila', {

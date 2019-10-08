@@ -1,4 +1,4 @@
-import { addSource, addLayer } from '../../layer_groups'
+import { addLayer, addSource } from '../../map';
 import { setupPopupHandlerForMetsaanFiStandData, metsaanFiTreeSpecies } from './fi_forest_common'
 import { Expression } from 'mapbox-gl';
 

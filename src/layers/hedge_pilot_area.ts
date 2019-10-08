@@ -1,4 +1,4 @@
-import { addSource, addLayer } from '../layer_groups'
+import { addSource, addLayer } from '../map'
 
 addSource('hedge-pilot-area', {
     "type": 'raster',

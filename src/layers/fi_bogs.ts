@@ -1,5 +1,5 @@
-import { addSource, addLayer } from '../layer_groups'
-import { genericPopupHandler, fillOpacity, createPopup } from '../utils'
+import { addSource, addLayer, genericPopupHandler, createPopup } from '../map'
+import { fillOpacity } from '../utils'
 
 addSource('fi-mml-suot', {
     "type": "vector",

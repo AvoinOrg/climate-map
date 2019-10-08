@@ -1,4 +1,4 @@
-import { addSource, addLayer } from '../layer_groups'
+import { addSource, addLayer } from '../map'
 import { fillOpacity } from '../utils'
 
 const snowCoverLossDays = ['-', ["get", "avg_snow_cover_1980_1990"], ["get", "avg_snow_cover_1996_2016"]];

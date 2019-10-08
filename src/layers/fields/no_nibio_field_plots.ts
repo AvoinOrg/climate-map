@@ -1,5 +1,5 @@
-import { addSource, addLayer } from '../../layer_groups'
-import { roundToSignificantDigits, fillOpacity } from '../../utils'
+import { addLayer, addSource } from '../../map';
+import { roundToSignificantDigits } from '../../utils'
 import { fieldColorDefault, fieldColorHistosol } from './common'
 import { Expression } from 'mapbox-gl';
 

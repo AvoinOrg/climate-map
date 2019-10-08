@@ -27,6 +27,9 @@
 
     <link rel="stylesheet" href="src/app.css" />
 
+    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+    <script nomodule src="https://polyfill.io/v3/polyfill.min.js?features=Object.entries%2CObject.assign%2CElement.prototype.toggleAttribute%2CrequestAnimationFrame%2CElement.prototype.classList%2CURL%2Cfetch"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/1.3.1/mapbox-gl.css" integrity="sha256-t2fYcalxXkJ++B2YwGcM5KYrF8Fu9vCcO69LI16Q5Y0=" crossorigin="anonymous" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/1.3.1/mapbox-gl.js" integrity="sha256-rljfq9LkOk7REQnNk7jisX0iwF+SDNQ4pDbD9cYeTVQ=" crossorigin="anonymous"></script>
 
@@ -53,41 +56,49 @@
             alert('This website requires Internet Explorer 11 or newer to run');
 
             (function(u) {
-                var s = document.createElement('script'); s.async = true; s.src = u;
-                var b = document.getElementsByTagName('script')[0]; b.parentNode.insertBefore(s, b);
+                var s = document.createElement('script');
+                s.async = true;
+                s.src = u;
+                var b = document.getElementsByTagName('script')[0];
+                b.parentNode.insertBefore(s, b);
             })('//updatemybrowser.org/umb.js');
         }
     </script>
 
     <div id='map'></div>
 
+    <div id="popup" class="ol-popup">
+        <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+        <div id="popup-content"></div>
+    </div>
+
     <!-- These buttons are toggled on through -->
     <div id='btn-logout' hidden>Logout</div>
     <div id='btn-login' hidden>Login</div>
 
     <div class='menu-button-container menu-toggle ui-button' onclick="toggleMenu();">
-        <img class='circle-icon' src='outline-menu-24px.svg'/>
+        <img class='circle-icon' src='outline-menu-24px.svg' />
     </div>
 
     <div class='satellite-button-container ui-button' onclick="toggleSatellite();">
-        <img class='circle-icon' src='outline-terrain-24px.svg'/>
+        <img class='circle-icon' src='outline-terrain-24px.svg' />
         <img class='circle-icon' src='outline-satellite-24px.svg' hidden />
     </div>
 
     <div id='menu-container' class='menu-toggle' hidden>
         <div class='menu-button-container ui-button' onclick="toggleMenu();">
-            <img class='circle-icon' src='outline-close-24px.svg'/>
+            <img class='circle-icon' src='outline-close-24px.svg' />
         </div>
 
         <div class='satellite-button-container ui-button' onclick="toggleSatellite();">
-            <img class='circle-icon' src='outline-terrain-24px.svg'/>
+            <img class='circle-icon' src='outline-terrain-24px.svg' />
             <img class='circle-icon' src='outline-satellite-24px.svg' hidden />
         </div>
 
         <h1>
             Sustainability Map by
             <a href="https://www.avoin.org">
-                <img alt="Avoin - a non-profit registered association" src="avoin_org_logo.svg"/>
+                <img alt="Avoin - a non-profit registered association" src="avoin_org_logo.svg" />
             </a>
         </h1>
 
@@ -95,7 +106,7 @@
         <div class='layer-card' hidden id='layer-card-valio'>
             <div class='title'>Valio Supply Chain Fields</div>
             <div class="onoffswitch">
-                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="valio"/>
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="valio" />
                 <label class="onoffswitch-label" for="valio"></label>
             </div>
 
@@ -150,7 +161,7 @@
             <div class='layer-card'>
                 <div class='title'>Forestry CO2e balance</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="arvometsa"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="arvometsa" />
                     <label class="onoffswitch-label" for="arvometsa"></label>
                 </div>
 
@@ -168,12 +179,8 @@
                         </ul>
                     </div>
                     <div class='legend-footer'>
-                        This layer shows the impact of improved forestry operations on
-                        the CO2e impact of forest's carbon balance over a 50 year period,
-                        compared to traditional forestry methods.
-                        <br/>
-                        The calculation of the CO2 impact comes from extensively verified
-                        models developed by <a href="https://arvometsa.fi/">Arvometsä</a>.
+                        This layer shows the impact of improved forestry operations on the CO2e impact of forest's carbon balance over a 50 year period, compared to traditional forestry methods.
+                        <br/> The calculation of the CO2 impact comes from extensively verified models developed by <a href="https://arvometsa.fi/">Arvometsä</a>.
                     </div>
                 </legend>
 
@@ -225,18 +232,12 @@
 
                     <p class="info">
                         <div>
-                            <strong>Carbon balance</strong>:
-                            Carbon balance is defined as the amount of carbon sequestered
-                            minus the amount released.
-                            <br/>
-                            Therefore a negative carbon balance means a plot of land that is a
-                            net carbon source, and a positive value indicates a net carbon sink.
+                            <strong>Carbon balance</strong>: Carbon balance is defined as the amount of carbon sequestered minus the amount released.
+                            <br/> Therefore a negative carbon balance means a plot of land that is a net carbon source, and a positive value indicates a net carbon sink.
                         </div>
                         <div>
-                            <strong>Carbon balance improvement potential</strong>:
-                            The carbon balance improvement potential defined as the difference between
-                            the selected forestry method under the <em>projections</em> list and
-                            the most commonly used method today (thin from below – clearfell).
+                            <strong>Carbon balance improvement potential</strong>: The carbon balance improvement potential defined as the difference between the selected forestry method under the <em>projections</em> list and the most commonly used method
+                            today (thin from below – clearfell).
                         </div>
                     </p>
 
@@ -255,7 +256,12 @@
                         <div class="arvometsa-info">
                             <div>
                                 <strong>Forest area:</strong>
-                                <output class='arvometsa-area'></output>
+                                <output class='arvometsa-area-forest'></output>
+                            </div>
+
+                            <div>
+                                <strong>Total area:</strong>
+                                <output class='arvometsa-area-total'></output>
                             </div>
 
                             <div>
@@ -281,7 +287,7 @@
             <div class='layer-card'>
                 <div class='title'>Tree Plantations</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="gfw_tree_plantations"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="gfw_tree_plantations" />
                     <label class="onoffswitch-label" for="gfw_tree_plantations"></label>
                 </div>
                 <p>
@@ -297,15 +303,14 @@
                 </div>
                 <p>
                     This layer shows mangrove forests monitored by <a href="https://www.globalmangrovewatch.org/about/">the Global Mangrove Watch</a>.
-                    <br/>
-                    The data shown here is from 2010.
+                    <br/> The data shown here is from 2010.
                 </p>
             </div>
 
             <div class='layer-card'>
                 <div class='title'>Mature forests</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="mature-forests"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="mature-forests" />
                     <label class="onoffswitch-label" for="mature-forests"></label>
                 </div>
                 <p>
@@ -321,7 +326,7 @@
             <div class='layer-card'>
                 <div class='title'>Ethiopia</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="ethiopia-forests"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="ethiopia-forests" />
                     <label class="onoffswitch-label" for="ethiopia-forests"></label>
                 </div>
                 <p>
@@ -338,7 +343,7 @@
             <div class='layer-card'>
                 <div class='title'>Madagascar</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="madagascar-land-cover"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="madagascar-land-cover" />
                     <label class="onoffswitch-label" for="madagascar-land-cover"></label>
                 </div>
                 <p>
@@ -364,7 +369,7 @@
             <div class='layer-card'>
                 <div class='title'>Hedge Pilot Area</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="hedge-pilot-area"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="hedge-pilot-area" />
                     <label class="onoffswitch-label" for="hedge-pilot-area"></label>
                 </div>
                 <legend id='legend-mature-forests'>
@@ -379,14 +384,12 @@
             <div class='layer-card'>
                 <div class='title'>Forest Grid Data (Preview)</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="forest-grid"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="forest-grid" />
                     <label class="onoffswitch-label" for="forest-grid"></label>
                 </div>
                 <p>
-                    This is a demonstration of the visualization of the relatively high-resolution grid
-                    based data obtained by remote sensing by the Finnish Forest Centre.
-                    <br/>
-                    The data so far only shows a few select locations.
+                    This is a demonstration of the visualization of the relatively high-resolution grid based data obtained by remote sensing by the Finnish Forest Centre.
+                    <br/> The data so far only shows a few select locations.
                 </p>
             </div>
 
@@ -402,7 +405,7 @@
             <div class='layer-card'>
                 <div class='title'>Building energy certificates</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="building-energy-certificates"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="building-energy-certificates" />
                     <label class="onoffswitch-label" for="building-energy-certificates"></label>
                 </div>
             </div>
@@ -411,7 +414,7 @@
             <div class='layer-card'>
                 <div class='title'>Buildings of Helsinki</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="helsinki-buildings"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="helsinki-buildings" />
                     <label class="onoffswitch-label" for="helsinki-buildings"></label>
                 </div>
             </div>
@@ -419,13 +422,12 @@
             <div class='layer-card'>
                 <div class='title'>Helsinki Area Solar Power Potential</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="hsy-solar-potential"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="hsy-solar-potential" />
                     <label class="onoffswitch-label" for="hsy-solar-potential"></label>
                 </div>
                 <p>
                     This layer shows the potential power generated by solar panels on buildings around Helsinki Area.
-                    <br/>
-                    The estimates comes from <a href="https://www.hsy.fi/fi/asiantuntijalle/avoindata/Sivut/AvoinData.aspx?dataID=41">an open dataset by HSY from 2015</a>.
+                    <br/> The estimates comes from <a href="https://www.hsy.fi/fi/asiantuntijalle/avoindata/Sivut/AvoinData.aspx?dataID=41">an open dataset by HSY from 2015</a>.
                 </p>
             </div>
 
@@ -441,20 +443,19 @@
             <div class='layer-card'>
                 <div class='title'>Areas important to biodiversity</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="zonation6"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="zonation6" />
                     <label class="onoffswitch-label" for="zonation6"></label>
                 </div>
                 <p>
                     This layer comprises of the <a href="http://metatieto.ymparisto.fi:8080/geoportal/catalog/search/resource/details.page?uuid=%7B8E4EA3B2-A542-4C39-890C-DD7DED33AAE1%7D">Zonation 2018 data (forests of high biodiversity value)</a>.
-                    <br/>
-                    The data shown corresponds to 10% of the most important areas for biodiversity in Finland.
+                    <br/> The data shown corresponds to 10% of the most important areas for biodiversity in Finland.
                 </p>
             </div>
 
             <div class='layer-card'>
                 <div class='title'>Especially Important Habitats</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="ete"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="ete" />
                     <label class="onoffswitch-label" for="ete"></label>
                 </div>
             </div>
@@ -463,7 +464,7 @@
             <div class='layer-card'>
                 <div class='title'>Display ALL Habitat Descriptions</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="ete-all-labels"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="ete-all-labels" />
                     <label class="onoffswitch-label" for="ete-all-labels"></label>
                 </div>
             </div>
@@ -471,7 +472,7 @@
             <div class='layer-card'>
                 <div class='title'>Natura 2000</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="natura2000"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="natura2000" />
                     <label class="onoffswitch-label" for="natura2000"></label>
                 </div>
             </div>
@@ -488,26 +489,23 @@
             <div class='layer-card'>
                 <div class='title'>Bogs and swamps</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="bogs"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="bogs" />
                     <label class="onoffswitch-label" for="bogs"></label>
                 </div>
                 <p>
-                    This layer shows Finland's bogs and swamp from the National Land Survey
-                    as well as some detailed surveys by the Geological Survey of Finland,
-                    mapping peat depths. Some of the latter surveys include on-site photos.
+                    This layer shows Finland's bogs and swamp from the National Land Survey as well as some detailed surveys by the Geological Survey of Finland, mapping peat depths. Some of the latter surveys include on-site photos.
                 </p>
             </div>
 
             <div class='layer-card'>
                 <div class='title'>Tropical Peat</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="cifor-peatdepth"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="cifor-peatdepth" />
                     <label class="onoffswitch-label" for="cifor-peatdepth"></label>
                 </div>
                 <p>
                     This layer visualizes tropical and subtropical peat depth from 0 to 10 metres.
-                    <br/>
-                    Lighter colors corresponds to deeper peat depths.
+                    <br/> Lighter colors corresponds to deeper peat depths.
                 </p>
 
                 <legend id="legend-cifor-peatdepth">
@@ -529,13 +527,12 @@
             <div class='layer-card'>
                 <div class='title'>Tropical Wetlands</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="cifor-wetlands"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="cifor-wetlands" />
                     <label class="onoffswitch-label" for="cifor-wetlands"></label>
                 </div>
                 <p>
                     This layer visualizes tropical and subtropical wetlands.
-                    <br/>
-                    Different colors correspond to different classes of wetlands, including mangroves, swamps, fens, floodplains and marshes.
+                    <br/> Different colors correspond to different classes of wetlands, including mangroves, swamps, fens, floodplains and marshes.
                 </p>
 
                 <legend id="legend-cifor-wetlands">
@@ -559,7 +556,7 @@
         <div class='layer-card'>
             <div class='title'>Culverts</div>
             <div class="onoffswitch">
-                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="culverts"/>
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="culverts" />
                 <label class="onoffswitch-label" for="culverts"></label>
             </div>
         </div>
@@ -585,7 +582,7 @@
             <div class='layer-card'>
                 <div class='title'>Air pollution indicator NO₂</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="no2-raster"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="no2-raster" />
                     <label class="onoffswitch-label" for="no2-raster"></label>
                 </div>
                 <p>
@@ -593,9 +590,7 @@
                 </p>
                 <strong>Air cleanliness</strong>
                 <p>
-                    The satellite NO₂ data is based on Sentinel 5P measurements and is updated approximately once per 24 hours for any given location.
-
-                    A healthy threshold of NO₂ is around 50 umol/m<sup>2</sup>.
+                    The satellite NO₂ data is based on Sentinel 5P measurements and is updated approximately once per 24 hours for any given location. A healthy threshold of NO₂ is around 50 umol/m<sup>2</sup>.
                 </p>
             </div>
 
@@ -603,7 +598,7 @@
             <div class='layer-card'>
                 <div class='title'>Air Quality Index</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="fmi-enfuser-airquality"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="fmi-enfuser-airquality" />
                     <label class="onoffswitch-label" for="fmi-enfuser-airquality"></label>
                 </div>
 
@@ -618,7 +613,7 @@
                         <li style="background-color:rgba(111,13,23,0.65)">4.0</li>
                         <li style="background-color:rgba(75,8,33,0.65)">4.5</li>
                         <li style="background-color:rgba(37,2,43,0.65)">5.0</li>
-                        </ul>
+                    </ul>
                 </legend>
             </div>
 
@@ -626,7 +621,7 @@
             <div class='layer-card'>
                 <div class='title'>NO₂</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="fmi-enfuser-no2"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="fmi-enfuser-no2" />
                     <label class="onoffswitch-label" for="fmi-enfuser-no2"></label>
                 </div>
                 <legend class="legend-fmi-enfuser">
@@ -634,13 +629,13 @@
                         <li style="background-color:rgba(4,192,234,0.65)">0</li>
                         <li style="background-color:rgba(48,155,34,0.65)">20</li>
                         <li style="background-color:rgba(221,193,53,0.65)">
-                                <abbr title='40 µg/m³ is the WHO guideline for maximum annual average exposure to NO₂'>40</abbr>
-                                <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
+                            <abbr title='40 µg/m³ is the WHO guideline for maximum annual average exposure to NO₂'>40</abbr>
+                            <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
                         </li>
                         <li style="background-color:rgba(188,25,3,0.65)">120</li>
                         <li style="background-color:rgba(37,2,43,0.65)">
-                                <abbr title='200 µg/m³ is the WHO guideline for maximum 1 hour exposure to NO₂'>200+</abbr>
-                                <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
+                            <abbr title='200 µg/m³ is the WHO guideline for maximum 1 hour exposure to NO₂'>200+</abbr>
+                            <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
                         </li>
                         <li>µg/m<sup>3</sup></li>
                     </ul>
@@ -650,7 +645,7 @@
             <div class='layer-card'>
                 <div class='title'>PM<sub>2.5</sub> Concentration</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="fmi-enfuser-pm2pm5"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="fmi-enfuser-pm2pm5" />
                     <label class="onoffswitch-label" for="fmi-enfuser-pm2pm5"></label>
                 </div>
                 <legend class="legend-fmi-enfuser">
@@ -658,12 +653,12 @@
                         <li style="background-color:rgba(4,192,234,0.65)">0</li>
                         <li style="background-color:rgba(48,155,34,0.65)">5</li>
                         <li style="background-color:rgba(221,193,53,0.65)">
-                                <abbr title='10 µg/m³ is the WHO guideline for maximum annual average exposure to PM2.5'>10</abbr>
-                                <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
+                            <abbr title='10 µg/m³ is the WHO guideline for maximum annual average exposure to PM2.5'>10</abbr>
+                            <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
                         </li>
                         <li style="background-color:rgba(188,25,3,0.65)">
-                                <abbr title='25 µg/m³ is the WHO guideline for maximum 24 hour exposure to PM2.5'>25</abbr>
-                                <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
+                            <abbr title='25 µg/m³ is the WHO guideline for maximum 24 hour exposure to PM2.5'>25</abbr>
+                            <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
                         </li>
                         <li style="background-color:rgba(37,2,43,0.65)">40+</li>
                         <li>µg/m<sup>3</sup></li>
@@ -674,7 +669,7 @@
             <div class='layer-card'>
                 <div class='title'>PM<sub>10</sub> Concentration</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="fmi-enfuser-pm10"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="fmi-enfuser-pm10" />
                     <label class="onoffswitch-label" for="fmi-enfuser-pm10"></label>
                 </div>
                 <legend class="legend-fmi-enfuser">
@@ -682,12 +677,12 @@
                         <li style="background-color:rgba(4,192,234,0.65)">0</li>
                         <li style="background-color:rgba(48,155,34,0.65)">10</li>
                         <li style="background-color:rgba(221,193,53,0.65)">
-                                <abbr title='20 µg/m³ is the WHO guideline for maximum annual average exposure to PM10'>20</abbr>
-                                <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
+                            <abbr title='20 µg/m³ is the WHO guideline for maximum annual average exposure to PM10'>20</abbr>
+                            <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
                         </li>
                         <li style="background-color:rgba(188,25,3,0.65)">
-                                <abbr title='50 µg/m³ is the WHO guideline for maximum 24 hour exposure to PM10'>50</abbr>
-                                <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
+                            <abbr title='50 µg/m³ is the WHO guideline for maximum 24 hour exposure to PM10'>50</abbr>
+                            <!-- <a href="https://apps.who.int/iris/bitstream/handle/10665/69477/WHO_SDE_PHE_OEH_06.02_eng.pdf?sequence=1"><sup>*</sup></a> -->
                         </li>
                         <li style="background-color:rgba(37,2,43,0.65)">80+</li>
                         <li>µg/m<sup>3</sup></li>
@@ -698,7 +693,7 @@
             <div class='layer-card'>
                 <div class='title'>Ozone O<sub>3</sub> Concentration</div>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="fmi-enfuser-ozone"/>
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="fmi-enfuser-ozone" />
                     <label class="onoffswitch-label" for="fmi-enfuser-ozone"></label>
                 </div>
                 <legend class="legend-fmi-enfuser">
@@ -707,10 +702,10 @@
                         <li style="background-color:rgba(29,171,120,0.65)">40</li>
                         <li style="background-color:rgba(106,168,40,0.65)">80</li>
                         <li style="background-color:rgba(221,193,53,0.65)">
-                                <abbr title='100 µg/m³ is the WHO guideline for maximum 8 hour average exposure to ozone'>100</abbr>
+                            <abbr title='100 µg/m³ is the WHO guideline for maximum 8 hour average exposure to ozone'>100</abbr>
                         </li>
                         <li style="background-color:rgba(188,25,3,0.65)">
-                                <abbr title='Long term target threshold level for the Helsinki Region'>120</abbr>
+                            <abbr title='Long term target threshold level for the Helsinki Region'>120</abbr>
                         </li>
                         <li style="background-color:rgba(37,2,43,0.65)">140+</li>
                         <li>µg/m<sup>3</sup></li>
@@ -725,15 +720,12 @@
         <div class='layer-card'>
             <div class='title'>Snow Cover Loss</div>
             <div class="onoffswitch">
-                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="snow_cover_loss"/>
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="snow_cover_loss" />
                 <label class="onoffswitch-label" for="snow_cover_loss"></label>
             </div>
             <p>
-                This layer shows the global decrease in the amount of snow over time.
-                Each area shown corresponds to an area that between 1980 and 1990 had at least 10 days of snow on average.
-                This average is contrasted with the average snowfall between 1996 and 2016.
-                <br/>
-                The data comes from FT-ESDR or <a href="http://www.ntsg.umt.edu/freeze-thaw/">Freeze/Thaw Earth System Data Record</a>.
+                This layer shows the global decrease in the amount of snow over time. Each area shown corresponds to an area that between 1980 and 1990 had at least 10 days of snow on average. This average is contrasted with the average snowfall between 1996 and 2016.
+                <br/> The data comes from FT-ESDR or <a href="http://www.ntsg.umt.edu/freeze-thaw/">Freeze/Thaw Earth System Data Record</a>.
             </p>
             <legend id="legend-snow-cover-loss">
                 <ul class='legend-labels'>
@@ -770,8 +762,7 @@
 
         <hr/>
         <div class='layer-card'>
-            <div class='title'>Lingonberry, Bilberry Forecast</div><br/>
-            Moved to <a href="https://marjakartta.fi">Marjakartta.fi</a>.
+            <div class='title'>Lingonberry, Bilberry Forecast</div><br/> Moved to <a href="https://marjakartta.fi">Marjakartta.fi</a>.
         </div>
 
     </div>

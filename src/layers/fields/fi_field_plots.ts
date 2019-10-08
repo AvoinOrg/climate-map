@@ -1,4 +1,4 @@
-import { addSource, addLayer } from '../../layer_groups'
+import { addLayer, addSource } from '../../map';
 import { fieldColorDefault, fieldColorHistosol, fieldPlotHistosolRatio, fieldPlotTextField, setupPopupHandlerForMaviPeltolohko } from './common'
 
 addSource('mavi-peltolohko', {

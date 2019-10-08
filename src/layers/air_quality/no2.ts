@@ -1,7 +1,7 @@
-import { map } from '../../map'
-import { addSource, addLayer, layerGroupState } from '../../layer_groups'
+import { layerGroupState } from '../../layer_groups'
 import { pp } from '../../utils'
 import { MapMouseEvent } from 'mapbox-gl'
+import { addSource, addLayer, addMapEventHandler } from '../../map'
 
 const no2Tileset = Number.parseInt(window.location.search.substring(1), 10) || 0
 const timestampHour = Math.round(+new Date() / 1e6)
@@ -66,8 +66,9 @@ const updateNO2Reading = function(ev: MapMouseEvent) {
     // console.log(features)
 }
 
-map.on('mousemove', updateNO2Reading);
-map.on('click', updateNO2Reading); // for mobile devices etc.
+// TODO: re-build this stuff later:
+addMapEventHandler('mousemove', updateNO2Reading);
+addMapEventHandler('click', updateNO2Reading); // for mobile devices etc.
 
 // @ts-ignore
 window.setNO2 = setNO2

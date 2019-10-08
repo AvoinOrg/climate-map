@@ -1,4 +1,4 @@
-import { addLayer, addSource } from '../../layer_groups';
+import { addLayer, addSource } from '../../map';
 
 const waqiAqis = [
     'usepa-aqi',  // Plots markers based on the composite AQI calculated with the US EPA standard.

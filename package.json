@@ -1,35 +1,38 @@
 {
-  "name": "climate-map",
-  "version": "1.0.0",
-  "main": "index.html",
-  "repository": "git@github.com:ButtonProgram/climate-map.git",
-  "license": "MIT",
-  "scripts": {
-    "dev": "parcel index.html",
-    "build": "rm -rf dist/ && parcel build index.html && cp -a favicon/* dist/favicon/ && cp _redirects og-image.jpg dist/",
-    "favicon": "real-favicon generate faviconDescription.json faviconData.json favicon/"
-  },
-  "devDependencies": {
-    "@types/chart.js": "^2.8.5",
-    "parcel-bundler": "^1.12.1",
-    "typescript": "^3.6.3"
-  },
-  "dependencies": {
-    "@esri/arcgis-to-geojson-utils": "^1.3.0",
-    "@turf/boolean-within": "^6.0.1",
-    "@turf/helpers": "^6.1.4",
-    "@turf/meta": "^6.0.2",
-    "@types/dompurify": "^0.0.33",
-    "@types/mapbox-gl": "^0.54.3",
-    "@types/node": "^12.7.5",
-    "autoprefixer": "^9.4.10",
-    "babel-polyfill": "^6.26.0",
-    "chart.js": "^2.8.0",
-    "cli-real-favicon": "^0.0.7",
-    "dompurify": "^2.0.2",
-    "js-sha256": "^0.9.0",
-    "ol": "^5.3.3",
-    "postcss-preset-env": "^6.6.0",
-    "whatwg-fetch": "^3.0.0"
-  }
+    "name": "climate-map",
+    "version": "1.0.0",
+    "main": "index.html",
+    "repository": "git@github.com:ButtonProgram/climate-map.git",
+    "license": "MIT",
+    "scripts": {
+        "dev": "ln -sf mapbox_map.ts src/map.ts && parcel index.html",
+        "dev-ol": "ln -sf ol_map.ts src/map.ts && parcel index.html",
+        "build": "rm -rf dist/ && ln -sf mapbox_map.ts src/map.ts && parcel build index.html && cp -a favicon/* dist/favicon/ && cp _redirects og-image.jpg dist/",
+        "build-ol": "rm -rf dist/ && ln -sf ol_map.ts src/map.ts && parcel build index.html && cp -a favicon/* dist/favicon/ && cp _redirects og-image.jpg dist/",
+        "favicon": "real-favicon generate faviconDescription.json faviconData.json favicon/"
+    },
+    "devDependencies": {
+        "@types/chart.js": "^2.8.5",
+        "parcel-bundler": "^1.12.1",
+        "typescript": "^3.6.3"
+    },
+    "dependencies": {
+        "@esri/arcgis-to-geojson-utils": "^1.3.0",
+        "@turf/boolean-within": "^6.0.1",
+        "@turf/helpers": "^6.1.4",
+        "@turf/meta": "^6.0.2",
+        "@types/dompurify": "^0.0.33",
+        "@types/mapbox-gl": "^0.54.3",
+        "@types/node": "^12.7.5",
+        "autoprefixer": "^9.4.10",
+        "babel-polyfill": "^6.26.0",
+        "chart.js": "^2.8.0",
+        "cli-real-favicon": "^0.0.7",
+        "dompurify": "^2.0.2",
+        "js-sha256": "^0.9.0",
+        "ol": "^6.0.1",
+        "ol-mapbox-style": "^4.3.1",
+        "postcss-preset-env": "^6.6.0",
+        "whatwg-fetch": "^3.0.0"
+    }
 }

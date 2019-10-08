@@ -1,11 +1,7 @@
-import { sanitize } from 'dompurify';
-import { Layer, MapLayerMouseEvent, PopupOptions, Expression } from 'mapbox-gl';
+import { Layer, Expression } from 'mapbox-gl';
 import { linear_kryw_0_100_c71, linear_bgyw_20_98_c66 } from './colormap';
-import { map } from './map';
+import { setPaintProperty, getLayer, removeLayer, directAddLayer, isMapLoaded } from './map';
 
-
-// @ts-ignore
-const mapboxgl0: mapboxgl = mapboxgl;
 
 const colormapToStepExpr = (colormap: number[][], minValue: number, maxValue: number, expr: Expression) => {
     // @ts-ignore TODO
@@ -37,19 +33,6 @@ const cetL9ColorMapStepExpr = colormapToStepExpr.bind(null, linear_bgyw_20_98_c6
 
 export const fillOpacity = 0.65;
 
-export const genericPopupHandler: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => void
-= (layer, fn) => {
-    if (Array.isArray(layer)) {
-        return layer.forEach(l => genericPopupHandler(l, fn));
-    }
-    map.on('click', layer, fn);
-    map.on('mouseenter', layer, function() {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', layer, function() {
-        map.getCanvas().style.cursor = '';
-    });
-}
 
 // NB: By using the '/' operator instead of '*', we get rid of float bugs like 1.2000000000004.
 export const roundToSignificantDigitsPos = (n: number, expr: Expression) => [
@@ -96,23 +79,16 @@ export const invertLayerTextHalo = (layer: Layer) => {
         }
 
         for (const [k, v] of Object.entries(props)) {
-            // @ts-ignore
-            map.setPaintProperty(layer.id, k, v, { validate: false });
+            setPaintProperty(layer.id, k, v); //, { validate: false });
         }
     }
 }
 
 export const replaceLayer = (layer: Layer) => {
     // assert('BEFORE' in layer, `Layer ${layer.id} is missing a BEFORE declaration`);
-    if (map.getLayer(layer.id)) map.removeLayer(layer.id);
-    map.addLayer(layer, layer.BEFORE);
+    if (getLayer(layer.id)) { removeLayer(layer.id); }
+    directAddLayer(layer, layer.BEFORE);
 }
-
-export const createPopup = (ev: MapLayerMouseEvent, html: string, options?: PopupOptions) =>
-    new mapboxgl0.Popup(options)
-        .setLngLat(ev.lngLat)
-        .setHTML( sanitize(html) )
-        .addTo(map);
 
 export function getGeoJsonGeometryBounds(coordinates: any) {
     if (typeof coordinates[0] === 'number') {
@@ -130,3 +106,21 @@ export function getGeoJsonGeometryBounds(coordinates: any) {
     }
     return bounds;
 }
+
+
+// delayedMapOperations are executed as soon as the map is loaded.
+const delayedMapOperations: (() => void)[] = [];
+export const executeDelayedMapOperations = () => {
+    for (const op of delayedMapOperations) { op(); }
+    delayedMapOperations.length = 0; // Free memory
+}
+export const execWithMapLoaded = (fn: () => void) => {
+    if (isMapLoaded()) { fn(); }
+    else { delayedMapOperations.push(fn); }
+}
+
+
+interface ISourceDefs { [s: string]: mapboxgl.AnySourceData }
+export const originalSourceDefs: ISourceDefs = {}
+interface ILayerDefs { [s: string]: Layer}
+export const originalLayerDefs: ILayerDefs = {};

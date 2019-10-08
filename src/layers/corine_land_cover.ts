@@ -1,4 +1,4 @@
-import { addSource, addLayer } from '../layer_groups'
+import { addSource, addLayer } from '../map'
 import { fillOpacity, roundToSignificantDigits } from '../utils'
 
 addSource('corine_clc2018', {

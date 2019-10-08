@@ -1,4 +1,4 @@
-import { addLayer } from '../layer_groups';
+import { addLayer } from '../map';
 
 addLayer({
     'id': 'terramonitor',

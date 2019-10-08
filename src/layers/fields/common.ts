@@ -1,9 +1,9 @@
 import { default as turfBooleanWithin } from '@turf/boolean-within';
 import { feature as turfFeature } from '@turf/helpers';
 import { flattenReduce as turfFlattenReduce } from '@turf/meta';
-import { map } from '../../map'
-import { roundToSignificantDigits, genericPopupHandler, pp, createPopup } from '../../utils'
+import { roundToSignificantDigits, pp } from '../../utils'
 import { Expression } from 'mapbox-gl';
+import { genericPopupHandler, createPopup } from '../../map';
 
 // Ruokavirasto field plots CO2e formulas:
 //

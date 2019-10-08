@@ -1,4 +1,4 @@
-import { addSource, addLayer } from '../layer_groups'
+import { addSource, addLayer } from '../map'
 import { fillOpacity } from '../utils'
 
 addSource('gtk-mp20k-maalajit', {

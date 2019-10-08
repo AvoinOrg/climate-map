@@ -1,4 +1,4 @@
-import { addSource, addLayer } from '../layer_groups'
+import { addSource, addLayer } from '../map'
 import { roundToSignificantDigits, fillOpacity } from '../utils'
 
 // https://www.hsy.fi/fi/asiantuntijalle/avoindata/Sivut/AvoinData.aspx?dataID=41
