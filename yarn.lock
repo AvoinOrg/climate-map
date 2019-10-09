@@ -726,7 +726,7 @@
   resolved "https://registry.yarnpkg.com/@mapbox/jsonlint-lines-primitives/-/jsonlint-lines-primitives-2.0.2.tgz#ce56e539f83552b58d10d672ea4d6fc9adc7b234"
   integrity sha1-zlblOfg1UrWNENZy6k1vya3HsjQ=
 
-"@mapbox/mapbox-gl-style-spec@^13.6.0":
+"@mapbox/mapbox-gl-style-spec@^13.9.0":
   version "13.9.0"
   resolved "https://registry.yarnpkg.com/@mapbox/mapbox-gl-style-spec/-/mapbox-gl-style-spec-13.9.0.tgz#e6c77b9e74ee98d2ccf9e5fad29949c448d1eaec"
   integrity sha512-w7wqxZ9pIyqyk30cj3ujmhaldnGhg9aNTmQX7nUE6aMuhhen0mMrVhTNgET11/LIMkr/yZE1BOdQ8Fbyb/2/FA==
@@ -3508,7 +3508,7 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
-mapbox-to-css-font@^2.3.0:
+mapbox-to-css-font@^2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/mapbox-to-css-font/-/mapbox-to-css-font-2.4.0.tgz#a23b51664a1ee839beaefade013f2655bee9a390"
   integrity sha512-v674D0WtpxCXlA6E+sBlG1QJWdUkz/s9qAD91bJSXBGuBL5lL4tJXpoJEftecphCh2SVQCjWMS2vhylc3AIQTg==
@@ -3942,13 +3942,13 @@ object.values@^1.1.0:
     function-bind "^1.1.1"
     has "^1.0.3"
 
-ol-mapbox-style@^4.3.1:
-  version "4.3.1"
-  resolved "https://registry.yarnpkg.com/ol-mapbox-style/-/ol-mapbox-style-4.3.1.tgz#7ea2c04f62eefeb73727fcfbcdabeea7af829ac7"
-  integrity sha512-b3p4lvmEAxyoid3WklQJVH0wfQgz8QU6E0c15Avbybt/3oL0LtZ76+TdHxq29GomFXWK3ywn+4PscPm4o+edRw==
+ol-mapbox-style@^5.0.2:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/ol-mapbox-style/-/ol-mapbox-style-5.0.2.tgz#5fe656e14d99feff16bd7cf687ebc7083eef4787"
+  integrity sha512-uXerYhr1FIs+pVtDgPu2oiAFtBULBIXgKcZo4AorSTXoHDyu0tv+IVmPTU0UoMS44pbJQJS8tvEJVf36mteyng==
   dependencies:
-    "@mapbox/mapbox-gl-style-spec" "^13.6.0"
-    mapbox-to-css-font "^2.3.0"
+    "@mapbox/mapbox-gl-style-spec" "^13.9.0"
+    mapbox-to-css-font "^2.4.0"
     webfont-matcher "^1.1.0"
 
 ol@^6.0.1:
