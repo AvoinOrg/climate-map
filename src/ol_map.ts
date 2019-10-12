@@ -27,7 +27,15 @@ import XYZ from 'ol/source/XYZ';
 
 const projection = getProjection('EPSG:3857');
 
-const popupContainer = document.getElementById('popup') as HTMLElement;
+const popupContainer = document.createElement('div')
+popupContainer.innerHTML = `
+<div id="popup" class="ol-popup">
+    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+    <div id="popup-content"></div>
+</div>
+`;
+document.body.appendChild(popupContainer);
+
 const popupContent = document.getElementById('popup-content') as HTMLElement;
 const popupCloser = document.getElementById('popup-closer') as HTMLElement;
 
