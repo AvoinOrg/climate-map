@@ -145,12 +145,13 @@ const addValio = (secret: string) => {
         ['linear'],
         [
             'case',
-            ['==', 0, ['to-number', ['get', 'area_total']]], 0,
+            ['==', 0, ['to-number', ['get', 'area_total']]], -1,
             ['/',
                 ['to-number', ['get', 'area_peatland']],
                 ['to-number', ['get', 'area_total']]
             ],
         ],
+        -1, 'rgba(200,200,200,0.5)',
         0, fieldColorDefault,
         1, fieldColorHistosol,
     ];
