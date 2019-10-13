@@ -436,11 +436,11 @@ g.line rect {
     cursor: pointer;
 }
 
-.arvometsa-output {
+.info-output {
     margin: 50px 0;
 }
 
-.arvometsa-empty {
+.info-empty {
     margin: 50px 0;
 }
 

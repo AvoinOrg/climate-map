@@ -35,7 +35,22 @@ interface ILayerGroups { [s: string]: (string | (() => void))[] }
 export const layerGroups: ILayerGroups = {
     'valio': [
         () => hideAllLayersMatchingFilter(x => !/valio/.test(x)),
-        'valio-fields-boundary', 'valio-fields-fill', 'valio-plohko-co2',
+        'valio-fields-country-boundary',
+        'valio-fields-country-fill',
+        'valio-fields-country-highlighted',
+        'valio-fields-regional-state-boundary',
+        'valio-fields-regional-state-fill',
+        'valio-fields-regional-state-highlighted',
+        'valio-fields-region-boundary',
+        'valio-fields-region-fill',
+        'valio-fields-region-highlighted',
+        'valio-fields-municipality-boundary',
+        'valio-fields-municipality-fill',
+        'valio-fields-municipality-highlighted',
+        // 'valio-fields-highlighted',
+        'valio-fields-boundary',
+        'valio-fields-fill',
+        'valio-fields-co2',
         'mavi-plohko-removed-fill',
         'mavi-plohko-removed-outline',
         'mavi-plohko-removed-co2',
@@ -151,9 +166,9 @@ export const toggleGroup = (group: string, forcedState?: boolean) => {
         if (typeof layer === 'function') {
             execWithMapLoaded(layer);
         } else {
-            assert(layer in originalLayerDefs, JSON.stringify(layer));
+            assert(layer in originalLayerDefs, `Layer does not exist: ${JSON.stringify(layer)}`);
             const { BEFORE } = originalLayerDefs[layer];
-            assert(BEFORE, JSON.stringify(originalLayerDefs[layer]));
+            assert(BEFORE, `Layer ${layer} does not contain a BEFORE declaration: JSON.stringify(originalLayerDefs[layer])`);
 
             execWithMapLoaded(() => {
                 moveLayer(layer, BEFORE); // Make this the topmost layer.

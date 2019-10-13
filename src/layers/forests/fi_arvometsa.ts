@@ -2,7 +2,6 @@ import { Chart } from 'chart.js';
 import { Expression, MapboxGeoJSONFeature } from 'mapbox-gl';
 import { roundToSignificantDigits, assert, pp, fillOpacity, getGeoJsonGeometryBounds } from '../../utils';
 import { addLayer, addSource, setPaintProperty, setLayoutProperty, setFilter, querySourceFeatures, fitBounds, genericPopupHandler } from '../../map';
-import RenderFeature from 'ol/render/Feature';
 
 
 interface ILayerOption { minzoom: number, maxzoom?: number, id: string }
@@ -68,7 +67,6 @@ const arvometsaAreaCO2eFillColor: (expr: Expression) => Expression = expr => [
             15, 'hsla(159, 100%, 25%, 1)',
         ])
     ),
-
 ];
 
 addSource('arvometsa', {
