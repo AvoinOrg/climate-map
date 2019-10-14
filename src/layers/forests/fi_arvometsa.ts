@@ -204,7 +204,9 @@ const updateGraphs = (f?: MapboxGeoJSONFeature) => {
 
     if (perHectareFlag) {
         for (const a in totals) {
-            if (a !== 'area') { totals[a] /= totals.area; }
+            if (a !== 'area' && a !== 'st_area') {
+                totals[a] /= totals.area;
+            }
         }
     }
 
