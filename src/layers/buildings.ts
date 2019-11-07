@@ -81,10 +81,19 @@ genericPopupHandler('fi-buildings-fill', e => {
     if (props.gid) {
         const p = props as unknown as IBuildingSchemaNLS;
         const approxArea = 0.888 * p.st_area;
-        const approxVolume = 3.5 * approxArea * p.kerrosluku;
+        const approxVolume = 3.5 * approxArea;
+
+        const floorCountCodes = {
+            0: 'Unspecified',
+            1: '1 or 2 floors',
+            2: '3 or more floors',
+        }
+        const floorCount = floorCountCodes[p.kerrosluku] || 'Unknown'
+
         nls = `
-        ${approxArea > 1 && `<br/>Estimated floorage: ${pp(approxArea, 2)} m<sup>2</sup>`}
-        ${approxArea > 1 && approxVolume && `<br/>Estimated volume: ${pp(approxVolume, 2)} m<sup>3</sup>`}
+        <br/>Floor count: ${floorCount}
+        ${approxArea > 1 && `<br/>Estimated floorage: ${pp(approxArea, 2)} m<sup>2</sup> per floor`}
+        ${approxArea > 1 && approxVolume && `<br/>Estimated volume: ${pp(approxVolume, 2)} m<sup>3</sup> per floor`}
         `
     }
     const html = vrk + nls
