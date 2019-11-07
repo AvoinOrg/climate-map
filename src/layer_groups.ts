@@ -119,6 +119,9 @@ export const layerGroups: ILayerGroups = {
         'mavi-plohko-mineral-outline',
         'mavi-plohko-mineral-co2',
     ],
+    'fi-buildings': [
+        'fi-buildings-fill', 'fi-buildings-outline',
+    ],
     'helsinki-buildings': [
         'helsinki-buildings-fill', 'helsinki-buildings-outline', 'helsinki-buildings-co2',
         'helsinki-puretut-fill', 'helsinki-puretut-outline', 'helsinki-puretut-sym',

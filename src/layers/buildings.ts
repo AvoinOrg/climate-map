@@ -1,5 +1,97 @@
-import { fillOpacity, roundToSignificantDigits } from '../utils'
+import { fillOpacity, roundToSignificantDigits, pp } from '../utils'
 import { genericPopupHandler, createPopup, addSource, addLayer } from '../map';
+
+addSource('fi-buildings', {
+    "type": "vector",
+    "tiles": ["https://map.buttonprogram.org/fi-buildings/{z}/{x}/{y}.pbf.gz"],
+    "minzoom": 9,
+    "maxzoom": 13,
+    bounds: [19, 59, 32, 71], // Finland
+});
+
+addLayer({
+    'id': 'fi-buildings-fill',
+    'source': 'fi-buildings',
+    'source-layer': 'default',
+    'type': 'fill',
+    'paint': {
+        'fill-color': 'cyan',
+        'fill-opacity': fillOpacity,
+    },
+    BEFORE: 'FILL',
+})
+
+addLayer({
+    'id': 'fi-buildings-outline',
+    'source': 'fi-buildings',
+    'source-layer': 'default',
+    'type': 'line',
+    'paint': {
+        'line-opacity': 0.75,
+    },
+    BEFORE: 'OUTLINE',
+})
+
+interface IBuildingSchemaVRK {
+    building_id: string;
+    region : string;
+    municipality : string;
+    street : string;
+    house_number : string;
+    postal_code : string;
+    building_use : number;
+}
+interface IBuildingSchemaNLS {
+    gid              : number;
+    sijaintitarkkuus : number;
+    aineistolahde    : number;
+    alkupvm          : string;
+    kohderyhma       : number;
+    kohdeluokka      : number;
+    korkeustarkkuus  : number;
+    kayttotarkoitus  : number;
+    kerrosluku       : number;
+    pohjankorkeus    : number;
+    korkeusarvo      : number;
+
+    st_area          : number;
+}
+interface IBuildingSchema {
+    id: number;
+    building_id: string;
+    gid: number;
+    distance_poly? : number;
+    distance_centroid? : number;
+}
+interface IBuildingSchemaAll extends IBuildingSchemaVRK, IBuildingSchemaNLS, IBuildingSchema {}
+
+genericPopupHandler('fi-buildings-fill', e => {
+    const f = e.features[0]
+    if (!f) return
+
+    let vrk='', nls=''
+    const props = f.properties as IBuildingSchema;
+    if (props.building_id) {
+        const p = props as unknown as IBuildingSchemaVRK;
+        vrk = `
+        <address>${p.street} ${p.house_number}, ${p.postal_code}</address>
+        Building ID: <strong>${p.building_id}</strong>
+        `
+    }
+    if (props.gid) {
+        const p = props as unknown as IBuildingSchemaNLS;
+        const approxArea = 0.888 * p.st_area;
+        const approxVolume = 3.5 * approxArea * p.kerrosluku;
+        nls = `
+        ${approxArea > 1 && `<br/>Estimated floorage: ${pp(approxArea, 2)} m<sup>2</sup>`}
+        ${approxArea > 1 && approxVolume && `<br/>Estimated volume: ${pp(approxVolume, 2)} m<sup>3</sup>`}
+        `
+    }
+    const html = vrk + nls
+    createPopup(e, html, { maxWidth: '360px' });
+});
+
+
 
 addSource('helsinki-buildings', {
     "type": "vector",
