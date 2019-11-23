@@ -98,7 +98,7 @@ genericPopupHandler('gtk-turvevarat-suot-fill', e => {
             } out of 5):<br/> ${gtkTurveVaratLuonnontilaisuusluokka[p.luonnontilaisuusluokka]}<br/>
         `;
 
-        if (!p.photos_json) { return; }
+        if (!p.photos_json) { continue; }
 
         html += '<div style="overflow:scroll; max-height: 500px">';
         const photos = JSON.parse(p.photos_json);
