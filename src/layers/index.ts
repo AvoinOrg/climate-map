@@ -18,6 +18,7 @@ import './fi_building_energy_certificates';
 import './fi_helsinki_solar_potential';
 import './fi_property_id';
 import './fi_soils';
+import './fi_fish';
 import './snow_cover_loss';
 
 import './hedge_pilot_area';

@@ -122,6 +122,9 @@ export const layerGroups: ILayerGroups = {
     'fi-buildings': [
         'fi-buildings-fill', 'fi-buildings-outline',
     ],
+    'fi-fish': [
+        'fi-fish-pikeperch-fill', 'fi-fish-pikeperch-outline',
+    ],
     'helsinki-buildings': [
         'helsinki-buildings-fill', 'helsinki-buildings-outline', 'helsinki-buildings-co2',
         'helsinki-puretut-fill', 'helsinki-puretut-outline', 'helsinki-puretut-sym',

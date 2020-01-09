@@ -1,5 +1,5 @@
 import { Layer, Expression } from 'mapbox-gl';
-import { linear_kryw_0_100_c71, linear_bgyw_20_98_c66 } from './colormap';
+import { linear_kryw_0_100_c71, linear_bgyw_20_98_c66, bgy } from './colormap';
 import { setPaintProperty, getLayer, removeLayer, directAddLayer, isMapLoaded } from './map';
 
 
@@ -22,14 +22,27 @@ const colormapToStepExpr = (colormap: number[][], minValue: number, maxValue: nu
     return ret;
 }
 
+export const stepsToLinear = (min, max, steps) => {
+    const step = (max-min)/(steps.length - 1);
+    const res = [];
+    let cur = min;
+    for (const s of steps) {
+        res.push(cur);
+        res.push(s);
+        cur += step;
+    }
+    return res;
+}
+
 // 'Fire' aka linear_kryw_0_100_c71 is a perceptually uniform color map.
-const fireColorMapStepExpr = colormapToStepExpr.bind(
+export const fireColorMapStepExpr = colormapToStepExpr.bind(
     null,
     // The first few values are too white for my taste, hence the slice().
     linear_kryw_0_100_c71.reverse().slice(5)
 );
 
-const cetL9ColorMapStepExpr = colormapToStepExpr.bind(null, linear_bgyw_20_98_c66.reverse());
+export const cetL9ColorMapStepExpr = colormapToStepExpr.bind(null, linear_bgyw_20_98_c66.reverse());
+export const bgyColorMapStepExpr = colormapToStepExpr.bind(null, bgy.reverse());
 
 export const fillOpacity = 0.65;
 

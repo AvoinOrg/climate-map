@@ -1,6 +1,6 @@
 import { Chart } from 'chart.js';
 import { Expression, MapboxGeoJSONFeature } from 'mapbox-gl';
-import { roundToSignificantDigits, assert, pp, fillOpacity, getGeoJsonGeometryBounds } from '../../utils';
+import { roundToSignificantDigits, assert, pp, fillOpacity, getGeoJsonGeometryBounds, stepsToLinear } from '../../utils';
 import { addLayer, addSource, setPaintProperty, setLayoutProperty, setFilter, querySourceFeatures, fitBounds, genericPopupHandler } from '../../map';
 
 
@@ -43,17 +43,6 @@ const colorboxStepsPos = [
     '#00A76D',
     '#008758',
 ];
-const stepsToLinear = (min, max, steps) => {
-    const step = (max-min)/(steps.length - 1);
-    const res = [];
-    let cur = min;
-    for (const s of steps) {
-        res.push(cur);
-        res.push(s);
-        cur += step;
-    }
-    return res;
-}
 
 // const arvometsaAreaCO2eFillColor = expr => cetL9ColorMapStepExpr(-5, 15, expr);
 const arvometsaAreaCO2eFillColor: (expr: Expression) => Expression = expr => [
