@@ -106,7 +106,7 @@ export const layerGroups: ILayerGroups = {
         ...Object.keys(natura2000_mappings).map(x => `${x}-sym`),
     ],
     'fields': [
-        'mavi-plohko-removed-fill', 'mavi-plohko-removed-outline',
+        // 'mavi-plohko-removed-fill', 'mavi-plohko-removed-outline',
         'nibio-soils-fill', 'nibio-soils-outline', 'nibio-soils-sym',
     ],
     'fields-peatland': [
@@ -123,7 +123,7 @@ export const layerGroups: ILayerGroups = {
         'fi-buildings-fill', 'fi-buildings-outline',
     ],
     'fi-fish': [
-        'fi-fish-pikeperch-fill', 'fi-fish-pikeperch-outline',
+        'fi-fish-pikeperch-fill', 'fi-fish-pikeperch-outline', 'fi-fish-pikeperch-raster',
     ],
     'helsinki-buildings': [
         'helsinki-buildings-fill', 'helsinki-buildings-outline', 'helsinki-buildings-co2',

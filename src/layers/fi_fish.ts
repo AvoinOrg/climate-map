@@ -5,7 +5,7 @@ import { Expression } from 'mapbox-gl';
 addSource('fi-fish-pikeperch', {
     "type": "vector",
     "tiles": ["https://map.buttonprogram.org/fi-fish-pikeperch/{z}/{x}/{y}.pbf.gz"],
-    // "minzoom": 9,
+    "minzoom": 12,
     "maxzoom": 13,
     bounds: [19, 59, 32, 71], // Finland
 });
@@ -47,4 +47,22 @@ addLayer({
         'line-opacity': 0.75,
     },
     BEFORE: 'OUTLINE',
+})
+
+addSource('fi-fish-pikeperch-raster', {
+    "type": 'raster',
+    'tiles': ['https://map.buttonprogram.org/fi-fish-pikeperch/{z}/{x}/{y}.png'],
+    'tileSize': 512,
+    "maxzoom": 12,
+    bounds: [19, 59, 32, 71], // Finland
+    attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
+});
+
+addLayer({
+    'id': 'fi-fish-pikeperch-raster',
+    'source': 'fi-fish-pikeperch-raster',
+    'type': 'raster',
+    'minzoom': 0,
+    'maxzoom': 12,
+    BEFORE: 'FILL',
 })
