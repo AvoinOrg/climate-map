@@ -571,14 +571,17 @@ const arvometsaInit = (e: Event) => {
     const elem = e.target as HTMLInputElement;
     if (!elem.checked) { clearHighlights(); }
 }
-document.querySelector('input#arvometsa').addEventListener('change', arvometsaInit);
 
-document.querySelector('.arvometsa-projections').addEventListener('change', () => updateGraphs());
-document.getElementById('arvometsa-per-hectare').addEventListener('change', () => updateGraphs());
-document.getElementById('arvometsa-cumulative').addEventListener('change', () => updateGraphs());
-document.getElementById('arvometsa-carbon-balance-difference').addEventListener('change', () => updateGraphs());
+try {
+    document.querySelector('input#arvometsa').addEventListener('change', arvometsaInit);
 
-document.getElementById('arvometsa-goto-location').addEventListener('click', () => {
-    const bbox = selectedFeatureBounds;
-    if (bbox) { fitBounds(bbox, 0.4, 0.15); }
-});
+    document.querySelector('.arvometsa-projections').addEventListener('change', () => updateGraphs());
+    document.getElementById('arvometsa-per-hectare').addEventListener('change', () => updateGraphs());
+    document.getElementById('arvometsa-cumulative').addEventListener('change', () => updateGraphs());
+    document.getElementById('arvometsa-carbon-balance-difference').addEventListener('change', () => updateGraphs());
+
+    document.getElementById('arvometsa-goto-location').addEventListener('click', () => {
+        const bbox = selectedFeatureBounds;
+        if (bbox) { fitBounds(bbox, 0.4, 0.15); }
+    });
+} catch (error) {}

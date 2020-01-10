@@ -48,7 +48,8 @@ body {
     width: 350px;
     /* TODO: I couldn't get CSS var expressions to work here: */
     max-width: calc(100vw - 60px);
-    height: 100%;
+    /* height: 100%; */
+    border: 1px solid black;
     padding: 0 var(--menu-padding);
     background: #ffffff;
     overflow-y: scroll;

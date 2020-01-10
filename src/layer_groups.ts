@@ -11,6 +11,10 @@ export const layerGroupState: ILayerGroupState = {
     ete: false,
 }
 
+// Obtain default view mode from the DOM:
+const satelliteHiddenElem = document.querySelector('.satellite-button-container .satellite') as HTMLElement
+const satelliteHidden = satelliteHiddenElem && satelliteHiddenElem.hidden
+layerGroupState.terramonitor = !satelliteHidden
 
 export const hideAllLayersMatchingFilter: (filterFn: (group: string) => boolean) => void
 = (filterFn) => {

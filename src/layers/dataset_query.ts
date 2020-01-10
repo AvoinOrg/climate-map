@@ -401,11 +401,19 @@ const clearQueryPoints = event => {
     if (getLayer('dataset-query-results-outline')) { removeLayer('dataset-query-results-outline'); }
 }
 
-const queryResultsElem = document.querySelector('#dataset-query-results');
-const datasetQueryEnabledElem = document.querySelector('#dataset-query') as HTMLInputElement;
-document.querySelectorAll('.dataset-query-clear-points').forEach(el => {
-    el.addEventListener('click', clearQueryPoints);
-});
+let queryResultsElem
+let datasetQueryEnabledElem
+try {
+    queryResultsElem = document.querySelector('#dataset-query-results');
+    datasetQueryEnabledElem = document.querySelector('#dataset-query') as HTMLInputElement;
+    document.querySelectorAll('.dataset-query-clear-points').forEach(el => {
+        el.addEventListener('click', clearQueryPoints);
+    });
+
+    datasetQueryEnabledElem.addEventListener('change', e => {
+        if (!datasetQueryEnabledElem.checked) { clearQueryPoints(e); }
+    })
+} catch (error) {}
 
 const addQueryPoint = async function (e) {
     if (!datasetQueryEnabledElem.checked) { return; }
@@ -424,10 +432,6 @@ const addQueryPoint = async function (e) {
     refreshQueryPointsUI();
     await refreshDatasetQuery(1);
 }
-
-datasetQueryEnabledElem.addEventListener('change', e => {
-    if (!datasetQueryEnabledElem.checked) { clearQueryPoints(e); }
-})
 
 const sanitizeInputHTML = html => {
     const elem = document.createElement("div");
