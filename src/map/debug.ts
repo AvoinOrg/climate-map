@@ -12,6 +12,7 @@ window.exportLayerGroup = groupName => {
     const e = { "version": 8, "name": "export", sources: {}, layers: [] }
     e.layers = layerGroups[groupName]
         .filter(x => typeof x === 'string')
+        // @ts-ignore
         .map(x => originalLayerDefs[x])
         .filter(x => x.type !== 'symbol')
         .filter(x => x.type !== 'raster')

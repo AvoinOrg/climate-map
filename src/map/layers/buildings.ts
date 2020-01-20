@@ -1,5 +1,6 @@
 import { fillOpacity, roundToSignificantDigits, pp } from '../utils'
 import { genericPopupHandler, createPopup, addSource, addLayer } from '../map';
+import { addLayerComponent } from '../layer_groups';
 
 addSource('fi-buildings', {
     "type": "vector",
@@ -252,3 +253,21 @@ genericPopupHandler('helsinki-puretut-fill', e => {
 
     createPopup(e, html, { maxWidth: '360px' });
 });
+
+
+const component = `Lorem ipsum foobar`
+
+// Requirements:
+// 1. displayed under the right category
+// 2. id like fi-buildings
+// 3. list of layers to activate
+// 4. description, possible subcomponents (custom logic for report generation for Arvometsä etc.)
+// 5. legend, etc.
+
+addLayerComponent({
+    category: 'buildings',
+    id: 'fi-buildings',
+    name: 'Buildings',
+    layers: ['fi-buildings-fill', 'fi-buildings-outline'],
+    component,
+})

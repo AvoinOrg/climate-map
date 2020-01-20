@@ -8,6 +8,7 @@ const colormapToStepExpr = (colormap: number[][], minValue: number, maxValue: nu
     const cmapToRGBA = ([r, g, b]) => `rgb(${(r)},${g},${b})`;
     const cmap = colormap
         .map(x => x.map(c => Math.round(255 * c)))
+        // @ts-ignore TODO
         .map(cmapToRGBA);
 
     const delta = (maxValue - minValue) / (cmap.length - 1);

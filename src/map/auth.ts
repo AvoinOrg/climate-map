@@ -8,7 +8,7 @@ const claimHashes = {
 const initAuth = function(claims = []) {
     let idToken;
     let accessToken;
-    let expiresAt;
+    let expiresAt: any;
 
     function isAuthenticated() {
         // Check whether the current time is past the
@@ -87,8 +87,8 @@ const initAuth = function(claims = []) {
 
     // @ts-ignore External dependency
     const webAuth = new auth0.WebAuth({
-        domain: process.env.AUTH0_DOMAIN,
-        clientID: process.env.AUTH0_CLIENT_ID,
+        domain: process.env.REACT_APP_AUTH0_DOMAIN,
+        clientID: process.env.REACT_APP_AUTH0_CLIENT_ID,
         responseType: 'token id_token',
         scope: 'openid email',
         redirectUri: window.location.href

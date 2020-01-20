@@ -1,36 +1,35 @@
 {
-    "compilerOptions": {
-        "target": "es5",
-        "module": "commonjs",
-        "sourceMap": true,
-        "outDir": "ts-out/",
-        "noImplicitAny": true,
-        "strictNullChecks": true,
-        // OpenLayers:
-        "allowJs": true,
-        "checkJs": true,
-        "baseUrl": "./",
-        "paths": {
-            "ol": [
-                "node_modules/ol/src"
-            ],
-            "ol/*": [
-                "node_modules/ol/src/*"
-            ],
-            "ol-mapbox-style": [
-                "node_modules/ol-mapbox-style"
-            ]
-        }
-    },
-    "files": [
-        "src/app.ts"
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
     ],
-    "include": [
-        "**/*.js",
-        "node_modules/ol-mapbox-style/**/*.js",
-        "node_modules/ol/**/*.js"
-    ],
-    "exclude": [
-        "dist/"
-    ]
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react",
+    "baseUrl": "./",
+    "checkJs": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "outDir": "ts-out/"
+  },
+  "include": [
+    "src",
+    // "node_modules/ol-mapbox-style/**/*.js",
+    // "node_modules/ol/**/*.js"
+  ],
+  "exclude": [
+    "dist/"
+  ]
 }

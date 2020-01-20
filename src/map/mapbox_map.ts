@@ -139,7 +139,7 @@ export const mapInit = () => {
     // @ts-ignore
     if (MapboxGeocoder0 !== undefined) {
         const geocoder = new MapboxGeocoder0({
-            accessToken: process.env.GEOCODING_ACCESS_TOKEN,
+            accessToken: process.env.REACT_APP_GEOCODING_ACCESS_TOKEN,
             countries: 'fi',
             localGeocoder: kiinteistorekisteriTunnusGeocoder,
             mapboxgl: mapboxgl0,

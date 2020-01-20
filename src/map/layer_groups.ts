@@ -192,3 +192,18 @@ export const toggleGroup = (group: string, forcedState?: boolean) => {
     }
 }
 
+
+
+export const layerComponentList = []
+
+interface IAddLayerComponentOptions {
+    category: string;
+    id: string;
+    name: string;
+    layers: string[];
+    component: any;
+}
+
+export const addLayerComponent = (props: IAddLayerComponentOptions) => {
+    layerComponentList.push(props)
+}

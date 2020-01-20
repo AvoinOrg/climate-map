@@ -74,7 +74,7 @@ onMapLoad(() => {
         layers: string
     }
     // @ts-ignore TODO
-    const hashParams: IHashParams = location.hash.replace(/^[#?]*/, '').split('&').reduce((prev, item) => (
+    const hashParams: IHashParams = window.location.hash.replace(/^[#?]*/, '').split('&').reduce((prev, item) => (
         Object.assign({ [item.split('=')[0]]: item.split('=')[1] }, prev)
     ), {});
 
@@ -87,7 +87,7 @@ onMapLoad(() => {
 
     try {
         const zoom = Number.parseFloat(hashParams.zoom);
-        if (zoom >= 0 && zoom < 25 && zoom === zoom) { zoomTo(zoom); }
+        if (zoom >= 0 && zoom < 25 && !Number.isNaN(zoom)) { zoomTo(zoom); }
     } catch(e) {}
 
     try {
