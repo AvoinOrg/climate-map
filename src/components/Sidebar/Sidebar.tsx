@@ -2,13 +2,11 @@ import React from 'react';
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
-import Divider from '@material-ui/core/Divider';
-import ListItem from '@material-ui/core/ListItem';
 import TextField from '@material-ui/core/TextField';
 
-import Dropdown from '../Dropdown'
-import CollapseDrawerButton from './CollapseDrawerButton'
-import Logo from './logo.svg'
+import Accordion from '../Accordion'
+
+import drawerItems from './drawerItems'
 
 import { layerComponentList, toggleGroup } from '../../map/layer_groups'
 
@@ -38,16 +36,7 @@ export function SearchInput(props: SearchInputProps) {
   )
 }
 
-const drawerWidth = 240;
-
-const drawerItems = [
-  { title: 'Forest' },
-  { title: 'Fields' },
-  { title: 'Biodiversity' },
-  { title: 'Air quality' },
-  { title: 'Buildings' },
-  { title: 'Snow cover' },
-];
+const drawerWidth = 340;
 
 const filteredItems = (arr: { title: string }[], query: string) => {
   if (!query) {
@@ -72,13 +61,6 @@ const useStyles = makeStyles((theme: Theme) =>
     hide: {
       display: 'none',
     },
-    drawer: {
-      width: drawerWidth,
-      flexShrink: 0,
-    },
-    drawerPaper: {
-      width: drawerWidth,
-    },
     navlink: {
       color: 'black',
       textDecoration: 'none',
@@ -91,58 +73,52 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     search: {
       padding: 0
-    }
-
+    },
+    dropdownList: {
+      marginTop: 90,
+    },
+    drawer: {
+      width: drawerWidth,
+      flexShrink: 0,
+    },
+    drawerPaper: {
+      width: drawerWidth,
+    },
+    drawerItem: {
+      marginBottom: theme.spacing(4),
+      height: 47,
+    },
+    content: {
+      flexGrow: 1,
+      padding: theme.spacing(3),
+    },
+    toolbar: theme.mixins.toolbar,
   }),
 );
 
-function Sidebar() {
+function Sidebar(props: any) {
   const classes = useStyles({});
-  const [open, setOpen] = React.useState(true);
-  const [query, setQuery] = React.useState('')
-
-  const handleDrawerToggle = () => {
-    setOpen(!open);
-  }
-
-  const toggleLayerGroup = () => {
-    toggleGroup(layerComponentList[0]['id'])
-    console.log(layerComponentList[0]['id'])
-  }
-  
+  const { sidebarOpen } = props
 
   return (
     <>
-      {/* <CollapseDrawerButton open={open} onClick={handleDrawerToggle} /> */}
-      <CollapseDrawerButton open={open} onClick={toggleLayerGroup} />
-
       <Drawer
         className={classes.drawer}
         variant="persistent"
         anchor="left"
-        open={open}
+        open={sidebarOpen}
         classes={{
           paper: classes.drawerPaper,
         }}
       >
-        <img className={classes.logo} src={Logo} alt="Logo" />
-        <h4 className={classes.title}>Sustainability map</h4>
-        <List>
-          <ListItem><SearchInput onChange={setQuery} /></ListItem>
+        <List className={classes.dropdownList}>
           {
-            filteredItems(drawerItems, query).map((v, i) => <ListItem
-              key={i}
-            >
-              <Dropdown
-                title={v.title} /></ListItem>
+            drawerItems.map((item, i) =>
+              <Accordion
+                drawerItem={true}
+                item={item} />
             )
           }
-        </List>
-        <Divider />
-        <List>
-          <Link className={classes.navlink} to={'/info'}>
-            <ListItem button>Info</ListItem>
-          </Link>
         </List>
       </Drawer>
 

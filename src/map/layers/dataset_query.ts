@@ -403,9 +403,13 @@ const clearQueryPoints = event => {
 
 const queryResultsElem = document.querySelector('#dataset-query-results');
 const datasetQueryEnabledElem = document.querySelector('#dataset-query') as HTMLInputElement;
-document.querySelectorAll('.dataset-query-clear-points').forEach(el => {
-    el.addEventListener('click', clearQueryPoints);
-});
+try {
+    document.querySelectorAll('.dataset-query-clear-points').forEach(el => {
+        el.addEventListener('click', clearQueryPoints);
+    });
+} catch (error) {
+    //TODO later
+}
 
 const addQueryPoint = async function (e) {
     if (!datasetQueryEnabledElem.checked) { return; }
@@ -425,9 +429,13 @@ const addQueryPoint = async function (e) {
     await refreshDatasetQuery(1);
 }
 
-datasetQueryEnabledElem.addEventListener('change', e => {
-    if (!datasetQueryEnabledElem.checked) { clearQueryPoints(e); }
-})
+try {
+    datasetQueryEnabledElem.addEventListener('change', e => {
+        if (!datasetQueryEnabledElem.checked) { clearQueryPoints(e); }
+    })
+} catch (error) {
+    // todo    
+}
 
 const sanitizeInputHTML = html => {
     const elem = document.createElement("div");
@@ -518,16 +526,21 @@ const updateDatasetQueryResultsList = (page, results: IResultRow[]) => {
         }
     }
     queryResultsElem.innerHTML = sanitize(html);
-    queryResultsElem.querySelectorAll('button').forEach(e => {
-        e.addEventListener('click', event => {
-            const el = event.target as HTMLInputElement;
-            const idx = el.getAttribute('data-idx');
-            if (showData(results[idx])) {
-                el.classList.toggle('active')
-                el.innerText = el.classList.contains('active') ? 'Hide data' : 'Show data on map';
-            }
+    try {
+        queryResultsElem.querySelectorAll('button').forEach(e => {
+            e.addEventListener('click', event => {
+                const el = event.target as HTMLInputElement;
+                const idx = el.getAttribute('data-idx');
+                if (showData(results[idx])) {
+                    el.classList.toggle('active')
+                    el.innerText = el.classList.contains('active') ? 'Hide data' : 'Show data on map';
+                }
+            })
         })
-    })
+    } catch (error) {
+        // TODO later
+    }
+
 };
 
 let datasetQueryNum = 0;

@@ -96,6 +96,7 @@ const initAuth = function(claims = []) {
 
     const loginBtn = document.getElementById('btn-login');
     const logoutBtn = document.getElementById('btn-logout');
+    if (!loginBtn) return // A version without login
 
     const authorizeParams = claims.length > 0 ? { roleclaims: claims } : {};
     loginBtn.addEventListener('click', function(e) {

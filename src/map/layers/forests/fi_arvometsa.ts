@@ -120,11 +120,18 @@ const ARVOMETSA_TRADITIONAL_FORESTRY_METHOD = 2; // Thin from below – clearfel
 
 const updateGraphs = (f?: MapboxGeoJSONFeature) => {
     const scenarioInputElem = document.querySelector('.arvometsa-projections :checked') as HTMLInputElement;
+    if (!scenarioInputElem) {
+        return
+    }
     arvometsaDataset = arvometsaDatasetClasses.indexOf(scenarioInputElem.value);
 
     // Ensure the UI state is consistent with the activation of this:
     if (selectedFeature) {
-        (document.querySelector('input#arvometsa') as HTMLInputElement).checked = true;
+        const inputArvometsa = document.querySelector('input#arvometsa') as HTMLInputElement
+        if (!inputArvometsa) {
+            return
+        }
+        inputArvometsa.checked = true;
     }
 
     updateDetailVisibility();
@@ -582,6 +589,8 @@ const arvometsaInit = (e: Event) => {
     const elem = e.target as HTMLInputElement;
     if (!elem.checked) { clearHighlights(); }
 }
+
+try {
 document.querySelector('input#arvometsa').addEventListener('change', arvometsaInit);
 
 document.querySelector('.arvometsa-projections').addEventListener('change', () => updateGraphs());
@@ -593,3 +602,6 @@ document.getElementById('arvometsa-goto-location').addEventListener('click', () 
     const bbox = selectedFeatureBounds;
     if (bbox) { fitBounds(bbox, 0.4, 0.15); }
 });
+} catch (error) {
+    // TODO later
+}

@@ -162,8 +162,9 @@ export const toggleGroup = (group: string, forcedState?: boolean) => {
     const newState = forcedState === undefined ? !oldState : forcedState;
     if (oldState === newState) return;
 
-    const el = document.querySelector(`.layer-card input#${group}`) as HTMLInputElement
-    if (el) el.checked = newState
+    // not needed for react:
+    // const el = document.querySelector(`.layer-card input#${group}`) as HTMLInputElement
+    // if (el) el.checked = newState
 
     for (const layer of layerGroups[group]) {
         if (typeof layer === 'function') {
@@ -183,13 +184,13 @@ export const toggleGroup = (group: string, forcedState?: boolean) => {
 
     if (group in backgroundLayerGroups) return;
 
-    const layerCard = getFirstAncestorMatching(el, e => e.classList.contains('layer-card'));
-    if (!layerCard) {
-        console.error('Could not find a .layer-card for layer:', group, el);
-    }
-    if (layerCard && layerCard.classList.contains('layer-active') !== newState) {
-        layerCard.classList.toggle('layer-active');
-    }
+    // const layerCard = getFirstAncestorMatching(el, e => e.classList.contains('layer-card'));
+    // if (!layerCard) {
+    //     console.error('Could not find a .layer-card for layer:', group, el);
+    // }
+    // if (layerCard && layerCard.classList.contains('layer-active') !== newState) {
+    //     layerCard.classList.toggle('layer-active');
+    // }
 }
 
 
