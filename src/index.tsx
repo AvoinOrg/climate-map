@@ -7,7 +7,7 @@ import './index.css';
 import AppRouterSwitch from './AppRouterSwitch';
 import './map'
 
-import theme from './theme';
+import theme from './ui/theme';
 
 import * as serviceWorker from './serviceWorker';
 

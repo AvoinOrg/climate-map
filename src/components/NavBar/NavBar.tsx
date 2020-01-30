@@ -35,8 +35,6 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     appBar: {
       zIndex: theme.zIndex.drawer + 1,
-      backgroundColor: 'white', //primary?
-      color: '#364858' //secondary?
     },
     title: {
       flexGrow: 1,
