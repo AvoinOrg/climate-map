@@ -3,6 +3,8 @@ import clsx from 'clsx'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { ExpansionPanel, ExpansionPanelSummary, Typography, ExpansionPanelDetails, makeStyles, Theme, createStyles } from '@material-ui/core';
 
+import './AccordionStyle.css'
+
 const drawerWidth = 340;
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -12,17 +14,9 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: theme.typography.fontWeightRegular,
     },
     drawerItem: {
-      marginLeft: 20,
       marginBottom: 25,
-      marginRight: 21,
-      maxWidth: drawerWidth - 46
+      width: drawerWidth - 46
     },
-    details: {
-      marginLeft: 20,
-      marginBottom: 25,
-      marginRight: 21,
-      maxWidth: drawerWidth - 46
-    }
   }),
 );
 
@@ -36,9 +30,9 @@ const Dropdown = (props: DropdownProps) => {
   const classes = useStyles({});
   return <ExpansionPanel className={clsx({
     [classes.drawerItem]: drawerItem
-  })} {...props}>
+  })}>
 
-    <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
+    <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon />}>
       {item?.title && <Typography className={classes.heading}>{item.title}</Typography>}
     </ExpansionPanelSummary>
 

@@ -9,6 +9,7 @@ import Accordion from '../Accordion'
 import drawerItems from './drawerItems'
 
 import { layerComponentList, toggleGroup } from '../../map/layer_groups'
+import { ListItem } from '@material-ui/core';
 
 interface SearchInputProps {
   onChange?: any;
@@ -101,7 +102,7 @@ function Sidebar(props: any) {
   const { sidebarOpen } = props
 
   return (
-    <>
+    <div className={"left-drawer"}>
       <Drawer
         className={classes.drawer}
         variant="persistent"
@@ -114,15 +115,17 @@ function Sidebar(props: any) {
         <List className={classes.dropdownList}>
           {
             drawerItems.map((item, i) =>
-              <Accordion
-                drawerItem={true}
-                item={item} />
+              <ListItem key={i}>
+                <Accordion
+                  drawerItem={true}
+                  item={item} />
+              </ListItem>
             )
           }
         </List>
       </Drawer>
 
-    </>
+    </div>
   );
 }
 
