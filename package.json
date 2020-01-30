@@ -53,11 +53,11 @@
   },
   "browserslist": {
     "production": [
-      "not dead",
-      "not op_mini all",
       "> 1%",
       "last 2 versions",
-      "iOS 6"
+      "iOS 6",
+      "not op_mini all",
+      "not dead"
     ],
     "development": [
       "last 1 chrome version",
