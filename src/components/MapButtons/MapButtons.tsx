@@ -14,6 +14,8 @@ import RemoveIcon from '@material-ui/icons/Remove';
 
 import GpsFixedIcon from '@material-ui/icons/GpsFixed';
 
+import * as Map from '../../map/map'
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     iconGroup: {
@@ -43,13 +45,13 @@ export default function GroupOrientation() {
       <ButtonGroup
         orientation="vertical"
       >
-        <IconButton size="small" className={classes.btn}><SatelliteIcon fontSize="small" /></IconButton>
+        <IconButton onClick={Map.mapToggleTerrain} size="small" className={classes.btn}><SatelliteIcon fontSize="small" /></IconButton>
         <Divider className={classes.divider}/>
-        <IconButton size="small" className={classes.btn}><ExploreIcon fontSize="small" /></IconButton>
-        <IconButton size="small" className={classes.btn}><AddIcon fontSize="small" /></IconButton>
-        <IconButton size="small" className={classes.btn}><RemoveIcon fontSize="small" /></IconButton>
+        <IconButton onClick={Map.mapResetNorth} size="small" className={classes.btn}><ExploreIcon fontSize="small" /></IconButton>
+        <IconButton onClick={Map.mapZoomIn} size="small" className={classes.btn}><AddIcon fontSize="small" /></IconButton>
+        <IconButton onClick={Map.mapZoomOut} size="small" className={classes.btn}><RemoveIcon fontSize="small" /></IconButton>
         <Divider className={classes.divider}/>
-        <IconButton size="small" className={classes.btn}><GpsFixedIcon fontSize="small" /></IconButton>
+        <IconButton onClick={Map.mapRelocate} size="small" className={classes.btn}><GpsFixedIcon fontSize="small" /></IconButton>
       </ButtonGroup>
     </div>
   );

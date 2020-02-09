@@ -412,6 +412,8 @@ try {
 }
 
 const addQueryPoint = async function (e) {
+    // TODO later
+    return
     if (!datasetQueryEnabledElem.checked) { return; }
     if (isDatasetQueryViewMode()) { return; } // Disable while viewing datasets.
 

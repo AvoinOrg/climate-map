@@ -1,3 +1,4 @@
+import mapboxgl from "mapbox-gl"
 import { Layer, MapLayerMouseEvent, PopupOptions, GeoJSONSourceRaw } from "mapbox-gl";
 import { execWithMapLoaded, assert, invertLayerTextHalo, originalSourceDefs, originalLayerDefs, executeDelayedMapOperations } from "./utils";
 import { sanitize } from "dompurify";
@@ -13,7 +14,7 @@ declare module "mapbox-gl" {
 // @ts-ignore
 const mapboxgl0 = mapboxgl;
 // @ts-ignore
-const MapboxGeocoder0 = MapboxGeocoder
+const MapboxGeocoder0 = window.MapboxGeocoder
 
 // This must be set, but the value is not needed here.
 mapboxgl0.accessToken = 'not-needed';
@@ -76,30 +77,30 @@ export const addLayer = (layer: Layer, visibility = 'none') => {
 export const toggleBaseMapSymbols = () => {
     execWithMapLoaded(() =>
         getMapLayers()
-        .filter(x => x.type === 'symbol')
-        .forEach(invertLayerTextHalo)
+            .filter(x => x.type === 'symbol')
+            .forEach(invertLayerTextHalo)
     )
 }
 
 
 export const genericPopupHandler: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => void
-= (layer, fn) => {
-    if (Array.isArray(layer)) {
-        return layer.forEach(l => genericPopupHandler(l, fn));
+    = (layer, fn) => {
+        if (Array.isArray(layer)) {
+            return layer.forEach(l => genericPopupHandler(l, fn));
+        }
+        map.on('click', layer, fn);
+        map.on('mouseenter', layer, function () {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+        map.on('mouseleave', layer, function () {
+            map.getCanvas().style.cursor = '';
+        });
     }
-    map.on('click', layer, fn);
-    map.on('mouseenter', layer, function() {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', layer, function() {
-        map.getCanvas().style.cursor = '';
-    });
-}
 
 export const createPopup = (ev: MapLayerMouseEvent, html: string, options?: PopupOptions) =>
     new mapboxgl0.Popup(options)
         .setLngLat(ev.lngLat)
-        .setHTML( sanitize(html) )
+        .setHTML(sanitize(html))
         .addTo(map);
 
 
@@ -117,8 +118,8 @@ export const fitBounds = (bbox: number[], lonExtra: number, latExtra: number) =>
     const lonDiff = lonMax - lonMin;
     const latDiff = latMax - latMin;
     return map.fitBounds([
-        [lonMin - lonExtra*lonDiff, latMin - latExtra*latDiff],
-        [lonMax + lonExtra*lonDiff, latMax + latExtra*latDiff]
+        [lonMin - lonExtra * lonDiff, latMin - latExtra * latDiff],
+        [lonMax + lonExtra * lonDiff, latMax + latExtra * latDiff]
     ], flyOptions);
 }
 export const zoomTo = (zoom: number) => map.zoomTo(zoom);
@@ -206,3 +207,22 @@ export const onMapLoad = fn => {
 }
 
 export const isMapLoaded = () => initialMapLoaded;
+
+export const mapToggleTerrain = () => { 
+    const val = map.getLayoutProperty('terramonitor', 'visibility') === 'none' ? 'visible' : 'none'
+    map.setLayoutProperty('terramonitor', 'visibility', val);
+ }
+
+export const mapResetNorth = () => { map.resetNorth() }
+export const mapZoomOut = () => { map.zoomOut() }
+export const mapZoomIn = () => { map.zoomIn() }
+export const mapRelocate = () => {
+    // TODO : Ask userlocation
+    alert('Feature under construction')
+    map.flyTo({
+        center: [
+            28 + (Math.random() - 0.5) * 10,
+            65 + (Math.random() - 0.5) * 10
+        ]
+    });
+}
