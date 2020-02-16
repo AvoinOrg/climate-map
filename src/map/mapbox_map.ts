@@ -208,9 +208,14 @@ export const onMapLoad = fn => {
 
 export const isMapLoaded = () => initialMapLoaded;
 
-export const mapToggleTerrain = () => { 
-    const val = map.getLayoutProperty('terramonitor', 'visibility') === 'none' ? 'visible' : 'none'
-    map.setLayoutProperty('terramonitor', 'visibility', val);
+
+export const toggleLayer = (layerName) => {
+    const val = map.getLayoutProperty(layerName, 'visibility') === 'none' ? 'visible' : 'none'
+    map.setLayoutProperty(layerName, 'visibility', val);
+}
+
+export const mapToggleTerrain = () => {
+    toggleLayer('terramonitor')
  }
 
 export const mapResetNorth = () => { map.resetNorth() }

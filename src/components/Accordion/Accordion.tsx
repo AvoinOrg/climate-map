@@ -3,6 +3,10 @@ import clsx from 'clsx'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { ExpansionPanel, ExpansionPanelSummary, Typography, ExpansionPanelDetails, makeStyles, Theme, createStyles } from '@material-ui/core';
 
+import ForestContent from './ForestContent'
+import BuildingsContent from './BuildingsContent'
+import BioversityContent from './BioversityContent'
+
 import './AccordionStyle.css'
 
 const drawerWidth = 340;
@@ -56,7 +60,12 @@ const Content = (props: any) => {
         content={
           Array.isArray(item.content) ? item.content : [item.content]
         } />
-
+    case 'forestContent':
+      return <ForestContent item={item.content} />
+    case 'buildingsContent':
+      return <BuildingsContent item={item.content} />
+    case 'bioversityContent':
+      return <BioversityContent item={item.content} />
     default:
       return null
   }

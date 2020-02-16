@@ -14,7 +14,7 @@ export default [
   {
     title: 'Forest',
     content: null,
-    contentType: null
+    contentType: 'forestContent'
   },
   {
     title: 'Field',
@@ -32,7 +32,7 @@ export default [
   {
     title: 'Biodiversity',
     content: null,
-    contentType: null
+    contentType: 'bioversityContent'
   },
   {
     title: 'Wetlands',
@@ -52,7 +52,7 @@ export default [
   {
     title: 'Buildings',
     content: null,
-    contentType: null
+    contentType: 'buildingsContent'
   },
   {
     title: 'Urban green areas',
