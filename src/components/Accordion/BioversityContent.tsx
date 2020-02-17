@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, ListItem, Switch, Container } from '@material-ui/core';
+import { List, ListItem, Switch, Container, createStyles, makeStyles, Theme } from '@material-ui/core';
 
 import * as LayerGroups from '../../map/layer_groups'
 
@@ -11,6 +11,13 @@ const items = {
   'natura2000': 'Natura 2000',
 }
 
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    paddingOne: {
+      padding: 1
+    }
+  }),
+);
 interface BuildingsContentProps {
   item: any;
 }
@@ -24,26 +31,23 @@ const BuildingsContent = (props: BuildingsContentProps) => {
   return <List>
     {/* Special case - not in design, contains <p> */}
     <ListItem>
-      <Container>
       <List>
         <ListItem>
-          Areas important to biodiversity <Switch onClick={() => LayerGroups.toggleGroup(`zonation6`)} /> <br />
+          <Switch onClick={() => LayerGroups.toggleGroup(`zonation6`)} /> Areas important to biodiversity
         </ListItem>
         <ListItem>
-          This layer comprises of the <a href="http://metatieto.ymparisto.fi:8080/geoportal/catalog/search/resource/details.page?uuid=%7B8E4EA3B2-A542-4C39-890C-DD7DED33AAE1%7D">Zonation 2018 data (forests of high biodiversity value)</a>.
-        </ListItem>
-        <ListItem>
-        The data shown corresponds to 10% of the most important areas for biodiversity in Finland.
+          <p>
+            This layer comprises of the <a href="http://metatieto.ymparisto.fi:8080/geoportal/catalog/search/resource/details.page?uuid=%7B8E4EA3B2-A542-4C39-890C-DD7DED33AAE1%7D">Zonation 2018 data (forests of high biodiversity value)</a>.<br/>
+            The data shown corresponds to 10% of the most important areas for biodiversity in Finland.
+          </p>
         </ListItem>
       </List>
-      </Container>
     </ListItem>
 
     {
       Object.keys(items).map((item, i) =>
         <ListItem key={i}>
-          {items[item]} <Switch onChange={() => onChange(item)}
-          />
+          <Switch onChange={() => onChange(item)}/> {items[item]} 
         </ListItem>
       )
     }

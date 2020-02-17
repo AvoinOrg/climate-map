@@ -6,6 +6,8 @@ import { ExpansionPanel, ExpansionPanelSummary, Typography, ExpansionPanelDetail
 import ForestContent from './ForestContent'
 import BuildingsContent from './BuildingsContent'
 import BioversityContent from './BioversityContent'
+import WetlandsContent from './WetlandsContent'
+import SnowCoverContent from './SnowCoverContent'
 
 import './AccordionStyle.css'
 
@@ -18,9 +20,12 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: theme.typography.fontWeightRegular,
     },
     drawerItem: {
-      marginBottom: 25,
+      marginBottom: 20,
       width: drawerWidth - 46
     },
+    noExpansionPanelPadding: {
+      padding: 0
+    }
   }),
 );
 
@@ -36,11 +41,13 @@ const Dropdown = (props: DropdownProps) => {
     [classes.drawerItem]: drawerItem
   })}>
 
-    <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon />}>
+    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
       {item?.title && <Typography className={classes.heading}>{item.title}</Typography>}
     </ExpansionPanelSummary>
 
-    <ExpansionPanelDetails>
+    <ExpansionPanelDetails className={clsx({
+      [classes.noExpansionPanelPadding]: item.noExpansionPanelPadding
+    })}>
       <Content item={item} />
     </ExpansionPanelDetails>
 
@@ -66,6 +73,10 @@ const Content = (props: any) => {
       return <BuildingsContent item={item.content} />
     case 'bioversityContent':
       return <BioversityContent item={item.content} />
+    case 'wetlandsContent':
+      return <WetlandsContent item={item.content} />
+    case 'snowCoverContent':
+      return <SnowCoverContent item={item.content} />
     default:
       return null
   }
@@ -86,12 +97,12 @@ const TextContentWithLink = (props: any) => {
 
   return <Typography>
     {content.map(
-      (v, i) => typeof v === 'string' ? <p key={i}> {v} </p> : 
-      <>
-        {v.link.textBefore && <span>{v.link.textBefore}</span>}
-        <Link to={v.link.to}>{v.link.text}</Link>
-        {v.link.textAfter && <span>{v.link.textAfter}</span>}
-      </>
+      (v, i) => typeof v === 'string' ? <p key={i}> {v} </p> :
+        <>
+          {v.link.textBefore && <span>{v.link.textBefore}</span>}
+          <Link to={v.link.to}>{v.link.text}</Link>
+          {v.link.textAfter && <span>{v.link.textAfter}</span>}
+        </>
     )}
   </Typography>
 }

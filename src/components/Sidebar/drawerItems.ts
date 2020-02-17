@@ -8,13 +8,15 @@ export interface ContentEntity {
   title: string;
   content?: null;
   contentType?: null;
+  noExpansionPanelPadding?: boolean;
 }
 
 export default [
   {
     title: 'Forest',
     content: null,
-    contentType: 'forestContent'
+    contentType: 'forestContent',
+    noExpansionPanelPadding: true
   },
   {
     title: 'Field',
@@ -32,12 +34,13 @@ export default [
   {
     title: 'Biodiversity',
     content: null,
-    contentType: 'bioversityContent'
+    contentType: 'bioversityContent',
+    noExpansionPanelPadding: true
   },
   {
     title: 'Wetlands',
     content: null,
-    contentType: null
+    contentType: 'wetlandsContent'
   },
   {
     title: 'Air pollution',
@@ -54,33 +57,19 @@ export default [
     content: null,
     contentType: 'buildingsContent'
   },
-  {
-    title: 'Urban green areas',
-    content: null,
-    contentType: null
-  },
+  // {
+  //   title: 'Urban green areas',
+  //   content: null,
+  //   contentType: null
+  // },
   {
     title: 'Snow cover',
-    content: [
-      `This layer shows the global decrease in 
-      the amount of snow over time. Each area 
-      shown corresponds to an area that 
-      between 1980 and 1990 had at least 10 
-      days of snow on average. This average is 
-      contrasted with the average snowfall 
-      between 1996 and 2016.`,
-
-      {
-        link: {
-          textBefore: `The data comes from FT-ESDR or `,
-          to: '#', text: 'Freeze/Thaw Earth System Data Record.' }
-      }
-    ],
-    contentType: 'textWithLink'
+    contentType: 'snowCoverContent',
+    content: null
   },
-  {
-    title: 'Water emissions',
-    content: null,
-    contentType: null
-  },
+  // {
+  //   title: 'Water emissions',
+  //   content: null,
+  //   contentType: null
+  // },
 ];

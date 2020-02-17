@@ -6,17 +6,16 @@ import * as LayerGroups from '../../map/layer_groups'
 // Key used to toggle layer,
 // Value used for i18n later
 const items = {
-  'building-energy-certificates': 'Building energy certificates',
-  'fi-buildings': 'Buildings (Finland)',
-  'helsinki-buildings': 'Buildings (Helsinki area)',
-  'hsy-solar-potential': 'Helsinki Area Solar Power Potential',
+  'bogs': 'Bogs and swamps',
+  'cifor-peatdepth': 'Tropical Peat',
+  'cifor-wetlands': 'Tropical Wetlands',
 }
 
-interface BuildingsContentProps {
+interface WetlandsContentProps {
   item: any;
 }
 
-const BuildingsContent = (props: BuildingsContentProps) => {
+const WetlandsContent = (props: WetlandsContentProps) => {
 
   const onChange = (item) => {
     LayerGroups.toggleGroup(`${item}`)
@@ -33,4 +32,4 @@ const BuildingsContent = (props: BuildingsContentProps) => {
   </List>
 }
 
-export default BuildingsContent
+export default WetlandsContent
