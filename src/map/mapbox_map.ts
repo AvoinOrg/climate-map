@@ -216,18 +216,21 @@ export const toggleLayer = (layerName) => {
 
 export const mapToggleTerrain = () => {
     toggleLayer('terramonitor')
- }
+}
 
 export const mapResetNorth = () => { map.resetNorth() }
 export const mapZoomOut = () => { map.zoomOut() }
 export const mapZoomIn = () => { map.zoomIn() }
 export const mapRelocate = () => {
-    // TODO : Ask userlocation
-    alert('Feature under construction')
-    map.flyTo({
-        center: [
-            28 + (Math.random() - 0.5) * 10,
-            65 + (Math.random() - 0.5) * 10
-        ]
-    });
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(({ coords }) => {
+            map.flyTo({
+                center: [
+                    coords.longitude,
+                    coords.latitude,
+                ]
+            });
+        });
+       
+    }
 }
