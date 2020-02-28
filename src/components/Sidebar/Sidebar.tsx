@@ -8,8 +8,9 @@ import Accordion from '../Accordion'
 
 import drawerItems from './drawerItems'
 
-import { layerComponentList, toggleGroup } from '../../map/layer_groups'
 import { ListItem } from '@material-ui/core';
+
+import * as LayerGroups from '../../map/layer_groups'
 
 interface SearchInputProps {
   onChange?: any;
@@ -101,6 +102,20 @@ function Sidebar(props: any) {
   const classes = useStyles({});
   const { sidebarOpen } = props
 
+  const [checked, setChecked] = React.useState('')
+
+  const toggleLayer = (layerName) => {
+    if (checked == layerName) {
+      LayerGroups.toggleGroup(layerName, false)
+      setChecked('')
+      return
+    }
+
+    LayerGroups.wate(layerName)
+    setChecked(layerName)
+
+  }
+
   return (
     <div className={"left-drawer"}>
       <Drawer
@@ -108,15 +123,14 @@ function Sidebar(props: any) {
         variant="persistent"
         anchor="left"
         open={sidebarOpen}
-        classes={{
-          paper: classes.drawerPaper,
-        }}
       >
         <List className={classes.dropdownList}>
           {
             drawerItems.map((item, i) =>
               <ListItem key={i}>
                 <Accordion
+                  checked={checked}
+                  toggleLayer={toggleLayer}
                   drawerItem={true}
                   item={item} />
               </ListItem>

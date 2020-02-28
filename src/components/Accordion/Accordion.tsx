@@ -32,10 +32,12 @@ const useStyles = makeStyles((theme: Theme) =>
 interface DropdownProps {
   item: any;
   drawerItem: boolean;
+  checked: string;
+  toggleLayer: Function;
 }
 
 const Dropdown = (props: DropdownProps) => {
-  const { item, drawerItem } = props;
+  const { item, drawerItem, checked, toggleLayer  } = props;
   const classes = useStyles({});
   return <ExpansionPanel className={clsx({
     [classes.drawerItem]: drawerItem
@@ -48,14 +50,18 @@ const Dropdown = (props: DropdownProps) => {
     <ExpansionPanelDetails className={clsx({
       [classes.noExpansionPanelPadding]: item.noExpansionPanelPadding
     })}>
-      <Content item={item} />
+      <Content
+      toggleLayer={toggleLayer}
+      checked={checked}
+      item={item} />
     </ExpansionPanelDetails>
 
   </ExpansionPanel>;
 }
 
+
 const Content = (props: any) => {
-  const { item } = props
+  const { item, checked, toggleLayer } = props
   switch (item.contentType) {
     case 'textWithLink':
       return <TextContentWithLink
@@ -68,15 +74,30 @@ const Content = (props: any) => {
           Array.isArray(item.content) ? item.content : [item.content]
         } />
     case 'forestContent':
-      return <ForestContent item={item.content} />
+      return <ForestContent
+        checked={checked}
+        toggleLayer={toggleLayer}
+        item={item.content} />
     case 'buildingsContent':
-      return <BuildingsContent item={item.content} />
+      return <BuildingsContent
+        checked={checked}
+        toggleLayer={toggleLayer}
+        item={item.content} />
     case 'bioversityContent':
-      return <BioversityContent item={item.content} />
+      return <BioversityContent
+        checked={checked}
+        toggleLayer={toggleLayer}
+        item={item.content} />
     case 'wetlandsContent':
-      return <WetlandsContent item={item.content} />
+      return <WetlandsContent
+        checked={checked}
+        toggleLayer={toggleLayer}
+        item={item.content} />
     case 'snowCoverContent':
-      return <SnowCoverContent item={item.content} />
+      return <SnowCoverContent
+        checked={checked}
+        toggleLayer={toggleLayer}
+        item={item.content} />
     default:
       return null
   }

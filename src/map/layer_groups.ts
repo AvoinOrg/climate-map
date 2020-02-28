@@ -208,3 +208,36 @@ interface IAddLayerComponentOptions {
 export const addLayerComponent = (props: IAddLayerComponentOptions) => {
     layerComponentList.push(props)
 }
+
+// const showOnlyOneLayer = true; // normal end user UI behavior
+
+// // sit tosta koodista joku versio et disable all enabled + enable new group only
+// export const hideAllGroups = () => {
+//     const enabledGroups = Object.keys(layerGroupState).filter(g => layerGroupState[g])
+//     console.log(enabledGroups)
+//     return
+//     for (const group of enabledGroups) {
+//         const normalLayers = layerGroups[group]
+//         .filter((l: any) => typeof l === 'string') as string[]
+//         for (const layer of normalLayers) {
+//             setLayoutProperty(layer, 'visibility', 'visible');
+//         }
+//     }
+// }
+
+// const showGroup = (name) => {
+// if (showOnlyOneLayer) hideAllGroups()
+// toggleGroup(name, true)
+// }
+
+
+
+export const wate = (group) => {
+    const previousState = layerGroupState[group]
+    for (const g of Object.keys(layerGroupState)) {
+        if (!Object.keys(backgroundLayerGroups).includes(g)){
+            toggleGroup(g, false)
+        }
+    }
+    if (!previousState) toggleGroup(group, true)
+}

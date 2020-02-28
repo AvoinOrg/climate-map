@@ -11,10 +11,12 @@ const items = {
 
 interface SnowCoverContentProps {
   item: any;
+  checked: string;
+  toggleLayer: Function;
 }
 
 const SnowCoverContent = (props: SnowCoverContentProps) => {
-
+  const { checked, toggleLayer } = props
   const onChange = (item) => {
     LayerGroups.toggleGroup(`${item}`)
   }

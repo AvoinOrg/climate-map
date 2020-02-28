@@ -1,8 +1,6 @@
 import React from 'react'
 import { List, ListItem, Switch } from '@material-ui/core';
 
-import * as LayerGroups from '../../map/layer_groups'
-
 // Key used to toggle layer,
 // Value used for i18n later
 const items = {
@@ -14,19 +12,21 @@ const items = {
 
 interface BuildingsContentProps {
   item: any;
+  checked: string;
+  toggleLayer: Function;
 }
 
 const BuildingsContent = (props: BuildingsContentProps) => {
-
+  const { checked, toggleLayer } = props
   const onChange = (item) => {
-    LayerGroups.toggleGroup(`${item}`)
+    toggleLayer(`${item}`)
   }
 
   return <List>
     {
       Object.keys(items).map((item, i) =>
         <ListItem key={i}>
-          <Switch onChange={() => onChange(item)} /> {items[item]}
+          <Switch checked={checked == item} onChange={() => onChange(item)} /> {items[item]}
         </ListItem>
       )
     }

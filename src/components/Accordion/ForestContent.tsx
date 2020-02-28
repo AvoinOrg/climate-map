@@ -15,19 +15,23 @@ const items = {
 
 interface ForestContentProps {
   item: any;
+  checked: string;
+  toggleLayer: Function;
 }
 
 const ForestContent = (props: ForestContentProps) => {
-
+  const { checked, toggleLayer } = props
   const onChange = (item) => {
-    LayerGroups.toggleGroup(`${item}`)
+    toggleLayer(item)
   }
 
   return <List>
     {
       Object.keys(items).map((item, i) =>
         <ListItem key={i}>
-          <Switch onChange={() => onChange(item)} /> {items[item]}
+          <Switch
+            checked={checked == item}
+            onChange={() => onChange(item)} /> {items[item]}
         </ListItem>
       )
     }
