@@ -1,7 +1,6 @@
 import React from 'react'
 import { List, ListItem, Switch } from '@material-ui/core';
-
-import * as LayerGroups from '../../map/layer_groups'
+import AccordionButton from './AccordionButton'
 
 // Key used to toggle layer,
 // Value used for i18n later
@@ -17,15 +16,16 @@ interface SnowCoverContentProps {
 
 const SnowCoverContent = (props: SnowCoverContentProps) => {
   const { checked, toggleLayer } = props
-  const onChange = (item) => {
-    LayerGroups.toggleGroup(`${item}`)
-  }
-
   return <List>
     {
       Object.keys(items).map((item, i) =>
         <ListItem key={i}>
-          <Switch onChange={() => onChange(item)} /> {items[item]}
+          <AccordionButton
+            checked={checked}
+            onChange={toggleLayer}
+            items={items}
+            item={item}
+          />
         </ListItem>
       )
     }

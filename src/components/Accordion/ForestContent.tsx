@@ -1,14 +1,13 @@
 import React from 'react'
 import { ExpansionPanel, ExpansionPanelSummary, Typography, ExpansionPanelDetails, List, ListItem, Container, createStyles, makeStyles, Theme, Switch } from '@material-ui/core';
-
-import * as LayerGroups from '../../map/layer_groups'
+import AccordionButton from './AccordionButton'
 
 // Key used to toggle layer,
 // Value used for i18n later
 const items = {
- 'gfw_tree_plantations': 'Finland’s forests',
- 'mangrove-forests': 'Mangrove forests',
- 'mature-forests': 'Tropical peatland forests'
+  'gfw_tree_plantations': 'Finland’s forests',
+  'mangrove-forests': 'Mangrove forests',
+  'mature-forests': 'Tropical peatland forests'
 }
 
 
@@ -29,9 +28,12 @@ const ForestContent = (props: ForestContentProps) => {
     {
       Object.keys(items).map((item, i) =>
         <ListItem key={i}>
-          <Switch
-            checked={checked == item}
-            onChange={() => onChange(item)} /> {items[item]}
+          <AccordionButton
+            checked={checked}
+            onChange={toggleLayer}
+            items={items}
+            item={item}
+          />
         </ListItem>
       )
     }
