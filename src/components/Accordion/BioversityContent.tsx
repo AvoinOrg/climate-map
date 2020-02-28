@@ -1,5 +1,6 @@
 import React from 'react'
 import { List, ListItem, Switch, Container, createStyles, makeStyles, Theme } from '@material-ui/core';
+import AccordionButton from './AccordionButton'
 
 // Key used to toggle layer,
 // Value used for i18n later
@@ -8,14 +9,6 @@ const items = {
   'ete-all-labels': 'METSO',
   'natura2000': 'Natura 2000',
 }
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    paddingOne: {
-      padding: 1
-    }
-  }),
-);
 
 interface BuildingsContentProps {
   item: any;
@@ -46,9 +39,12 @@ const BuildingsContent = (props: BuildingsContentProps) => {
     {
       Object.keys(items).map((item, i) =>
         <ListItem key={i}>
-          <Switch
-            checked={checked == item}
-            onChange={() => toggleLayer(item)} /> {items[item]}
+          <AccordionButton
+            checked={checked}
+            onChange={toggleLayer}
+            items={items}
+            item={item}
+          />
         </ListItem>
       )
     }
