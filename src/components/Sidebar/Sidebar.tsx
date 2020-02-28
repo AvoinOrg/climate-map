@@ -111,7 +111,7 @@ function Sidebar(props: any) {
       return
     }
 
-    LayerGroups.wate(layerName)
+    LayerGroups.showLayer(layerName)
     setChecked(layerName)
 
   }
