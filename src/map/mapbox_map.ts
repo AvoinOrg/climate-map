@@ -223,12 +223,14 @@ export const mapZoomOut = () => { map.zoomOut() }
 export const mapZoomIn = () => { map.zoomIn() }
 export const mapRelocate = () => {
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(({ coords }) => {
+        navigator.geolocation.getCurrentPosition(({coords}) => {
+            const radius = coords.accuracy;
             map.flyTo({
                 center: [
                     coords.longitude,
                     coords.latitude,
-                ]
+                ],
+                zoom: radius
             });
         });
        
