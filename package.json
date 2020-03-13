@@ -7,8 +7,8 @@
     "scripts": {
         "dev": "ln -sf mapbox_map.ts src/map.ts && parcel index.html",
         "dev-ol": "ln -sf ol_map.ts src/map.ts && parcel index.html",
-        "build": "rm -rf dist/ && ln -sf mapbox_map.ts src/map.ts && parcel build index.html && cp -a favicon/* dist/favicon/ && cp _redirects og-image.jpg dist/",
-        "build-ol": "rm -rf dist/ && ln -sf ol_map.ts src/map.ts && parcel build index.html && cp -a favicon/* dist/favicon/ && cp _redirects og-image.jpg dist/",
+        "build": "rm -rf build/ && ln -sf mapbox_map.ts src/map.ts && parcel build -d build index.html && cp -a favicon/* build/favicon/ && cp _redirects og-image.jpg build/",
+        "build-ol": "rm -rf build/ && ln -sf ol_map.ts src/map.ts && parcel build -d build index.html && cp -a favicon/* build/favicon/ && cp _redirects og-image.jpg build/",
         "favicon": "real-favicon generate faviconDescription.json faviconData.json favicon/"
     },
     "devDependencies": {
