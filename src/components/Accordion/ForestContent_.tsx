@@ -23,23 +23,24 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: '5px 8px',
       border: '1px solid black',
     },
-    activeCard: {
-      backgroundColor: 'rgba(0,100,100,0.1)',
-      // margin: 'auto',
-    },
+    content: {
+      margin: 'unset',
+    }
+    // MuiExpansionPanelSummary-content.Mui-expanded
+    // activeCard: {
+    //   backgroundColor: 'rgba(0,100,100,0.1)',
+    // },
   }),
 );
 
 
-// const TodoList: React.FC = () => {
-// const todos = useObservable(todoService.todos);
-
 const AOExpansionPanel = ({groupName, label, content}: any) => {
   const layerGroups = useObservable(LayerGroups.layerGroupService.layerGroups);
   const groupEnabled = layerGroups.filter(x => x.name === groupName).length > 0
+  const classes = useStyles({});
 
   return <ExpansionPanel>
-    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+    <ExpansionPanelSummary className={classes.content} expandIcon={<ExpandMoreIcon />}>
       <FormControlLabel
         onClick={event => { event.stopPropagation() }}
         onChange={event => LayerGroups.layerGroupService.setGroupState(groupName, (event.target as HTMLInputElement).checked)}
@@ -61,7 +62,6 @@ const FinlandForestContent = () => {
   const classes = useStyles({});
 
   return <div>
-    {/* <Switch onChange={() => LayerGroups.layerGroupService.setGroupState('arvometsa')} /> Forestry CO2e balance */}
     <ul className={classes.labelList}>
       <li className={classes.label} style={{ 'background': '#FFEC42' }}>-5</li>
       <li className={classes.label} style={{ 'background': 'hsla(159, 100%, 62.5%, 1)' }}>0</li>

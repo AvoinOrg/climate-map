@@ -41,8 +41,8 @@
   "scripts": {
     "start": "ln -sf mapbox_map.ts src/map/map.ts && react-scripts start",
     "start-ol": "ln -sf ol_map.ts src/map/map.ts && react-scripts start",
-    "build": "rm -rf build/ && ln -sf mapbox_map.ts src/map.ts && react-scripts build && cp -a favicon/* build/favicon/ && cp _redirects og-image.jpg build/",
-    "build-ol": "rm -rf build/ && ln -sf ol_map.ts src/map.ts && react-scripts build && cp -a favicon/* build/favicon/ && cp _redirects og-image.jpg build/",
+    "build": "rm -rf build/ && ln -sf mapbox_map.ts src/map/map.ts && react-scripts build && cp -a favicon/* build/favicon/ && cp _redirects og-image.jpg build/",
+    "build-ol": "rm -rf build/ && ln -sf ol_map.ts src/map/map.ts && react-scripts build && cp -a favicon/* build/favicon/ && cp _redirects og-image.jpg build/",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "favicon": "real-favicon generate faviconDescription.json faviconData.json favicon/"

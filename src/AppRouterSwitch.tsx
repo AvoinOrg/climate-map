@@ -10,6 +10,8 @@ import Sidebar from './components/Sidebar';
 import NavBar from './components/NavBar';
 import MapButtons from './components/MapButtons';
 
+import ForestArvometsa from './components/Sidebar/ForestArvometsa'
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -34,11 +36,11 @@ export default function AppRouterSwitch() {
       <MapButtons />
       <NavBar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       <Sidebar sidebarOpen={sidebarOpen} />
-      <div id="map" className={classes.root}>
+      <div className={classes.root}>
         <main className={classes.content}>
           <Switch>
             <Route path="/" exact component={App} />
-            <Route path="/info" component={App} />
+            <Route path="/info" component={ForestArvometsa} />
           </Switch>
         </main>
       </div>
