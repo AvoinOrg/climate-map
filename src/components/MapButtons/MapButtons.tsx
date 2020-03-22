@@ -1,10 +1,7 @@
 import React from 'react';
 import { makeStyles, useTheme, Theme, createStyles } from '@material-ui/core/styles';
-import { positions } from '@material-ui/system';
 
-import IconButton from '@material-ui/core/IconButton';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
-import Divider from '@material-ui/core/Divider';
 
 import SatelliteIcon from '@material-ui/icons/Satellite';
 
@@ -15,6 +12,7 @@ import RemoveIcon from '@material-ui/icons/Remove';
 import GpsFixedIcon from '@material-ui/icons/GpsFixed';
 
 import * as Map from '../../map/map'
+import { Button } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -45,13 +43,13 @@ export default function GroupOrientation() {
       <ButtonGroup
         orientation="vertical"
       >
-        <IconButton onClick={Map.mapToggleTerrain} size="small" className={classes.btn}><SatelliteIcon fontSize="small" /></IconButton>
-        <Divider className={classes.divider}/>
-        <IconButton onClick={Map.mapResetNorth} size="small" className={classes.btn}><ExploreIcon fontSize="small" /></IconButton>
-        <IconButton onClick={Map.mapZoomIn} size="small" className={classes.btn}><AddIcon fontSize="small" /></IconButton>
-        <IconButton onClick={Map.mapZoomOut} size="small" className={classes.btn}><RemoveIcon fontSize="small" /></IconButton>
-        <Divider className={classes.divider}/>
-        <IconButton onClick={Map.mapRelocate} size="small" className={classes.btn}><GpsFixedIcon fontSize="small" /></IconButton>
+        <Button onClick={Map.mapToggleTerrain} size="small" className={classes.btn}><SatelliteIcon fontSize="small" /></Button>
+        {/* <Divider className={classes.divider}/> */}
+        <Button onClick={Map.mapResetNorth} size="small" className={classes.btn}><ExploreIcon fontSize="small" /></Button>
+        <Button onClick={Map.mapZoomIn} size="small" className={classes.btn}><AddIcon fontSize="small" /></Button>
+        <Button onClick={Map.mapZoomOut} size="small" className={classes.btn}><RemoveIcon fontSize="small" /></Button>
+        {/* <Divider className={classes.divider}/> */}
+        <Button onClick={Map.mapRelocate} size="small" className={classes.btn}><GpsFixedIcon fontSize="small" /></Button>
       </ButtonGroup>
     </div>
   );

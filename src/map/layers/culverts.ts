@@ -64,6 +64,7 @@ const fiVaylaTierumpuTyyppi = {
     8: 'yksityistieliittymärumpu puuttuu tai sitä ei löydy',
     9: 'katuliittymärumpu puuttuu tai sitä ei löydy',
 };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const fiVaylaTierumpuMateriaali = {
     11: 'betoni',
     12: 'muovi',
@@ -78,9 +79,9 @@ genericPopupHandler('fi-vayla-tierummut-circle', ev => {
         const p = f.properties;
         let puoli = ''
         switch (p.PUOLI) {
-            case 9: puoli = 'Sijainti: Tien poikkisuunnassa<br/>';
-            case 1: puoli = 'Sijainti: Tien oikealla puolella<br/>';
-            case 2: puoli = 'Sijainti: Tien vasemmalla puolella<br/>';
+            case 9: puoli = 'Sijainti: Tien poikkisuunnassa<br/>'; break;
+            case 1: puoli = 'Sijainti: Tien oikealla puolella<br/>'; break;
+            case 2: puoli = 'Sijainti: Tien vasemmalla puolella<br/>'; break;
             default: puoli = '';
         }
         html += `

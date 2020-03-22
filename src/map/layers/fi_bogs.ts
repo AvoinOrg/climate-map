@@ -102,7 +102,7 @@ genericPopupHandler('gtk-turvevarat-suot-fill', e => {
 
         html += '<div style="overflow:scroll; max-height: 500px">';
         const photos = JSON.parse(p.photos_json);
-        photos.forEach(x => {
+        for (const x of photos) {
             const { kuva_id, kuvausaika, kuvaaja } = x;
             const imageURL = `https://gtkdata.gtk.fi/Turvevarojen_tilinpito/Turve_valokuvat/${kuva_id}.jpg`;
             html += `<p>
@@ -114,7 +114,7 @@ genericPopupHandler('gtk-turvevarat-suot-fill', e => {
             <br/>
             Photographer: ${kuvaaja}
             </p>`;
-        })
+        }
         html += '</div>';
     }
 

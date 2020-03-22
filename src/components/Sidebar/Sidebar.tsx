@@ -10,8 +10,6 @@ import drawerItems from './drawerItems'
 
 import { ListItem } from '@material-ui/core';
 
-import * as LayerGroups from '../../map/layer_groups'
-
 interface SearchInputProps {
   onChange?: any;
 }
@@ -40,16 +38,15 @@ export function SearchInput(props: SearchInputProps) {
 
 const drawerWidth = 340;
 
-const filteredItems = (arr: { title: string }[], query: string) => {
-  if (!query) {
-    return arr
-  }
+// const filteredItems = (arr: { title: string }[], query: string) => {
+//   if (!query) {
+//     return arr
+//   }
 
-  return arr.filter(
-    (x) => x.title.toLowerCase().includes(query.toLowerCase())
-  );
-
-}
+//   return arr.filter(
+//     (x) => x.title.toLowerCase().includes(query.toLowerCase())
+//   );
+// }
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -102,20 +99,6 @@ function Sidebar(props: any) {
   const classes = useStyles({});
   const { sidebarOpen } = props
 
-  const [checked, setChecked] = React.useState('')
-
-  const toggleLayer = (layerName) => {
-    if (checked == layerName) {
-      LayerGroups.toggleGroup(layerName, false)
-      setChecked('')
-      return
-    }
-
-    LayerGroups.showLayer(layerName)
-    setChecked(layerName)
-
-  }
-
   return (
     <div className={"left-drawer"}>
       <Drawer
@@ -129,8 +112,6 @@ function Sidebar(props: any) {
             drawerItems.map((item, i) =>
               <ListItem key={i}>
                 <Accordion
-                  checked={checked}
-                  toggleLayer={toggleLayer}
                   drawerItem={true}
                   item={item} />
               </ListItem>
@@ -144,11 +125,11 @@ function Sidebar(props: any) {
 }
 
 // Later maybe react-router
-const Link = (props: any) => <a
-  className={props.className}
-  {...props}
-  href={props.to}>{props.children}
-</a>
+// const Link = (props: any) => <a
+//   className={props.className}
+//   {...props}
+//   href={props.to}>{props.children}
+// </a>
 
 
 export default Sidebar

@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, ListItem, Switch } from '@material-ui/core';
+import { List, ListItem } from '@material-ui/core';
 import AccordionButton from './AccordionButton'
 
 // Key used to toggle layer,
@@ -42,7 +42,8 @@ const SnowCoverContent = (props: SnowCoverContentProps) => {
     </ListItem>
     <ListItem>
       <p>
-        The data comes from FT-ESDR or <a href="#">Freeze/Thaw Earth System Data Record</a>.
+        The data comes from FT-ESDR or
+        {} <a href="http://www.ntsg.umt.edu/freeze-thaw/">Freeze/Thaw Earth System Data Record</a>.
       </p>
     </ListItem>
   </List>

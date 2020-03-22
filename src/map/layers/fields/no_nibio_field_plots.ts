@@ -5,7 +5,7 @@ import { Expression } from 'mapbox-gl';
 
 const isHistosol = ["==", ['get', 'wrbgrupper'], 'HS'];
 // Unit: tons of CO2e per hectare per annum.
-const fieldPlotCO2ePerHectare = ["case", isHistosol, 20, 2.2];
+// const fieldPlotCO2ePerHectare = ["case", isHistosol, 20, 2.2];
 const histosolCalc = roundToSignificantDigits(2, ['*', 20 * 1e-4, ['get', 'st_area']]);
 const nonHistosolCalc = roundToSignificantDigits(2, ['*', 2.2 * 1e-4, ['get', 'st_area']]);
 

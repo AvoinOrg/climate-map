@@ -1,44 +1,7 @@
 import { invertLayerTextHalo } from './utils';
-import { layerGroups, layerGroupState, toggleGroup } from './layer_groups';
+import { layerGroups, layerGroupState, layerGroupService } from './layer_groups';
 import { setLayoutProperty, getMapLayers, moveLayer, zoomTo, mapInit, panTo, onMapLoad } from "./map";
 
-
-// Set up event handlers for layer toggles, etc.
-window.addEventListener('load', () => {
-    const layerToggles = document.querySelectorAll('.layer-card input[name="onoffswitch"]');
-    for (const el of Array.from(layerToggles) as HTMLInputElement[]) {
-        if (el.disabled) continue;
-        if (el.hasAttribute("data-special")) continue; // disable automatic handling
-
-        el.addEventListener('change', () => { toggleGroup(el.id); });
-
-        // Populate layer state from DOM.
-        layerGroupState[el.id] = el.checked;
-        const known = el.id in layerGroups;
-        if (!known) {
-            console.log('ERROR: Unknown layer in menu .layer-cards:', el.id, el);
-        }
-    }
-
-    const layerGroupElems = document.querySelectorAll('.layer-group > label > input');
-    for (const el of Array.from(layerGroupElems)) {
-        el.addEventListener('change', () => {
-            el.parentElement!.parentElement!.classList.toggle('active');
-        });
-    }
-})
-
-// @ts-ignore
-window.toggleSatellite = function() {
-    toggleGroup('terramonitor');
-    Array.from(document.querySelectorAll('.satellite-button-container img'))
-    .forEach(x => x.toggleAttribute('hidden'));
-}
-// @ts-ignore
-window.toggleMenu = function() {
-    Array.from(document.querySelectorAll('.menu-toggle'))
-    .forEach(x => x.toggleAttribute('hidden'))
-}
 
 const enableDefaultLayers = () => {
     const enabledGroups = Object.keys(layerGroupState).filter(g => layerGroupState[g])
@@ -92,7 +55,7 @@ onMapLoad(() => {
 
     try {
         const layers = hashParams.layers.split(',')
-        for (const layer of layers) { toggleGroup(layer, true); }
+        for (const layer of layers) { layerGroupService.enableGroup(layer); }
     } catch (e) {}
 
 }); // /map onload

@@ -31,18 +31,7 @@ const colorboxStepsNeg = [
     '#FCF670',
     '#F0F596',
 ]
-// Hue 159 defaults. TODO: re-think this at some point
-const colorboxStepsPos = [
-    '#F2FFFA',
-    '#CAFDEC',
-    '#A4FCDD',
-    '#5DF5C0',
-    '#27EBA6',
-    '#04DB90',
-    '#00C480',
-    '#00A76D',
-    '#008758',
-];
+
 const stepsToLinear = (min, max, steps) => {
     const step = (max-min)/(steps.length - 1);
     const res = [];
@@ -546,6 +535,7 @@ const clearHighlights = () => {
 
 for (const sourceName of Object.keys(layerOptions)) {
     const layerName = `${sourceName}-fill`;
+    // eslint-disable-next-line no-loop-func
     genericPopupHandler(layerName, (ev) => {
         const f = ev.features[0];
 

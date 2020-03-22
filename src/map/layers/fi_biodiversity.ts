@@ -1,5 +1,5 @@
 import { fillOpacity } from '../utils';
-import { toggleGroup, layerGroupState, natura2000_mappings } from '../layer_groups';
+import { layerGroupState, natura2000_mappings, layerGroupService } from '../layer_groups';
 import { Expression } from 'mapbox-gl';
 import { getMapLayers, removeLayer, addLayer, addSource } from '../map';
 
@@ -29,7 +29,7 @@ const setEteCodes = (codes) => {
     eteAllState = !eteAllState;
     removeLayer(id)
     addLayer(layer, layerGroupState.ete ? 'visible' : 'none')
-    toggleGroup('ete', layerGroupState.ete);
+    layerGroupService.setGroupState('ete', layerGroupState.ete);
 }
 
 // @ts-ignore TODO this is a quick way to break the otherwise circular dependency
@@ -37,13 +37,13 @@ window.toggleEteCodes = () => {
     fetch('ete_codes.json').then(function(response) {
         response.json().then(e => {
             setEteCodes(e);
-            toggleGroup('ete', true);
+            layerGroupService.enableGroup('ete');
         })
     })
 }
 
 const zonationVersions = [1, 2, 3, 4, 5, 6]
-zonationVersions.map(v => {
+zonationVersions.forEach(v => {
     const sourceName = `zonation-v${v}`
     const id = `${sourceName}-raster`
     addSource(sourceName, {
@@ -77,7 +77,7 @@ addSource('natura2000', {
     // SYKE applies Creative Commons By 4.0 International license for open datasets.
     attribution: '<a href=https://www.syke.fi/en-US/Open_information">SYKE</a>',
 });
-Object.entries(natura2000_mappings).map(([baseName, x]) => {
+Object.entries(natura2000_mappings).forEach(([baseName, x]) => {
     addLayer({
         'id': baseName,
         'source': 'natura2000',

@@ -46,9 +46,9 @@ export const fieldPlotHistosolRatio = [
 ];
 
 // Unit: tons of CO2e per hectare per annum.
-const fieldPlotCO2ePerHectare = [
-    "case", [">=", fieldPlotHistosolRatio, 0.4], 20, 2.2,
-];
+// const fieldPlotCO2ePerHectare = [
+//     "case", [">=", fieldPlotHistosolRatio, 0.4], 20, 2.2,
+// ];
 
 export const fieldPlotTextField: Expression = [
     "step", ["zoom"],

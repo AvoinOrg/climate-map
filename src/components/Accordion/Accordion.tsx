@@ -3,9 +3,9 @@ import clsx from 'clsx'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { ExpansionPanel, ExpansionPanelSummary, Typography, ExpansionPanelDetails, makeStyles, Theme, createStyles } from '@material-ui/core';
 
-import ForestContent from './ForestContent'
+import ForestContent from './ForestContent_'
 import BuildingsContent from './BuildingsContent'
-import BioversityContent from './BioversityContent'
+import BiodiversityContent from './BiodiversityContent'
 import WetlandsContent from './WetlandsContent'
 import SnowCoverContent from './SnowCoverContent'
 
@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: theme.typography.fontWeightRegular,
     },
     drawerItem: {
-      marginBottom: 20,
+      marginBottom: 8,
       width: drawerWidth - 46
     },
     noExpansionPanelPadding: {
@@ -32,12 +32,10 @@ const useStyles = makeStyles((theme: Theme) =>
 interface DropdownProps {
   item: any;
   drawerItem: boolean;
-  checked: string;
-  toggleLayer: Function;
 }
 
 const Dropdown = (props: DropdownProps) => {
-  const { item, drawerItem, checked, toggleLayer  } = props;
+  const { item, drawerItem } = props;
   const classes = useStyles({});
   return <ExpansionPanel className={clsx({
     [classes.drawerItem]: drawerItem
@@ -50,67 +48,48 @@ const Dropdown = (props: DropdownProps) => {
     <ExpansionPanelDetails className={clsx({
       [classes.noExpansionPanelPadding]: item.noExpansionPanelPadding
     })}>
-      <Content
-      toggleLayer={toggleLayer}
-      checked={checked}
-      item={item} />
+      <Content item={item} />
     </ExpansionPanelDetails>
 
   </ExpansionPanel>;
 }
 
-
-const Content = (props: any) => {
-  const { item, checked, toggleLayer } = props
-  switch (item.contentType) {
-    case 'textWithLink':
-      return <TextContentWithLink
-        content={
-          item.content
-        } />
-    case 'text':
-      return <TextContent
-        content={
-          Array.isArray(item.content) ? item.content : [item.content]
-        } />
-    case 'forestContent':
-      return <ForestContent
-        checked={checked}
-        toggleLayer={toggleLayer}
-        item={item.content} />
-    case 'buildingsContent':
-      return <BuildingsContent
-        checked={checked}
-        toggleLayer={toggleLayer}
-        item={item.content} />
-    case 'bioversityContent':
-      return <BioversityContent
-        checked={checked}
-        toggleLayer={toggleLayer}
-        item={item.content} />
-    case 'wetlandsContent':
-      return <WetlandsContent
-        checked={checked}
-        toggleLayer={toggleLayer}
-        item={item.content} />
-    case 'snowCoverContent':
-      return <SnowCoverContent
-        checked={checked}
-        toggleLayer={toggleLayer}
-        item={item.content} />
-    default:
-      return null
-  }
+const contentTypeMappings = {
+  forestContent: ForestContent,
+  buildingsContent: BuildingsContent,
+  biodiversityContent: BiodiversityContent,
+  wetlandsContent: WetlandsContent,
+  snowCoverContent: SnowCoverContent,
 }
+const Content = (props: any) => {
+  const { item, checked } = props
+  const type = item.contentType
+
+  if (type === 'textWithLink')
+    return <TextContentWithLink content={item.content} />
+
+  if (type === 'textWithLink')
+    return <TextContent
+      content={Array.isArray(item.content) ? item.content : [item.content]}
+    />
+
+  const ContentComponent = contentTypeMappings[type]
+  if (!ContentComponent) return null
+
+  return <ContentComponent
+    checked={checked}
+    item={item.content} />
+}
+
 
 const TextContent = (props: any) => {
   const { content } = props
 
-  return <Typography>
-    {content.map(
-      (v, i) => <p key={i}> {v} </p>
-    )}
-  </Typography>
+  const paragraphs = content.map(
+    (v, i) => <p key={i}> {v} </p>
+  )
+
+  return <Typography>{paragraphs}</Typography>
 }
 
 const TextContentWithLink = (props: any) => {
@@ -119,11 +98,11 @@ const TextContentWithLink = (props: any) => {
   return <Typography>
     {content.map(
       (v, i) => typeof v === 'string' ? <p key={i}> {v} </p> :
-        <>
+        <span key={i}>
           {v.link.textBefore && <span>{v.link.textBefore}</span>}
           <Link to={v.link.to}>{v.link.text}</Link>
           {v.link.textAfter && <span>{v.link.textAfter}</span>}
-        </>
+        </span>
     )}
   </Typography>
 }

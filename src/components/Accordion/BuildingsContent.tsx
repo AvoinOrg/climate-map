@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, ListItem, Switch } from '@material-ui/core';
+import { List, ListItem } from '@material-ui/core';
 import AccordionButton from './AccordionButton'
 
 // Key used to toggle layer,
@@ -19,9 +19,6 @@ interface BuildingsContentProps {
 
 const BuildingsContent = (props: BuildingsContentProps) => {
   const { checked, toggleLayer } = props
-  const onChange = (item) => {
-    toggleLayer(`${item}`)
-  }
 
   return <List>
     {

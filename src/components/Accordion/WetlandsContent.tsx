@@ -1,8 +1,6 @@
 import React from 'react'
 import { List, ListItem, Switch } from '@material-ui/core';
 
-import * as LayerGroups from '../../map/layer_groups'
-
 // Key used to toggle layer,
 // Value used for i18n later
 const items = {
@@ -28,7 +26,7 @@ const WetlandsContent = (props: WetlandsContentProps) => {
       Object.keys(items).map((item, i) =>
         <ListItem key={i}>
           <Switch
-            checked={checked == item}
+            checked={checked === item}
             onChange={() => onChange(item)} /> {items[item]}
         </ListItem>
       )

@@ -1,10 +1,10 @@
 import { addLayer, addSource } from '../../map';
-import { roundToSignificantDigits, fillOpacity } from '../../utils'
-import { fieldColorDefault, fieldColorHistosol } from '../fields/common'
+import { fillOpacity } from '../../utils'
 
 // https://www.nibio.no/tjenester/nedlasting-av-kartdata/dokumentasjon/jordsmonn/_/attachment/inline/f67020d0-cf9f-4085-aaaa-3b1a231826cc:5d04023805e4bf08580857f779517265ad4fdc19/Dokumentasjon%20jordsmonn%2020160525.pdf
 
 // Soil granularity? Something like that
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const nibioSoilTexture = v => [
     "match", v,
     1, "Sand",
@@ -24,6 +24,7 @@ const nibioSoilTexture = v => [
 ];
 
 // WRB codes from NIBIO data:
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const wrbCodeToLabel = v => [
     "match", v,
     "FL", "Fluvisol",

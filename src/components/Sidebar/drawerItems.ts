@@ -34,7 +34,7 @@ export default [
   {
     title: 'Biodiversity',
     content: null,
-    contentType: 'bioversityContent',
+    contentType: 'biodiversityContent',
     noExpansionPanelPadding: true
   },
   {

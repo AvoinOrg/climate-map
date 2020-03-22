@@ -24,12 +24,14 @@ const colormapToStepExpr = (colormap: number[][], minValue: number, maxValue: nu
 }
 
 // 'Fire' aka linear_kryw_0_100_c71 is a perceptually uniform color map.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const fireColorMapStepExpr = colormapToStepExpr.bind(
     null,
     // The first few values are too white for my taste, hence the slice().
     linear_kryw_0_100_c71.reverse().slice(5)
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const cetL9ColorMapStepExpr = colormapToStepExpr.bind(null, linear_bgyw_20_98_c66.reverse());
 
 export const fillOpacity = 0.65;

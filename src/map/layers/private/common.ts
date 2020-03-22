@@ -1,4 +1,4 @@
-import { hideAllLayersMatchingFilter, toggleGroup } from '../../layer_groups'
+import { hideAllLayersMatchingFilter, layerGroupService } from '../../layer_groups'
 
 const privateDatasets = {}
 
@@ -17,8 +17,8 @@ export const enablePrivateDatasets = (secrets = []) => {
         if (name === 'valio') {
             // Enable the Valio fields and the Biodiversity layers by default only.
             hideAllLayersMatchingFilter(x => /./.test(x));
-            toggleGroup('valio');
-            toggleGroup('zonation6');
+            layerGroupService.enableGroup('valio');
+            layerGroupService.enableGroup('zonation6');
         }
     }
 }

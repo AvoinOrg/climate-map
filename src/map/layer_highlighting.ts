@@ -1,4 +1,4 @@
-import { setFilter, addLayer, genericPopupHandler, querySourceFeatures, addSource } from "./map";
+import { setFilter, addLayer, genericPopupHandler, querySourceFeatures } from "./map";
 import { getGeoJsonGeometryBounds, assert } from "./utils";
 import { Expression, MapboxGeoJSONFeature } from "mapbox-gl";
 
@@ -93,6 +93,7 @@ export const createHighlightingForLayerGroup = (
 
     for (const sourceName of Object.keys(layerOptions)) {
         const layerName = `${sourceName}-fill`;
+        // eslint-disable-next-line no-loop-func
         genericPopupHandler(layerName, (ev) => {
             const f = ev.features[0];
 

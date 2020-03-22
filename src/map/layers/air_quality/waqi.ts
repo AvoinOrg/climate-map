@@ -1,5 +1,6 @@
 import { addLayer, addSource } from '../../map';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const waqiAqis = [
     'usepa-aqi',  // Plots markers based on the composite AQI calculated with the US EPA standard.
     'usepa-pm25', // PM2.5 based AQI - if a station does not have PM2.5 reading, then it is not plotted.

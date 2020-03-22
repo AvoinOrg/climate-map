@@ -60,9 +60,10 @@ genericPopupHandler('gfw_tree_plantations-fill', e => {
         if (!/LGN\d/.test(x)) { return; }
         const base = x.replace(/LGN.*/, 'LGN0');
         // Most of the source images seem to fall in these categories.
-        const candidates = [0, 1, 2].map(z => {
+
+        // Candidate URLs:
+        for (const z of [0, 1, 2])
             results += `\n<li><a target="_blank" href="https://earthexplorer.usgs.gov/metadata/12864/${base + z}/">${base + x}</a></li>`;
-        });
     }
 
     const peatInfo = peat_ratio < 0.4 ? '' : `<strong>Tropical peatland</strong><br/>\nAverage peat depth: ${avg_peatdepth.toFixed(1)} metres<br/>`;
