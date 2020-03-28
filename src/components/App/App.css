@@ -37,23 +37,18 @@
   }
 }
 
-/* 
-.MuiExpansionPanelSummary-content.Mui-expanded {
-  margin: unset !important;
-} */
 
 .grid-parent {
   display: grid;
   grid-template-columns: 400px 400px auto;
-  grid-template-rows: 64px auto;
+  grid-template-rows: 0px auto;
   grid-column-gap: 0px;
   grid-row-gap: 0px;
   position: absolute;
-  z-index: 9999;
+  z-index: 2000;
   left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
+  top: 64px;
+  height: calc(100vh - 64px);
 }
 
 .grid-header {
