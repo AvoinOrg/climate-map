@@ -4,12 +4,10 @@ import { setPaintProperty, getLayer, removeLayer, directAddLayer, isMapLoaded } 
 
 
 const colormapToStepExpr = (colormap: number[][], minValue: number, maxValue: number, expr: Expression) => {
-    // @ts-ignore TODO
     const cmapToRGBA = ([r, g, b]) => `rgb(${(r)},${g},${b})`;
     const cmap = colormap
         .map(x => x.map(c => Math.round(255 * c)))
-        // @ts-ignore TODO
-        .map(cmapToRGBA);
+        .map(cmapToRGBA as any);
 
     const delta = (maxValue - minValue) / (cmap.length - 1);
     const ret: Expression = ['step', expr];
@@ -67,7 +65,6 @@ export const assert = (expr: any, message: any) => {
 
 export const invertLayerTextHalo = (layer: Layer) => {
     layer.paint = { ...layer.paint }
-    // @ts-ignore TODO
     if (layer.paint && layer.paint["text-halo-width"]) {
         // Original style is something like:
         // text-color: "#999"

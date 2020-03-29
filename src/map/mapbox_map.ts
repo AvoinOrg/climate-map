@@ -11,27 +11,64 @@ declare module "mapbox-gl" {
 }
 
 // External dependencies:
-// @ts-ignore
 const mapboxgl0 = mapboxgl;
-// @ts-ignore
+// @ts-ignore imported externally from index.html
 const MapboxGeocoder0 = window.MapboxGeocoder
 
 // This must be set, but the value is not needed here.
 mapboxgl0.accessToken = 'not-needed';
+mapboxgl0.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN
+
+// emptyStyle is useful for debugging some problems.
+// For instance, it turns out that stadiamaps greatly interferes with other MVT tile layers!
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const emptyStyle: mapboxgl.Style = {
+  "version": 8,
+  "name": "Empty",
+  "metadata": {
+    "mapbox:autocomposite": true,
+    "mapbox:type": "template"
+  },
+  "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "rgba(0,0,0,0)"
+      }
+    }
+  ]
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const mapboxBaseStyle = 'mapbox://styles/mapbox/streets-v11'
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const stadiaMapsBaseStyle = 'https://tiles.stadiamaps.com/styles/alidade_smooth.json'
+
+const style = mapboxBaseStyle
 
 export const map = new mapboxgl0.Map({
     container: 'map', // container id
-    // style,
-    style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
+    style,
     center: [28, 65], // starting position [lng, lat]
     zoom: 5, // starting zoom
 });
 
 // These help in development and debugging:
 if (process.env.NODE_ENV !== 'production') {
-    map.showTileBoundaries = true
     // @ts-ignore
     window.map = map;
+    const devBanner = document.createElement('div')
+    devBanner.innerHTML = `
+    <h1 onclick="map.showTileBoundaries=!map.showTileBoundaries"
+    style="position:absolute; top:0;left:50vw; z-index:9999; color:red; cursor:pointer">
+      DEV MODE
+    </h1>
+    `
+    document.body.appendChild(devBanner)
 }
 
 // Suppress uninformative console error spam:
@@ -57,17 +94,15 @@ export const removeLayer = (layer: string) => map.removeLayer(layer);
 export const moveLayer = (layer: string, before?: string) => map.moveLayer(layer, before);
 
 
-export const addLayer = (layer: Layer, visibility = 'none') => {
+export const addLayer = (layer: Layer, visibility: mapboxgl.Visibility = 'none') => {
     assert('BEFORE' in layer, `Layer ${layer.id} is missing a BEFORE declaration`);
     assert(!initialMapLoaded || getLayer(layer.BEFORE!), `getLayer(${layer.BEFORE}) failed`);
 
     const layout = layer.layout || {}
-    // @ts-ignore TODO
     layout.visibility = visibility
 
     layer.paint = layer.paint || {};
     if (layer.type === 'raster') {
-        // @ts-ignore TODO
         layer.paint['raster-resampling'] = layer.paint['raster-resampling'] || 'nearest';
     }
     originalLayerDefs[layer.id] = layer;
@@ -127,7 +162,7 @@ export const panTo = (lon: number, lat: number) => map.panTo(new mapboxgl0.LngLa
 export const querySourceFeatures = (source: string, sourceLayer: string) => map.querySourceFeatures(source, { sourceLayer });
 export const getSource = (id: string) => map.getSource(id);
 export const removeSource = (id: string) => map.removeSource(id);
-export const getBounds = () => map.getBounds();
+export const getBounds: () => mapboxgl.LngLatBounds = () => map.getBounds()
 
 export const getMapLayers: () => Layer[] = () => map.getStyle().layers || [];
 
@@ -135,17 +170,18 @@ export const addMapEventHandler = (type: string, listener: (ev: any) => void) =>
     map.on(type, listener)
 }
 
+let geocoder
+export const getGeocoder = () => geocoder
+
 export const mapInit = () => {
     // Only add the geocoding widget if it's been loaded.
-    // @ts-ignore
     if (MapboxGeocoder0 !== undefined) {
-        const geocoder = new MapboxGeocoder0({
-            accessToken: process.env.REACT_APP_GEOCODING_ACCESS_TOKEN,
+        geocoder = new MapboxGeocoder0({
+            accessToken: process.env.REACT_APP_MAPBOX_ACCESS_TOKEN,
             countries: 'fi',
             localGeocoder: kiinteistorekisteriTunnusGeocoder,
             mapboxgl: mapboxgl0,
         })
-        map.addControl(geocoder);
 
         // Monkey-patch the geocoder to deal with async local queries:
         const geocoderOrigGeocode = geocoder._geocode;
@@ -170,16 +206,16 @@ export const mapInit = () => {
             geocoder.options.localGeocoderOnly = false;
             geocoder.options.zoom = geocoderOrigZoom;
         }
-    }
+      }
 
-    map.addControl(new mapboxgl0.NavigationControl());
+    // map.addControl(new mapboxgl0.NavigationControl());
 
-    map.addControl(new mapboxgl0.GeolocateControl({
-        positionOptions: {
-            enableHighAccuracy: true,
-        },
-        trackUserLocation: true,
-    }));
+    // map.addControl(new mapboxgl0.GeolocateControl({
+    //     positionOptions: {
+    //         enableHighAccuracy: true,
+    //     },
+    //     trackUserLocation: true,
+    // }));
 
     map.addControl(new mapboxgl0.ScaleControl(), 'bottom-right');
 }
@@ -233,6 +269,6 @@ export const mapRelocate = () => {
                 zoom: radius
             });
         });
-       
+
     }
 }

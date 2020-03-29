@@ -68,3 +68,11 @@
 .grid-map-area {
   grid-area: 2 / 3 / 3 / 4;
 }
+
+.mapboxgl-ctrl-geocoder input[type="text"] {
+  font-size: 1rem;
+}
+.mapboxgl-ctrl-geocoder ul {
+  font-size: 1rem;
+}
+

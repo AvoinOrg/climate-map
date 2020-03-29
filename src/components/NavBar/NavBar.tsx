@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
@@ -10,6 +10,7 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import SearchIcon from '@material-ui/icons/Search';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
+import {map, getGeocoder} from '../../map/map'
 
 import Logo from './logo.svg'
 
@@ -97,6 +98,12 @@ const NavBar = (props: NavBarProps) => {
   const classes = useStyles({});
   const { toggleSidebar, sidebarOpen } = props
 
+  const geocoderSearchRef = useRef(null)
+  useEffect(() => {
+    const geocoder = getGeocoder()
+    if (geocoder) geocoderSearchRef.current.appendChild(geocoder.onAdd(map))
+  }, [geocoderSearchRef])
+
   return (
     <AppBar position="fixed" className={classes.appBar}>
       <Toolbar>
@@ -124,7 +131,7 @@ const NavBar = (props: NavBarProps) => {
 
         </div>
 
-        <div className={classes.search}>
+        <div className={classes.search} hidden={true}>
           <div className={classes.searchIcon}>
             <SearchIcon />
           </div>
@@ -134,10 +141,16 @@ const NavBar = (props: NavBarProps) => {
               root: classes.inputRoot,
               input: classes.inputInput,
             }}
+            type="search"
             inputProps={{ 'aria-label': 'search' }}
+            // onChange={... TODO}
+            id='geocoder'
           />
         </div>
-        <IconButton aria-label="display more actions" edge="end" color="inherit">
+
+        <div ref={geocoderSearchRef}/>
+
+        <IconButton aria-label="display more actions" edge="end" color="inherit" disabled={true}>
           <AccountCircleIcon />
         </IconButton>
       </Toolbar>

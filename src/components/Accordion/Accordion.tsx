@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { ExpansionPanel, ExpansionPanelSummary, Typography, ExpansionPanelDetails, makeStyles, Theme, createStyles } from '@material-ui/core';
 
-import ForestContent from './ForestContent_'
+import ForestContent from './ForestContent'
 import BuildingsContent from './BuildingsContent'
 import BiodiversityContent from './BiodiversityContent'
 import WetlandsContent from './WetlandsContent'

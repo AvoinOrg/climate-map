@@ -26,7 +26,6 @@ addLayer({
 
 let reqCounter = 0
 let lastRequestSeen = 0
-// @ts-ignore
 const setNO2 = function(currentRequestNum, e, lat, lon) {
     const elem = document.getElementById('no2')
     if (!layerGroupState['no2-raster'] || !currentRequestNum) {

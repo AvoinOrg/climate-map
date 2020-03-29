@@ -158,10 +158,8 @@ export const setupPopupHandlerForMetsaanFiStandData = layerName => {
         const soilTypeInfo = metsaanFiSoilTypes.filter(x => x[0] === p.soiltype)[0];
         let soilEn = '', soilFi = '';
         if (soilTypeInfo) {
-            // @ts-ignore
-            soilEn = soilTypeInfo[1];
-            // @ts-ignore
-            soilFi = soilTypeInfo[2];
+            soilEn = soilTypeInfo[1] as any;
+            soilFi = soilTypeInfo[2] as any;
         }
 
         const ditching = p.ditch_completed_at || p.ditchingyear ?

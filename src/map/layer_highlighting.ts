@@ -37,7 +37,7 @@ export const createHighlightingForLayerGroup = (
         const elem = e.target as HTMLInputElement;
         if (!elem.checked) { clearHighlights(); }
     }
-    document.querySelector(`input#${layerGroup}`).addEventListener('change', init);    
+    document.querySelector(`input#${layerGroup}`).addEventListener('change', init);
 
     const clearHighlights = () => {
         for (const sourceName of Object.keys(layerOptions)) {
@@ -123,12 +123,7 @@ export const createHighlightingForLayerGroup = (
             renderFeature(selectedFeature, selectedFeatureBounds, selectedFeatureLayer);
             updateDetailVisibility();
 
-            // Force the menu (the info box) to appear if it's hidden now:
-            //@ts-ignore;
-            if (document.getElementById('menu-container').hidden) { window.toggleMenu(); }
-
-            // TODO: replace this mechanism with another type of info box view/tab?
-            document.querySelector(`.${layerGroup}-output`).scrollIntoView({block: 'center'});
+            // TODO Force the menu (the info box) to appear if it's hidden now
         });
     }
 

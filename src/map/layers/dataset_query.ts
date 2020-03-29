@@ -19,8 +19,7 @@ function wmsGetAllLayers(wmsCapabilities) {
     } else if ('Layer' in wmsCapabilities) {
         return wmsGetAllLayers(wmsCapabilities.Layer);
     } else if (wmsCapabilities instanceof Array) {
-        // @ts-ignore TODO
-        return Array.concat(...wmsCapabilities.map(wmsGetAllLayers));
+        return Array.prototype.concat(...wmsCapabilities.map(wmsGetAllLayers));
     } else {
         console.error('Unknown WMS type:', wmsCapabilities);
     }
@@ -365,8 +364,7 @@ const refreshQueryPointsUI = () => {
     if (getLayer('query-points-excluded')) { removeLayer('query-points-excluded'); }
 
     getSource('query-points') && removeSource('query-points');
-    // @ts-ignore TODO
-    directAddSource('query-points', queryPointsSource);
+    directAddSource('query-points', queryPointsSource as any);
 
     directAddLayer({
         "id": "query-points-included",
@@ -436,7 +434,7 @@ try {
         if (!datasetQueryEnabledElem.checked) { clearQueryPoints(e); }
     })
 } catch (error) {
-    // todo    
+    // todo
 }
 
 const sanitizeInputHTML = html => {

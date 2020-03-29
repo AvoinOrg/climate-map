@@ -18,19 +18,19 @@ export default [
     contentType: 'forestContent',
     noExpansionPanelPadding: true
   },
-  {
-    title: 'Field',
-    content: [
-      {
-        link: {
-          textBefore: ` Farm field data is private. Farmer, please  `,
-          to: '#', text: 'register' ,
-          textAfter: ` for early access.`
-        }
-      }
-    ],
-    contentType: 'textWithLink'
-  },
+  // {
+  //   title: 'Field',
+  //   content: [
+  //     {
+  //       link: {
+  //         textBefore: ` Farm field data is private. Farmer, please  `,
+  //         to: '#', text: 'register' ,
+  //         textAfter: ` for early access.`
+  //       }
+  //     }
+  //   ],
+  //   contentType: 'textWithLink'
+  // },
   {
     title: 'Biodiversity',
     content: null,

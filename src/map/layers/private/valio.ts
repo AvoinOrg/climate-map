@@ -112,8 +112,7 @@ const addValio = (secret: string) => {
             maxzoom: Math.ceil(opts.maxzoom!),
             bounds: [19, 59, 32, 71], // Finland
         };
-        // @ts-ignore
-        addSource(sourceName, sourceOpts);
+        addSource(sourceName, sourceOpts as any);
     }
 
     const output = document.querySelector('.valio-output');

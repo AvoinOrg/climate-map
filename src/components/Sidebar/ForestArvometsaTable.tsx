@@ -10,8 +10,6 @@ import Paper from '@material-ui/core/Paper';
 import GpsFixed from '@material-ui/icons/GpsFixed';
 
 import { Button } from '@material-ui/core';
-import { pp } from 'src/map/utils';
-
 
 
 const TableCell = withStyles(theme => ({
@@ -32,16 +30,7 @@ const Button2 = withStyles(theme => ({
 }))(Button);
 
 
-const rows = [
-  {name: 'Forest area', value: `${pp(12345678, 3)} ha` },
-  {name: 'Main tree species', value: 'Pine' },
-  {name: 'Forest age', value: `${pp(123, 2)} years` },
-  {name: 'Biomass volume', value: `${pp(123.45, 2)} m³/ha` },
-  {name: 'Average carbon balance*', value: `${pp(123,2)} tn CO2e/ha/y` },
-];
-
-export function SimpleTable() {
-
+export function SimpleTable({rows}) {
   return (
     <TableContainer component={Paper}>
       <Table>
@@ -66,16 +55,15 @@ export function SimpleTable() {
   );
 }
 
-export function HeaderTable() {
-
+export function HeaderTable({title, onFitLayerBounds, rows}) {
   return (
     <TableContainer component={Paper}>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Finland's forests</TableCell>
+            <TableCell>{title}</TableCell>
             <TableCell align="right">
-              <Button2 onClick={() => alert('asd')} size="small"><GpsFixed fontSize="small" /></Button2>
+              <Button2 onClick={onFitLayerBounds} size="small"><GpsFixed fontSize="small" /></Button2>
               </TableCell>
           </TableRow>
         </TableHead>

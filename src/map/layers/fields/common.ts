@@ -181,8 +181,7 @@ export const setupPopupHandlerForMaviPeltolohko = (title, layerName) => {
 
         // Simplification: The field is in the catchment area if any part of it is.
         const inTurkuAurajokiCatchmentArea = turfFlattenReduce(
-            // @ts-ignore TODO
-            turfFeature(f.geometry),
+            turfFeature(f.geometry as any),
             (v, feature) => v || turfBooleanWithin(feature, turkuAuraJokiValueFeature),
             false
         );
