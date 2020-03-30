@@ -13,6 +13,7 @@ import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import {map, getGeocoder} from '../../map/map'
 
 import Logo from './logo.svg'
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -113,7 +114,11 @@ const NavBar = ({ toggleSidebar, sidebarOpen }) => {
         </IconButton>
 
         <img className={classes.logo} src={Logo} alt="Logo" />
-        <Typography className={classes.title} variant="h6">Avoin Map</Typography>
+
+        <Link to='/' className='neutral-link'>
+          <Typography className={classes.title} variant="h6">Avoin Map</Typography>
+        </Link>
+
         <div className={classes.helpWrapper}>
 
           <IconButton
