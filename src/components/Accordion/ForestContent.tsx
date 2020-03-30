@@ -1,78 +1,15 @@
 import React from 'react'
-import { ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, createStyles, makeStyles, Theme, Checkbox } from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import * as LayerGroups from '../../map/layer_groups'
-import { useObservable } from "micro-observables";
+import { createStyles, makeStyles } from '@material-ui/core';
+import { AOExpansionPanelLink, AOExpansionPanel } from './AOExpansionPanel';
 
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     root: {
       width: '100%',
     },
-    heading: {
-      fontSize: theme.typography.pxToRem(15),
-      fontWeight: theme.typography.fontWeightRegular,
-    },
-    labelList: {
-      paddingLeft: 12
-    },
-    label: {
-      display: 'inline-block',
-      padding: '5px 8px',
-      border: '1px solid black',
-    },
-    content: {
-      margin: 'unset',
-    }
-    // MuiExpansionPanelSummary-content.Mui-expanded
-    // activeCard: {
-    //   backgroundColor: 'rgba(0,100,100,0.1)',
-    // },
   }),
 );
-
-
-const AOExpansionPanel = ({groupName, label, content}: any) => {
-  const layerGroups = useObservable(LayerGroups.layerGroupService.layerGroups);
-  const groupEnabled = layerGroups.filter(x => x.name === groupName).length > 0
-  const classes = useStyles({});
-
-  return <ExpansionPanel>
-    <ExpansionPanelSummary className={classes.content} expandIcon={<ExpandMoreIcon />}>
-      <FormControlLabel
-        onClick={event => { event.stopPropagation() }}
-        onChange={event => LayerGroups.layerGroupService.setGroupState(groupName, (event.target as HTMLInputElement).checked)}
-        onFocus={event => event.stopPropagation()}
-        control={<Checkbox />}
-        label={label}
-        checked={groupEnabled}
-      />
-      {/* <Typography className={classes.heading}>{label}</Typography> */}
-    </ExpansionPanelSummary>
-
-    <ExpansionPanelDetails>{content}</ExpansionPanelDetails>
-
-  </ExpansionPanel>
-}
-
-
-const FinlandForestContent = () => {
-  const classes = useStyles({});
-
-  return <div>
-    <ul className={classes.labelList}>
-      <li className={classes.label} style={{ 'background': '#FFEC42' }}>-5</li>
-      <li className={classes.label} style={{ 'background': 'hsla(159, 100%, 62.5%, 1)' }}>0</li>
-      <li className={classes.label} style={{ 'background': 'hsla(159, 100%, 50%, 1)' }}>5</li>
-      <li className={classes.label} style={{ 'background': 'hsla(159, 100%, 32.5%, 1)' }}>10</li>
-      <li className={classes.label} style={{ 'background': 'hsla(159, 100%, 25%, 1)' }}>15+</li>
-      <li style={{ marginBottom: 3, listStyle: 'none' }}>tons per ha/year</li>
-    </ul>
-  </div>
-}
-
 
 
 const MangroveForestContent = () =>
@@ -106,13 +43,10 @@ const TropicalForestContent = () =>
   </div>
 
 
-
-
-
 const ForestContent = () => {
   const classes = useStyles({});
   return <div className={classes.root}>
-    <AOExpansionPanel groupName={'arvometsa'} label={"Finland's Forests"} content={<FinlandForestContent/>} />
+    <AOExpansionPanelLink href='/layers/fi-forest' label={"Finland's Forests"} />
     <AOExpansionPanel groupName={'mangrove-forests'} label={"Mangrove forests"} content={<MangroveForestContent/>} />
     <AOExpansionPanel groupName={'gfw_tree_plantations'} label={"Tree plantations"} content={<TropicalForestContent/>} />
   </div>

@@ -1,3 +1,9 @@
+import BiodiversityContent from "../Accordion/BiodiversityContent";
+import WetlandsContent from "../Accordion/WetlandsContent";
+import BuildingsContent from "../Accordion/BuildingsContent";
+import SnowCoverContent from "../Accordion/SnowCoverLossContent";
+import ForestContent from "../Accordion/ForestContent";
+
 // very very beta
 interface drawerItem {
   title: string;
@@ -14,9 +20,7 @@ export interface ContentEntity {
 export default [
   {
     title: 'Forest',
-    content: null,
-    contentType: 'forestContent',
-    noExpansionPanelPadding: true
+    content: ForestContent,
   },
   // {
   //   title: 'Field',
@@ -33,29 +37,15 @@ export default [
   // },
   {
     title: 'Biodiversity',
-    content: null,
-    contentType: 'biodiversityContent',
-    noExpansionPanelPadding: true
+    content: BiodiversityContent,
   },
   {
     title: 'Wetlands',
-    content: null,
-    contentType: 'wetlandsContent'
-  },
-  {
-    title: 'Air pollution',
-    contentType: 'text',
-    content: [
-      'Air pollution indicator NO2',
-      'Burning fossil fuel creates air pollutants such as NO₂ and small particles.',
-      'Air cleanliness',
-      'The satellite NO₂ data is based on Sentinel 5P measurements and is updated approximately once per 24 hours for any given location. A healthy threshold of NO₂ is around 50 umol/m2.'
-    ]
+    content: WetlandsContent,
   },
   {
     title: 'Buildings',
-    content: null,
-    contentType: 'buildingsContent'
+    content: BuildingsContent,
   },
   // {
   //   title: 'Urban green areas',
@@ -63,9 +53,8 @@ export default [
   //   contentType: null
   // },
   {
-    title: 'Snow cover',
-    contentType: 'snowCoverContent',
-    content: null
+    title: 'Snow cover loss',
+    content: SnowCoverContent,
   },
   // {
   //   title: 'Water emissions',

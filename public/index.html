@@ -2,81 +2,89 @@
 <html lang='en'>
 
 <head>
-    <meta charset='utf-8' />
-    <title>Sustainability Map</title>
-    <meta name='viewport' content='initial-scale=1,width=device-width,maximum-scale=1,user-scalable=no' />
+  <meta charset='utf-8' />
+  <title>Sustainability Map</title>
+  <meta name='viewport' content='initial-scale=1,width=device-width,maximum-scale=1,user-scalable=no' />
 
-    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/favicon/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon/favicon-16x16.png">
-    <!-- <link rel="manifest" href="%PUBLIC_URL%/favicon/site.webmanifest"> -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+  <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon/favicon-16x16.png">
+  <!-- <link rel="manifest" href="%PUBLIC_URL%/favicon/site.webmanifest"> -->
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-    <link rel="mask-icon" href="%PUBLIC_URL%/favicon/safari-pinned-tab.svg" color="#5bbad5">
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon/favicon.ico">
-    <meta name="msapplication-TileColor" content="#da532c">
-    <meta name="msapplication-TileImage" content="%PUBLIC_URL%/favicon/mstile-144x144.png">
-    <meta name="msapplication-config" content="%PUBLIC_URL%/favicon/browserconfig.xml">
-    <meta name="theme-color" content="#ffffff">
+  <link rel="mask-icon" href="%PUBLIC_URL%/favicon/safari-pinned-tab.svg" color="#5bbad5">
+  <link rel="shortcut icon" href="%PUBLIC_URL%/favicon/favicon.ico">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content="%PUBLIC_URL%/favicon/mstile-144x144.png">
+  <meta name="msapplication-config" content="%PUBLIC_URL%/favicon/browserconfig.xml">
+  <meta name="theme-color" content="#ffffff">
 
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Sustainability Map">
-    <meta property="og:description" content="Helping landowners to improve the carbon balance of their lands. See it here!">
-    <meta property="og:image:height" content="552">
-    <meta property="og:image:width" content="1106">
-    <meta property="og:url" content="https://avoinmap.org/">
-    <meta property="og:image" content="https://avoinmap.org/og-image.jpg">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Sustainability Map">
+  <meta property="og:description"
+    content="Helping landowners to improve the carbon balance of their lands. See it here!">
+  <meta property="og:image:height" content="552">
+  <meta property="og:image:width" content="1106">
+  <meta property="og:url" content="https://avoinmap.org/">
+  <meta property="og:image" content="https://avoinmap.org/og-image.jpg">
 
-    <!-- <link rel="stylesheet" href="src/app.css" /> -->
+  <!-- <link rel="stylesheet" href="src/app.css" /> -->
 
-    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
-    <script nomodule src="https://polyfill.io/v3/polyfill.min.js?features=Object.entries%2CObject.assign%2CElement.prototype.toggleAttribute%2CrequestAnimationFrame%2CElement.prototype.classList%2CURL%2Cfetch"></script>
+  <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+  <script nomodule
+    src="https://polyfill.io/v3/polyfill.min.js?features=Object.entries%2CObject.assign%2CElement.prototype.toggleAttribute%2CrequestAnimationFrame%2CElement.prototype.classList%2CURL%2Cfetch"></script>
 
-    <!-- geocoder 4.x is buggy in dealing with bboxes... -->
-    <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.min.js'></script>
-    <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.css' type='text/css' />
+  <!-- geocoder 4.x is buggy in dealing with bboxes... -->
+  <script
+    src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.min.js'></script>
+  <link rel='stylesheet'
+    href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.css'
+    type='text/css' />
 
-    <!-- Maybe auth will be re-enabled later again -->
-    <!-- <script defer src="https://cdn.auth0.com/js/auth0/9.10/auth0.min.js"></script> -->
+  <!-- Maybe auth will be re-enabled later again -->
+  <!-- <script defer src="https://cdn.auth0.com/js/auth0/9.10/auth0.min.js"></script> -->
 
-    <!-- <script defer src="src/index.ts"></script> -->
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-        }
-        * {
-            box-sizing: border-box;;
-        }
-    </style>
+  <!-- <script defer src="src/index.ts"></script> -->
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    * {
+      box-sizing: border-box;
+      ;
+    }
+  </style>
 </head>
 
 <body>
-    <noscript style="height: 100%; display: grid; margin-top: 100px; position: relative; z-index: 1000 !important;">
-        <a href="https://www.enable-javascript.com/" style="margin: auto;">
-            <h1>This website requires Javascript.</h1>
-        </a>
-    </noscript>
+  <noscript style="height: 100%; display: grid; margin-top: 100px; position: relative; z-index: 1000 !important;">
+    <a href="https://www.enable-javascript.com/" style="margin: auto;">
+      <h1>This website requires Javascript.</h1>
+    </a>
+  </noscript>
 
-    <script>
-        var msie = window.navigator.userAgent.indexOf('MSIE ') !== -1; // IE 10 or older
-        if (msie) {
-            alert('This website requires Internet Explorer 11 or newer to run');
+  <script>
+    var msie = window.navigator.userAgent.indexOf('MSIE ') !== -1; // IE 10 or older
+    if (msie) {
+      alert('This website requires Internet Explorer 11 or newer to run');
 
-            (function(u) {
-                var s = document.createElement('script');
-                s.async = true;
-                s.src = u;
-                var b = document.getElementsByTagName('script')[0];
-                b.parentNode.insertBefore(s, b);
-            })('//updatemybrowser.org/umb.js');
-        }
-    </script>
+      (function (u) {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = u;
+        var b = document.getElementsByTagName('script')[0];
+        b.parentNode.insertBefore(s, b);
+      })('//updatemybrowser.org/umb.js');
+    }
+  </script>
 
-<div style="width: 100vw; height: 100vh; z-index: 1;" id="map"></div>
-<div id="root"></div>
+  <div id="map"></div>
+  <div id="root"></div>
 
 </body>
 

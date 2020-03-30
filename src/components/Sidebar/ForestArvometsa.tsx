@@ -8,6 +8,7 @@ import { useObservable } from 'micro-observables';
 import { Paper, Container, FormControlLabel, Checkbox, Divider, FormControl, InputLabel, Select, Button } from '@material-ui/core';
 import { HeaderTable, SimpleTable } from './ForestArvometsaTable';
 import { layerOptions, arvometsaSumMethodAttrs, arvometsaBestMethodCumulativeSumCbt, arvometsaAreaCO2eFillColor, arvometsaTextfieldExpression } from '../../map/layers/forests/fi_arvometsa';
+import { NavLink } from 'react-router-dom';
 
 const nC_to_CO2 = 44 / 12;
 
@@ -273,6 +274,7 @@ const getChartProps = ({ prefix, cumulativeFlag, perHectareFlag, attrValues }) =
       yAxes: [{
         stacked,
         ticks: {
+          maxTicksLimit: 8,
           beginAtZero: true,
           callback: (value, _index, _values) => value.toLocaleString(),
         },
@@ -311,6 +313,8 @@ const getNpvText = ({ carbonBalanceDifferenceFlag, perHectareFlag, totals, datas
 
 const getChartTitle = (selectedFeatureLayer: string, featureProps: any) => {
   const p = featureProps
+  if (!p) return "No area selected"
+
   assert(selectedFeatureLayer, "selectedFeatureLayer must be set");
   if (selectedFeatureLayer === 'arvometsa-fill') {
     return `Forest parcel (id:${p.standid})`;
@@ -456,6 +460,8 @@ const titleRenames = {
 
 
 function ArvometsaUI() {
+  const [reportPanelOpen, setReportPanelOpen] = useState(true)
+
   const [scenario, setScenario] = useState('arvometsa_jatkuva')
   const [perHectareFlag, setPerHectareFlag] = useState(true)
   const [cumulativeFlag, setCumulativeFlag] = useState(true)
@@ -475,9 +481,7 @@ function ArvometsaUI() {
 
   const { layer, feature, bounds } = useObservable(selectedFeatureService.selectedFeature);
 
-  if (!feature) return null
-
-  const allFeatureProps = [feature.properties];
+  const allFeatureProps = feature ? [feature.properties] : [];
   const totals = getTotals({ dataset, perHectareFlag, allFeatureProps })
 
   const attrValues = getDatasetAttributes({ dataset, cumulativeFlag, totals })
@@ -514,7 +518,9 @@ function ArvometsaUI() {
     if (bounds) { fitBounds(bounds, 0.4, 0.15); }
   }
 
-  return <div className="grid-parent">
+  const showReport = reportPanelOpen && feature !== null
+
+  return <div className={showReport ? "grid-parent" : "grid-parent grid-parent-closed-hack"}>
 
     <Paper className="grid-col1" elevation={5}>
       <Container>
@@ -526,7 +532,7 @@ function ArvometsaUI() {
             control={<Checkbox />}
             label="Show values per hectare"
             checked={perHectareFlag}
-            onChange={onChangeCheckbox(setPerHectareFlag)}
+            onChange={event => { onChangeCheckbox(setPerHectareFlag)(event); setReportPanelOpen(true) }}
           />
         </Paper>
         <br />
@@ -549,7 +555,7 @@ function ArvometsaUI() {
               id: 'forestry-scenario',
             }}
             value={scenario}
-            onChange={onChangeValue(setScenario)}
+            onChange={event => { onChangeValue(setScenario)(event); setReportPanelOpen(true) }}
           >
             <option value="arvometsa_eihakata"> No cuttings </option>
             <option value="arvometsa_jatkuva"> Continuous cover forestry </option>
@@ -558,10 +564,22 @@ function ArvometsaUI() {
             <option value="arvometsa_maxhakkuu"> Removal of tree cover </option>
           </Select>
         </FormControl>
+
+        <br/><br/>
+        <Button variant="contained" color="primary" disabled={feature === null} onClick={() => setReportPanelOpen(true)}>
+          Open report
+        </Button>
+
+        <br/><br/>
+        <NavLink to="/">
+          <Button variant="contained" color="secondary">
+            Go back
+          </Button>
+        </NavLink>
       </Container>
     </Paper>
 
-    <Paper className="grid-col2" elevation={2}>
+    <Paper className="grid-col2" elevation={2} hidden={!showReport}>
       <Container>
         <Paper>
           <FormControlLabel
@@ -603,7 +621,7 @@ function ArvometsaUI() {
         </Button>
         <br />
         <br/>
-        <Button variant="contained" color="secondary">
+        <Button variant="contained" color="secondary" onClick={() => setReportPanelOpen(false)}>
         Close this panel
         </Button>
       </Container>
@@ -612,4 +630,4 @@ function ArvometsaUI() {
   </div>
 }
 
-export default ArvometsaUI;
+export default ArvometsaUI

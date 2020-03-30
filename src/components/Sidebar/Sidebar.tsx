@@ -2,7 +2,6 @@ import React from 'react';
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
-import TextField from '@material-ui/core/TextField';
 
 import Accordion from '../Accordion'
 
@@ -10,43 +9,7 @@ import drawerItems from './drawerItems'
 
 import { ListItem } from '@material-ui/core';
 
-interface SearchInputProps {
-  onChange?: any;
-}
-
-export function SearchInput(props: SearchInputProps) {
-  const { onChange } = props;
-
-  const classes = makeStyles((theme: Theme) =>
-    createStyles({
-      search: {
-      }
-    }),
-  )({})
-
-  return (
-    <TextField
-      size="small"
-      className={classes.search}
-      onChange={(e) => onChange(e.target.value)}
-      id="outlined-search"
-      label="Search..."
-      type="search"
-      variant="outlined" />
-  )
-}
-
 const drawerWidth = 340;
-
-// const filteredItems = (arr: { title: string }[], query: string) => {
-//   if (!query) {
-//     return arr
-//   }
-
-//   return arr.filter(
-//     (x) => x.title.toLowerCase().includes(query.toLowerCase())
-//   );
-// }
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -95,9 +58,23 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-function Sidebar(props: any) {
+export function MainMenu() {
   const classes = useStyles({});
-  const { sidebarOpen } = props
+  return <List className={classes.dropdownList}>
+  {
+    drawerItems.map((item, i) =>
+      <ListItem key={i}>
+        <Accordion
+          drawerItem={true}
+          item={item} />
+      </ListItem>
+    )
+  }
+  </List>
+}
+
+function Sidebar({ children, sidebarOpen }) {
+  const classes = useStyles({});
 
   return (
     <div className={"left-drawer"}>
@@ -107,30 +84,11 @@ function Sidebar(props: any) {
         anchor="left"
         open={sidebarOpen}
       >
-        <List className={classes.dropdownList}>
-          {
-            drawerItems.map((item, i) =>
-              <ListItem key={i}>
-                <Accordion
-                  drawerItem={true}
-                  item={item} />
-              </ListItem>
-            )
-          }
-        </List>
+        {children}
       </Drawer>
 
     </div>
   );
 }
 
-// Later maybe react-router
-// const Link = (props: any) => <a
-//   className={props.className}
-//   {...props}
-//   href={props.to}>{props.children}
-// </a>
-
-
 export default Sidebar
-

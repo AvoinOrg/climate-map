@@ -1,39 +1,24 @@
 import React from 'react'
-import { List, ListItem } from '@material-ui/core';
-import AccordionButton from './AccordionButton'
+import { createStyles, makeStyles } from '@material-ui/core';
+import { AOExpansionPanel } from './AOExpansionPanel';
 
-// Key used to toggle layer,
-// Value used for i18n later
-const items = {
-  'building-energy-certificates': 'Building energy certificates',
-  'fi-buildings': 'Buildings (Finland)',
-  'helsinki-buildings': 'Buildings (Helsinki area)',
-  'hsy-solar-potential': 'Helsinki Area Solar Power Potential',
-}
+const useStyles = makeStyles(() =>
+  createStyles({
+    root: {
+      width: '100%',
+    },
+  }),
+);
 
-interface BuildingsContentProps {
-  item: any;
-  checked: string;
-  toggleLayer: Function;
-}
 
-const BuildingsContent = (props: BuildingsContentProps) => {
-  const { checked, toggleLayer } = props
-
-  return <List>
-    {
-      Object.keys(items).map((item, i) =>
-        <ListItem key={i}>
-          <AccordionButton
-            checked={checked}
-            onChange={toggleLayer}
-            items={items}
-            item={item}
-          />
-        </ListItem>
-      )
-    }
-  </List>
+const BuildingsContent = () => {
+  const classes = useStyles({});
+  return <div className={classes.root}>
+    <AOExpansionPanel groupName={'building-energy-certificates'} label={"Building energy certificates (Finland)"} content={null} />
+    <AOExpansionPanel groupName={'fi-buildings'} label={"Buildings (Finland)"} content={null} />
+    <AOExpansionPanel groupName={'helsinki-buildings'} label={"Buildings (Helsinki area)"} content={null} />
+    <AOExpansionPanel groupName={'hsy-solar-potential'} label={"Helsinki Area Solar Power Potential"} content={null} />
+  </div>
 }
 
 export default BuildingsContent

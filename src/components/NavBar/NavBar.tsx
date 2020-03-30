@@ -89,14 +89,8 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-interface NavBarProps {
-  toggleSidebar: any;
-  sidebarOpen: boolean;
-}
-
-const NavBar = (props: NavBarProps) => {
+const NavBar = ({ toggleSidebar, sidebarOpen }) => {
   const classes = useStyles({});
-  const { toggleSidebar, sidebarOpen } = props
 
   const geocoderSearchRef = useRef(null)
   useEffect(() => {

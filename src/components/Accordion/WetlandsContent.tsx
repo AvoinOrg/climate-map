@@ -1,37 +1,23 @@
 import React from 'react'
-import { List, ListItem, Switch } from '@material-ui/core';
+import { createStyles, makeStyles } from '@material-ui/core';
+import { AOExpansionPanel } from './AOExpansionPanel';
 
-// Key used to toggle layer,
-// Value used for i18n later
-const items = {
-  'bogs': 'Bogs and swamps',
-  'cifor-peatdepth': 'Tropical Peat',
-  'cifor-wetlands': 'Tropical Wetlands',
-}
+const useStyles = makeStyles(() =>
+  createStyles({
+    root: {
+      width: '100%',
+    },
+  }),
+);
 
-interface WetlandsContentProps {
-  item: any;
-  checked: string;
-  toggleLayer: Function;
-}
 
-const WetlandsContent = (props: WetlandsContentProps) => {
-  const { checked, toggleLayer } = props
-  const onChange = (item) => {
-    toggleLayer(`${item}`)
-  }
-
-  return <List>
-    {
-      Object.keys(items).map((item, i) =>
-        <ListItem key={i}>
-          <Switch
-            checked={checked === item}
-            onChange={() => onChange(item)} /> {items[item]}
-        </ListItem>
-      )
-    }
-  </List>
+const WetlandsContent = () => {
+  const classes = useStyles({});
+  return <div className={classes.root}>
+    <AOExpansionPanel groupName={'bogs'} label={"Bogs and swamps (Finland)"} content={null} />
+    <AOExpansionPanel groupName={'cifor-peatdepth'} label={"Tropical Peatlands"} content={null} />
+    <AOExpansionPanel groupName={'cifor-wetlands'} label={"Tropical Wetlands"} content={null} />
+  </div>
 }
 
 export default WetlandsContent

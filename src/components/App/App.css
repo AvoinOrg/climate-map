@@ -1,54 +1,38 @@
-.App {
-  text-align: center;
+body {
+  margin: 0;
+  padding: 0;
+  /* https://tachyons.io/docs/typography/font-family/ */
+  font-family: -apple-system, BlinkMacSystemFont, 'avenir next', avenir, 'helvetica neue', helvetica, ubuntu, roboto, noto, 'segoe ui', arial, sans-serif;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
 }
 
 
+.neutral-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+
+/* Mainly for fi_forest at the moment */
 .grid-parent {
   display: grid;
   grid-template-columns: 400px 400px auto;
   grid-template-rows: 0px auto;
   grid-column-gap: 0px;
   grid-row-gap: 0px;
-  position: absolute;
-  z-index: 2000;
-  left: 0;
-  top: 64px;
-  height: calc(100vh - 64px);
+  height: 100vh;
+  margin-top: 64px;
+}
+
+.grid-parent-closed-hack {
+  grid-template-columns: 400px 0 auto;
 }
 
 .grid-header {
@@ -69,6 +53,7 @@
   grid-area: 2 / 3 / 3 / 4;
 }
 
+
 .mapboxgl-ctrl-geocoder input[type="text"] {
   font-size: 1rem;
 }
@@ -76,3 +61,52 @@
   font-size: 1rem;
 }
 
+
+/* OpenLayers specific CSS */
+.ol-popup {
+  position: absolute;
+  background-color: white;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #cccccc;
+  bottom: 12px;
+  left: -50px;
+  min-width: 280px;
+}
+
+.ol-popup:after,
+.ol-popup:before {
+  top: 100%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+.ol-popup:after {
+  border-top-color: white;
+  border-width: 10px;
+  left: 48px;
+  margin-left: -10px;
+}
+
+.ol-popup:before {
+  border-top-color: #cccccc;
+  border-width: 11px;
+  left: 48px;
+  margin-left: -11px;
+}
+
+.ol-popup-closer {
+  text-decoration: none;
+  position: absolute;
+  top: 2px;
+  right: 8px;
+}
+
+.ol-popup-closer:after {
+  content: "✖";
+}
