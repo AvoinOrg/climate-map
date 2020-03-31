@@ -20,6 +20,21 @@ body {
 }
 
 
+.map-overlay-message-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.map-overlay-message {
+  margin: auto;
+  font-size: 2rem;
+  color: #fff;
+  background-color: rgba(0,0,0, 0.3);
+  z-index: 1000;
+}
+
+
 /* Mainly for fi_forest at the moment */
 .grid-parent {
   display: grid;

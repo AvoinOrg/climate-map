@@ -4,12 +4,6 @@ import BuildingsContent from "../Accordion/BuildingsContent";
 import SnowCoverContent from "../Accordion/SnowCoverLossContent";
 import ForestContent from "../Accordion/ForestContent";
 
-// very very beta
-interface drawerItem {
-  title: string;
-  content?: (ContentEntity)[] | null;
-  contentType?: string | null;
-}
 export interface ContentEntity {
   title: string;
   content?: null;

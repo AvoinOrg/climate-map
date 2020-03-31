@@ -12,6 +12,7 @@ import MapButtons from './components/MapButtons';
 import { URLLayerSyncContainer } from './URLLayerSyncContainer';
 import ForestArvometsa from './components/Sidebar/ForestArvometsa'
 import { MainMenu } from './components/Sidebar/Sidebar';
+import OverlayMessages from './components/OverlayMessages';
 
 export default function AppRouterSwitch() {
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
@@ -21,6 +22,7 @@ export default function AppRouterSwitch() {
     <Router>
       <MapButtons />
       <NavBar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+      <OverlayMessages/>
       <URLLayerSyncContainer>
         <Sidebar sidebarOpen={sidebarOpen}>
           <Switch>

@@ -9,6 +9,7 @@ import { Paper, Container, FormControlLabel, Checkbox, Divider, FormControl, Inp
 import { HeaderTable, SimpleTable } from './ForestArvometsaTable';
 import { layerOptions, arvometsaSumMethodAttrs, arvometsaBestMethodCumulativeSumCbt, arvometsaAreaCO2eFillColor, arvometsaTextfieldExpression } from '../../map/layers/forests/fi_arvometsa';
 import { NavLink } from 'react-router-dom';
+import { setOverlayMessage } from '../OverlayMessages';
 
 const nC_to_CO2 = 44 / 12;
 
@@ -379,7 +380,7 @@ const ChartComponent = props => {
 
   const componentIsMounted = useRef(true)
   useEffect(() => {
-      return () => { componentIsMounted.current = false }
+    return () => { componentIsMounted.current = false }
   }, [])
 
   useEffect(() => {
@@ -475,11 +476,16 @@ function ArvometsaUI() {
   // NB: an unknown scenarioName is also valid; dataset==-1 -> compare against the best option
   const dataset = arvometsaDatasetClasses.indexOf(scenario);
 
+  const { layer, feature, bounds } = useObservable(selectedFeatureService.selectedFeature);
+  const hasFeature = feature !== null
+
   useEffect(() => {
     updateMapDetails({ dataset, carbonBalanceDifferenceFlag })
   }, [dataset, carbonBalanceDifferenceFlag])
 
-  const { layer, feature, bounds } = useObservable(selectedFeatureService.selectedFeature);
+  useEffect(() => {
+    setOverlayMessage(!hasFeature, 'Zoom and click any forest area for carbon report')
+  }, [hasFeature])
 
   const allFeatureProps = feature ? [feature.properties] : [];
   const totals = getTotals({ dataset, perHectareFlag, allFeatureProps })
@@ -504,12 +510,19 @@ function ArvometsaUI() {
     { name: titleRenames[title] || title, value: `${pp(1e-4 * totals.st_area, 3)} ha` },
   ]
 
+  const totalsPerHa = getTotals({ dataset, perHectareFlag: true, allFeatureProps })
+  const averageCarbonBalance = totalsPerHa[`m${dataset}_cbt1`] / 10 // per decade -> per year
+  const averageCarbonBalanceText = (
+    isNaN(averageCarbonBalance) ? ''
+    :`${averageCarbonBalance > 0 ? '+' : ''}${pp(averageCarbonBalance, 2)} tons CO2e/ha/y`
+  )
+
   const tableRows = [
     { name: 'Forest area', value: `${pp(totals.area, 3)} ha` },
     // { name: 'Main tree species', value: 'Pine' },
     // { name: 'Forest age', value: `${pp(123, 2)} years` },
     // { name: 'Biomass volume', value: `${pp(123.45, 2)} m³/ha` },
-    // { name: 'Average carbon balance*', value: `${pp(123, 2)} tn CO2e/ha/y` },
+    { name: 'Average carbon balance*', value: averageCarbonBalanceText },
     { name: 'Net present value (3% discounting)', value: npvText },
 
   ];
@@ -518,7 +531,7 @@ function ArvometsaUI() {
     if (bounds) { fitBounds(bounds, 0.4, 0.15); }
   }
 
-  const showReport = reportPanelOpen && feature !== null
+  const showReport = reportPanelOpen && hasFeature
 
   return <div className={showReport ? "grid-parent" : "grid-parent grid-parent-closed-hack"}>
 
@@ -565,12 +578,12 @@ function ArvometsaUI() {
           </Select>
         </FormControl>
 
-        <br/><br/>
-        <Button variant="contained" color="primary" disabled={feature === null} onClick={() => setReportPanelOpen(true)}>
+        <br /><br />
+        <Button variant="contained" color="primary" disabled={!hasFeature} onClick={() => setReportPanelOpen(true)}>
           Open report
         </Button>
 
-        <br/><br/>
+        <br /><br />
         <NavLink to="/">
           <Button variant="contained" color="secondary">
             Go back
@@ -620,9 +633,9 @@ function ArvometsaUI() {
           Read about the methodology
         </Button>
         <br />
-        <br/>
+        <br />
         <Button variant="contained" color="secondary" onClick={() => setReportPanelOpen(false)}>
-        Close this panel
+          Close this panel
         </Button>
       </Container>
     </Paper>

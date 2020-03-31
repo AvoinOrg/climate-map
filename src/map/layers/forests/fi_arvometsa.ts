@@ -162,6 +162,8 @@ for (const [type, opts] of Object.entries(layerOptions)) {
     },
     "filter": ["in", opts.id],
     BEFORE: 'OUTLINE',
+    minzoom: opts.minzoom,
+    maxzoom: opts.maxzoom || 24,
     ...extraOpts,
   });
 }

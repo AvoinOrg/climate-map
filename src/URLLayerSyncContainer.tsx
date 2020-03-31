@@ -9,20 +9,24 @@ const urlLayerMapping = {
 }
 
 let activeUrlLayerGroup = null
+
+const historyListener = (location, action) => {
+  console.debug(location, action)
+  const urlLayerGroup = urlLayerMapping[location.pathname]
+  if (urlLayerGroup) {
+    layerGroupService.enableOnlyOneGroup(urlLayerGroup)
+    activeUrlLayerGroup = urlLayerGroup
+  } else if (activeUrlLayerGroup) {
+    layerGroupService.disableGroup(activeUrlLayerGroup)
+  }
+}
+
 export const URLLayerSyncContainer = ({children}) => {
   const history = useHistory()
 
   useEffect(() => {
-    const unlisten = history.listen((location, action) => {
-      console.debug(location, action)
-      const urlLayerGroup = urlLayerMapping[location.pathname]
-      if (urlLayerGroup) {
-        layerGroupService.enableOnlyOneGroup(urlLayerGroup)
-        activeUrlLayerGroup = urlLayerGroup
-      } else if (activeUrlLayerGroup) {
-        layerGroupService.disableGroup(activeUrlLayerGroup)
-      }
-    })
+    historyListener(document.location, 'INITIAL')
+    const unlisten = history.listen(historyListener)
     return unlisten
   }, [history])
 
