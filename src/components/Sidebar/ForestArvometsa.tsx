@@ -463,7 +463,7 @@ const titleRenames = {
 function ArvometsaUI() {
   const [reportPanelOpen, setReportPanelOpen] = useState(true)
 
-  const [scenario, setScenario] = useState('arvometsa_jatkuva')
+  const [scenario, setScenario] = useState('arvometsa_alaharvennus')
   const [perHectareFlag, setPerHectareFlag] = useState(true)
   const [cumulativeFlag, setCumulativeFlag] = useState(true)
   const [carbonBalanceDifferenceFlag, setCarbonBalanceDifferenceFlag] = useState(true)
@@ -572,8 +572,8 @@ function ArvometsaUI() {
           >
             <option value="arvometsa_eihakata"> No cuttings </option>
             <option value="arvometsa_jatkuva"> Continuous cover forestry </option>
-            <option value="arvometsa_alaharvennus"> Thin from below – clearfell </option>
             <option value="arvometsa_ylaharvennus"> Thin from above – extended rotation </option>
+            <option value="arvometsa_alaharvennus"> Thin from below – clearfell </option>
             <option value="arvometsa_maxhakkuu"> Removal of tree cover </option>
           </Select>
         </FormControl>
