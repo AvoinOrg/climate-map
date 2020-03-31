@@ -3,3 +3,5 @@ https://avoinmap.com/* https://avoinmap.org/:splat 301!
 https://map.buttonprogram.org/* https://avoinmap.org/:splat 301!
 https://avoinmap.netlify.com/* https://avoinmap.org/:splat 301!
 
+# SPA pages:
+/layers/* /index.html 200
