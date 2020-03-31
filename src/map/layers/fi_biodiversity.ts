@@ -1,9 +1,8 @@
-import { fillOpacity } from '../utils';
-import { layerGroupState, natura2000_mappings, layerGroupService } from '../layer_groups';
-import { Expression } from 'mapbox-gl';
-import { getMapLayers, removeLayer, addLayer, addSource } from '../map';
+import { fillOpacity, replaceLayer } from '../utils';
+import { natura2000_mappings, layerGroups, layerGroupState } from '../layer_groups';
+import { Expression, Layer } from 'mapbox-gl';
+import { addLayer, addSource, setLayoutProperty } from '../map';
 
-let eteAllState = false;
 const eteBasicLabels: Expression = [
     "match",
     ["get", "featurecode"],
@@ -14,33 +13,6 @@ const eteBasicLabels: Expression = [
     15150, "METSO II",
     "",
 ]
-
-const setEteCodes = (codes) => {
-    const id = 'metsaan-ete-all-sym'
-    const layer = getMapLayers().filter(x => x.id === id)[0]
-
-    const eteAllLabels = [
-        "match",
-        ["get", "featurecode"],
-        ...codes,
-        "UNKNOWN habitat type",
-    ];
-    layer.layout['text-field'] = eteAllState ? eteBasicLabels : eteAllLabels;
-    eteAllState = !eteAllState;
-    removeLayer(id)
-    addLayer(layer, layerGroupState.ete ? 'visible' : 'none')
-    layerGroupService.setGroupState('ete', layerGroupState.ete);
-}
-
-// @ts-ignore TODO this is a quick way to break the otherwise circular dependency
-window.toggleEteCodes = () => {
-    fetch('ete_codes.json').then(function(response) {
-        response.json().then(e => {
-            setEteCodes(e);
-            layerGroupService.enableGroup('ete');
-        })
-    })
-}
 
 const zonationVersions = [1, 2, 3, 4, 5, 6]
 zonationVersions.forEach(v => {
@@ -114,6 +86,25 @@ Object.entries(natura2000_mappings).forEach(([baseName, x]) => {
     })
 })
 
+
+const eteAllSymLayer: Layer = {
+  'id': 'placeholder',
+  'source': 'metsaan-ete',
+  'source-layer': 'metsaan-ete',
+  'type': 'symbol',
+  "layout": {
+      "text-font": ["Open Sans Regular"],
+      "text-field": eteBasicLabels,
+  },
+  paint: {
+      'text-color': "#999",
+      'text-halo-blur': 1,
+      'text-halo-color': "rgb(242,243,240)",
+      'text-halo-width': 2,
+  },
+  BEFORE: 'LABEL',
+}
+
 addSource('metsaan-ete', {
     "type": "vector",
     "tiles": ["https://map.buttonprogram.org/metsaan-ete/{z}/{x}/{y}.pbf"],
@@ -121,42 +112,69 @@ addSource('metsaan-ete', {
     bounds: [19, 59, 32, 71], // Finland
     attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
 });
-addLayer({
-    'id': 'metsaan-ete-all-c',
-    'source': 'metsaan-ete',
-    'source-layer': 'metsaan-ete',
-    'type': 'fill',
-    'paint': {
-        'fill-color': 'cyan',
-        'fill-opacity': fillOpacity,
-    },
-    BEFORE: 'FILL',
-})
-addLayer({
-    'id': 'metsaan-ete-all-outline',
-    'source': 'metsaan-ete',
-    'source-layer': 'metsaan-ete',
-    'type': 'line',
-    "minzoom": 12,
-    'paint': {
-        'line-opacity': 1,
-    },
-    BEFORE: 'OUTLINE',
-})
-addLayer({
-    'id': 'metsaan-ete-all-sym',
-    'source': 'metsaan-ete',
-    'source-layer': 'metsaan-ete',
-    'type': 'symbol',
-    "layout": {
-        "text-font": ["Open Sans Regular"],
-        "text-field": eteBasicLabels,
-    },
-    paint: {
-        'text-color': "#999",
-        'text-halo-blur': 1,
-        'text-halo-color': "rgb(242,243,240)",
-        'text-halo-width': 2,
-    },
-    BEFORE: 'LABEL',
-})
+
+for (const subtype of ['basic', 'all']) {
+  addLayer({
+      'id': `metsaan-ete-${subtype}-c`,
+      'source': 'metsaan-ete',
+      'source-layer': 'metsaan-ete',
+      'type': 'fill',
+      'paint': {
+          'fill-color': 'cyan',
+          'fill-opacity': fillOpacity,
+      },
+      BEFORE: 'FILL',
+  })
+  addLayer({
+      'id': `metsaan-ete-${subtype}-outline`,
+      'source': 'metsaan-ete',
+      'source-layer': 'metsaan-ete',
+      'type': 'line',
+      "minzoom": 12,
+      'paint': {
+          'line-opacity': 1,
+      },
+      BEFORE: 'OUTLINE',
+  })
+
+  const eteAllSymLayer1: Layer = {
+    ...eteAllSymLayer,
+    'id': `metsaan-ete-${subtype}-sym`,
+  }
+  addLayer(eteAllSymLayer1)
+}
+
+
+// This is one of the first layers and its style deviates from others.
+// Refactor if time permits.
+const setEteAllCodes = (codes: any[]) => {
+  const id = 'metsaan-ete-all-sym'
+  const eteAllLabels = [
+      "match",
+      ["get", "featurecode"],
+      ...codes,
+      "UNKNOWN habitat type",
+  ] as Expression
+
+  replaceLayer({
+    ...eteAllSymLayer,
+    id,
+    layout: {
+      ...eteAllSymLayer.layout,
+      'text-field': eteAllLabels,
+    }
+  })
+
+  // XXX Some corner case
+  setLayoutProperty(id, 'visibility', layerGroupState['ete-all-labels'] ? 'visible' : 'none');
+}
+
+// @ts-ignore TODO this is a quick way to break the otherwise circular dependency
+window.toggleEteCodes = () => {
+  fetch('ete_codes.json').then(function(response) {
+      response.json().then(e => {
+          setEteAllCodes(e);
+      })
+  })
+}
+

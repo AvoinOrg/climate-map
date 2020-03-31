@@ -68,12 +68,6 @@ export const map = new Map({
 
 olms(map, 'https://tiles.stadiamaps.com/styles/alidade_smooth.json');
 
-// These help in development and debugging:
-if (process.env.NODE_ENV !== 'production') {
-  // @ts-ignore
-  window.map = map;
-}
-
 declare module "mapbox-gl" {
   export interface Layer {
     BEFORE?: string;

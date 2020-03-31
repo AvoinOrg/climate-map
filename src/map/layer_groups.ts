@@ -96,9 +96,9 @@ export const layerGroups: ILayerGroups = {
     'metsaan-stand-mature-fill', 'metsaan-stand-outline', 'metsaan-stand-mature-sym', 'metsaan-stand-mature-raster',
   ],
   'zonation6': ['zonation-v6-raster'],
-  'ete': ['metsaan-ete-all-c', 'metsaan-ete-all-outline', 'metsaan-ete-all-sym'],
+  'ete': ['metsaan-ete-basic-c', 'metsaan-ete-basic-outline', 'metsaan-ete-basic-sym'],
   // @ts-ignore
-  'ete-all-labels': [() => window.toggleEteCodes()],
+  'ete-all-labels': ['metsaan-ete-all-c', 'metsaan-ete-all-outline', 'metsaan-ete-all-sym', () => window.toggleEteCodes()],
   'terramonitor': ['terramonitor', () => toggleBaseMapSymbols()],
   // @ts-ignore
   'no2-raster': ['no2-raster', () => window.setNO2()],
@@ -230,10 +230,4 @@ class LayerGroupService {
   }
 }
 
-
-
 export const layerGroupService = new LayerGroupService();
-
-if (process.env.NODE_ENV === 'development')
-  // @ts-ignore
-  window.layerGroupService = layerGroupService
