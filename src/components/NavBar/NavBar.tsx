@@ -86,6 +86,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     logo: {
       maxWidth: 200,
+      height: '100%',
     },
   }),
 );
