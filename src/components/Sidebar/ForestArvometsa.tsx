@@ -538,7 +538,7 @@ function ArvometsaUI() {
 
   const showReport = reportPanelOpen && hasFeature
 
-  return <div className={showReport ? "grid-parent" : "grid-parent grid-parent-closed-hack"}>
+  return <div className={showReport ? "grid-parent" : "grid-parent grid-parent-report-closed"}>
 
     <Paper className="grid-col1" elevation={5}>
       <Container>
