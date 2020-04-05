@@ -1,5 +1,5 @@
 import { fillOpacity, replaceLayer } from '../utils';
-import { natura2000_mappings, layerGroups, layerGroupState } from '../layer_groups';
+import { natura2000_mappings, layerGroupState } from '../layer_groups';
 import { Expression, Layer } from 'mapbox-gl';
 import { addLayer, addSource, setLayoutProperty } from '../map';
 

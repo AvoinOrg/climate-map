@@ -13,6 +13,8 @@ import { setOverlayMessage } from '../OverlayMessages';
 
 const nC_to_CO2 = 44 / 12;
 
+const LAYER_NAME = 'arvometsa'
+
 const arvometsaBestMethodVsOther: (method: number | Expression, attrPrefix: string) => Expression
   = (method, attrPrefix) => [
     '-',
@@ -484,7 +486,10 @@ function ArvometsaUI() {
   }, [dataset, carbonBalanceDifferenceFlag])
 
   useEffect(() => {
-    setOverlayMessage(!hasFeature, 'Zoom and click any forest area for carbon report')
+    setOverlayMessage(!hasFeature, {
+      layer: LAYER_NAME,
+      message: 'Zoom in and click a forest area for carbon report',
+    })
   }, [hasFeature])
 
   const allFeatureProps = feature ? [feature.properties] : [];
