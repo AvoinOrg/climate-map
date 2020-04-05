@@ -35,10 +35,12 @@ body {
 }
 
 
+
 /* Mainly for fi_forest at the moment */
+/* By default use the mobile version */
 .grid-parent {
   display: grid;
-  grid-template-columns: 400px 400px auto;
+  grid-template-columns: 0 400px auto;
   grid-template-rows: 0px auto;
   grid-column-gap: 0px;
   grid-row-gap: 0px;
@@ -48,6 +50,13 @@ body {
 
 .grid-parent-closed-hack {
   grid-template-columns: 400px 0 auto;
+}
+
+/* For larger screens, display them side to side */
+@media (min-width:800px)  {
+  .grid-parent {
+    grid-template-columns: 400px 400px auto;
+  }
 }
 
 .grid-header {
@@ -67,6 +76,7 @@ body {
 .grid-map-area {
   grid-area: 2 / 3 / 3 / 4;
 }
+
 
 
 .mapboxgl-ctrl-geocoder input[type="text"] {
