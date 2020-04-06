@@ -521,16 +521,24 @@ function ArvometsaUI() {
   const bio = getChartProps({ ...chartProps, prefix: 'bio' })
   const wood = getChartProps({ ...chartProps, prefix: 'harvested-wood' })
 
-  const headerRows = [
-    { name: titleRenames[title] || title, value: `${pp(1e-4 * totals.st_area, 3)} ha` },
-  ]
-
   const totalsPerHa = getTotals({ dataset, perHectareFlag: true, allFeatureProps })
   const averageCarbonBalance = totalsPerHa[`m${dataset}_cbt1`] / 10 // per decade -> per year
   const averageCarbonBalanceText = (
     isNaN(averageCarbonBalance) ? ''
       : `${averageCarbonBalance > 0 ? '+' : ''}${pp(averageCarbonBalance, 2)} tons CO2e/ha/y`
   )
+
+  const headerTitle = titleRenames[title] || title
+  const headerOnClick = () => { if (!hasFeature) SidebarState.setVisible(false) }
+  const headerRows = [
+    {
+      name: <div onClick={headerOnClick} style={{cursor: hasFeature ? 'initial' : 'pointer'}}>
+        {headerTitle}
+        {!hasFeature && <span><br/><strong>click to show the map</strong></span>}
+      </div>,
+      value: `${pp(1e-4 * totals.st_area, 3)} ha`,
+    },
+  ]
 
   const tableRows = [
     { name: 'Forest area', value: `${pp(totals.area, 3)} ha` },
