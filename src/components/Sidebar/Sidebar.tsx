@@ -8,6 +8,8 @@ import Accordion from '../Accordion'
 import drawerItems from './drawerItems'
 
 import { ListItem } from '@material-ui/core';
+import { useObservable } from 'micro-observables';
+import * as SidebarState from './SidebarState'
 
 const drawerWidth = 340;
 
@@ -37,7 +39,7 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: 0
     },
     dropdownList: {
-      marginTop: 90,
+      marginTop: 60,
     },
     drawer: {
       width: drawerWidth,
@@ -73,8 +75,9 @@ export function MainMenu() {
   </List>
 }
 
-function Sidebar({ children, sidebarOpen }) {
+function Sidebar({ children }) {
   const classes = useStyles({});
+  const sidebarOpen = useObservable(SidebarState.isOpenObservable)
 
   return (
     <div className={"left-drawer"}>

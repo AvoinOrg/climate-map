@@ -2,7 +2,6 @@ import React, { useRef, useEffect } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
-import Typography from '@material-ui/core/Typography';
 import InputBase from '@material-ui/core/InputBase';
 import { createStyles, fade, Theme, makeStyles } from '@material-ui/core/styles';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
@@ -10,10 +9,12 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import SearchIcon from '@material-ui/icons/Search';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
-import {map, getGeocoder} from '../../map/map'
-
-import Logo from './logo.svg'
 import { Link } from 'react-router-dom';
+import { useObservable } from 'micro-observables';
+
+import Logo from '../../logo.svg'
+import {map, getGeocoder} from '../../map/map'
+import * as SidebarState from '../Sidebar/SidebarState'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -24,6 +25,8 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     menuIcon: {
       marginRight: theme.spacing(2),
+      padding: 0,
+      paddingBottom: 8,
     },
     helpWrapper: {
       position: 'relative',
@@ -32,6 +35,9 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '100%',
     },
     helpIcon: {
+      padding: 0,
+      paddingLeft: 10,
+      paddingBottom: 8,
     },
     HelpOutlineIcon: {
     },
@@ -85,14 +91,14 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     logo: {
-      maxWidth: 200,
-      height: '100%',
+      width: 160,
     },
   }),
 );
 
-const NavBar = ({ toggleSidebar, sidebarOpen }) => {
+const NavBar = () => {
   const classes = useStyles({});
+  const sidebarOpen = useObservable(SidebarState.isOpenObservable)
 
   const geocoderSearchRef = useRef(null)
   useEffect(() => {
@@ -105,7 +111,7 @@ const NavBar = ({ toggleSidebar, sidebarOpen }) => {
       <Toolbar>
 
         <IconButton
-          onClick={toggleSidebar}
+          onClick={SidebarState.toggleSidebar}
           edge="start"
           className={classes.menuIcon}
           color="inherit"
@@ -114,10 +120,8 @@ const NavBar = ({ toggleSidebar, sidebarOpen }) => {
           {sidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
         </IconButton>
 
-        <img className={classes.logo} src={Logo} alt="Logo" />
-
         <Link to='/' className='neutral-link'>
-          <Typography className={classes.title} variant="h6">Avoin Map</Typography>
+          <img className={classes.logo} src={Logo} alt="Logo" />
         </Link>
 
         <div className={classes.helpWrapper}>
@@ -143,7 +147,6 @@ const NavBar = ({ toggleSidebar, sidebarOpen }) => {
             }}
             type="search"
             inputProps={{ 'aria-label': 'search' }}
-            // onChange={... TODO}
             id='geocoder'
           />
         </div>

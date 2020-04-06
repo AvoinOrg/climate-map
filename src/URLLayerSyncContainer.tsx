@@ -1,7 +1,6 @@
-import { layerGroupService } from './map/layer_groups';
 import { useHistory } from 'react-router-dom';
 import { useEffect } from 'react';
-
+import * as LayerGroupState from 'src/map/LayerGroupState';
 
 // Some URLs are 1:1 associated with certain layer groups:
 const urlLayerMapping = {
@@ -14,10 +13,10 @@ const historyListener = (location, action) => {
   console.debug(location, action)
   const urlLayerGroup = urlLayerMapping[location.pathname]
   if (urlLayerGroup) {
-    layerGroupService.enableOnlyOneGroup(urlLayerGroup)
+    LayerGroupState.enableOnlyOneGroup(urlLayerGroup)
     activeUrlLayerGroup = urlLayerGroup
   } else if (activeUrlLayerGroup) {
-    layerGroupService.disableGroup(activeUrlLayerGroup)
+    LayerGroupState.disableGroup(activeUrlLayerGroup)
   }
 }
 

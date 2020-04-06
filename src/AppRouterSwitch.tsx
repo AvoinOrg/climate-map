@@ -15,16 +15,13 @@ import { MainMenu } from './components/Sidebar/Sidebar';
 import OverlayMessages from './components/OverlayMessages';
 
 export default function AppRouterSwitch() {
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
-  const toggleSidebar = () => { setSidebarOpen(!sidebarOpen) }
-
   return (
     <Router>
       <MapButtons />
-      <NavBar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+      <NavBar/>
       <OverlayMessages/>
       <URLLayerSyncContainer>
-        <Sidebar sidebarOpen={sidebarOpen}>
+        <Sidebar>
           <Switch>
             <Route path="/layers/fi-forest">
               <ForestArvometsa />

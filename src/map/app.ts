@@ -1,7 +1,7 @@
+import * as LayerGroupState from 'src/map/LayerGroupState';
+import { layerGroups, layerGroupState } from './layer_groups';
+import { getMapLayers, mapInit, moveLayer, onMapLoad, panTo, setLayoutProperty, zoomTo } from "./map";
 import { invertLayerTextHalo } from './utils';
-import { layerGroups, layerGroupState, layerGroupService } from './layer_groups';
-import { setLayoutProperty, getMapLayers, moveLayer, zoomTo, mapInit, panTo, onMapLoad } from "./map";
-
 
 const enableDefaultLayers = () => {
   const enabledGroups = Object.keys(layerGroupState).filter(g => layerGroupState[g])
@@ -55,7 +55,7 @@ onMapLoad(() => {
 
   try {
     const layers = hashParams.layers.split(',')
-    for (const layer of layers) { layerGroupService.enableGroup(layer); }
+    for (const layer of layers) { LayerGroupState.enableGroup(layer); }
   } catch (e) { }
 
 }); // /map onload

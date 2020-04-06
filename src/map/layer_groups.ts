@@ -1,10 +1,6 @@
-import { observable } from "micro-observables";
-
+import * as LayerGroupState from 'src/map/LayerGroupState';
+import { moveLayer, setLayoutProperty, toggleBaseMapSymbols } from './map';
 import { assert, execWithMapLoaded, originalLayerDefs } from './utils';
-import {
-  toggleBaseMapSymbols, setLayoutProperty, moveLayer
-} from './map';
-
 
 const backgroundLayerGroups = { 'terramonitor': true }
 interface ILayerGroupState { [s: string]: boolean; }
@@ -19,7 +15,7 @@ export const hideAllLayersMatchingFilter: (filterFn: (group: string) => boolean)
     for (const group of Object.keys(layerGroupState)) {
       if (group in backgroundLayerGroups) return;
       if (filterFn && !filterFn(group)) return;
-      layerGroupService.disableGroup(group);
+      LayerGroupState.disableGroup(group);
     }
   }
 
@@ -151,7 +147,7 @@ export const layerGroups: ILayerGroups = {
 };
 
 
-const toggleGroup = (group: string, forcedState?: boolean) => {
+export const toggleGroupInternal = (group: string, forcedState?: boolean) => {
   assert(group in layerGroups, `Layer group ${group} not in layerGroups`)
   console.debug('toggleGroup:', group, forcedState)
 
@@ -177,57 +173,3 @@ const toggleGroup = (group: string, forcedState?: boolean) => {
 
   if (group in backgroundLayerGroups) return;
 }
-
-
-
-export const layerComponentList = []
-
-interface IAddLayerComponentOptions {
-  category: string;
-  id: string;
-  name: string;
-  layers: string[];
-  component: any;
-}
-
-export const addLayerComponent = (props: IAddLayerComponentOptions) => {
-  layerComponentList.push(props)
-}
-
-
-type LayerGroupReference = { name: string }
-
-class LayerGroupService {
-  private _layerGroups = observable<LayerGroupReference[]>([]);
-
-  get layerGroups() {
-    return this._layerGroups.readOnly();
-  }
-  enableGroup(name: string) {
-    this._layerGroups.update(layerGroups => [...layerGroups.filter(x => x.name !== name), { name }])
-    toggleGroup(name, true)
-  }
-  disableGroup(name: string) {
-    this._layerGroups.update(layerGroups => [...layerGroups.filter(x => x.name !== name)])
-    toggleGroup(name, false)
-  }
-  setGroupState(name: string, enabled: boolean) {
-    if (enabled)  this.enableGroup(name)
-    else          this.disableGroup(name)
-  }
-  toggleGroup(name: string) {
-    this._layerGroups.update(layerGroups => {
-      const newGroups = [...layerGroups.filter(x => x.name !== name)]
-      if (newGroups.length === layerGroups.length) newGroups.push({ name })
-      toggleGroup(name, newGroups.length === layerGroups.length)
-      return newGroups
-    })
-  }
-  enableOnlyOneGroup(name: string) {
-    this._layerGroups.get().filter(x => x.name !== name).forEach(x => toggleGroup(x.name, false))
-    this._layerGroups.set([{ name }])
-    toggleGroup(name, true)
-  }
-}
-
-export const layerGroupService = new LayerGroupService();

@@ -1,19 +1,24 @@
-import React, { useRef, useEffect, useState } from 'react'
+import { Button, Checkbox, Container, Divider, FormControl, FormControlLabel, InputLabel, Paper, Select } from '@material-ui/core';
 import { Chart } from 'chart.js';
 import { Expression } from 'mapbox-gl';
-import { assert, pp, getGeoJsonGeometryBounds, execWithMapLoaded } from '../../map/utils';
-import { setPaintProperty, setLayoutProperty, setFilter, querySourceFeatures, fitBounds, genericPopupHandler } from '../../map/map';
-import { selectedFeatureService } from './ArvometsaSelectedLayer';
-import { useObservable } from 'micro-observables';
-import { Paper, Container, FormControlLabel, Checkbox, Divider, FormControl, InputLabel, Select, Button } from '@material-ui/core';
-import { HeaderTable, SimpleTable } from './ForestArvometsaTable';
-import { layerOptions, arvometsaSumMethodAttrs, arvometsaBestMethodCumulativeSumCbt, arvometsaAreaCO2eFillColor, arvometsaTextfieldExpression } from '../../map/layers/forests/fi_arvometsa';
 import { NavLink } from 'react-router-dom';
+import { useObservable } from 'micro-observables';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import React, { useEffect, useRef, useState } from 'react';
+
+import { arvometsaAreaCO2eFillColor, arvometsaBestMethodCumulativeSumCbt, arvometsaSumMethodAttrs, arvometsaTextfieldExpression, layerOptions } from '../../map/layers/forests/fi_arvometsa';
+import { fitBounds, genericPopupHandler, querySourceFeatures, setFilter, setLayoutProperty, setPaintProperty } from '../../map/map';
+import { assert, execWithMapLoaded, getGeoJsonGeometryBounds, pp } from '../../map/utils';
 import { setOverlayMessage } from '../OverlayMessages';
+import * as SelectedFeatureState from './ArvometsaSelectedLayer';
+import { HeaderTable, SimpleTable } from './ForestArvometsaTable';
+import * as SidebarState from './SidebarState';
+
 
 const nC_to_CO2 = 44 / 12;
 
-const LAYER_NAME = 'arvometsa'
+const LAYER_ID = 'arvometsa'
+const LAYER_TITLE = `Finland's forests`
 
 const arvometsaBestMethodVsOther: (method: number | Expression, attrPrefix: string) => Expression
   = (method, attrPrefix) => [
@@ -336,7 +341,7 @@ export const ArvometsaChart = (props: any) => {
   // NB: an unknown scenarioName is also valid; dataset==-1 -> compare against the best option
   const dataset = arvometsaDatasetClasses.indexOf(scenarioName);
 
-  const { layer, feature } = useObservable(selectedFeatureService.selectedFeature);
+  const { layer, feature } = useObservable(SelectedFeatureState.selectedFeature);
 
   useEffect(() => {
     updateMapDetails({ dataset, carbonBalanceDifferenceFlag })
@@ -408,7 +413,7 @@ const clearHighlights = () => {
     const idName = layerOptions[sourceName].id;
     setFilter(`${sourceName}-highlighted`, ['in', idName]);
   }
-  selectedFeatureService.unsetFeature()
+  SelectedFeatureState.unsetFeature()
 }
 
 for (const sourceName of Object.keys(layerOptions)) {
@@ -438,7 +443,12 @@ for (const sourceName of Object.keys(layerOptions)) {
         [999, 999, -999, -999] // fallback bounds
       );
 
-    selectedFeatureService.selectFeature({ layer: layerName, feature, bounds })
+    const {feature: prevFeature} = SelectedFeatureState.selectedFeature.get()
+    SelectedFeatureState.selectFeature({ layer: layerName, feature, bounds })
+
+  // Open the report panel immediately when a new feature is selected:
+  if (feature && feature !== prevFeature)
+      SidebarState.setVisible(true)
   });
 }
 
@@ -470,16 +480,16 @@ function ArvometsaUI() {
   const [cumulativeFlag, setCumulativeFlag] = useState(true)
   const [carbonBalanceDifferenceFlag, setCarbonBalanceDifferenceFlag] = useState(true)
 
-  // Eliminate confusing options (all zeroes)
-  if (scenario === ARVOMETSA_TRADITIONAL_FORESTRY_METHOD_KEY && carbonBalanceDifferenceFlag)
-    setCarbonBalanceDifferenceFlag(false)
-
   // i.e. which projection/scenario is in use:
   // NB: an unknown scenarioName is also valid; dataset==-1 -> compare against the best option
   const dataset = arvometsaDatasetClasses.indexOf(scenario);
 
-  const { layer, feature, bounds } = useObservable(selectedFeatureService.selectedFeature);
+  const { layer, feature, bounds } = useObservable(SelectedFeatureState.selectedFeature);
   const hasFeature = feature !== null
+
+  // Eliminate confusing options (all zeroes)
+  if (scenario === ARVOMETSA_TRADITIONAL_FORESTRY_METHOD_KEY && carbonBalanceDifferenceFlag)
+    setCarbonBalanceDifferenceFlag(false)
 
   useEffect(() => {
     updateMapDetails({ dataset, carbonBalanceDifferenceFlag })
@@ -487,7 +497,7 @@ function ArvometsaUI() {
 
   useEffect(() => {
     setOverlayMessage(!hasFeature, {
-      layer: LAYER_NAME,
+      layer: LAYER_ID,
       message: 'Zoom in and click a forest area for carbon report',
     })
   }, [hasFeature])
@@ -519,7 +529,7 @@ function ArvometsaUI() {
   const averageCarbonBalance = totalsPerHa[`m${dataset}_cbt1`] / 10 // per decade -> per year
   const averageCarbonBalanceText = (
     isNaN(averageCarbonBalance) ? ''
-    :`${averageCarbonBalance > 0 ? '+' : ''}${pp(averageCarbonBalance, 2)} tons CO2e/ha/y`
+      : `${averageCarbonBalance > 0 ? '+' : ''}${pp(averageCarbonBalance, 2)} tons CO2e/ha/y`
   )
 
   const tableRows = [
@@ -538,11 +548,16 @@ function ArvometsaUI() {
 
   const showReport = reportPanelOpen && hasFeature
 
+  const tableTitle = <NavLink to='/' className='neutral-link' style={{display: 'flex'}}>
+    <ExpandMoreIcon style={{ transform: 'rotate(90deg)' }}/>
+    {LAYER_TITLE}
+  </NavLink>
+
   return <div className={showReport ? "grid-parent" : "grid-parent grid-parent-report-closed"}>
 
     <Paper className="grid-col1" elevation={5}>
       <Container>
-        <HeaderTable title="Finland's forests" rows={headerRows} onFitLayerBounds={onFitLayerBounds} />
+        <HeaderTable title={tableTitle} rows={headerRows} onFitLayerBounds={onFitLayerBounds} />
         <br />
         <Paper>
           <FormControlLabel
@@ -640,7 +655,7 @@ function ArvometsaUI() {
         <br />
         <br />
         <Button variant="contained" color="secondary" onClick={() => setReportPanelOpen(false)}>
-          Close this panel
+          Close report
         </Button>
       </Container>
     </Paper>

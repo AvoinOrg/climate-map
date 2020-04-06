@@ -1,10 +1,10 @@
-import React from 'react'
-import { ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, createStyles, makeStyles, Theme, Checkbox, Typography } from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { Checkbox, createStyles, ExpansionPanel, ExpansionPanelDetails, ExpansionPanelSummary, makeStyles, Theme, Typography } from '@material-ui/core';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import * as LayerGroups from '../../map/layer_groups'
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { useObservable } from "micro-observables";
+import React from 'react';
 import { Link } from 'react-router-dom';
+import * as LayerGroupState from '../../map/LayerGroupState';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -14,17 +14,13 @@ const useStyles = makeStyles((theme: Theme) =>
     content: {
       margin: 'unset',
     }
-    // MuiExpansionPanelSummary-content.Mui-expanded
-    // activeCard: {
-    //   backgroundColor: 'rgba(0,100,100,0.1)',
-    // },
   }),
 );
 
 
 export const AOExpansionPanel = (props: any) => {
   const { groupName, label, content, panelProps } = props
-  const layerGroups = useObservable(LayerGroups.layerGroupService.layerGroups);
+  const layerGroups = useObservable(LayerGroupState.layerGroups);
   const groupEnabled = layerGroups.filter(x => x.name === groupName).length > 0
   const classes = useStyles({});
 
@@ -32,7 +28,7 @@ export const AOExpansionPanel = (props: any) => {
     <ExpansionPanelSummary className={classes.content} expandIcon={<ExpandMoreIcon />}>
       <FormControlLabel
         onClick={event => { event.stopPropagation() }}
-        onChange={event => LayerGroups.layerGroupService.setGroupState(groupName, (event.target as HTMLInputElement).checked)}
+        onChange={event => LayerGroupState.setGroupState(groupName, (event.target as HTMLInputElement).checked)}
         onFocus={event => event.stopPropagation()}
         control={<Checkbox />}
         label={label}
@@ -63,13 +59,13 @@ export const AOExpansionPanelLink = ({ href, label }: any) => {
 }
 
 export const LayerToggleControl = ({ groupName, label }) => {
-  const layerGroups = useObservable(LayerGroups.layerGroupService.layerGroups);
+  const layerGroups = useObservable(LayerGroupState.layerGroups);
   const groupEnabled = layerGroups.filter(x => x.name === groupName).length > 0
 
   return (
     <FormControlLabel
       onClick={event => { event.stopPropagation() }}
-      onChange={event => LayerGroups.layerGroupService.setGroupState(groupName, (event.target as HTMLInputElement).checked)}
+      onChange={event => LayerGroupState.setGroupState(groupName, (event.target as HTMLInputElement).checked)}
       onFocus={event => event.stopPropagation()}
       control={<Checkbox />}
       label={label}
@@ -77,4 +73,19 @@ export const LayerToggleControl = ({ groupName, label }) => {
     />
   )
 
+}
+
+export const AOAccordionHeader = ({ href, label }: any) => {
+  const classes = useStyles({});
+
+  return <ExpansionPanel expanded={false}>
+    <Link to={href} className='neutral-link'>
+      <ExpansionPanelSummary
+        className={classes.content} expandIcon={<ExpandMoreIcon style={{ transform: 'rotate(90deg' }}
+        />}>
+        <Typography className={classes.heading}>{label}</Typography>
+      </ExpansionPanelSummary>
+    </Link>
+
+  </ExpansionPanel>
 }
