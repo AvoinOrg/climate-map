@@ -28,7 +28,7 @@ const TropicalForestContent = () =>
   <div>
     <p>
       <a href="https://www.globalforestwatch.org/">the Global Forest Watch</a>
-      tree plantations data from combined with
+      {} tree plantations data from combined with
       {} <a href="https://www.cifor.org/">CIFOR data</a> of global wetlands.
     </p>
     <p>
