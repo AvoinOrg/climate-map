@@ -3,7 +3,7 @@ import { observable, useObservable } from "micro-observables";
 import * as LayerGroupState from 'src/map/LayerGroupState';
 
 type Message = { message: string; layer: string; }
-const nullMessage = { message: null, layer: null }
+const nullMessage: Message = { message: null, layer: null }
 
 const overlayMessage = observable<Message>(nullMessage);
 

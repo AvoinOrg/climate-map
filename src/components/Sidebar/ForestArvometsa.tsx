@@ -13,6 +13,7 @@ import { setOverlayMessage } from '../OverlayMessages';
 import * as SelectedFeatureState from './ArvometsaSelectedLayer';
 import { HeaderTable, SimpleTable } from './ForestArvometsaTable';
 import * as SidebarState from './SidebarState';
+import { setSearchPlaceholder } from '../NavBar/NavBarSearch';
 
 
 const nC_to_CO2 = 44 / 12;
@@ -499,6 +500,10 @@ function ArvometsaUI() {
     setOverlayMessage(!hasFeature, {
       layer: LAYER_ID,
       message: 'Zoom in and click a forest area for carbon report',
+    })
+    setSearchPlaceholder({
+      layer: LAYER_ID,
+      placeholder: 'Look up by property ID',
     })
   }, [hasFeature])
 

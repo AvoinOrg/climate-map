@@ -1,20 +1,18 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
-import InputBase from '@material-ui/core/InputBase';
 import { createStyles, fade, Theme, makeStyles } from '@material-ui/core/styles';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import SearchIcon from '@material-ui/icons/Search';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import { Link } from 'react-router-dom';
 import { useObservable } from 'micro-observables';
 
 import Logo from '../../logo.svg'
-import {map, getGeocoder} from '../../map/map'
 import * as SidebarState from '../Sidebar/SidebarState'
+import { NavBarSearch } from './NavBarSearch';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -100,12 +98,6 @@ const NavBar = () => {
   const classes = useStyles({});
   const sidebarOpen = useObservable(SidebarState.isOpenObservable)
 
-  const geocoderSearchRef = useRef(null)
-  useEffect(() => {
-    const geocoder = getGeocoder()
-    if (geocoder) geocoderSearchRef.current.appendChild(geocoder.onAdd(map))
-  }, [geocoderSearchRef])
-
   return (
     <AppBar position="fixed" className={classes.appBar}>
       <Toolbar>
@@ -135,23 +127,7 @@ const NavBar = () => {
 
         </div>
 
-        <div className={classes.search} hidden={true}>
-          <div className={classes.searchIcon}>
-            <SearchIcon />
-          </div>
-          <InputBase
-            placeholder="Search…"
-            classes={{
-              root: classes.inputRoot,
-              input: classes.inputInput,
-            }}
-            type="search"
-            inputProps={{ 'aria-label': 'search' }}
-            id='geocoder'
-          />
-        </div>
-
-        <div ref={geocoderSearchRef}/>
+        <NavBarSearch/>
 
         <IconButton aria-label="display more actions" edge="end" color="inherit" disabled={true}>
           <AccountCircleIcon />

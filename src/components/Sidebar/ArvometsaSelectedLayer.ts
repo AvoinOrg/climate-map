@@ -3,7 +3,7 @@ import { MapboxGeoJSONFeature } from "mapbox-gl";
 
 type SelectedFeature = { feature: MapboxGeoJSONFeature, layer: string, bounds: number[] }
 
-const nullFeature = {feature: null, layer: null, bounds: null}
+const nullFeature: SelectedFeature = {feature: null, layer: null, bounds: null}
 
 const _selectedFeatures = observable<SelectedFeature>(nullFeature);
 
