@@ -1,5 +1,6 @@
 import { addSource, addLayer, genericPopupHandler, createPopup } from '../map'
 import { fillOpacity } from '../utils'
+import { registerGroup } from '../layer_groups';
 
 addSource('fi-mml-suot', {
     "type": "vector",
@@ -120,3 +121,5 @@ genericPopupHandler('gtk-turvevarat-suot-fill', e => {
 
     createPopup(e, html)
 });
+
+registerGroup('bogs', ['gtk-turvevarat-suot-fill', 'fi-mml-suot-fill'])

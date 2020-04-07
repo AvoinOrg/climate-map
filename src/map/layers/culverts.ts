@@ -1,6 +1,7 @@
 import { addSource, addLayer, genericPopupHandler, createPopup } from '../map'
 import { fillOpacity } from '../utils'
 import { Expression } from 'mapbox-gl';
+import { registerGroup } from '../layer_groups';
 
 addSource('fi-vayla-tierummut', {
     "type": "vector",
@@ -117,3 +118,5 @@ genericPopupHandler('fi-vayla-ratarummut-circle', ev => {
 
     createPopup(ev, html);
 });
+
+registerGroup('culverts', ['fi-vayla-tierummut-circle', 'fi-vayla-ratarummut-circle'])

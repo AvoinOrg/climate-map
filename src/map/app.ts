@@ -1,12 +1,12 @@
 import * as LayerGroupState from 'src/map/LayerGroupState';
-import { layerGroups, layerGroupState } from './layer_groups';
+import { layerGroupDefinitions, layerGroupState } from './layer_groups';
 import { getMapLayers, mapInit, moveLayer, onMapLoad, panTo, setLayoutProperty, zoomTo } from "./map";
 import { invertLayerTextHalo } from './utils';
 
 const enableDefaultLayers = () => {
   const enabledGroups = Object.keys(layerGroupState).filter(g => layerGroupState[g])
   for (const group of enabledGroups) {
-    const normalLayers = layerGroups[group]
+    const normalLayers = layerGroupDefinitions[group]
       .filter((l: any) => typeof l === 'string') as string[]
     for (const layer of normalLayers) {
       setLayoutProperty(layer, 'visibility', 'visible');

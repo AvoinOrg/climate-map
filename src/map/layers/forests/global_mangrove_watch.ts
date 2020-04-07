@@ -1,4 +1,5 @@
 import { addLayer } from '../../map'
+import { registerGroup } from 'src/map/layer_groups'
 
 addLayer({
     'id': 'mangrove-wms',
@@ -17,3 +18,5 @@ addLayer({
     'paint': {},
     BEFORE: 'FILL',
 })
+
+registerGroup('mangrove-forests', ['mangrove-wms'])

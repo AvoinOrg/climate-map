@@ -4,6 +4,7 @@ import { fieldPlotTextField, fieldColorHistosol, fieldColorDefault, fieldPlotHis
 import { addDataset } from './common';
 import { ILayerOptions, createHighlightingForLayerGroup, IRenderFeature } from '../../layer_highlighting';
 import { pp } from '../../utils';
+import { registerGroup, hideAllLayersMatchingFilter } from 'src/map/layer_groups';
 
 
 interface IFieldAggregateProps {
@@ -159,3 +160,26 @@ const addValio = (secret: string) => {
 };
 
 addDataset('valio', addValio);
+
+registerGroup('valio', [
+  () => hideAllLayersMatchingFilter(x => !/valio/.test(x)),
+  'valio-fields-country-boundary',
+  'valio-fields-country-fill',
+  'valio-fields-country-highlighted',
+  'valio-fields-regional-state-boundary',
+  'valio-fields-regional-state-fill',
+  'valio-fields-regional-state-highlighted',
+  'valio-fields-region-boundary',
+  'valio-fields-region-fill',
+  'valio-fields-region-highlighted',
+  'valio-fields-municipality-boundary',
+  'valio-fields-municipality-fill',
+  'valio-fields-municipality-highlighted',
+  // 'valio-fields-highlighted',
+  'valio-fields-boundary',
+  'valio-fields-fill',
+  'valio-fields-co2',
+  'mavi-plohko-removed-fill',
+  'mavi-plohko-removed-outline',
+  'mavi-plohko-removed-co2',
+])

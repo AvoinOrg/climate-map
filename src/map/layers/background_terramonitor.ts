@@ -1,4 +1,5 @@
-import { addLayer } from '../map';
+import { addLayer, toggleBaseMapSymbols } from '../map';
+import { registerGroup } from '../layer_groups';
 
 addLayer({
     'id': 'terramonitor',
@@ -15,3 +16,5 @@ addLayer({
     'paint': {},
     BEFORE: 'BACKGROUND',
 });
+
+registerGroup('terramonitor', ['terramonitor', toggleBaseMapSymbols])

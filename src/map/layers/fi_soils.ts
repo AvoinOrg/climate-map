@@ -1,5 +1,6 @@
 import { addSource, addLayer } from '../map'
 import { fillOpacity } from '../utils'
+import { registerGroup } from '../layer_groups';
 
 addSource('gtk-mp20k-maalajit', {
     "type": "vector",
@@ -54,3 +55,7 @@ addLayer({
     },
     BEFORE: 'LABEL',
 })
+
+registerGroup('gtk-mp20k-maalajit',
+  ['gtk-mp20k-maalajit-fill', 'gtk-mp20k-maalajit-outline', 'gtk-mp20k-maalajit-sym']
+)

@@ -1,5 +1,6 @@
 import { fillOpacity, roundToSignificantDigits, pp } from '../utils'
 import { genericPopupHandler, createPopup, addSource, addLayer } from '../map';
+import { registerGroup } from '../layer_groups';
 
 addSource('fi-buildings', {
     "type": "vector",
@@ -252,3 +253,14 @@ genericPopupHandler('helsinki-puretut-fill', e => {
 
     createPopup(e, html, { maxWidth: '360px' });
 });
+
+
+registerGroup('fi-buildings', [
+  'fi-buildings-fill', 'fi-buildings-outline',
+])
+
+registerGroup('helsinki-buildings', [
+  'helsinki-buildings-fill', 'helsinki-buildings-outline', 'helsinki-buildings-co2',
+  'helsinki-puretut-fill', 'helsinki-puretut-outline', 'helsinki-puretut-sym',
+])
+

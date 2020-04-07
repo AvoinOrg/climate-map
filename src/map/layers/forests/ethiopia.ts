@@ -1,4 +1,5 @@
 import { addLayer, addSource } from '../../map';
+import { registerGroup } from 'src/map/layer_groups';
 
 addSource('ethiopia_forest_change_2003_2013', {
     "type": 'raster',
@@ -15,3 +16,5 @@ addLayer({
     'type': 'raster',
     BEFORE: 'FILL',
 });
+
+registerGroup('ethiopia-forests', ['ethiopia_forest_change_2003_2013-raster'])

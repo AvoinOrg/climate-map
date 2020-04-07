@@ -1,3 +1,4 @@
+import { registerGroup } from 'src/map/layer_groups';
 import { addLayer, addSource } from '../../map';
 
 addSource('madagascar-2017-mosaic', {
@@ -15,3 +16,5 @@ addLayer({
     'type': 'raster',
     BEFORE: 'FILL',
 });
+
+registerGroup('madagascar-land-cover', ['madagascar-2017-mosaic-raster'])

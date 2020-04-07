@@ -1,6 +1,7 @@
 import { Expression } from 'mapbox-gl';
 import { roundToSignificantDigits, fillOpacity } from '../../utils';
 import { addLayer, addSource } from '../../map';
+import { registerGroup } from 'src/map/layer_groups';
 
 
 interface ILayerOption { minzoom: number, maxzoom?: number, id: string }
@@ -186,3 +187,25 @@ addLayer({
   },
   BEFORE: 'LABEL',
 })
+
+registerGroup('arvometsa', [
+  'arvometsa-country-fill',
+  'arvometsa-country-boundary',
+  'arvometsa-country-highlighted',
+  'arvometsa-regional-state-fill',
+  'arvometsa-regional-state-boundary',
+  'arvometsa-regional-state-highlighted',
+  'arvometsa-region-fill',
+  'arvometsa-region-boundary',
+  'arvometsa-region-highlighted',
+  'arvometsa-municipality-fill',
+  'arvometsa-municipality-boundary',
+  'arvometsa-municipality-highlighted',
+  'arvometsa-property-fill',
+  'arvometsa-property-boundary',
+  'arvometsa-property-highlighted',
+  'arvometsa-fill',
+  'arvometsa-boundary',
+  'arvometsa-highlighted',
+  'arvometsa-sym',
+])

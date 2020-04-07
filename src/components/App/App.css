@@ -154,3 +154,13 @@ body {
 .ol-popup-closer:after {
   content: "✖";
 }
+
+
+/* Old code */
+#no2 {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: white;
+  color: black;
+}

@@ -1,6 +1,7 @@
 import { addLayer, addSource } from '../../map';
 import { setupPopupHandlerForMetsaanFiStandData, metsaanFiTreeSpecies } from './fi_forest_common'
 import { Expression } from 'mapbox-gl';
+import { registerGroup, hideAllLayersMatchingFilter } from 'src/map/layer_groups';
 
 const fillRegenerationFelling: Expression = [
     'case', ['>=', 0.5, ['get', 'regeneration_felling_prediction']],
@@ -67,3 +68,8 @@ addLayer({
 })
 
 setupPopupHandlerForMetsaanFiStandData('metsaan-stand-mature-fill');
+
+registerGroup('mature-forests', [
+  () => hideAllLayersMatchingFilter(x => /^forests$/.test(x)),
+  'metsaan-stand-mature-fill', 'metsaan-stand-outline', 'metsaan-stand-mature-sym', 'metsaan-stand-mature-raster',
+])

@@ -1,5 +1,6 @@
 import { addSource, addLayer, genericPopupHandler, createPopup } from '../map'
 import { fillOpacity, pp } from '../utils'
+import { registerGroup } from '../layer_groups';
 
 addSource('hel-energiatodistukset', {
     "type": "vector",
@@ -85,3 +86,9 @@ genericPopupHandler('hel-energiatodistukset-fill', ev => {
 
     createPopup(ev, html);
 });
+
+registerGroup('building-energy-certificates', [
+  'hel-energiatodistukset-fill',
+  'hel-energiatodistukset-outline',
+  'hel-energiatodistukset-sym'
+])

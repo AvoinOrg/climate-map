@@ -1,5 +1,6 @@
 import { addSource, addLayer } from '../map'
 import { roundToSignificantDigits, fillOpacity } from '../utils'
+import { registerGroup } from '../layer_groups';
 
 // https://www.hsy.fi/fi/asiantuntijalle/avoindata/Sivut/AvoinData.aspx?dataID=41
 // https://www.hsy.fi/fi/asiantuntijalle/avoindata/lisenssi/Sivut/default.aspx
@@ -73,3 +74,7 @@ addLayer({
     },
     BEFORE: 'LABEL',
 })
+
+registerGroup('hsy-solar-potential', [
+  'hsy-solar-potential-fill', 'hsy-solar-potential-outline', 'hsy-solar-potential-sym']
+)

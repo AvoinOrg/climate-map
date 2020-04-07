@@ -1,4 +1,5 @@
 import { addLayer, addSource } from '../../map';
+import { registerGroup } from 'src/map/layer_groups';
 
 const fmiEnfuserSets = {
     'airquality': 'index_of_airquality_194',
@@ -29,3 +30,9 @@ for (const key in fmiEnfuserSets) {
         BEFORE: 'FILL',
     })
 }
+
+registerGroup('fmi-enfuser-airquality', ['fmi-enfuser-airquality'])
+registerGroup('fmi-enfuser-pm2pm5', ['fmi-enfuser-pm2pm5'])
+registerGroup('fmi-enfuser-pm10', ['fmi-enfuser-pm10'])
+registerGroup('fmi-enfuser-no2', ['fmi-enfuser-no2'])
+registerGroup('fmi-enfuser-ozone', ['fmi-enfuser-ozone'])

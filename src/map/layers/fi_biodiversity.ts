@@ -1,7 +1,16 @@
 import { fillOpacity, replaceLayer } from '../utils';
-import { natura2000_mappings, layerGroupState } from '../layer_groups';
+import { layerGroupState, registerGroup } from '../layer_groups';
 import { Expression, Layer } from 'mapbox-gl';
 import { addLayer, addSource, setLayoutProperty } from '../map';
+
+const natura2000Mappings = {
+  "natura2000-sac": { layer: "NaturaSAC_alueet", color: 'cyan' },
+  "natura2000-sac-lines": { layer: "NaturaSAC_viivat", color: 'gray' },
+  "natura2000-sci": { layer: "NaturaSCI_alueet", color: 'purple' },
+  "natura2000-spa": { layer: "NaturaSPA_alueet", color: 'magenta' },
+  "natura2000-impl-ma": { layer: "NaturaTotTapa_ma", color: '#ca9f74' },
+  "natura2000-impl-r": { layer: "NaturaTotTapa_r", color: 'brown' },
+}
 
 const eteBasicLabels: Expression = [
     "match",
@@ -49,7 +58,7 @@ addSource('natura2000', {
     // SYKE applies Creative Commons By 4.0 International license for open datasets.
     attribution: '<a href=https://www.syke.fi/en-US/Open_information">SYKE</a>',
 });
-Object.entries(natura2000_mappings).forEach(([baseName, x]) => {
+Object.entries(natura2000Mappings).forEach(([baseName, x]) => {
     addLayer({
         'id': baseName,
         'source': 'natura2000',
@@ -169,8 +178,7 @@ const setEteAllCodes = (codes: any[]) => {
   setLayoutProperty(id, 'visibility', layerGroupState['ete-all-labels'] ? 'visible' : 'none');
 }
 
-// @ts-ignore TODO this is a quick way to break the otherwise circular dependency
-window.toggleEteCodes = () => {
+const toggleEteCodes = () => {
   fetch('ete_codes.json').then(function(response) {
       response.json().then(e => {
           setEteAllCodes(e);
@@ -178,3 +186,13 @@ window.toggleEteCodes = () => {
   })
 }
 
+registerGroup('zonation6', ['zonation-v6-raster'])
+
+registerGroup('ete', ['metsaan-ete-basic-c', 'metsaan-ete-basic-outline', 'metsaan-ete-basic-sym'])
+
+registerGroup('ete-all-labels', ['metsaan-ete-all-c', 'metsaan-ete-all-outline', 'metsaan-ete-all-sym', toggleEteCodes])
+
+registerGroup('natura2000', [
+  ...Object.keys(natura2000Mappings).map(x => x),
+  ...Object.keys(natura2000Mappings).map(x => `${x}-sym`),
+])

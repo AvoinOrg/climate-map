@@ -1,5 +1,6 @@
 import { addLayer, addSource } from '../../map';
 import { fillOpacity } from '../../utils'
+import { registerGroup } from 'src/map/layer_groups';
 
 addSource('metsaan-hila', {
     "type": "vector",
@@ -53,3 +54,5 @@ addLayer({
     },
     BEFORE: 'LABEL',
 })
+
+registerGroup('forest-grid', ['metsaan-hila-c', 'metsaan-hila-sym', 'metsaan-hila-outline'])

@@ -1,5 +1,6 @@
 import { addLayer, addSource } from '../../map';
 import { fieldColorDefault, fieldColorHistosol, fieldPlotHistosolRatio, fieldPlotTextField, setupPopupHandlerForMaviPeltolohko } from './common'
+import { registerGroup } from 'src/map/layer_groups';
 
 addSource('mavi-peltolohko', {
     "type": "vector",
@@ -185,3 +186,15 @@ addLayer({
 })
 
 setupPopupHandlerForMaviPeltolohko('A potentially abandoned field plot', 'mavi-plohko-removed-fill')
+
+registerGroup('fields-peatland', [
+  'mavi-plohko-peatland-fill',
+  'mavi-plohko-peatland-outline',
+  'mavi-plohko-peatland-co2',
+])
+
+registerGroup('fields-mineral', [
+  'mavi-plohko-mineral-fill',
+  'mavi-plohko-mineral-outline',
+  'mavi-plohko-mineral-co2',
+])

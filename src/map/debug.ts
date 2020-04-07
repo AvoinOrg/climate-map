@@ -1,4 +1,4 @@
-import { layerGroups } from './layer_groups'
+import { layerGroupDefinitions } from './layer_groups'
 import { originalLayerDefs, originalSourceDefs } from './utils';
 
 // TODO: export pre-multiplied alpha colors:
@@ -10,7 +10,7 @@ import { originalLayerDefs, originalSourceDefs } from './utils';
 // @ts-ignore
 window.exportLayerGroup = groupName => {
     const e = { "version": 8, "name": "export", sources: {}, layers: [] }
-    e.layers = layerGroups[groupName]
+    e.layers = layerGroupDefinitions[groupName]
         .filter(x => typeof x === 'string')
         .map(x => originalLayerDefs[x as any])
         .filter(x => x.type !== 'symbol')

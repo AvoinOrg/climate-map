@@ -1,8 +1,9 @@
 import BiodiversityContent from "../Accordion/BiodiversityContent";
 import WetlandsContent from "../Accordion/WetlandsContent";
 import BuildingsContent from "../Accordion/BuildingsContent";
-import SnowCoverContent from "../Accordion/SnowCoverLossContent";
+import SnowCoverLossContent from "../Accordion/SnowCoverLossContent";
 import ForestContent from "../Accordion/ForestContent";
+import AirQualityContent from "../Accordion/AirQualityContent";
 
 export interface ContentEntity {
   title: string;
@@ -41,6 +42,10 @@ export default [
     title: 'Buildings',
     content: BuildingsContent,
   },
+  {
+    title: 'Air quality',
+    content: AirQualityContent,
+  },
   // {
   //   title: 'Urban green areas',
   //   content: null,
@@ -48,7 +53,7 @@ export default [
   // },
   {
     title: 'Snow cover loss',
-    content: SnowCoverContent,
+    content: SnowCoverLossContent,
   },
   // {
   //   title: 'Water emissions',

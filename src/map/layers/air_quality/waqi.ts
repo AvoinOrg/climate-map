@@ -1,4 +1,5 @@
 import { addLayer, addSource } from '../../map';
+import { registerGroup } from 'src/map/layer_groups';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const waqiAqis = [
@@ -26,3 +27,5 @@ addLayer({
     },
     BEFORE: 'FILL',
 });
+
+registerGroup('waqi', ['waqi-raster'])

@@ -36,3 +36,7 @@ export const enableOnlyOneGroup = (name: string) => {
   _layerGroups.set([{ name }])
   toggleGroupInternal(name, true)
 }
+
+export const isGroupEnabled = (name: string) => {
+  return layerGroups.get().filter(x => x.name === name).length > 0
+}

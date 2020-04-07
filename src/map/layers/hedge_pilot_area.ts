@@ -1,4 +1,5 @@
 import { addSource, addLayer } from '../map'
+import { registerGroup } from '../layer_groups';
 
 addSource('hedge-pilot-area', {
     "type": 'raster',
@@ -15,3 +16,5 @@ addLayer({
     },
     BEFORE: 'FILL',
 })
+
+registerGroup('hedge-pilot-area', ['hedge-pilot-area-raster'])

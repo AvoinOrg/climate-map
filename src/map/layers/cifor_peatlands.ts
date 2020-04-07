@@ -1,4 +1,5 @@
 import { addSource, addLayer } from '../map'
+import { registerGroup } from '../layer_groups';
 
 addSource('cifor-peatdepth', {
     "type": 'raster',
@@ -34,3 +35,6 @@ addLayer({
     },
     BEFORE: 'FILL',
 })
+
+registerGroup('cifor-peatdepth', ['cifor-peatdepth-raster'])
+registerGroup('cifor-wetlands', ['cifor-wetlands-raster'])
