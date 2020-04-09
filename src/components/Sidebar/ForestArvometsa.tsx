@@ -16,10 +16,12 @@ import * as SidebarState from './SidebarState';
 import { setSearchPlaceholder } from '../NavBar/NavBarSearch';
 
 
-const nC_to_CO2 = 44 / 12;
-
 const LAYER_ID = 'arvometsa'
 const LAYER_TITLE = `Finland's forests`
+
+const CO2_TONS_PER_PERSON = 7.0 // EU-27 in 2018
+
+const nC_to_CO2 = 44 / 12;
 
 const arvometsaBestMethodVsOther: (method: number | Expression, attrPrefix: string) => Expression
   = (method, attrPrefix) => [
@@ -172,7 +174,8 @@ const getDatasetAttributes = ({
   } else {
     dsAttrValues.soilCB = dsAttrValues.maa.slice(1).map((v, i) => v - dsAttrValues.maa[i]);
   }
-  dsAttrValues.soilCB = dsAttrValues.soilCB.map(x => x * nC_to_CO2); // tons carbon -> tons CO2e approx TODO: verify
+  // tons carbon -> tons CO2e approx TODO: verify
+  dsAttrValues.soilCB = dsAttrValues.soilCB.map(x => x * nC_to_CO2);
 
   dsAttrValues.productsCB = dsAttrValues.cbt.map((cbtValue, i) => cbtValue - dsAttrValues.cbf[i]);
   dsAttrValues.treeCB = dsAttrValues.cbf.map((cbfValue, i) => cbfValue - dsAttrValues.soilCB[i]);
@@ -444,11 +447,11 @@ for (const sourceName of Object.keys(layerOptions)) {
         [999, 999, -999, -999] // fallback bounds
       );
 
-    const {feature: prevFeature} = SelectedFeatureState.selectedFeature.get()
+    const { feature: prevFeature } = SelectedFeatureState.selectedFeature.get()
     SelectedFeatureState.selectFeature({ layer: layerName, feature, bounds })
 
-  // Open the report panel immediately when a new feature is selected:
-  if (feature && feature !== prevFeature)
+    // Open the report panel immediately when a new feature is selected:
+    if (feature && feature !== prevFeature)
       SidebarState.setVisible(true)
   });
 }
@@ -526,20 +529,30 @@ function ArvometsaUI() {
   const bio = getChartProps({ ...chartProps, prefix: 'bio' })
   const wood = getChartProps({ ...chartProps, prefix: 'harvested-wood' })
 
-  const totalsPerHa = getTotals({ dataset, perHectareFlag: true, allFeatureProps })
-  const averageCarbonBalance = totalsPerHa[`m${dataset}_cbt1`] / 10 // per decade -> per year
+  const getAverageCarbonBalanceFigure = totals => {
+    const averageCarbonBalanceDecade = totals[`m${dataset}_cbt1`]
+      - (carbonBalanceDifferenceFlag ? totals[`m${ARVOMETSA_TRADITIONAL_FORESTRY_METHOD}_cbt1`] : 0)
+    // per decade -> per year
+    return averageCarbonBalanceDecade / 10
+  }
+
+  const averageCarbonBalance = getAverageCarbonBalanceFigure(totals)
+  const unit = perHectareFlag ? 'tons CO2e/ha/y' : 'tons CO2e/y'
   const averageCarbonBalanceText = (
     isNaN(averageCarbonBalance) ? ''
-      : `${averageCarbonBalance > 0 ? '+' : ''}${pp(averageCarbonBalance, 2)} tons CO2e/ha/y`
+      : `${averageCarbonBalance > 0 ? '+' : ''}${pp(averageCarbonBalance, 2)} ${unit}`
   )
+
+  const totalsOverall = getTotals({ dataset, perHectareFlag: false, allFeatureProps })
+  const averageCarbonBalanceOverall = getAverageCarbonBalanceFigure(totalsOverall)
 
   const headerTitle = titleRenames[title] || title
   const headerOnClick = () => { if (!hasFeature) SidebarState.setVisible(false) }
   const headerRows = [
     {
-      name: <div onClick={headerOnClick} style={{cursor: hasFeature ? 'initial' : 'pointer'}}>
+      name: <div onClick={headerOnClick} style={{ cursor: hasFeature ? 'initial' : 'pointer' }}>
         {headerTitle}
-        {!hasFeature && <span><br/><strong>click to show the map</strong></span>}
+        {!hasFeature && <span><br /><strong>click to show the map</strong></span>}
       </div>,
       value: `${pp(1e-4 * totals.st_area, 3)} ha`,
     },
@@ -561,8 +574,8 @@ function ArvometsaUI() {
 
   const showReport = reportPanelOpen && hasFeature
 
-  const tableTitle = <NavLink to='/' className='neutral-link' style={{display: 'flex'}}>
-    <ExpandMoreIcon style={{ transform: 'rotate(90deg)' }}/>
+  const tableTitle = <NavLink to='/' className='neutral-link' style={{ display: 'flex' }}>
+    <ExpandMoreIcon style={{ transform: 'rotate(90deg)' }} />
     {LAYER_TITLE}
   </NavLink>
 
@@ -587,6 +600,9 @@ function ArvometsaUI() {
         <p>*
         Carbon balance means changes in soil, trees, and wood products.
         When the carbon balance is positive, more carbon is being stored than released.
+        </p>
+        <p hidden={!hasFeature}>
+          Equals {pp(averageCarbonBalanceOverall / CO2_TONS_PER_PERSON, 1)} times average 👤 CO2 emissions
         </p>
 
         <h1>Forestry projections</h1>
