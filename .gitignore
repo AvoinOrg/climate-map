@@ -3,7 +3,7 @@ scripts/**/scratch/
 scripts/**/tiles/
 
 #symlink now:
-src/map.ts
+src/map/map.ts
 
 dist/
 
@@ -93,3 +93,25 @@ typings/
 .dynamodb/
 
 # End of https://www.gitignore.io/api/node
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

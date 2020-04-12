@@ -1,0 +1,166 @@
+body {
+  margin: 0;
+  padding: 0;
+  /* https://tachyons.io/docs/typography/font-family/ */
+  font-family: -apple-system, BlinkMacSystemFont, 'avenir next', avenir, 'helvetica neue', helvetica, ubuntu, roboto, noto, 'segoe ui', arial, sans-serif;
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+
+.neutral-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+
+.map-overlay-message-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.map-overlay-message {
+  margin: auto;
+  padding: 10px;
+  text-align: center;
+  font-size: 1.5rem;
+  color: #fff;
+  background-color: rgba(0,0,0, 0.3);
+  z-index: 1000;
+}
+
+
+/* Mainly for fi_forest at the moment */
+/* By default use the mobile version */
+.grid-parent {
+  display: grid;
+  grid-template-columns: 0 100vw auto;
+  grid-template-rows: 0px auto;
+  grid-column-gap: 0px;
+  grid-row-gap: 0px;
+  height: 100vh;
+  margin-top: 64px;
+}
+
+.grid-parent.grid-parent-report-closed {
+  grid-template-columns: 100% 0 auto;
+}
+
+.grid-header {
+  grid-area: 1 / 1 / 2 / 4;
+}
+
+.grid-col1 {
+  grid-area: 2 / 1 / 3 / 2;
+  padding-bottom: 20px;
+  display: none; /* on mobile, this should be hidden when the report is open */
+}
+
+.grid-col2 {
+  grid-area: 2 / 2 / 3 / 3;
+  padding-bottom: 20px;
+}
+
+.grid-map-area {
+  grid-area: 2 / 3 / 3 / 4;
+}
+
+.grid-parent-report-closed .grid-col1 {
+  display: initial;
+}
+
+/* Limit the maximum width to 400px always */
+@media (min-width: 400px)  {
+  .grid-parent {
+    grid-template-columns: 0 400px auto;
+  }
+  .grid-parent.grid-parent-report-closed {
+    grid-template-columns: 400px 0 auto;
+  }
+}
+
+/* For larger screens, display them side to side */
+@media (min-width: 800px)  {
+  .grid-parent {
+    grid-template-columns: 400px 400px auto;
+  }
+  .grid-col1 {
+    display: initial; /* on larger screens, never hide the original */
+  }
+}
+
+
+
+.mapboxgl-ctrl-geocoder input[type="text"] {
+  font-size: 1rem;
+}
+.mapboxgl-ctrl-geocoder ul {
+  font-size: 1rem;
+}
+
+
+/* OpenLayers specific CSS */
+.ol-popup {
+  position: absolute;
+  background-color: white;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #cccccc;
+  bottom: 12px;
+  left: -50px;
+  min-width: 280px;
+}
+
+.ol-popup:after,
+.ol-popup:before {
+  top: 100%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+.ol-popup:after {
+  border-top-color: white;
+  border-width: 10px;
+  left: 48px;
+  margin-left: -10px;
+}
+
+.ol-popup:before {
+  border-top-color: #cccccc;
+  border-width: 11px;
+  left: 48px;
+  margin-left: -11px;
+}
+
+.ol-popup-closer {
+  text-decoration: none;
+  position: absolute;
+  top: 2px;
+  right: 8px;
+}
+
+.ol-popup-closer:after {
+  content: "✖";
+}
+
+
+/* Old code */
+#no2 {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: white;
+  color: black;
+}
