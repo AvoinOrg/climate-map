@@ -15,6 +15,8 @@ import { HeaderTable, SimpleTable } from './ForestArvometsaTable';
 import * as SidebarState from './SidebarState';
 import { setSearchPlaceholder } from '../NavBar/NavBarSearch';
 
+import arvometsaLogo from './arvometsa_logo.png';
+
 
 const LAYER_ID = 'arvometsa'
 const LAYER_TITLE = `Finland's forests`
@@ -638,6 +640,12 @@ function ArvometsaUI() {
             Go back
           </Button>
         </NavLink>
+
+        <p style={{fontSize: '1.5em', textAlign: 'center'}}>
+          Scientific forest model by
+          <br/>
+          <a href='https://arvometsa.fi'><img alt="Arvometsä" src={arvometsaLogo} style={{height: '120px'}} /></a>
+        </p>
       </Container>
     </Paper>
 
