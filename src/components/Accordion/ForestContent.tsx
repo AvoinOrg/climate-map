@@ -12,6 +12,21 @@ const useStyles = makeStyles(() =>
 );
 
 
+const MatureForestContent = () =>
+  <div>
+    <p>
+      This layer shows forests that have reached the approximate threshold for regeneration felling.
+    </p>
+    Legend:
+    <legend id='legend-mature-forests'>
+      <li><span style={{backgroundColor: 'rgba(73, 25, 2320, 0.65', width: '1rem', height: '1rem', padding: 5, display: 'inline-block'}}></span>Mature forest</li>
+      <li><span style={{backgroundColor: 'rgba(206, 244, 66, 0.35', width: '1rem', height: '1rem', padding: 5, display: 'inline-block'}}></span>Other forest</li>
+    </legend>
+  </div>
+
+
+
+
 const MangroveForestContent = () =>
   <div>
     <p>
@@ -47,8 +62,9 @@ const ForestContent = () => {
   const classes = useStyles({});
   return <div className={classes.root}>
     <AOExpansionPanelLink href='/layers/fi-forest' label={"Finland's Forests"} />
-    <AOExpansionPanel groupName={'mangrove-forests'} label={"Mangrove forests"} content={<MangroveForestContent/>} />
-    <AOExpansionPanel groupName={'gfw_tree_plantations'} label={"Tree plantations"} content={<TropicalForestContent/>} />
+    <AOExpansionPanel groupName={'mature-forests'} label={"Mature Forests"} content={<MatureForestContent />} />
+    <AOExpansionPanel groupName={'mangrove-forests'} label={"Mangrove forests"} content={<MangroveForestContent />} />
+    <AOExpansionPanel groupName={'gfw_tree_plantations'} label={"Tree plantations"} content={<TropicalForestContent />} />
   </div>
 }
 
