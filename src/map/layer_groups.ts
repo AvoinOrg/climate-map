@@ -5,7 +5,7 @@ import { assert, execWithMapLoaded, originalLayerDefs } from './utils';
 const backgroundLayerGroups = { 'terramonitor': true }
 interface ILayerGroupState { [s: string]: boolean; }
 export const layerGroupState: ILayerGroupState = {
-  terramonitor: true,
+  terramonitor: false,
   ete: false,
 }
 
