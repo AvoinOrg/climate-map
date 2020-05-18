@@ -31,11 +31,16 @@ const fillColorSoil: (codeAttr: string) => Expression = codeAttr => [
 
 interface IHashParams { secret: string }
 const hashParams: IHashParams =
-window.location.search.replace(/^[#?]*/, '').split('&').reduce((prev, item) => (
-  Object.assign({ [item.split('=')[0]]: item.split('=')[1] }, prev)
-), {}) as IHashParams;
+  window.location.search.replace(/^[#?]*/, '').split('&').reduce((prev, item) => (
+    Object.assign({ [item.split('=')[0]]: item.split('=')[1] }, prev)
+  ), {}) as IHashParams;
 
 const URL_PREFIX = `https://map.buttonprogram.org/private/${hashParams.secret}`
+
+addSource('fi-omaihka-overlay', {
+  "type": 'geojson',
+  'data': `${URL_PREFIX}/omaihka_overlay.geojson`,
+});
 
 addSource('fi-omaihka-soils', {
   "type": 'geojson',
@@ -52,7 +57,7 @@ addLayer({
   'source': 'fi-omaihka-soils',
   'type': 'fill',
   'paint': {
-      'fill-color': fillColorSoil('pintamaalaji_koodi'),
+    'fill-color': fillColorSoil('pintamaalaji_koodi'),
   },
   BEFORE: 'FILL',
 })
@@ -61,7 +66,7 @@ addLayer({
   'source': 'fi-omaihka-soils',
   'type': 'fill',
   'paint': {
-      'fill-color': fillColorSoil('pohjamaalaji_koodi'),
+    'fill-color': fillColorSoil('pohjamaalaji_koodi'),
   },
   BEFORE: 'FILL',
 })
@@ -95,30 +100,50 @@ addLayer({
   'source': 'fi-omaihka-plots',
   'type': 'symbol',
   "layout": {
-      "text-font": ["Open Sans Regular"],
-      "text-field": [
-          "case",
-          ["has", "__ext_Lohkon nimi"], ["coalesce", ["get", "__ext_Lohkon nimi"], ""],
-          ""
-      ],
+    "text-font": ["Open Sans Regular"],
+    "text-field": [
+      "case",
+      ["has", "__ext_Lohkon nimi"], ["coalesce", ["get", "__ext_Lohkon nimi"], ""],
+      ""
+    ],
   },
   paint: {
-      'text-color': "#999",
-      'text-halo-blur': 1,
-      'text-halo-color': "rgb(242,243,240)",
-      'text-halo-width': 2,
+    'text-color': "#999",
+    'text-halo-blur': 1,
+    'text-halo-color': "rgb(242,243,240)",
+    'text-halo-width': 2,
   },
   BEFORE: 'LABEL',
 })
 
 
+addLayer({
+  'id': `fi-omaihka-circle-locator`,
+  'source': 'fi-omaihka-overlay',
+  'type': 'circle',
+  'maxzoom': 10,
+  "paint": {
+    'circle-color': 'red',
+    'circle-radius': {
+      'base': 20,
+      'stops': [
+        [0, 30],
+        [10, 100]
+      ]
+    },
+  },
+  BEFORE: 'LABEL',
+})
+
 registerGroup('fi-omaihka-layer1', [
   'fi-omaihka-soil-layer1-fill',
+  'fi-omaihka-circle-locator',
   'fi-omaihka-sym',
   'fi-omaihka-plot-boundary', 'fi-omaihka-soil-boundary',
 ])
 registerGroup('fi-omaihka-layer2', [
   'fi-omaihka-soil-layer2-fill',
+  'fi-omaihka-circle-locator',
   'fi-omaihka-sym',
   'fi-omaihka-plot-boundary', 'fi-omaihka-soil-boundary',
 ])
@@ -130,7 +155,7 @@ genericPopupHandler(['fi-omaihka-soil-layer1-fill', 'fi-omaihka-soil-layer2-fill
 
 
   let html = '<table>'
-  for (const [k,v] of Object.entries(p)) {
+  for (const [k, v] of Object.entries(p)) {
     html += `<tr><th>${sanitize(k.replace('__ext_', ''))}</th><td>${sanitize(v)}</td></tr>`
   }
   html += '</table>'
