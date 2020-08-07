@@ -124,15 +124,21 @@ const getChartDatasets = (prefix: string, attrValues: any) => {
 }
 
 
+function getUnitPerArea(prefix: string, cumulative: boolean, perHectareFlag: boolean) {
+  const baseUnit = getUnit(prefix, cumulative)
+  const unit = perHectareFlag ? `${baseUnit}/ha` : baseUnit;
+  return unit
+}
+
 function getUnit(prefix: string, cumulative: boolean) {
   if (prefix === 'harvested-wood') {
     return 'm³';
   } else if (carbonStockAttrPrefixes.indexOf(prefix) !== -1) {
-    return 'tons carbon';
+    return 'tons C';
   } else if (cumulative) {
-    return 'tons CO2e';
+    return 'tons CO₂eq';
   } else {
-    return 'tons CO2e/y';
+    return 'tons CO₂eq/y';
   }
 }
 
@@ -176,7 +182,7 @@ const getDatasetAttributes = ({
   } else {
     dsAttrValues.soilCB = dsAttrValues.maa.slice(1).map((v, i) => v - dsAttrValues.maa[i]);
   }
-  // tons carbon -> tons CO2e approx TODO: verify
+  // tons carbon -> tons CO₂e approx TODO: verify
   dsAttrValues.soilCB = dsAttrValues.soilCB.map(x => x * nC_to_CO2);
 
   dsAttrValues.productsCB = dsAttrValues.cbt.map((cbtValue, i) => cbtValue - dsAttrValues.cbf[i]);
@@ -250,8 +256,7 @@ const getChartProps = ({ prefix, cumulativeFlag, perHectareFlag, attrValues }) =
   const isCarbonStock = carbonStockAttrPrefixes.indexOf(prefix) !== -1;
   const cumulative = cumulativeFlag && !isCarbonStock;
 
-  const baseUnit = getUnit(prefix, cumulative)
-  const unit = perHectareFlag ? `${baseUnit}/ha` : baseUnit;
+  const unit = getUnitPerArea(prefix, cumulative, perHectareFlag)
   const stacked = true;
 
   const datasets = getChartDatasets(prefix, attrValues)
@@ -539,7 +544,7 @@ function ArvometsaUI() {
   }
 
   const averageCarbonBalance = getAverageCarbonBalanceFigure(totals)
-  const unit = perHectareFlag ? 'tons CO2e/ha/y' : 'tons CO2e/y'
+  const unit = perHectareFlag ? 'tons CO₂e/ha/y' : 'tons CO₂e/y'
   const averageCarbonBalanceText = (
     isNaN(averageCarbonBalance) ? ''
       : `${averageCarbonBalance > 0 ? '+' : ''}${pp(averageCarbonBalance, 2)} ${unit}`
@@ -674,15 +679,18 @@ function ArvometsaUI() {
         </Paper>
 
         <br />
-          CO2 Balance
+          <abbr title="Carbon dioxide equivalent">CO<sub>2</sub>eq</abbr> carbon balance
+          ({getUnitPerArea('cbt', cumulativeFlag, perHectareFlag)})
           <ChartComponent {...cbt} />
 
         <br />
-          Forest carbon stock
+          Forest carbon stock<br/>
+          <small>in {getUnitPerArea('bio', cumulativeFlag, perHectareFlag)};
+          multiply by 3.67 to get CO<sub>2</sub>eq amounts</small>
           <ChartComponent {...bio} />
 
         <br />
-          Harvested wood
+          Harvested wood ({getUnitPerArea('harvested-wood', cumulativeFlag, perHectareFlag)})
           <ChartComponent {...wood} />
 
         <br />
