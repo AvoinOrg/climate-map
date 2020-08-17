@@ -17,13 +17,19 @@ export const queryKiinteistoTunnus = async (query: string) => {
         .replace(/\([^)]*\)/g, '')
         .replace(/\[[^\]]*\]/g, '')
         .split('#')[0]
-        .trim();
+        .trim()
+        // Normalize 010-0042-0001-0001 -> 010-42-1-1
+        .replace(/-0+/g, '-')
+        .replace(/-$/, '')
+        ;
+
     // Valid formats for kiinteistötunnus (property identifier): 00589500020002 or 5-895-2-2
     const re = /^([0-9]{1,3})(-[0-9]+){1,3}$/.exec(q) || /^([0-9]{3})[0-9]{11}$/.exec(q)
     if (!re) return { matches: 0 };
 
     const ktunnus = re[1].padStart(3, '0'); // '5' -> '005'
-    const response = await fetch(`https://map.buttonprogram.org/kiinteistorekisteri/lookup/${ktunnus}.geojson.gz`);
+    const today = new Date().toISOString().slice(0, 10)
+    const response = await fetch(`https://map.buttonprogram.org/kiinteistorekisteri/lookup/${ktunnus}.geojson.gz?_=${today}`);
     const geojson = await response.json() as IGeoJSON;
     let fs = geojson.features
     .filter(f => f.properties && (
