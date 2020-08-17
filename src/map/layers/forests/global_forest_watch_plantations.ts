@@ -58,7 +58,7 @@ genericPopupHandler('gfw_tree_plantations-fill', e => {
   const images: string[] = image.replace(/\.(tif|img|_)/g, '').toUpperCase().split(/[,; ]+/);
   let results = '';
   for (const x of images) {
-    if (!/LGN\d/.test(x)) { return; }
+    if (!/LGN\d/.test(x)) { continue; }
     const base = x.replace(/LGN.*/, 'LGN0');
     // Most of the source images seem to fall in these categories.
 
