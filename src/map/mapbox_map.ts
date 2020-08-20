@@ -75,6 +75,9 @@ export const directAddSource = (name: string, source: mapboxgl.AnySourceData) =>
 export const directAddLayer = (layer: mapboxgl.Layer, before?: string) => {
     execWithMapLoaded(() => map.addLayer(layer, before));
 }
+export const directAddImage = (name: string, image: HTMLImageElement, options: {}) => {
+    execWithMapLoaded(() => map.addImage(name, image ));
+}
 export const getLayer = (layer: string) => map.getLayer(layer);
 export const removeLayer = (layer: string) => map.removeLayer(layer);
 export const moveLayer = (layer: string, before?: string) => map.moveLayer(layer, before);
