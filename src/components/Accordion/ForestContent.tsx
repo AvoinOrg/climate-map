@@ -18,9 +18,9 @@ const MatureForestContent = () =>
       This layer shows forests that have reached the approximate threshold for regeneration felling.
     </p>
     Legend:
-    <legend id='legend-mature-forests'>
-      <li><span style={{backgroundColor: 'rgba(73, 25, 2320, 0.65', width: '1rem', height: '1rem', padding: 5, display: 'inline-block'}}></span>Mature forest</li>
-      <li><span style={{backgroundColor: 'rgba(206, 244, 66, 0.35', width: '1rem', height: '1rem', padding: 5, display: 'inline-block'}}></span>Other forest</li>
+    <legend id='legend-mature-forests' style={{display: 'flex', flexDirection: 'column', padding: '6px 0 0 0'}}>
+      <span><span style={{backgroundColor: 'rgba(73, 25, 2320, 0.65', border: '1px solid black', width: '1rem', height: '1rem', padding: 5, margin: "0 5px -2px 0", display: 'inline-block'}}></span>Mature forest</span>
+      <span><span style={{backgroundColor: 'rgba(206, 244, 66, 0.35', border: '1px solid black', width: '1rem', height: '1rem', padding: 5, margin: "4px 5px -2px 0", display: 'inline-block'}}></span>Other forest</span>
     </legend>
   </div>
 
