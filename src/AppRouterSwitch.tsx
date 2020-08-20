@@ -10,8 +10,7 @@ import NavBar from './components/NavBar';
 import MapButtons from './components/MapButtons';
 
 import { URLLayerSyncContainer } from './URLLayerSyncContainer';
-import ForestArvometsa from './components/Sidebar/ForestArvometsa'
-import { MainMenu } from './components/Sidebar/Sidebar';
+import Hiiliporssi from './components/Sidebar/Hiiliporssi'
 import OverlayMessages from './components/OverlayMessages';
 
 export default function AppRouterSwitch() {
@@ -23,11 +22,8 @@ export default function AppRouterSwitch() {
       <URLLayerSyncContainer>
         <Sidebar>
           <Switch>
-            <Route path="/layers/fi-forest">
-              <ForestArvometsa />
-            </Route>
             <Route path="/">
-              <MainMenu />
+              <Hiiliporssi />
             </Route>
           </Switch>
         </Sidebar>
