@@ -1,11 +1,7 @@
-import { pp } from '../utils'
-import { addSource, addLayer, directAddImage, addMapEventHandler } from '../map'
+import { addSource, addLayer, directAddImage } from '../map'
 import { registerGroup } from 'src/map/layer_groups';
 import Marker from '../../marker.svg';
 import MarkerHighlighted from '../../marker-highlighted.svg';
-
-const no2Tileset = Number.parseInt(window.location.search.substring(1), 10) || 0
-const timestampHour = Math.round(+new Date() / 1e6)
 
 const marker = new Image(50, 50)
 marker.src = Marker

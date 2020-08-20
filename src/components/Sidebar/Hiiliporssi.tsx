@@ -1,7 +1,7 @@
 // import { layerOptions } from '../../map/layers//fi_hiiliporssi';
 import { createStyles, makeStyles } from '@material-ui/core';
 import { useObservable } from 'micro-observables';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect } from 'react';
 
 import { genericPopupHandler, querySourceFeatures, setFilter } from '../../map/map';
 import * as SelectedFeatureState from './HiiliporssiSelectedLayer';
@@ -73,7 +73,7 @@ function Hiiliporssi() {
 
     useEffect(() => {
         if (!hasFeature) SidebarState.setVisible(false)
-    }, [])
+    }, [hasFeature])
 
     return (
         hasFeature ? <div className={classes.root}>
