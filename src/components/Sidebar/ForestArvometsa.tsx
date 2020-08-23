@@ -330,19 +330,35 @@ const getNpvText = ({ carbonBalanceDifferenceFlag, perHectareFlag, totals, datas
   )
 }
 
-const getChartTitle = (selectedFeatureLayer: string, featureProps: any) => {
-  const p = featureProps
-  if (!p) return "No area selected"
+// Like Python all():
+const all: (xs: boolean[]) => boolean = xs => xs.reduce((a,b) => a && b, true)
 
+const getChartTitleSingleLayer = (selectedFeatureLayer: string, featureProps: any[], multiple: boolean) => {
   assert(selectedFeatureLayer, "selectedFeatureLayer must be set");
   if (selectedFeatureLayer === 'arvometsa-fill') {
-    return `Forest parcel (id:${p.standid})`;
+    const name = featureProps.map(p => p.standid).join(', ')
+    if (multiple) return `Multiple forest parcels selected: standids = ${name}`
+    return `Forest parcel (standid: ${name})`;
   } else if (selectedFeatureLayer === 'arvometsa-property-fill') {
-    return `Property with forest (${p.tpteksti})`;
+    const name = featureProps.map(p => p.tpteksti).join(', ')
+    if (multiple) return `Multiple properties selected: ${name}`
+    return `Property with forest (${name})`;
   } else {
-    assert(p.name_fi, `Expected name_fi: ${selectedFeatureLayer}`)
-    return p.name_fi || p.name_sv; // `${p.name_fi} / ${p.name_sv}`;
+    assert( all( featureProps.map(p => p.name_fi)), `Expected name_fi: ${selectedFeatureLayer}` )
+    const name = featureProps.map(p => p.name_fi || p.name_sv).join(', ')
+    if (multiple) return `Multiple administrative areas selected: ${name}`
+    return name
   }
+}
+
+const getChartTitle = (selectedFeatureLayers: string[], featureProps: any[]) => {
+  if (featureProps.length === 0) return "No area selected"
+
+  assert(selectedFeatureLayers.length > 0, "selectedFeatureLayer must be non-empty");
+  const uniqueLayers = Array.from(new Set(selectedFeatureLayers))
+  if (uniqueLayers.length > 1) return 'Areas selected across multiple scales: double-counting an area is possible'
+
+  return getChartTitleSingleLayer(uniqueLayers[0], featureProps, selectedFeatureLayers.length > 1)
 }
 
 
@@ -352,15 +368,16 @@ export const ArvometsaChart = (props: any) => {
   // NB: an unknown scenarioName is also valid; dataset==-1 -> compare against the best option
   const dataset = arvometsaDatasetClasses.indexOf(scenarioName);
 
-  const { layer, feature } = useObservable(SelectedFeatureState.selectedFeature);
+  const selectedFeatures = useObservable(SelectedFeatureState.selectedFeatures);
+  // -> layer, feature
 
   useEffect(() => {
     updateMapDetails({ dataset, carbonBalanceDifferenceFlag })
   }, [dataset, carbonBalanceDifferenceFlag])
 
-  if (!feature) return null
+  if (selectedFeatures.length === 0) return null
 
-  const allFeatureProps = [feature.properties];
+  const allFeatureProps = selectedFeatures.map(x => x.feature.properties)
   const totals = getTotals({ dataset, perHectareFlag, allFeatureProps })
 
   const attrValues = getDatasetAttributes({ dataset, cumulativeFlag, totals })
@@ -371,7 +388,8 @@ export const ArvometsaChart = (props: any) => {
     }
   }
 
-  const title = getChartTitle(layer, allFeatureProps[0])
+  const selectedLayersOfFeatures = selectedFeatures.map(x => x.layer)
+  const title = getChartTitle(selectedLayersOfFeatures, allFeatureProps)
   const npvText = getNpvText({ carbonBalanceDifferenceFlag, perHectareFlag, totals, dataset })
 
   const chartProps = { cumulativeFlag, perHectareFlag, attrValues }
@@ -419,14 +437,6 @@ const ChartComponent = props => {
 }
 
 
-const clearHighlights = () => {
-  for (const sourceName of Object.keys(layerOptions)) {
-    const idName = layerOptions[sourceName].id;
-    setFilter(`${sourceName}-highlighted`, ['in', idName]);
-  }
-  SelectedFeatureState.unsetFeature()
-}
-
 for (const sourceName of Object.keys(layerOptions)) {
   const layerName = `${sourceName}-fill`;
   // eslint-disable-next-line no-loop-func
@@ -436,12 +446,11 @@ for (const sourceName of Object.keys(layerOptions)) {
     // Only copy over currently selected features:
     const idName = layerOptions[sourceName].id;
     const id = feature.properties[idName];
-    assert(id, `Feature has no id: ${JSON.stringify(feature.properties)}`);
 
-    clearHighlights();
-    const newFilter = ['in', idName, id];
-    setFilter(`${sourceName}-highlighted`, newFilter);
-    console.debug(`${sourceName}-highlighted`, newFilter);
+    // A bit of a hack: Ensure feature.id refers to some meaningful identifier for highlighting etc.
+    feature.id = id
+
+    assert(id, `Feature has no id: ${JSON.stringify(feature.properties)}`);
 
     const bounds = querySourceFeatures(sourceName, 'default')
       .filter(f => f.properties[idName] === id)
@@ -454,11 +463,18 @@ for (const sourceName of Object.keys(layerOptions)) {
         [999, 999, -999, -999] // fallback bounds
       );
 
-    const { feature: prevFeature } = SelectedFeatureState.selectedFeature.get()
+    const prevSelectedFeatures = SelectedFeatureState.selectedFeatures.get()
     SelectedFeatureState.selectFeature({ layer: layerName, feature, bounds })
 
-    // Open the report panel immediately when a new feature is selected:
-    if (feature && feature !== prevFeature)
+    const oldIds = prevSelectedFeatures.map(x => x.feature.id)
+    const newIds = oldIds.includes(id) ? oldIds.filter(x => x !== id) : oldIds.concat(id)
+
+    const newFilter = ['in', idName, ...newIds];
+    setFilter(`${sourceName}-highlighted`, newFilter);
+    console.debug(`${sourceName}-highlighted`, newFilter);
+
+    // Open the report panel immediately when a feature was selected and nothing was selected prior to it.
+    if (feature && prevSelectedFeatures.length === 0)
       SidebarState.setVisible(true)
   });
 }
@@ -482,6 +498,15 @@ const titleRenames = {
   'Pohjois-Suomen aluehallintovirasto': 'Pohjois-Suomi',
 }
 
+const getCombinedBounds = (xs: any[]) =>
+  xs.reduce(
+    ([a1, b1, c1, d1], [a2, b2, c2, d2]) => [
+      Math.min(a1, a2), Math.min(b1, b2),
+      Math.max(c1, c2), Math.max(d1, d2),
+    ],
+    [999, 999, -999, -999] // fallback bounds
+  )
+
 
 function ArvometsaUI() {
   const [reportPanelOpen, setReportPanelOpen] = useState(true)
@@ -495,8 +520,9 @@ function ArvometsaUI() {
   // NB: an unknown scenarioName is also valid; dataset==-1 -> compare against the best option
   const dataset = arvometsaDatasetClasses.indexOf(scenario);
 
-  const { layer, feature, bounds } = useObservable(SelectedFeatureState.selectedFeature);
-  const hasFeature = feature !== null
+  // const { layer, feature, bounds } = useObservable(SelectedFeatureState.selectedFeatures)
+  const selectedFeatures = useObservable(SelectedFeatureState.selectedFeatures)
+  const hasFeature = selectedFeatures.length > 0
 
   // Eliminate confusing options (all zeroes)
   if (scenario === ARVOMETSA_TRADITIONAL_FORESTRY_METHOD_KEY && carbonBalanceDifferenceFlag)
@@ -517,7 +543,7 @@ function ArvometsaUI() {
     })
   }, [hasFeature])
 
-  const allFeatureProps = feature ? [feature.properties] : [];
+  const allFeatureProps = selectedFeatures.map(x => x.feature.properties)
   const totals = getTotals({ dataset, perHectareFlag, allFeatureProps })
 
   const attrValues = getDatasetAttributes({ dataset, cumulativeFlag, totals })
@@ -528,7 +554,8 @@ function ArvometsaUI() {
     }
   }
 
-  const title = getChartTitle(layer, allFeatureProps[0])
+  const selectedLayersOfFeatures = selectedFeatures.map(x => x.layer)
+  const title = getChartTitle(selectedLayersOfFeatures, allFeatureProps)
   const npvText = getNpvText({ carbonBalanceDifferenceFlag, perHectareFlag, totals, dataset })
 
   const chartProps = { cumulativeFlag, perHectareFlag, attrValues }
@@ -575,6 +602,7 @@ function ArvometsaUI() {
 
   ];
 
+  const bounds = getCombinedBounds(selectedFeatures.map(x => x.bounds))
   const onFitLayerBounds = () => {
     if (bounds) { fitBounds(bounds, 0.4, 0.15); }
   }
