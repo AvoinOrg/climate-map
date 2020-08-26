@@ -75,7 +75,40 @@ cbt1 cbt2 cbt3 cbt4 cbt5
 bio0 bio1 bio2 bio3 bio4 bio5
 maa0 maa1 maa2 maa3 maa4 maa5
 npv2 npv3 npv4
+lho0 lho1 lho2 lho3 lho4 lho5
+mus0 mus1 mus2 mus3 mus4 mus5
+puo0 puo1 puo2 puo3 puo4 puo5
+tat0 tat1 tat2 tat3 tat4 tat5
+rou0 rou1 rou2 rou3 rou4 rou5
+sha0 sha1 sha2 sha3 sha4 sha5
+mai0 mai1 mai2 mai3 mai4 mai5
 `.trim();
+
+// These attributes are omitted from the data since they are always 0.
+const omittedConstantAttrs = {
+  'm0_kasittely_0_kuitu': true,
+  'm0_kasittely_1_kuitu': true,
+  'm0_kasittely_2_kuitu': true,
+  'm0_kasittely_3_kuitu': true,
+  'm0_kasittely_4_kuitu': true,
+  'm0_kasittely_0_tukki': true,
+  'm0_kasittely_1_tukki': true,
+  'm0_kasittely_2_tukki': true,
+  'm0_kasittely_3_tukki': true,
+  'm0_kasittely_4_tukki': true,
+  'm4_kasittely_1': true,
+  'm4_kasittely_2': true,
+  'm4_kasittely_3': true,
+  'm4_kasittely_4': true,
+  'm4_kasittely_1_kuitu': true,
+  'm4_kasittely_2_kuitu': true,
+  'm4_kasittely_3_kuitu': true,
+  'm4_kasittely_4_kuitu': true,
+  'm4_kasittely_1_tukki': true,
+  'm4_kasittely_2_tukki': true,
+  'm4_kasittely_3_tukki': true,
+  'm4_kasittely_4_tukki': true,
+}
 
 const harvestedWoodAttrs = [
   [0, 1, 2, 3, 4].map(x => `kasittely_${x}_tukki`).join(' '),
@@ -226,7 +259,7 @@ const getTotals = ({ dataset, perHectareFlag, allFeatureProps }) => {
     if (dataset === BEST_METHOD_FOR_EACH) {
       for (const a of areaProportionalAttrs) {
         const attr = `m${p.best_method}_${reMatchAttr.exec(a)[1]}`;
-        if (!(attr in p)) {
+        if (!(attr in p) && !(attr in omittedConstantAttrs)) {
           console.error('Invalid attr:', attr, 'orig:', a, 'props:', p)
         }
         totals[a] += p[attr] * p.area;

@@ -27,9 +27,11 @@ export const queryKiinteistoTunnus = async (query: string) => {
     const re = /^([0-9]{1,3})(-[0-9]+){1,3}$/.exec(q) || /^([0-9]{3})[0-9]{11}$/.exec(q)
     if (!re) return { matches: 0 };
 
-    const ktunnus = re[1].padStart(3, '0'); // '5' -> '005'
+    // NB: prefix3 is not "ktunnus".
+    // The prefix used to be equivalent to ktunnus but nowadays it is an opaque number.
+    const prefix3 = re[1].padStart(3, '0'); // '5' -> '005'
     const today = new Date().toISOString().slice(0, 10)
-    const response = await fetch(`https://map.buttonprogram.org/kiinteistorekisteri/lookup/${ktunnus}.geojson.gz?_=${today}`);
+    const response = await fetch(`https://map.buttonprogram.org/kiinteistorekisteri/lookup/${prefix3}.geojson.gz?_=${today}`);
     const geojson = await response.json() as IGeoJSON;
     let fs = geojson.features
     .filter(f => f.properties && (

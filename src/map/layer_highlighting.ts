@@ -100,7 +100,7 @@ export const createHighlightingForLayerGroup = (
             // Only copy over currently selected features:
             const idName = layerOptions[sourceName].id;
             const id = f.properties[idName];
-            assert(id, `Feature has no id: ${JSON.stringify(f.properties)}`);
+            assert(id !== undefined && id !== null, `Feature has no id: ${JSON.stringify(f.properties)}`);
 
             clearHighlights();
             const newFilter = ['in', idName, id];
