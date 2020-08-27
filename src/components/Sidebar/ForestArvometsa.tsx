@@ -6,6 +6,8 @@ import { useObservable } from 'micro-observables';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import React, { useEffect, useRef, useState } from 'react';
 
+import * as Analytics from 'src/map/analytics'
+
 import { arvometsaAreaCO2eFillColor, arvometsaBestMethodCumulativeSumCbt, arvometsaSumMethodAttrs, arvometsaTextfieldExpression, layerOptions } from '../../map/layers/forests/fi_arvometsa';
 import { fitBounds, genericPopupHandler, querySourceFeatures, setFilter, setLayoutProperty, setPaintProperty } from '../../map/map';
 import { assert, execWithMapLoaded, getGeoJsonGeometryBounds, pp } from '../../map/utils';
@@ -549,6 +551,15 @@ function ArvometsaUI() {
   const [cumulativeFlag, setCumulativeFlag] = useState(true)
   const [carbonBalanceDifferenceFlag, setCarbonBalanceDifferenceFlag] = useState(true)
 
+
+  Analytics.setParams({
+    reportPanelOpen,
+    scenario,
+    perHectareFlag,
+    cumulativeFlag,
+    carbonBalanceDifferenceFlag,
+  })
+
   // i.e. which projection/scenario is in use:
   // NB: an unknown scenarioName is also valid; dataset==-1 -> compare against the best option
   const dataset = arvometsaDatasetClasses.indexOf(scenario);
@@ -755,7 +766,7 @@ function ArvometsaUI() {
           <ChartComponent {...wood} />
 
         <br />
-        <Button variant="contained" color="primary">
+        <Button variant="contained" color="primary" onClick={() => Analytics.pageview('layers/fi-forest/methodology')}>
           Read about the methodology
         </Button>
         <br />
