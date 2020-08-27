@@ -485,7 +485,7 @@ for (const sourceName of Object.keys(layerOptions)) {
     // A bit of a hack: Ensure feature.id refers to some meaningful identifier for highlighting etc.
     feature.id = id
 
-    assert(id, `Feature has no id: ${JSON.stringify(feature.properties)}`);
+    assert(id !== null && id !== undefined, `Feature has no id: ${JSON.stringify(feature.properties)}`);
 
     const bounds = querySourceFeatures(sourceName, 'default')
       .filter(f => f.properties[idName] === id)
@@ -511,7 +511,11 @@ for (const sourceName of Object.keys(layerOptions)) {
     // Open the report panel immediately when a feature was selected and nothing was selected prior to it.
     if (feature && prevSelectedFeatures.length === 0)
       SidebarState.setVisible(true)
+
+      if (newIds.includes(id))
+        Analytics.setParams({highlightedFeatureId: id})
   });
+
 }
 
 
