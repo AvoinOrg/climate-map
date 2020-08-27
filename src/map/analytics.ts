@@ -15,8 +15,12 @@ export const recordLayerActivation = group => {
 
 export const setParams = params => {
   if (!enabled) return
+
   ReactGA.set(params)
-  ReactGA.pageview(state.lastLayer)
+  const e = encodeURIComponent
+  let paramsStr = Object.entries(params).map(([k,v]) => `${e(k)}=${e(v as any)}`).join('&')
+  const url = `${state.lastLayer}?${paramsStr}`
+  ReactGA.pageview(url)
 }
 
 export const pageview = (path) => {
