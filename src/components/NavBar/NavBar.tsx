@@ -118,12 +118,14 @@ const NavBar = () => {
 
         <div className={classes.helpWrapper}>
 
-          <IconButton
-            className={classes.helpIcon}
-            color="inherit"
-          >
-            <HelpOutlineIcon className={classes.HelpOutlineIcon} />
-          </IconButton>
+          <a href='http://about.avoinmap.org'>
+            <IconButton
+              className={classes.helpIcon}
+              color="inherit"
+            >
+              <HelpOutlineIcon className={classes.HelpOutlineIcon} />
+            </IconButton>
+          </a>
 
         </div>
 
