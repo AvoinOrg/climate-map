@@ -1,6 +1,7 @@
 import ReactGA from 'react-ga'
 
-const enabled = process.env.REACT_APP_ANALYTICS_ID
+const isDev = process.env.NODE_ENV !== 'production'
+const enabled = process.env.REACT_APP_ANALYTICS_ID && !isDev
 
 if (enabled) {
   ReactGA.initialize(process.env.REACT_APP_ANALYTICS_ID)
