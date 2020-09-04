@@ -100,6 +100,23 @@ export const enableMMLPalstatLayer = () => {
         BEFORE: 'LABEL',
     }, 'LABEL')
 
+
+    directAddLayer({
+        'id': 'fi-mml-palstat-highlighted',
+        'source': 'fi-mml-palstat',
+        'source-layer': 'default',
+        'type': 'fill',
+        "paint": {
+          "fill-outline-color": "#484896",
+          "fill-color": "#6e599f",
+          "fill-opacity": 0.2,
+      },
+      "filter": ["in", 'tpteksti'],
+      BEFORE: 'OUTLINE',
+    }, 'FILL')
+
+
+
 }
 
 export const kiinteistorekisteriTunnusGeocoder = async (query: string) => {
