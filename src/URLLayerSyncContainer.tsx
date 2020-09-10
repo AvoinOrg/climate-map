@@ -5,8 +5,7 @@ import * as LayerGroupState from 'src/map/LayerGroupState';
 // Some URLs are 1:1 associated with certain layer groups:
 const urlLayerMapping = {
   '/layers/fi-forest': 'arvometsa',
-  '/layers/fi-omaihka/1': 'fi-omaihka-layer1',
-  '/layers/fi-omaihka/2': 'fi-omaihka-layer2',
+  '/layers/fi-omaihka': 'fi-omaihka-topsoil',
 }
 
 let activeUrlLayerGroup = null

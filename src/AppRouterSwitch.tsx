@@ -11,6 +11,7 @@ import MapButtons from './components/MapButtons';
 
 import { URLLayerSyncContainer } from './URLLayerSyncContainer';
 import ForestArvometsa from './components/Sidebar/ForestArvometsa'
+import Omaihka from './components/Sidebar/Omaihka'
 import { MainMenu } from './components/Sidebar/Sidebar';
 import OverlayMessages from './components/OverlayMessages';
 
@@ -25,6 +26,9 @@ export default function AppRouterSwitch() {
           <Switch>
             <Route path="/layers/fi-forest">
               <ForestArvometsa />
+            </Route>
+            <Route path="/layers/fi-omaihka">
+              <Omaihka />
             </Route>
             <Route path="/">
               <MainMenu />

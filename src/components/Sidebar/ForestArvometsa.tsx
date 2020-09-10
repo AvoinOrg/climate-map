@@ -438,8 +438,8 @@ export const ArvometsaChart = (props: any) => {
     <ChartComponent {...bio} />
     <ChartComponent {...wood} />
     <h1 id="arvometsa-npv">{npvText}</h1>
-    <h1 id="arvometsa-area-forest">{pp(totals.area, 3)} hectares}</h1>
-    <h1 id="arvometsa-area-total">{pp(1e-4 * totals.st_area, 3)} hectares}</h1>
+    <h1 id="arvometsa-area-forest">{pp(totals.area, 3)} hectares</h1>
+    <h1 id="arvometsa-area-total">{pp(1e-4 * totals.st_area, 3)} hectares</h1>
   </div>
 }
 
