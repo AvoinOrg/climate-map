@@ -38,17 +38,17 @@ const URL_PREFIX = `https://map.buttonprogram.org/private/${hashParams.secret}`
 
 addSource('fi-omaihka-overlay', {
   "type": 'geojson',
-  'data': `${URL_PREFIX}/omaihka_overlay.geojson?v=1`,
+  'data': `${URL_PREFIX}/omaihka_overlay.geojson?v=2`,
 });
 
 addSource('fi-omaihka-soils', {
   "type": 'geojson',
-  'data': `${URL_PREFIX}/omaihka_soils.geojson?v=1`,
+  'data': `${URL_PREFIX}/omaihka_soils.geojson?v=2`,
 });
 
 addSource('fi-omaihka-plots', {
   "type": 'geojson',
-  'data': `${URL_PREFIX}/omaihka_plots.geojson?v=1`,
+  'data': `${URL_PREFIX}/omaihka_plots.geojson?v=2`,
 });
 
 addLayer({
