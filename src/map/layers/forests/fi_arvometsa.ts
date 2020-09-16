@@ -4,12 +4,15 @@ import { addLayer, addSource } from '../../map';
 import { registerGroup } from 'src/map/layer_groups';
 
 
+export const PROPERTY_MINZOOM = 12
+export const PROPERTY_MAXZOOM = 14
+
 interface ILayerOption { minzoom: number, maxzoom?: number, id: string }
 interface ILayerOptions { [s: string]: ILayerOption }
 export const layerOptions: ILayerOptions = {
-  'arvometsa': { minzoom: 14, id: 'standid' },
-  'arvometsa-property': { minzoom: 12, maxzoom: 14, id: 'localid' },
-  'arvometsa-municipality': { minzoom: 7.5, maxzoom: 12, id: 'localid' },
+  'arvometsa': { minzoom: PROPERTY_MAXZOOM, id: 'standid' },
+  'arvometsa-property': { minzoom: PROPERTY_MINZOOM, maxzoom: PROPERTY_MAXZOOM, id: 'localid' },
+  'arvometsa-municipality': { minzoom: 7.5, maxzoom: PROPERTY_MINZOOM, id: 'localid' },
   'arvometsa-region': { minzoom: 5.5, maxzoom: 7.5, id: 'localid' },
   'arvometsa-regional-state': { minzoom: 4, maxzoom: 5.5, id: 'localid' },
   'arvometsa-country': { minzoom: 0, maxzoom: 4, id: 'localid' },

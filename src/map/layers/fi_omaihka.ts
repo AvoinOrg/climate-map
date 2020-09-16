@@ -1,7 +1,6 @@
-import { addLayer, addSource, genericPopupHandler, createPopup } from 'src/map/map';
+import { addLayer, addSource } from 'src/map/map';
 import { Expression } from 'mapbox-gl';
 import { registerGroup } from 'src/map/layer_groups';
-import { sanitize } from 'dompurify';
 
 
 const fillColorSoil: (codeAttr: string) => Expression = codeAttr => [
@@ -39,21 +38,21 @@ const URL_PREFIX = `https://map.buttonprogram.org/private/${hashParams.secret}`
 
 addSource('fi-omaihka-overlay', {
   "type": 'geojson',
-  'data': `${URL_PREFIX}/omaihka_overlay.geojson`,
+  'data': `${URL_PREFIX}/omaihka_overlay.geojson?v=2`,
 });
 
 addSource('fi-omaihka-soils', {
   "type": 'geojson',
-  'data': `${URL_PREFIX}/omaihka_soils.geojson`,
+  'data': `${URL_PREFIX}/omaihka_soils.geojson?v=2`,
 });
 
 addSource('fi-omaihka-plots', {
   "type": 'geojson',
-  'data': `${URL_PREFIX}/omaihka_plots.geojson`,
+  'data': `${URL_PREFIX}/omaihka_plots.geojson?v=2`,
 });
 
 addLayer({
-  'id': 'fi-omaihka-soil-layer1-fill',
+  'id': 'fi-omaihka-soil-topsoil-fill',
   'source': 'fi-omaihka-soils',
   'type': 'fill',
   'paint': {
@@ -62,7 +61,7 @@ addLayer({
   BEFORE: 'FILL',
 })
 addLayer({
-  'id': 'fi-omaihka-soil-layer2-fill',
+  'id': 'fi-omaihka-soil-subsoil-fill',
   'source': 'fi-omaihka-soils',
   'type': 'fill',
   'paint': {
@@ -103,7 +102,7 @@ addLayer({
     "text-font": ["Open Sans Regular"],
     "text-field": [
       "case",
-      ["has", "__ext_Lohkon nimi"], ["coalesce", ["get", "__ext_Lohkon nimi"], ""],
+      ["has", "lohko_nimi"], ["coalesce", ["get", "lohko_nimi"], ""],
       ""
     ],
   },
@@ -118,47 +117,79 @@ addLayer({
 
 
 addLayer({
+  'id': `fi-omaihka-circle-locator-text`,
+  'source': 'fi-omaihka-overlay',
+  'type': 'symbol',
+  'maxzoom': 14,
+  "layout": {
+    "text-font": ["Open Sans Regular"],
+    "text-size": 30,
+    "text-field": ['concat', 'Tila ', ["get", "tila_nro"]],
+  },
+  BEFORE: 'TOP',
+})
+addLayer({
   'id': `fi-omaihka-circle-locator`,
   'source': 'fi-omaihka-overlay',
   'type': 'circle',
-  'maxzoom': 10,
+  'maxzoom': 11,
   "paint": {
     'circle-color': 'red',
     'circle-radius': {
       'base': 20,
       'stops': [
-        [0, 30],
+        [0, 50],
         [10, 100]
       ]
     },
   },
-  BEFORE: 'LABEL',
+  BEFORE: 'BG_LABEL',
 })
 
-registerGroup('fi-omaihka-layer1', [
-  'fi-omaihka-soil-layer1-fill',
-  'fi-omaihka-circle-locator',
-  'fi-omaihka-sym',
-  'fi-omaihka-plot-boundary', 'fi-omaihka-soil-boundary',
-])
-registerGroup('fi-omaihka-layer2', [
-  'fi-omaihka-soil-layer2-fill',
-  'fi-omaihka-circle-locator',
-  'fi-omaihka-sym',
-  'fi-omaihka-plot-boundary', 'fi-omaihka-soil-boundary',
-])
 
 
-genericPopupHandler(['fi-omaihka-soil-layer1-fill', 'fi-omaihka-soil-layer2-fill'], e => {
-  const f = e.features[0];
-  const p = f.properties;
+// genericPopupHandler(['fi-omaihka-soil-topsoil-fill', 'fi-omaihka-soil-subsoil-fill'], e => {
+//   const f = e.features[0];
+//   const p = f.properties;
 
 
-  let html = '<table>'
-  for (const [k, v] of Object.entries(p)) {
-    html += `<tr><th>${sanitize(k.replace('__ext_', ''))}</th><td>${sanitize(v)}</td></tr>`
-  }
-  html += '</table>'
+//   let html = '<table>'
+//   for (const [k, v] of Object.entries(p)) {
+//     html += `<tr><th>${sanitize(k.replace('__ext_', ''))}</th><td>${sanitize(v)}</td></tr>`
+//   }
+//   html += '</table>'
 
-  createPopup(e, html, { maxWidth: '480px' });
+//   createPopup(e, html, { maxWidth: '480px' });
+// });
+
+
+addLayer({
+  'id': `fi-omaihka-soils-highlighted`,
+  "source": 'fi-omaihka-soils',
+  "type": 'fill',
+  "paint": {
+    "fill-outline-color": "#484896",
+    "fill-color": "#6e599f",
+    "fill-opacity": 0.4
+  },
+  "filter": ["in", 'lohko'],
+  BEFORE: 'OUTLINE',
 });
+
+
+registerGroup('fi-omaihka-topsoil', [
+  'fi-omaihka-soil-topsoil-fill',
+  'fi-omaihka-circle-locator',
+  'fi-omaihka-circle-locator-text',
+  'fi-omaihka-sym',
+  'fi-omaihka-soils-highlighted',
+  'fi-omaihka-plot-boundary', 'fi-omaihka-soil-boundary',
+])
+registerGroup('fi-omaihka-subsoil', [
+  'fi-omaihka-soil-subsoil-fill',
+  'fi-omaihka-circle-locator',
+  'fi-omaihka-circle-locator-text',
+  'fi-omaihka-sym',
+  'fi-omaihka-soils-highlighted',
+  'fi-omaihka-plot-boundary', 'fi-omaihka-soil-boundary',
+])

@@ -1,6 +1,7 @@
 import * as LayerGroupState from 'src/map/LayerGroupState';
 import { moveLayer, setLayoutProperty } from './map';
 import { assert, execWithMapLoaded, originalLayerDefs } from './utils';
+import * as Analytics from './analytics'
 
 const backgroundLayerGroups = { 'terramonitor': true }
 interface ILayerGroupState { [s: string]: boolean; }
@@ -46,6 +47,8 @@ export const toggleGroupInternal = (group: string, forcedState?: boolean) => {
   layerGroupState[group] = newState;
 
   if (group in backgroundLayerGroups) return;
+
+  if (newState) Analytics.recordLayerActivation(group)
 }
 
 
