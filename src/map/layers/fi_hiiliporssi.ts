@@ -11,7 +11,7 @@ markerHighlighted.src = MarkerHighlighted
 
 addSource('hiiliporssi', {
   "type": 'vector',
-  "tiles": ["https://hiililaskuri.com:9002/hiiliporssi/{z}/{x}/{y}.pbf"],
+  "tiles": ["https://server.avoin.org/data/tiles/hiiliporssi/{z}/{x}/{y}.pbf"],
   //"tiles": ["https://map.buttonprogram.org/helsinki-buildings/{z}/{x}/{y}.pbf"],
   "maxzoom": 10,
   bounds: [19, 59, 32, 71], // Finland
@@ -20,7 +20,7 @@ addSource('hiiliporssi', {
 
 addSource('hiiliporssi-points', {
   "type": 'geojson',
-  "data": "https://hiililaskuri.com:9002/hiiliporssi/points.geojson",
+  "data": "https://server.avoin.org/data/tiles/hiiliporssi/points.geojson",
   //"tiles": ["https://map.buttonprogram.org/helsinki-buildings/{z}/{x}/{y}.pbf"],
   attribution: '<a href="http://hiilipörssi.fi">© Hiilipörssi</a>',
 });
