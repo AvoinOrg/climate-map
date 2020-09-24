@@ -96,8 +96,6 @@ body {
   }
 }
 
-
-
 .mapboxgl-ctrl-geocoder input[type="text"] {
   font-size: 1rem;
 }
@@ -105,6 +103,17 @@ body {
   font-size: 1rem;
 }
 
+@media (max-width: 400px)  {
+  .mapboxgl-ctrl-geocoder {
+    min-width: 200px !important
+  }
+}
+
+@media (max-width: 350px)  {
+  .mapboxgl-ctrl-geocoder {
+    min-width: 160px !important
+  }
+}
 
 /* OpenLayers specific CSS */
 .ol-popup {

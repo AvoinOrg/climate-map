@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { useObservable } from 'micro-observables';
 
 import Logo from '../../logo.svg'
+import HiiliporssiLogo from '../../HP_logo.svg'
 import * as SidebarState from '../Sidebar/SidebarState'
 import { NavBarSearch } from './NavBarSearch';
 
@@ -31,6 +32,8 @@ const useStyles = makeStyles((theme: Theme) =>
       marginRight: theme.spacing(2),
       marginLeft: 0,
       width: '100%',
+      display: 'flex'
+
     },
     helpIcon: {
       padding: 0,
@@ -88,9 +91,22 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
     },
-    logo: {
-      width: 160,
+    hpLogo: {
+      paddingTop: 5,
+      width: 100,
+      [theme.breakpoints.down('xs')]: {
+        width: 70,
+      }
     },
+    logo: {
+      paddingTop: 5,
+      width: 195,
+    },
+    avoinLogoWrapper: {
+      position: "absolute",
+      top: 77,
+      right: theme.spacing(2),
+    }
   }),
 );
 
@@ -112,28 +128,25 @@ const NavBar = () => {
           {sidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
         </IconButton>
 
-        <Link to='/' className='neutral-link'>
-          <img className={classes.logo} src={Logo} alt="Logo" />
-        </Link>
+        <a href='https://www.hiiliporssi.fi'>
+          <img className={classes.hpLogo} src={HiiliporssiLogo} alt="Logo" />
+        </a>
 
         <div className={classes.helpWrapper}>
 
-          <a href='http://about.avoinmap.org'>
-            <IconButton
-              className={classes.helpIcon}
-              color="inherit"
-            >
-              <HelpOutlineIcon className={classes.HelpOutlineIcon} />
-            </IconButton>
-          </a>
-
         </div>
 
-        <NavBarSearch/>
+        <NavBarSearch />
+        <div className={classes.avoinLogoWrapper}>
 
-        <IconButton aria-label="display more actions" edge="end" color="inherit" disabled={true}>
+          <a href='http://about.avoinmap.org'>
+            <img className={classes.logo} src={Logo} alt="Logo" />
+          </a>
+        </div>
+
+        {/* <IconButton aria-label="display more actions" edge="end" color="inherit" disabled={true}>
           <AccountCircleIcon />
-        </IconButton>
+        </IconButton> */}
       </Toolbar>
     </AppBar>
   );
