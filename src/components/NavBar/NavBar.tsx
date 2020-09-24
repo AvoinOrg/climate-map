@@ -104,8 +104,11 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     avoinLogoWrapper: {
       position: "absolute",
-      top: 77,
+      top: 75,
       right: theme.spacing(2),
+      [theme.breakpoints.down('xs')]: {
+        top: 70,
+      }
     }
   }),
 );
