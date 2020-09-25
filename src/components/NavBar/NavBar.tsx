@@ -5,9 +5,6 @@ import IconButton from '@material-ui/core/IconButton';
 import { createStyles, fade, Theme, makeStyles } from '@material-ui/core/styles';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import AccountCircleIcon from '@material-ui/icons/AccountCircle';
-import { Link } from 'react-router-dom';
 import { useObservable } from 'micro-observables';
 
 import Logo from '../../logo.svg'
