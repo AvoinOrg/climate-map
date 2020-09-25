@@ -9,10 +9,10 @@ marker.src = Marker
 const markerHighlighted = new Image(50, 50)
 markerHighlighted.src = MarkerHighlighted
 
+
 addSource('hiiliporssi', {
   "type": 'vector',
-  "tiles": ["https://server.avoin.org/data/tiles/hiiliporssi/{z}/{x}/{y}.pbf"],
-  //"tiles": ["https://map.buttonprogram.org/helsinki-buildings/{z}/{x}/{y}.pbf"],
+  "tiles": ["https://server.avoin.org/data/map/hiiliporssi/tiles/{z}/{x}/{y}.pbf"],
   "maxzoom": 10,
   bounds: [19, 59, 32, 71], // Finland
   attribution: '<a href="http://hiilipörssi.fi">© Hiilipörssi</a>',
@@ -20,11 +20,9 @@ addSource('hiiliporssi', {
 
 addSource('hiiliporssi-points', {
   "type": 'geojson',
-  "data": "https://server.avoin.org/data/tiles/hiiliporssi/points.geojson",
-  //"tiles": ["https://map.buttonprogram.org/helsinki-buildings/{z}/{x}/{y}.pbf"],
+  "data": "https://server.avoin.org/data/map/hiiliporssi/points.geojson",
   attribution: '<a href="http://hiilipörssi.fi">© Hiilipörssi</a>',
 });
-
 
 directAddImage('marker', marker, {})
 directAddImage('markerHighlighted', markerHighlighted, {})
@@ -64,7 +62,7 @@ addLayer({
     "line-width": 2.5,
     "line-gap-width": 0
   },
-  "filter": ["in", "Name"],
+  "filter": ["in", "name"],
   BEFORE: 'OUTLINE',
 });
 
@@ -77,32 +75,8 @@ addLayer({
     "fill-color": "#32CD32",
     "fill-opacity": 1
   },
-  "filter": ["in", "Name"],
+  "filter": ["in", "name"],
   BEFORE: 'OUTLINE',
-});
-
-addLayer({
-  'id': 'hiiliporssi-label',
-  'source': 'hiiliporssi-points',
-  'type': 'symbol',
-  "paint": {
-    "text-halo-width": 10,
-    "text-halo-color": "white"
-  },
-  minzoom: 10,
-  "layout": {
-    "visibility": "visible",
-    "symbol-placement": "point",
-    "text-size": 20,
-    "text-ignore-placement": true,
-    "text-padding": 1,
-    "text-allow-overlap": true,
-    "text-anchor": "top",
-    "text-font": ["Open Sans Regular"],
-    "text-field": ["get", "Name"],
-    "text-offset": [0, 0.1]
-  },
-  BEFORE: 'FILL',
 });
 
 addLayer({
@@ -120,7 +94,7 @@ addLayer({
     "icon-ignore-placement": true,
     "icon-allow-overlap": true,
   },
-  "filter": ["!in", "Name"],
+  "filter": ["!in", "name"],
   BEFORE: 'FILL',
 })
 
@@ -141,8 +115,61 @@ addLayer({
     "icon-padding": 1,
     "icon-allow-overlap": true,
   },
-  "filter": ["in", "Name"],
+  "filter": ["in", "name"],
   BEFORE: 'FILL',
 })
 
-registerGroup('hiiliporssi', ['hiiliporssi-fill', 'hiiliporssi-outline', 'hiiliporssi-highlighted', 'hiiliporssi-marker', 'hiiliporssi-label', 'hiiliporssi-outline-highlighted', 'hiiliporssi-marker-highlighted'])
+const addLabels = async () => {
+  const exp: any = ['match', ['get', 'name']];
+  try {
+    const res = await fetch("https://server.avoin.org/data/map/hiiliporssi/data.json", {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    const data = JSON.parse(await res.json())
+
+    data.forEach((row) => {
+      if (row['kansionimi'] && row['nimi']) {
+        exp.push(row['kansionimi'], row['nimi']);
+      }
+    });
+
+  } catch (err) {
+    console.error(err)
+  }
+  exp.push('');
+
+  addLayer({
+    'id': 'hiiliporssi-label',
+    'source': 'hiiliporssi-points',
+    'type': 'symbol',
+    "paint": {
+      "text-halo-width": 10,
+      "text-halo-color": "white"
+    },
+    minzoom: 10,
+    "layout": {
+      "visibility": "visible",
+      "symbol-placement": "point",
+      "text-size": 20,
+      "text-ignore-placement": true,
+      "text-padding": 1,
+      "text-allow-overlap": true,
+      "text-anchor": "top",
+      "text-font": ["Open Sans Regular"],
+      "text-field": exp,
+      "text-offset": [0, 0.1]
+    },
+    BEFORE: 'FILL',
+  });
+
+  registerGroup('hiiliporssi', ['hiiliporssi-fill', 'hiiliporssi-outline', 'hiiliporssi-highlighted', 'hiiliporssi-marker', 'hiiliporssi-label', 'hiiliporssi-outline-highlighted', 'hiiliporssi-marker-highlighted'])
+}
+
+registerGroup('hiiliporssi', [])
+
+addLabels()
+

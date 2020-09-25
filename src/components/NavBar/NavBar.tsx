@@ -105,7 +105,7 @@ const useStyles = makeStyles((theme: Theme) =>
       right: theme.spacing(2),
       [theme.breakpoints.down('xs')]: {
         top: 70,
-      }
+      },
     }
   }),
 );

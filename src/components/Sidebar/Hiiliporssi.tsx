@@ -1,7 +1,9 @@
 // import { layerOptions } from '../../map/layers//fi_hiiliporssi';
 import { createStyles, makeStyles } from '@material-ui/core';
 import { useObservable } from 'micro-observables';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import Zoom from 'react-medium-image-zoom'
+import 'react-medium-image-zoom/dist/styles.css'
 
 import { genericPopupHandler, querySourceFeatures, setFilter } from '../../map/map';
 import * as SelectedFeatureState from './HiiliporssiSelectedLayer';
@@ -26,7 +28,7 @@ for (const index in layers) {
         const feature = ev.features[0];
 
         // Only copy over currently selected features:
-        const idName = "Name"
+        const idName = "name"
         const id = feature.properties[idName];
         assert(id, `Feature has no id: ${JSON.stringify(feature.properties)}`);
 
@@ -60,25 +62,86 @@ for (const index in layers) {
 const useStyles = makeStyles(() =>
     createStyles({
         root: {
-            width: '300px',
-            padding: '80px 5px 5px 15px'
+            maxWidth: '600px',
+            minWidth: '300px',
+            padding: '80px 15px 50px 15px'
         },
+        info: {
+            margin: "5px 0 0 0",
+            whiteSpace: "pre-line"
+        },
+        description: {
+            margin: "25px 0 0 0",
+            whiteSpace: "pre-line"
+        },
+        image: {
+            maxWidth: '100%',
+            margin: "25px 0 0 0",
+            boxShadow: "3px 6px 18px -3px rgba(0,0,0,0.75)"
+        }
     }),
 );
 
-function Hiiliporssi() {
+const HiiliporssiLocation = (props) => {
     const classes = useStyles({})
+    return (
+        <div className={classes.root}>
+            {props.data.nimi && <h1>{props.data.nimi}</h1>}
+            {props.data.omistaja && <p className={classes.info}><b>Omistaja: </b>{props.data.omistaja}</p>}
+            {props.data.ennallistamisalue && <p className={classes.info}><b>Ennallistamisalue: </b>{props.data.ennallistamisalue}</p>}
+            {props.data.vaikutusalue && <p className={classes.info}><b>Vaikutusalue: </b>{props.data.vaikutusalue}</p>}
+            {props.data.kuvaus && <p className={classes.description}>{props.data.kuvaus}</p>}
+            {props.data["ennallistamisen eteneminen"] && <p className={classes.description}><b>Ennallistamisen eteneminen: </b>{props.data["ennallistamisen eteneminen"]}</p>}
+
+            {(props.data.kuvat && props.data.kuvat.length > 0) && props.data.kuvat.map((link, i) => {
+                return (
+                    <Zoom key={i}>
+                        <img className={classes.image}
+                            src={link}
+                            alt=""
+                        />
+                    </Zoom>
+                )
+            })}
+            {(props.data.kuvaaja) && (<p className={classes.info}><b>Kuvaaja: </b>{props.data.kuvaaja}</p>)}
+        </div>
+    )
+}
+
+
+function Hiiliporssi() {
     const { feature } = useObservable(SelectedFeatureState.selectedFeature);
     const hasFeature = feature !== null
+    const [data, setData] = useState(null);
+
+    useEffect(() => {
+        fetch("https://server.avoin.org/data/map/hiiliporssi/data.json", {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }).then(res => res.json()).then(json => {
+            const objects = JSON.parse(json);
+            const keyedObjects = {}
+            for (const i in objects) {
+                const obj = objects[i]
+                if (obj.kansionimi) {
+                    keyedObjects[obj.kansionimi] = objects[i]
+                }
+            }
+            setData(keyedObjects)
+        }).catch(err => {
+            console.error(err)
+        });
+    }, [])
 
     useEffect(() => {
         if (!hasFeature) SidebarState.setVisible(false)
     }, [hasFeature])
 
     return (
-        hasFeature ? <div className={classes.root}>
-            <h1>{feature.properties.Name}</h1>
-        </div> : <></>)
+        hasFeature ? <HiiliporssiLocation data={data[feature.properties.name]}></HiiliporssiLocation> : <></>)
 }
 
 export default Hiiliporssi
