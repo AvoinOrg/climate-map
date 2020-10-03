@@ -6,17 +6,21 @@ import * as LayerGroupState from 'src/map/LayerGroupState';
 const urlLayerMapping = {
   '/layers/fi-forest': 'arvometsa',
   '/layers/fi-omaihka': 'fi-omaihka-topsoil',
+  '/layers/fi-ffd': 'fi-ffd',
 }
 
 let activeUrlLayerGroup = null
 
 const historyListener = (location, action) => {
   console.debug(location, action)
-  const urlLayerGroup = urlLayerMapping[location.pathname]
-  if (urlLayerGroup) {
+  // TODO: add more sophisticated routing eventually?
+  for (const [url, urlLayerGroup] of Object.entries(urlLayerMapping)) {
+    if (location.pathname !== url && !location.pathname.startsWith(`${url}/`)) continue
     LayerGroupState.enableOnlyOneGroup(urlLayerGroup)
     activeUrlLayerGroup = urlLayerGroup
-  } else if (activeUrlLayerGroup) {
+    return
+  }
+  if (activeUrlLayerGroup) {
     LayerGroupState.disableGroup(activeUrlLayerGroup)
   }
 }

@@ -24,6 +24,7 @@ import './snow_cover_loss';
 import './hedge_pilot_area';
 
 import './fi_omaihka'
+import './fi_ffd'
 
 // Special:
 // import './dataset_query';

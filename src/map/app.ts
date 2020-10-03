@@ -1,6 +1,7 @@
 import * as LayerGroupState from 'src/map/LayerGroupState';
 import { layerGroupDefinitions, layerGroupState } from './layer_groups';
 import { getMapLayers, mapInit, moveLayer, onMapLoad, panTo, setLayoutProperty, zoomTo } from "./map";
+import { flyTo } from './mapbox_map';
 import { invertLayerTextHalo } from './utils';
 
 const enableDefaultLayers = () => {
@@ -42,16 +43,26 @@ onMapLoad(() => {
     ), {}) as IHashParams;
 
   // TODO: fix command race condition here when using mapbox-gl
+  let lat,lon,zoom
   try {
-    const lat = Number.parseFloat(hashParams.lat);
-    const lon = Number.parseFloat(hashParams.lon);
+    lat = Number.parseFloat(hashParams.lat);
+    lon = Number.parseFloat(hashParams.lon);
     panTo(lon, lat);
   } catch (e) { }
 
   try {
-    const zoom = Number.parseFloat(hashParams.zoom);
-    if (zoom >= 0 && zoom < 25 && !Number.isNaN(zoom)) { zoomTo(zoom); }
+    zoom = Number.parseFloat(hashParams.zoom);
   } catch (e) { }
+
+  const hasZoom = zoom >= 0 && zoom < 25 && !Number.isNaN(zoom)
+  const hasLonLat = !Number.isNaN(lat) && !Number.isNaN(lon)
+  if (hasZoom && hasLonLat) {
+    flyTo(lon, lat, zoom)
+  } else if (hasZoom) {
+    zoomTo(zoom)
+  } else if (hasLonLat) {
+    panTo(lon, lat)
+  }
 
   try {
     const layers = hashParams.layers.split(',')

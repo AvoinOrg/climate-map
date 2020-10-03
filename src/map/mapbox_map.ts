@@ -145,6 +145,8 @@ export const fitBounds = (bbox: number[], lonExtra: number, latExtra: number) =>
 }
 export const zoomTo = (zoom: number) => map.zoomTo(zoom);
 export const panTo = (lon: number, lat: number) => map.panTo(new mapboxgl0.LngLat(lon, lat))
+export const flyTo = (lon: number, lat: number, zoom: number) => map.flyTo({center: [lon, lat], zoom})
+
 export const querySourceFeatures = (source: string, sourceLayer: string) => map.querySourceFeatures(source, { sourceLayer });
 export const getSource = (id: string) => map.getSource(id);
 export const removeSource = (id: string) => map.removeSource(id);
