@@ -23,23 +23,23 @@ mapboxgl0.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN
 // For instance, it turns out that stadiamaps greatly interferes with other MVT tile layers!
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const emptyStyle: mapboxgl.Style = {
-  "version": 8,
-  "name": "Empty",
-  "metadata": {
-    "mapbox:autocomposite": true,
-    "mapbox:type": "template"
-  },
-  "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
-  "sources": {},
-  "layers": [
-    {
-      "id": "background",
-      "type": "background",
-      "paint": {
-        "background-color": "rgba(0,0,0,0)"
-      }
-    }
-  ]
+    "version": 8,
+    "name": "Empty",
+    "metadata": {
+        "mapbox:autocomposite": true,
+        "mapbox:type": "template"
+    },
+    "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+    "sources": {},
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "rgba(0,0,0,0)"
+            }
+        }
+    ]
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -55,7 +55,11 @@ export const map = new mapboxgl0.Map({
     style,
     center: [28, 65], // starting position [lng, lat]
     zoom: 5, // starting zoom
-});
+    attributionControl: false,
+}).addControl(new mapboxgl.AttributionControl({
+    compact: false,
+    customAttribution: '<a href="https://netlify.com">Powered by Netlify</a>'
+}));
 
 // Suppress uninformative console error spam:
 map.on('error', (e) => {
@@ -145,7 +149,7 @@ export const fitBounds = (bbox: number[], lonExtra: number, latExtra: number) =>
 }
 export const zoomTo = (zoom: number) => map.zoomTo(zoom);
 export const panTo = (lon: number, lat: number) => map.panTo(new mapboxgl0.LngLat(lon, lat))
-export const flyTo = (lon: number, lat: number, zoom: number) => map.flyTo({center: [lon, lat], zoom})
+export const flyTo = (lon: number, lat: number, zoom: number) => map.flyTo({ center: [lon, lat], zoom })
 
 export const querySourceFeatures = (source: string, sourceLayer: string) => map.querySourceFeatures(source, { sourceLayer });
 export const getSource = (id: string) => map.getSource(id);
@@ -194,7 +198,7 @@ export const mapInit = () => {
             geocoder.options.localGeocoderOnly = false;
             geocoder.options.zoom = geocoderOrigZoom;
         }
-      }
+    }
 
     // map.addControl(new mapboxgl0.NavigationControl());
 
@@ -247,7 +251,7 @@ export const mapZoomOut = () => { map.zoomOut() }
 export const mapZoomIn = () => { map.zoomIn() }
 export const mapRelocate = () => {
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(({coords}) => {
+        navigator.geolocation.getCurrentPosition(({ coords }) => {
             const radius = coords.accuracy;
             map.flyTo({
                 center: [
