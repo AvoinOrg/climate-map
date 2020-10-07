@@ -6,13 +6,14 @@ import { createStyles, fade, Theme, makeStyles } from '@material-ui/core/styles'
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import { Link } from 'react-router-dom';
 import { useObservable } from 'micro-observables';
 
 import Logo from '../../logo.svg'
 import * as SidebarState from '../Sidebar/SidebarState'
 import { NavBarSearch } from './NavBarSearch';
+import ProfileMenu from './ProfileMenu';
+import { FullscreenExit } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -22,9 +23,9 @@ const useStyles = makeStyles((theme: Theme) =>
     leftWrapper: {
     },
     menuIcon: {
-      marginRight: theme.spacing(2),
-      padding: 0,
-      paddingBottom: 8,
+      marginRight: theme.spacing(4),
+      marginLeft: theme.spacing(2),
+      padding: "0 5px 0 5px",
     },
     helpWrapper: {
       position: 'relative',
@@ -34,8 +35,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     helpIcon: {
       padding: 0,
-      paddingLeft: 10,
-      paddingBottom: 8,
+      margin: "0 0 0 10px",
     },
     HelpOutlineIcon: {
     },
@@ -90,7 +90,11 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     logo: {
       width: 160,
+      padding: "8px 0 0 0"
     },
+    toolBar: {
+      padding: 0,
+    }
   }),
 );
 
@@ -100,7 +104,7 @@ const NavBar = () => {
 
   return (
     <AppBar position="fixed" className={classes.appBar}>
-      <Toolbar>
+      <Toolbar className={classes.toolBar}>
 
         <IconButton
           onClick={SidebarState.toggleSidebar}
@@ -129,11 +133,9 @@ const NavBar = () => {
 
         </div>
 
-        <NavBarSearch/>
+        <NavBarSearch />
 
-        <IconButton aria-label="display more actions" edge="end" color="inherit" disabled={true}>
-          <AccountCircleIcon />
-        </IconButton>
+        <ProfileMenu />
       </Toolbar>
     </AppBar>
   );
