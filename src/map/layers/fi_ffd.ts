@@ -42,7 +42,7 @@ interface FFDCaseStudyArea {
 }
 
 export const ffdCaseStudyAreas: FFDCaseStudyArea[] = [
-    {"name": "Maraka, Webuye, Kenya", "zoom": 9, "center": [34.73316385, 0.60478945], "areas": [{"shapeName": "WEBUYE", "shapeISO": "None", "shapeID": "KEN-ADM3-3_0_0-B170", "shapeGroup": "KEN", "shapeType": "ADM3"}]},
+    {"name": "Maraka, Webuye, Kenya", "zoom": 9, "center": [34.7622051, 0.58430105], "areas": [{"shapeName": "Maraka", "shapeISO": "None", "shapeID": "KEN-ADM3-3_0_0-B170/Maraka", "shapeGroup": "KEN", "shapeType": "ADM3"}]},
     {"name": "Codajás, Brazil", "zoom": 6, "center": [-63.092999999999996, -3.1290000000000004], "areas": [{"shapeName": "Codaj\u00c3\u00a1s", "shapeISO": "None", "shapeID": "BRA-ADM2-3_0_0-B5027", "shapeGroup": "BRA", "shapeType": "ADM2"}]},
     {"name": "Diana, Madagascar", "zoom": 6, "center": [48.7623536, -13.1086601], "areas": [{"shapeName": "Diana", "shapeISO": "None", "shapeID": "MDG-ADM1-3_0_0-B1", "shapeGroup": "MDG", "shapeType": "ADM1"}]},
     {"name": "Choma, Zambia", "zoom": 7.5, "center": [27.1801379, -16.8605418], "areas": [{"shapeName": "Choma", "shapeISO": "None", "shapeID": "ZMB-ADM2-3_0_0-B5", "shapeGroup": "ZMB", "shapeType": "ADM2"}]},
