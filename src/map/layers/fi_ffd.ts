@@ -62,7 +62,23 @@ export const ffdCaseStudyAreas: FFDCaseStudyArea[] = [
 
 const geoboundariesAttribution = `Administrative boundaries courtesy of <a href="https://www.geoboundaries.org">geoBoundaries</a>`
 
-const countryIsos = ['KEN','UGA','TZA','RWA']
+const countryIsos = [
+    'KEN',
+    'VNM',
+    'BRA',
+    'TGO',
+    'MDG',
+    'BEN',
+    'PHL',
+    'SEN',
+    'GIN',
+    'ZMB',
+    'BOL',
+    'RWA',
+    'TZA',
+    'UGA',
+]
+
 for (const countryIso of countryIsos) {
     addSource(`geoboundaries-adm0-${countryIso}`, {
         "type": 'geojson',
@@ -74,8 +90,8 @@ for (const countryIso of countryIsos) {
         'source': `geoboundaries-adm0-${countryIso}`,
         'type': 'line',
         'paint': {
-            'line-width': 6,
-            'line-color': '#b66',
+            'line-width': 1.5,
+            'line-color': '#fff',
         },
         BEFORE: 'OUTLINE',
     })
@@ -97,8 +113,8 @@ addLayer({
     'type': 'line',
     'paint': {
         // 'line-opacity': 0.5,
-        'line-width': 4,
-        'line-color': '#e33',
+        'line-width': 3,
+        'line-color': '#f5b400',
     },
     BEFORE: 'OUTLINE',
 })
