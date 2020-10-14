@@ -2,9 +2,10 @@
             width="30" 
             height="30" 
             viewBox="0 0 24 24" 
-            fill="green"
-            fill-opacity="1" 
-            stroke="black" 
+            fill="black"
+            fill-opacity="1"
+            stroke-opacity="0.8"
+            stroke="gray" 
             stroke-width="1.5" stroke-linecap="round" 
             stroke-linejoin="round" 
             class="feather feather-map-pin">

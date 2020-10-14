@@ -107,7 +107,7 @@ addLayer({
   },
   "layout": {
     "visibility": "visible",
-    "icon-size": 1.2,
+    "icon-size": 1.4,
     "symbol-placement": "point",
     "icon-image": "markerHighlighted",
     "icon-anchor": "bottom",
