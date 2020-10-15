@@ -13,10 +13,14 @@ import Logo from '../../logo.svg'
 import * as SidebarState from '../Sidebar/SidebarState'
 import { NavBarSearch } from './NavBarSearch';
 import ProfileMenu from './ProfileMenu';
-import { FullscreenExit } from '@material-ui/icons';
+import ActionButtons from './ActionButtons'
+import { AuthContext } from "../../map/auth";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    menuContainer: {
+      margin: `0 17px 0 12px`,
+    },
     root: {
       flexGrow: 1,
     },
@@ -40,7 +44,7 @@ const useStyles = makeStyles((theme: Theme) =>
     HelpOutlineIcon: {
     },
     appBar: {
-      zIndex: theme.zIndex.drawer + 1,
+      zIndex: theme.zIndex.drawer + 2,
     },
     title: {
       flexGrow: 1,
@@ -94,13 +98,16 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     toolBar: {
       padding: 0,
-    }
+      height: 64,
+    },
   }),
 );
 
 const NavBar = () => {
   const classes = useStyles({});
   const sidebarOpen = useObservable(SidebarState.isOpenObservable)
+
+  const { isLoggedIn }: any = React.useContext(AuthContext);
 
   return (
     <AppBar position="fixed" className={classes.appBar}>
@@ -135,7 +142,9 @@ const NavBar = () => {
 
         <NavBarSearch />
 
-        <ProfileMenu />
+        <div className={classes.menuContainer}>
+          {isLoggedIn ? <ProfileMenu /> : <ActionButtons />}
+        </div>
       </Toolbar>
     </AppBar>
   );
