@@ -8,8 +8,7 @@ import Accordion from '../Accordion'
 import drawerItems from './drawerItems'
 
 import { ListItem } from '@material-ui/core';
-import { useObservable } from 'micro-observables';
-import * as SidebarState from './SidebarState'
+import { StateContext } from '../State'
 
 const drawerWidth = 340;
 
@@ -63,21 +62,21 @@ const useStyles = makeStyles((theme: Theme) =>
 export function MainMenu() {
   const classes = useStyles({});
   return <List className={classes.dropdownList}>
-  {
-    drawerItems.map((item, i) =>
-      <ListItem key={i}>
-        <Accordion
-          drawerItem={true}
-          item={item} />
-      </ListItem>
-    )
-  }
+    {
+      drawerItems.map((item, i) =>
+        <ListItem key={i}>
+          <Accordion
+            drawerItem={true}
+            item={item} />
+        </ListItem>
+      )
+    }
   </List>
 }
 
 function Sidebar({ children }) {
   const classes = useStyles({});
-  const sidebarOpen = useObservable(SidebarState.isOpenObservable)
+  const { isSidebarOpen }: any = React.useContext(StateContext)
 
   return (
     <div className={"left-drawer"}>
@@ -85,7 +84,7 @@ function Sidebar({ children }) {
         className={classes.drawer}
         variant="persistent"
         anchor="left"
-        open={sidebarOpen}
+        open={isSidebarOpen}
       >
         {children}
       </Drawer>

@@ -8,7 +8,7 @@ import { getGeoJsonGeometryBounds } from 'src/map/utils';
 
 import * as Analytics from 'src/map/analytics'
 
-import * as SidebarState from './SidebarState';
+import { setIsSidebarOpen } from '../State'
 import * as SelectedFeatureState from './ArvometsaSelectedLayer';
 import * as LayerGroupState from 'src/map/LayerGroupState';
 
@@ -49,9 +49,9 @@ for (const layerName of ['fi-omaihka-soil-topsoil-fill', 'fi-omaihka-soil-subsoi
 
     // // Open the report panel immediately when a feature was selected and nothing was selected prior to it.
     if (feature && prevSelectedFeatures.length === 0)
-      SidebarState.setVisible(true)
+      setIsSidebarOpen(true)
 
-      Analytics.setParams({highlightedFeatureId: id})
+    Analytics.setParams({ highlightedFeatureId: id })
   });
 }
 
@@ -131,9 +131,9 @@ interface Props {
 
 const renderSoilTypeFromCode = code => (
   <div>
-    <span style={{width:15, height:15, backgroundColor:soilCodeToColor[code], display: 'inline-block'}}></span>
+    <span style={{ width: 15, height: 15, backgroundColor: soilCodeToColor[code], display: 'inline-block' }}></span>
     {' '} {soilCodeToName[code] || '(?)'}
-    </div>
+  </div>
 )
 
 const ulStyle = {
@@ -177,7 +177,7 @@ function OmaihkaUI() {
       <li><strong>Multavuusluokka</strong>: {props.multavuus}</li>
       <li><strong>Pintamaalajit</strong>: <ul style={ulStyle}> {topsoilCodes.map(x => <li key={x}>{renderSoilTypeFromCode(x)}</li>)} </ul></li>
       <li><strong>Pohjamaalajit</strong>:: <ul style={ulStyle}> {subsoilCodes.map(x => <li key={x}>{renderSoilTypeFromCode(x)}</li>)} </ul></li>
-  </ul>
+    </ul>
 
   }
 
@@ -196,16 +196,16 @@ function OmaihkaUI() {
           <strong>{topsoilVisible ? 'Pintamaalajit näkyvillä' : 'Pohjamaalajit näkyvillä'}</strong>
         </p>
         <p>
-        <button onClick={swapLayer}>
+          <button onClick={swapLayer}>
             Näytä {topsoilVisible ? 'pohjamaalajit' : 'pintamaalajit'}
           </button>
         </p>
 
         Maalajien selitteet:
         <ul style={ulStyle}>
-        {Object.keys(soilCodeToColor).map(code =>
-          <li key={code}>{renderSoilTypeFromCode(code)}</li>
-        )}
+          {Object.keys(soilCodeToColor).map(code =>
+            <li key={code}>{renderSoilTypeFromCode(code)}</li>
+          )}
         </ul>
 
         {info}

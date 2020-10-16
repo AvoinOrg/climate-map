@@ -14,7 +14,7 @@ import { assert, execWithMapLoaded, getGeoJsonGeometryBounds, pp } from '../../m
 import { setOverlayMessage } from '../OverlayMessages';
 import * as SelectedFeatureState from './ArvometsaSelectedLayer';
 import { HeaderTable, SimpleTable } from './ForestArvometsaTable';
-import * as SidebarState from './SidebarState';
+import { setIsSidebarOpen } from '../State'
 import { setSearchPlaceholder } from '../NavBar/NavBarSearch';
 
 import arvometsaLogo from './arvometsa_logo.png';
@@ -510,7 +510,7 @@ for (const sourceName of Object.keys(layerOptions)) {
 
     // Open the report panel immediately when a feature was selected and nothing was selected prior to it.
     if (feature && prevSelectedFeatures.length === 0)
-      SidebarState.setVisible(true)
+      setIsSidebarOpen(true)
 
       if (newIds.includes(id))
         Analytics.setParams({highlightedFeatureId: id})
@@ -629,7 +629,8 @@ function ArvometsaUI() {
   const averageCarbonBalanceOverall = getAverageCarbonBalanceFigure(totalsOverall)
 
   const headerTitle = titleRenames[title] || title
-  const headerOnClick = () => { if (!hasFeature) SidebarState.setVisible(false) }
+  const headerOnClick = () => { if (!hasFeature) setIsSidebarOpen(false)
+  }
   const headerRows = [
     {
       name: <div onClick={headerOnClick} style={{ cursor: hasFeature ? 'initial' : 'pointer' }}>
