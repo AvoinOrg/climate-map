@@ -1,27 +1,25 @@
-import React from 'react';
-import {
-  BrowserRouter as Router,
-  Route, Switch,
-} from "react-router-dom";
+import React from "react";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
-import './components/App';
-import Sidebar from './components/Sidebar';
-import NavBar from './components/NavBar';
-import MapButtons from './components/MapButtons';
+import "./components/App";
+import Sidebar from "./components/Sidebar";
+import NavBar from "./components/NavBar";
+import MapButtons from "./components/MapButtons";
 
-import { URLLayerSyncContainer } from './URLLayerSyncContainer';
-import ForestArvometsa from './components/Sidebar/ForestArvometsa'
-import Omaihka from './components/Sidebar/Omaihka'
-import FFD from './components/Sidebar/FFD'
-import { MainMenu } from './components/Sidebar/Sidebar';
-import OverlayMessages from './components/OverlayMessages';
+import { URLLayerSyncContainer } from "./URLLayerSyncContainer";
+import ForestArvometsa from "./components/Sidebar/ForestArvometsa";
+import Omaihka from "./components/Sidebar/Omaihka";
+import FFD from "./components/Sidebar/FFD";
+import { MainMenu } from "./components/Sidebar/Sidebar";
+import OverlayMessages from "./components/OverlayMessages";
+import ProfileModal from "./components/Profile/ProfileModal";
 
 export default function AppRouterSwitch() {
   return (
     <Router>
       <MapButtons />
-      <NavBar/>
-      <OverlayMessages/>
+      <NavBar />
+      <OverlayMessages />
       <URLLayerSyncContainer>
         <Sidebar>
           <Switch>
@@ -43,6 +41,7 @@ export default function AppRouterSwitch() {
           </Switch>
         </Sidebar>
       </URLLayerSyncContainer>
+      <ProfileModal />
     </Router>
   );
 }

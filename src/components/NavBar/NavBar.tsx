@@ -107,12 +107,16 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const NavBar = () => {
   const classes = useStyles({});
-  const { isSidebarOpen, setIsSidebarOpen }: any = React.useContext(StateContext);
+  const {
+    isSidebarOpen,
+    setIsSidebarOpen,
+    isSidebarDisabled,
+  }: any = React.useContext(StateContext);
   const { isLoggedIn }: any = React.useContext(AuthContext);
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen)
-  }
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   return (
     <AppBar position="fixed" className={classes.appBar}>
@@ -123,6 +127,7 @@ const NavBar = () => {
           className={classes.menuIcon}
           color="inherit"
           aria-label="open drawer"
+          disabled={isSidebarDisabled}
         >
           {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
         </IconButton>
