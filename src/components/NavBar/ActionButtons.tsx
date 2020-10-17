@@ -12,9 +12,9 @@ const useStyles = makeStyles((Theme) =>
     button: {
       height: 40,
       display: "inline",
-      width: 85,
+      width: 90,
       margin: "0 0 0 10px",
-      fontSize: 12,
+      fontSize: "0.9rem",
     },
   })
 );

@@ -56,6 +56,9 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(3),
     },
     toolbar: theme.mixins.toolbar,
+    listItem: {
+      fontFamily: theme.typography.fontFamily[0]
+    }
   }),
 );
 
@@ -64,7 +67,7 @@ export function MainMenu() {
   return <List className={classes.dropdownList}>
     {
       drawerItems.map((item, i) =>
-        <ListItem key={i}>
+        <ListItem key={i} className={classes.listItem}>
           <Accordion
             drawerItem={true}
             item={item} />
