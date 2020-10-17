@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme: Theme) =>
       left: 0,
       right: 0,
       bottom: 0,
-      zIndex: theme.zIndex.drawer + 1,
+      zIndex: theme.zIndex.modal,
       backgroundColor: "white",
     },
   })

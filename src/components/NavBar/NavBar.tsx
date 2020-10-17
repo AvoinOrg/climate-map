@@ -46,7 +46,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     HelpOutlineIcon: {},
     appBar: {
-      zIndex: theme.zIndex.drawer + 2,
+      zIndex: theme.zIndex.appBar,
     },
     title: {
       flexGrow: 1,
