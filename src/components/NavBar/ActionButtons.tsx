@@ -3,7 +3,7 @@ import Button from "@material-ui/core/Button";
 import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
 import { StateContext } from "../State";
 
-const useStyles = makeStyles((Theme) =>
+const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     buttonContainer: {
       display: "flex",
@@ -22,23 +22,23 @@ const useStyles = makeStyles((Theme) =>
 const ActionButtons = () => {
   const classes = useStyles({});
   const {
-    isSignupFormOpen,
-    setIsSignupFormOpen,
-    isLoginFormOpen,
-    setIsLoginFormOpen,
+    isSignupOpen,
+    setIsSignupOpen,
+    isLoginOpen,
+    setIsLoginOpen,
     setIsSidebarDisabled
   }: any = React.useContext(StateContext);
 
   const handleLoginClick = (event) => {
-    setIsSidebarDisabled(!isLoginFormOpen)
-    setIsLoginFormOpen(!isLoginFormOpen);
-    setIsSignupFormOpen(false);
+    setIsSidebarDisabled(!isLoginOpen)
+    setIsLoginOpen(!isLoginOpen);
+    setIsSignupOpen(false);
   };
 
   const handleSignupClick = (event) => {
-    setIsSidebarDisabled(!isSignupFormOpen)
-    setIsSignupFormOpen(!isSignupFormOpen);
-    setIsLoginFormOpen(false);
+    setIsSidebarDisabled(!isSignupOpen)
+    setIsSignupOpen(!isSignupOpen);
+    setIsLoginOpen(false);
   };
 
   return (
@@ -46,7 +46,7 @@ const ActionButtons = () => {
       <Button
         className={classes.button}
         onClick={handleSignupClick}
-        variant={isSignupFormOpen ? "contained" : "outlined"}
+        variant={isSignupOpen ? "contained" : "outlined"}
         disableElevation
       >
         Sign up
@@ -54,7 +54,7 @@ const ActionButtons = () => {
       <Button
         className={classes.button}
         onClick={handleLoginClick}
-        variant={isLoginFormOpen ? "contained" : "outlined"}
+        variant={isLoginOpen ? "contained" : "outlined"}
         disableElevation
       >
         Log in

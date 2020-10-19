@@ -7,10 +7,10 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const LoginForm = () => {
+const Login = () => {
   const classes = useStyles({});
 
   return <div className={classes.loginContainer}></div>;
 };
 
-export default LoginForm;
+export default Login;

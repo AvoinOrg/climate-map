@@ -1,5 +1,4 @@
 import { createMuiTheme, StyleRules } from "@material-ui/core/styles";
-import { CSSProperties } from "react";
 
 declare module "@material-ui/core/styles/createMuiTheme" {
   interface ThemeOptions {
@@ -23,9 +22,7 @@ const zIndex = {
 
 const fontFamily = {
   0: "raleway",
-  1: '"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Oxygen", \
-  "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", \
-  sans-serif',
+  1: '"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
 };
 
 const typography: StyleRules = {
@@ -102,4 +99,9 @@ const typography: StyleRules = {
 
 const themeName = "Avoin Green and White";
 
-export default createMuiTheme({ palette, typography, zIndex, themeName });
+export default createMuiTheme({
+  palette,
+  typography,
+  zIndex,
+  themeName,
+});
