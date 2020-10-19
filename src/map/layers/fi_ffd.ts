@@ -1,5 +1,6 @@
+import { Expression } from 'mapbox-gl'
 import { registerGroup } from '../layer_groups'
-import { addLayer, addSource } from '../map'
+import { addLayer, addSource, map } from '../map'
 
 const URL_PREFIX = `https://map.buttonprogram.org/fi-ffd`
 
@@ -24,7 +25,7 @@ addLayer({
         attribution,
     },
     'paint': {},
-    BEFORE: 'BACKGROUND',
+    BEFORE: 'LABEL',
 })
 
 interface GeoBoundariesProperies {
@@ -71,13 +72,24 @@ const countryIsos = [
     'BEN',
     'PHL',
     'SEN',
-    'GIN',
     'ZMB',
     'BOL',
     'RWA',
     'TZA',
     'UGA',
 ]
+
+const lineWidth: Expression = [
+  "step", ["zoom"],
+  5, // 0..5:  5px
+  5, 8, // 5+: 8px
+]
+
+addSource('fi-ffd-case-study-areas', {
+  "type": 'geojson',
+  'data': `${URL_PREFIX}/case_study_areas.geojson?v=1`,
+  attribution: geoboundariesAttribution,
+})
 
 for (const countryIso of countryIsos) {
     addSource(`geoboundaries-adm0-${countryIso}`, {
@@ -86,38 +98,38 @@ for (const countryIso of countryIsos) {
         attribution: geoboundariesAttribution,
     })
     addLayer({
-        'id': `geoboundaries-adm0-${countryIso}-boundary`,
+        'id': `fi-ffd-geoboundaries-adm0-${countryIso}-boundary`,
         'source': `geoboundaries-adm0-${countryIso}`,
         'type': 'line',
         'paint': {
-            'line-width': 1.5,
+            'line-width': lineWidth,
             'line-color': '#fff',
         },
-        BEFORE: 'OUTLINE',
+        BEFORE: 'LABEL',
     })
+
+    addLayer({
+      'id': `fi-ffd-case-study-areas-${countryIso}-boundary`,
+      'source': 'fi-ffd-case-study-areas',
+      'type': 'line',
+      'minzoom': 4,
+      'paint': {
+          // 'line-opacity': 0.5,
+          'line-width': lineWidth,
+          'line-color': [
+            'case',
+            ['==', ['get', 'shapeGroup'], 'SEN'], '#9e2c00', // Senegal is difficult to see without adjustments
+            '#f5b400',
+          ],
+      },
+      'filter': ['==', ['get', 'shapeGroup'], countryIso],
+      BEFORE: 'TOP',
+  })
 }
 
-const countryLayers = countryIsos.map(countryIso => `geoboundaries-adm0-${countryIso}-boundary`)
 
-
-
-addSource('fi-ffd-case-study-areas', {
-    "type": 'geojson',
-    'data': `${URL_PREFIX}/case_study_areas.geojson?v=1`,
-    attribution: geoboundariesAttribution,
-})
-
-addLayer({
-    'id': `fi-ffd-case-study-areas-boundary`,
-    'source': 'fi-ffd-case-study-areas',
-    'type': 'line',
-    'paint': {
-        // 'line-opacity': 0.5,
-        'line-width': 3,
-        'line-color': '#f5b400',
-    },
-    BEFORE: 'OUTLINE',
-})
+const countryLayers = countryIsos.map(countryIso => `fi-ffd-geoboundaries-adm0-${countryIso}-boundary`)
+const caseStudyAreas = countryIsos.map(countryIso => `fi-ffd-case-study-areas-${countryIso}-boundary`)
 
 
 addLayer({
@@ -136,7 +148,37 @@ addLayer({
         "text-size": 20,
         "text-field": ["get", "shapeName"],
     },
-    BEFORE: 'LABEL',
+    BEFORE: 'TOP',
 })
 
-registerGroup('fi-ffd', ['s2-cloudless-at-eox-wms', 'fi-ffd-case-study-areas-boundary', 'fi-ffd-case-study-areas-sym', ...countryLayers])
+registerGroup('fi-ffd', [
+  's2-cloudless-at-eox-wms',
+  'fi-ffd-case-study-areas-sym',
+  ...caseStudyAreas,
+  ...countryLayers,
+])
+
+if (process.env.NODE_ENV === 'development') {
+  const allLayers = countryLayers.concat(caseStudyAreas)
+  // @ts-ignore
+  window.fi_ffd_show_country = (selectedIsos: string[]) => {
+    allLayers.forEach(layerId => {
+      const shown = selectedIsos.filter(iso => layerId.includes(iso)).length > 0
+      map.setLayoutProperty(layerId, 'visibility', shown ? 'visible' : 'none');
+    })
+  }
+  // @ts-ignore
+  window.fi_ffd_show_case_study_area = (selectedIsos: string[]) => {
+    allLayers.forEach(layerId => {
+      const shown = selectedIsos.filter(iso => layerId.includes(iso)).length > 0 && !countryLayers.includes(layerId)
+      map.setLayoutProperty(layerId, 'visibility', shown ? 'visible' : 'none');
+    })
+  }
+  // @ts-ignore
+  window.fi_ffd_show_country_only = (selectedIsos: string[]) => {
+    allLayers.forEach(layerId => {
+      const shown = selectedIsos.filter(iso => layerId.includes(iso)).length > 0 && !caseStudyAreas.includes(layerId)
+      map.setLayoutProperty(layerId, 'visibility', shown ? 'visible' : 'none');
+    })
+  }
+}
