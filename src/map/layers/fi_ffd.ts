@@ -25,7 +25,7 @@ addLayer({
         attribution,
     },
     'paint': {},
-    BEFORE: 'LABEL',
+    BEFORE: 'BG_LABEL',
 })
 
 interface GeoBoundariesProperies {
@@ -148,7 +148,7 @@ addLayer({
         "text-size": 20,
         "text-field": ["get", "shapeName"],
     },
-    BEFORE: 'TOP',
+    BEFORE: 'LABEL',
 })
 
 registerGroup('fi-ffd', [
