@@ -1,5 +1,6 @@
 import React from "react";
 import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
+
 import { StateContext } from "../State";
 import Login from "./Login";
 import Signup from "./Signup";
@@ -12,15 +13,17 @@ const useStyles = makeStyles((theme: Theme) =>
       left: 0,
       right: 0,
       bottom: 0,
-      padding: "64px 10px 100px 10px",
+      padding: "64px 10px 200px 10px",
       zIndex: theme.zIndex.modal,
       backgroundColor: "white",
+      overflowY: "auto",
     },
   })
 );
 
 const ProfileModal = () => {
   const { isSignupOpen, isLoginOpen }: any = React.useContext(StateContext);
+
   const classes = useStyles({});
 
   return (

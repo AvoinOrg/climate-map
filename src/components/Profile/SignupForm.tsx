@@ -8,7 +8,7 @@ import {
   FormHelperText,
 } from "@material-ui/core";
 
-import { AuthContext } from "../Auth";
+import { UserContext } from "../User";
 import { NextButton } from "./Signup";
 import PasswordField from "./PasswordField";
 
@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) =>
       flexWrap: "wrap",
       justifyContent: "space-around",
       width: "100%",
-      margin: "0 0 45px 0",
+      margin: "60px 0 0 0",
     },
     textField: {
       width: "100%",
@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme: Theme) =>
       color: "red",
     },
     separatorContainer: {
-      padding: "0 8px 0 8px",
+      padding: "85px 8px 0 8px",
       width: "100%",
     },
     separator: {
@@ -54,6 +54,8 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const SignupForm = (props) => {
   const classes = useStyles({});
+  const { signup }: any = React.useContext(UserContext);
+
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [bigError, setBigError] = useState("");
 
@@ -61,15 +63,14 @@ const SignupForm = (props) => {
     email: "",
     password: "",
     name: "",
-    phone: "",
+    phone_number: "",
+    account_type: "Landowner",
   });
 
   const [errors, setErrors] = useState({
     email: false,
     password: false,
   });
-
-  const { signup }: any = React.useContext(AuthContext);
 
   const validators = {
     email: (value) => {
@@ -156,6 +157,8 @@ const SignupForm = (props) => {
           errorMsg={"Between 8 and 64 characters."}
           onChange={handleValueChange}
           value={values.password}
+          required={true}
+          id={"password"}
         ></PasswordField>
         <TextField
           className={classes.textField}
@@ -167,7 +170,7 @@ const SignupForm = (props) => {
         />
         <TextField
           className={classes.textField}
-          id="phone"
+          id="phone_number"
           label="Phone number"
           variant="outlined"
           color={"secondary"}
@@ -175,9 +178,9 @@ const SignupForm = (props) => {
         />
       </form>
       {bigError && <p className={classes.errorMsg}>{bigError}</p>}
-      <div className={classes.separatorContainer}>
+      {/* <div className={classes.separatorContainer}>
         <div className={classes.separator} />
-      </div>
+      </div> */}
       <NextButton onClick={handleClickNext} disabled={isButtonDisabled} />
     </div>
   );
