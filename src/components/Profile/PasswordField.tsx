@@ -32,15 +32,15 @@ const PasswordField = (props) => {
   return (
     <FormControl className={classes.textField} variant="outlined">
       <InputLabel color={"secondary"} htmlFor="password">
-        Password *
+        Password {props.required && "*"}
       </InputLabel>
       <OutlinedInput
-        id="password"
+        id={props.id}
         error={props.error}
         onChange={props.onChange}
         type={showPassword ? "text" : "password"}
         color={"secondary"}
-        labelWidth={78}
+        labelWidth={props.required ? 78 : 68}
         value={props.value}
         endAdornment={
           <InputAdornment position="end">
@@ -53,9 +53,7 @@ const PasswordField = (props) => {
           </InputAdornment>
         }
       />
-      <FormHelperText>
-        {props.error ? props.errorMsg : ""}
-      </FormHelperText>
+      <FormHelperText>{props.error ? props.errorMsg : ""}</FormHelperText>
     </FormControl>
   );
 };
