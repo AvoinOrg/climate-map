@@ -1,9 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
 
+import DataForm from "./DataForm";
 import SignupStepper from "./SignupStepper";
 import SignupForm from "./SignupForm";
+import IntegrationForm from "./IntegrationForm";
+import Finish from "./Finish";
+import { UserContext } from "../User";
+import { StateContext } from "../State";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -22,11 +27,11 @@ const useStyles = makeStyles((theme: Theme) =>
       fontFamily: theme.typography.fontFamily[0],
       fontWeight: 500,
       textAlign: "center",
-      margin: "60px 0 0 0",
+      margin: "80px 0 0 0",
     },
     nextButton: {
       alignSelf: "flex-end",
-      margin: "16px 8px 0 8px",
+      margin: "60px 8px 0 8px",
     },
   })
 );
@@ -35,12 +40,31 @@ const steps = [0, 1, 2];
 
 const Signup = () => {
   const classes = useStyles({});
+  const { isLoggedIn }: any = React.useContext(UserContext);
+  const {
+    setIsSignupOpen,
+    setIsSidebarDisabled,
+    setIsSidebarOpen,
+  }: any = React.useContext(StateContext);
 
-  const [activeStep, setActiveStep] = useState(0);
+  const [activeStep, setActiveStep] = useState(2);
 
   const handleClickNext = () => {
     setActiveStep(activeStep + 1);
   };
+
+  const handleFinish = () => {
+    setIsSignupOpen(false);
+    setIsSidebarDisabled(false);
+    setIsSidebarOpen(true);
+  };
+
+  useEffect(() => {
+    if (activeStep > 0 && !isLoggedIn) {
+      setActiveStep(0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn]);
 
   return (
     <div className={classes.root}>
@@ -50,6 +74,15 @@ const Signup = () => {
 
         {activeStep === 0 && (
           <SignupForm handleClickNext={handleClickNext}></SignupForm>
+        )}
+        {activeStep === 1 && isLoggedIn && (
+          <DataForm handleClickNext={handleClickNext}></DataForm>
+        )}
+        {activeStep === 2 && isLoggedIn && (
+          <IntegrationForm handleClickNext={handleClickNext}></IntegrationForm>
+        )}
+        {activeStep > 2 && isLoggedIn && (
+          <Finish handleClickNext={handleFinish}></Finish>
         )}
       </div>
     </div>

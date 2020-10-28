@@ -80,6 +80,7 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       width: "100%",
+      maxWidth: 600,
     },
     step: {
       padding: "0 0 0 8px",
