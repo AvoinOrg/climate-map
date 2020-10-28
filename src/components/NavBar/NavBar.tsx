@@ -17,7 +17,7 @@ import Logo from "../../logo.svg";
 import { NavBarSearch } from "./NavBarSearch";
 import ProfileMenu from "./ProfileMenu";
 import ActionButtons from "./ActionButtons";
-import { AuthContext } from "../Auth";
+import { UserContext } from "../User";
 import { StateContext } from "../State";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -112,7 +112,7 @@ const NavBar = () => {
     setIsSidebarOpen,
     isSidebarDisabled,
   }: any = React.useContext(StateContext);
-  const { isLoggedIn }: any = React.useContext(AuthContext);
+  const { isLoggedIn }: any = React.useContext(UserContext);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);

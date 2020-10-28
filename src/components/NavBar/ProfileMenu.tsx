@@ -6,10 +6,15 @@ import IconButton from "@material-ui/core/IconButton";
 import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 
+import { UserContext } from "../User";
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     iconContainer: {
       margin: `0 ${theme.spacing(2)} 0 0`,
+    },
+    icon: {
+      fontSize: "2rem",
     },
     buttonContainer: {
       display: "flex",
@@ -47,15 +52,25 @@ const StyledMenu = withStyles({
 
 const ProfileMenu = () => {
   const classes = useStyles({});
+  const { logout }: any = React.useContext(UserContext);
 
   const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
 
   const handleMenuClick = (event) => {
-    setMenuAnchorEl(event.currentTarget);
+    if (menuAnchorEl) {
+      handleMenuClose();
+    } else {
+      setMenuAnchorEl(event.currentTarget);
+    }
   };
 
   const handleMenuClose = () => {
     setMenuAnchorEl(null);
+  };
+
+  const handleLogOut = () => {
+    handleMenuClose();
+    logout();
   };
 
   return (
@@ -68,7 +83,7 @@ const ProfileMenu = () => {
         onClick={handleMenuClick}
         color="inherit"
       >
-        <AccountCircleIcon />
+        <AccountCircleIcon className={classes.icon} />
       </IconButton>
       <StyledMenu
         id="actions-menu"
@@ -77,18 +92,9 @@ const ProfileMenu = () => {
         open={Boolean(menuAnchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem id="btn-profile" onClick={handleMenuClose}>
+        <MenuItem id="btn-logout" onClick={handleLogOut}>
           Log out
-            </MenuItem>
-        <MenuItem id="btn-login" onClick={handleMenuClose}>
-          Log in
-            </MenuItem>
-        <MenuItem id="btn-signup" onClick={handleMenuClose}>
-          Sign up
-            </MenuItem>
-        <MenuItem id="btn-logout" onClick={handleMenuClose}>
-          Log out
-            </MenuItem>
+        </MenuItem>
       </StyledMenu>
     </>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 // const claimHashes = {
@@ -7,39 +7,47 @@ import axios from "axios";
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-export const AuthContext = React.createContext({});
+export const UserContext = React.createContext({});
 
-export const AuthProvider = (props) => {
-  const [idToken, setIdToken] = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
-  const [expiresAt, setExpiresAt] = useState(null);
-  const [isLoggedIn, setisLoggedIn] = useState(false);
+export const UserProvider = (props) => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
+  const [userIntegrations, setUserIntegrations] = useState(null);
 
-  const checkAuth = () => {
-    const expiration = parseInt(expiresAt, 10) || 0;
-    console.log(localStorage.getItem("isLoggedIn") === "true");
-    return localStorage.getItem("isLoggedIn") === "true";
+  const storeToken = (token, expires) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("expires", expires);
   };
 
-  // const localLogin = () => {
-  //     const payload = authResult.idTokenPayload
-  //     localStorage.setItem('isLoggedIn', 'true');
-  //     // Set the time that the access token will expire at
-  //     setExpiresAt(JSON.stringify(
-  //         authResult.expiresIn * 1000 + new Date().getTime()
-  //     ))
-  //     accessToken = authResult.accessToken;
-  //     idToken = authResult.idToken;
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("expires");
+    setIsLoggedIn(false);
+    setUserProfile(null);
+  };
 
-  //     localStorage.setItem('authResult', JSON.stringify(authResult));
-
-  //     displayButtons();
-  // }
+  const checkAuth = () => {
+    if (
+      localStorage.getItem("token") &&
+      localStorage.getItem("expires") &&
+      Date.now() < parseInt(localStorage.getItem("expires"))
+    ) {
+      !isLoggedIn && setIsLoggedIn(true);
+      return true;
+    }
+    isLoggedIn && setIsLoggedIn(false);
+    return false;
+  };
 
   const login = async (values) => {
-    const res = await axios.post(apiUrl + "/login", { values });
-    if (res.status === 200) {
-      localStorage.setItem("isLoggedIn", "true");
+    try {
+      const res = await axios.post(apiUrl + "/login", values);
+      if (res.status === 200) {
+        storeToken(res.data.token, res.data.expires);
+        return checkAuth();
+      }
+    } catch (error) {
+      throw error.response;
     }
   };
 
@@ -48,12 +56,91 @@ export const AuthProvider = (props) => {
       const res = await axios.post(apiUrl + "/signup", values);
 
       if (res.status === 200) {
-        localStorage.setItem("isLoggedIn", "true");
+        storeToken(res.data.token, res.data.expires);
+        return checkAuth();
       }
     } catch (error) {
-      throw(error.response)
+      throw error.response;
     }
   };
+
+  const fetchProfile = async () => {
+    try {
+      const res = await axios.get(apiUrl + "/user/profile", {
+        params: { token: localStorage.getItem("token") },
+      });
+
+      if (res.status === 200) {
+        setUserProfile(res.data);
+      }
+    } catch (error) {
+      throw error.response;
+    }
+  };
+
+  const fetchIntegrations = async () => {
+    try {
+      const res = await axios.get(apiUrl + "/user/integrations", {
+        params: { token: localStorage.getItem("token") },
+      });
+
+      if (res.status === 200) {
+        setUserIntegrations(res.data);
+      }
+    } catch (error) {
+      throw error.response;
+    }
+  };
+
+  const initDataAuth = async (integration_type) => {
+    try {
+      const config = {
+        method: "post",
+        url: apiUrl + "/user/integrations/" + integration_type + "/init",
+        params: {
+          token: localStorage.getItem("token"),
+        },
+      };
+
+      const res = await axios(config);
+
+      if (res.status === 200) {
+        return res.data.integration_link;
+      }
+    } catch (error) {
+      throw error.response;
+    }
+  };
+
+  const fetchDataAuthStatus = async (integrationType) => {
+    try {
+      const res = await axios.get(
+        apiUrl + "/user/integrations/" + integrationType + "/status",
+        {
+          params: { token: localStorage.getItem("token") },
+        }
+      );
+
+      if (res.status === 200) {
+        return res.data.integration_status;
+      }
+    } catch (error) {
+      throw error.response;
+    }
+  };
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchProfile();
+      fetchIntegrations();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // useEffect(() => {
   //     getUser(props.userRef);
@@ -66,12 +153,18 @@ export const AuthProvider = (props) => {
 
   const values = {
     isLoggedIn,
+    logout,
     login,
     signup,
+    fetchProfile,
+    userProfile,
+    userIntegrations,
+    initDataAuth,
+    fetchDataAuthStatus,
   };
 
   return (
-    <AuthContext.Provider value={values}>{props.children}</AuthContext.Provider>
+    <UserContext.Provider value={values}>{props.children}</UserContext.Provider>
   );
 };
 

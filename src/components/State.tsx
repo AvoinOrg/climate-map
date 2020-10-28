@@ -7,7 +7,7 @@ export const StateContext = React.createContext({});
 export const StateProvider = (props) => {
   const isSidebarOpen = useObservable(isOpenObservable);
   const [isSidebarDisabled, setIsSidebarDisabled] = useState(false);
-  const [isSignupOpen, setIsSignupOpen] = useState(true);
+  const [isSignupOpen, setIsSignupOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const values = {

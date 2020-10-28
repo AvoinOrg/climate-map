@@ -10,18 +10,18 @@ import "./map";
 import theme from "./ui/theme";
 
 import * as serviceWorker from "./serviceWorker";
-import { AuthProvider } from "./components/Auth";
+import { UserProvider } from "./components/User";
 import { StateProvider } from "./components/State";
 
 ReactDOM.render(
   <ThemeProvider theme={theme}>
-    <AuthProvider>
+    <UserProvider>
       <StateProvider>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
         <AppRouterSwitch />
       </StateProvider>
-    </AuthProvider>
+    </UserProvider>
   </ThemeProvider>,
   document.querySelector("#root")
 );
