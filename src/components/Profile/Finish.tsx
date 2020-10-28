@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
-import { Button, Modal } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 
 import { UserContext } from "../User";
-import { NextButton } from "./Signup";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
