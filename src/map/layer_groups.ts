@@ -55,3 +55,7 @@ export const toggleGroupInternal = (group: string, forcedState?: boolean) => {
 export const registerGroup = (groupName: string, groupLayers: any[]) => {
   layerGroupDefinitions[groupName] = groupLayers
 }
+
+export const unregisterGroup = (groupName: string) => {
+  delete layerGroupDefinitions[groupName]
+}
