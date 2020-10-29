@@ -4,6 +4,7 @@ import BuildingsContent from "../Accordion/BuildingsContent";
 import SnowCoverLossContent from "../Accordion/SnowCoverLossContent";
 import ForestContent from "../Accordion/ForestContent";
 import AirQualityContent from "../Accordion/AirQualityContent";
+import UserContent from "../Accordion/UserContent";
 
 export interface ContentEntity {
   title: string;
@@ -14,7 +15,7 @@ export interface ContentEntity {
 
 export default [
   {
-    title: 'Forest',
+    title: "Forest",
     content: ForestContent,
   },
   // {
@@ -31,19 +32,19 @@ export default [
   //   contentType: 'textWithLink'
   // },
   {
-    title: 'Biodiversity',
+    title: "Biodiversity",
     content: BiodiversityContent,
   },
   {
-    title: 'Wetlands',
+    title: "Wetlands",
     content: WetlandsContent,
   },
   {
-    title: 'Buildings',
+    title: "Buildings",
     content: BuildingsContent,
   },
   {
-    title: 'Air quality',
+    title: "Air quality",
     content: AirQualityContent,
   },
   // {
@@ -52,7 +53,7 @@ export default [
   //   contentType: null
   // },
   {
-    title: 'Snow cover loss',
+    title: "Snow cover loss",
     content: SnowCoverLossContent,
   },
   // {
@@ -60,4 +61,11 @@ export default [
   //   content: null,
   //   contentType: null
   // },
+];
+
+export const userDrawerItems = [
+  {
+    title: "Your data",
+    content: UserContent,
+  },
 ];

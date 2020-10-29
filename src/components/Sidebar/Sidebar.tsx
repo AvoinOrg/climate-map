@@ -1,44 +1,45 @@
-import React from 'react';
-import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import List from '@material-ui/core/List';
+import React, { useContext } from "react";
+import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
+import Drawer from "@material-ui/core/Drawer";
+import List from "@material-ui/core/List";
 
-import Accordion from '../Accordion'
+import Accordion from "../Accordion";
 
-import drawerItems from './drawerItems'
+import drawerItems, { userDrawerItems } from "./drawerItems";
 
-import { ListItem } from '@material-ui/core';
-import { StateContext } from '../State'
+import { ListItem } from "@material-ui/core";
+import { StateContext } from "../State";
+import { UserContext } from "../User";
 
 const drawerWidth = 340;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     title: {
-      paddingLeft: 16
+      paddingLeft: 16,
     },
     menuButton: {
-      position: 'absolute',
+      position: "absolute",
       marginRight: theme.spacing(2),
     },
     hide: {
-      display: 'none',
+      display: "none",
     },
     navlink: {
-      color: 'black',
-      textDecoration: 'none',
+      color: "black",
+      textDecoration: "none",
     },
     logo: {
       maxWidth: 200,
-      float: 'left',
+      float: "left",
       marginLeft: -12,
-      marginBottom: -24
+      marginBottom: -24,
     },
     search: {
-      padding: 0
+      padding: 0,
     },
     dropdownList: {
-      marginTop: 60,
+      marginTop: 80,
     },
     drawer: {
       width: drawerWidth,
@@ -57,29 +58,36 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     toolbar: theme.mixins.toolbar,
     listItem: {
-      fontFamily: theme.typography.fontFamily[0]
-    }
-  }),
+      fontFamily: theme.typography.fontFamily[0],
+    },
+  })
 );
 
 export function MainMenu() {
   const classes = useStyles({});
-  return <List className={classes.dropdownList}>
-    {
-      drawerItems.map((item, i) =>
-        <ListItem key={i} className={classes.listItem}>
-          <Accordion
-            drawerItem={true}
-            item={item} />
+
+  const { isLoggedIn }: any = useContext(UserContext);
+
+  return (
+    <List className={classes.dropdownList}>
+      {isLoggedIn &&
+        userDrawerItems.map((item, i) => (
+          <ListItem key={item.title} className={classes.listItem}>
+            <Accordion drawerItem={true} item={item} />
+          </ListItem>
+        ))}
+      {drawerItems.map((item, i) => (
+        <ListItem key={item.title} className={classes.listItem}>
+          <Accordion drawerItem={true} item={item} />
         </ListItem>
-      )
-    }
-  </List>
+      ))}
+    </List>
+  );
 }
 
 function Sidebar({ children }) {
   const classes = useStyles({});
-  const { isSidebarOpen }: any = React.useContext(StateContext)
+  const { isSidebarOpen }: any = useContext(StateContext);
 
   return (
     <div className={"left-drawer"}>
@@ -91,9 +99,8 @@ function Sidebar({ children }) {
       >
         {children}
       </Drawer>
-
     </div>
   );
 }
 
-export default Sidebar
+export default Sidebar;
