@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
 import {
   Checkbox,
@@ -101,6 +101,11 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const DataForm = (props) => {
   const classes = useStyles({});
+
+  const { userProfile, userIntegrations, updateProfile }: any = useContext(
+    UserContext
+  );
+
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -112,7 +117,27 @@ const DataForm = (props) => {
     terms_agreed: false,
   });
 
-  const { userProfile }: any = React.useContext(UserContext);
+  const [disabled, setDisabled] = useState({
+    forest_owner: true,
+    farm_owner: false,
+    property_owner: true,
+    terms_agreed: false,
+  });
+
+  useEffect(() => {
+    if (userIntegrations) {
+      const newDisabled = { ...disabled };
+      if (userIntegrations.vipu_state === 1) {
+        newDisabled["farm_owner"] = true;
+        newDisabled["terms_agreed"] = true;
+      } else {
+        newDisabled["farm_owner"] = false;
+        newDisabled["terms_agreed"] = false;
+      }
+      setDisabled(newDisabled);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userIntegrations]);
 
   const handleValueChange = (event) => {
     const newValues = { ...values };
@@ -131,6 +156,7 @@ const DataForm = (props) => {
 
   const handleClickNext = async () => {
     setIsButtonDisabled(true);
+    updateProfile({ funnel_state: 2 });
     props.handleClickNext();
   };
 
@@ -180,6 +206,7 @@ const DataForm = (props) => {
             onChange={handleValueChange}
             id="farm_owner"
             inputProps={{ "aria-label": "primary checkbox" }}
+            disabled={disabled["farm_owner"]}
           />
           <InputLabel className={classes.checkboxText}>Farm owner</InputLabel>
         </div>
@@ -188,7 +215,7 @@ const DataForm = (props) => {
             checked={values.forest_owner}
             onChange={handleValueChange}
             id="forest_owner"
-            disabled={true}
+            disabled={disabled["forest_owner"]}
             inputProps={{ "aria-label": "primary checkbox" }}
           />
           <InputLabel className={classes.checkboxText} disabled={true}>
@@ -197,10 +224,10 @@ const DataForm = (props) => {
         </div>
         <div className={classes.checkboxContainer}>
           <Checkbox
-            checked={values.forest_owner}
+            checked={values.property_owner}
             onChange={handleValueChange}
             id="property_owner"
-            disabled={true}
+            disabled={disabled["property_owner"]}
             inputProps={{ "aria-label": "primary checkbox" }}
           />
           <InputLabel className={classes.checkboxText} disabled={true}>
@@ -217,6 +244,7 @@ const DataForm = (props) => {
           onChange={handleValueChange}
           id="terms_agreed"
           inputProps={{ "aria-label": "primary checkbox" }}
+          disabled={disabled["terms_agreed"]}
         />
         <p>
           I have read and agree on{" "}

@@ -52,6 +52,14 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
+const defaultValues = {
+  email: "",
+  password: "",
+  name: "",
+  phone_number: "",
+  account_type: "Landowner",
+};
+
 const SignupForm = (props) => {
   const classes = useStyles({});
   const { signup }: any = React.useContext(UserContext);
@@ -59,13 +67,7 @@ const SignupForm = (props) => {
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [bigError, setBigError] = useState("");
 
-  const [values, setValues] = useState({
-    email: "",
-    password: "",
-    name: "",
-    phone_number: "",
-    account_type: "Landowner",
-  });
+  const [values, setValues] = useState(defaultValues);
 
   const [errors, setErrors] = useState({
     email: false,
@@ -133,6 +135,7 @@ const SignupForm = (props) => {
       return;
     }
 
+    setValues(defaultValues);
     props.handleClickNext();
   };
 
@@ -147,6 +150,7 @@ const SignupForm = (props) => {
             id="email"
             error={errors.email}
             onChange={handleValueChange}
+            value={values.email}
             color={"secondary"}
             labelWidth={108}
           />
@@ -167,6 +171,7 @@ const SignupForm = (props) => {
           variant="outlined"
           color={"secondary"}
           onChange={handleValueChange}
+          value={values.name}
         />
         <TextField
           className={classes.textField}
@@ -175,6 +180,7 @@ const SignupForm = (props) => {
           variant="outlined"
           color={"secondary"}
           onChange={handleValueChange}
+          value={values.phone_number}
         />
       </form>
       {bigError && <p className={classes.errorMsg}>{bigError}</p>}

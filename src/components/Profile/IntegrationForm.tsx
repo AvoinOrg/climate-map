@@ -115,7 +115,20 @@ const IntegrationButton = (props) => {
             <p className={classes.integrationText}>
               Fields succesfully imported!
             </p>
-            <p className={classes.integrationTextSmall}>Click to re-import.</p>
+            <p className={classes.integrationTextSmall}>
+              Click to remove all data from this app.
+            </p>
+          </div>
+        </Button>
+      )}
+      {props.state === 4 && (
+        <Button
+          color="secondary"
+          onClick={props.onClick}
+          className={classes.integrationButton}
+        >
+          <div className={classes.integrationTextContainer}>
+            <p className={classes.integrationText}>Deleting...</p>
           </div>
         </Button>
       )}
@@ -128,8 +141,10 @@ const IntegrationForm = (props) => {
   const {
     userProfile,
     userIntegrations,
+    fetchIntegrations,
     initDataAuth,
     fetchDataAuthStatus,
+    updateIntegrations,
   }: any = React.useContext(UserContext);
   const [integrationStates, setIntegrationStates] = useState(null);
   const stateRef = useRef(integrationStates);
@@ -151,21 +166,29 @@ const IntegrationForm = (props) => {
   }, [userIntegrations]);
 
   const handleClickNext = async () => {
+    fetchIntegrations();
     props.handleClickNext();
   };
 
   const onClickVipu = async () => {
     let val = 0;
+    let newIntegrationStates = {};
+
     if (integrationStates["vipu"] === 0) {
       const link = await initDataAuth("vipu");
       openInNewTab(link);
       val = 1;
       pollStatus("vipu");
+    } else if (integrationStates["vipu"] === 3) {
+      newIntegrationStates = { ...integrationStates };
+      newIntegrationStates["vipu"] = 4;
+      setIntegrationStates(newIntegrationStates);
+
+      await updateIntegrations({ vipu_state: 0 });
     }
 
-    const newIntegrationStates = { ...integrationStates };
+    newIntegrationStates = { ...integrationStates };
     newIntegrationStates["vipu"] = val;
-
     setIntegrationStates(newIntegrationStates);
   };
 
@@ -220,10 +243,14 @@ const IntegrationForm = (props) => {
           state={integrationStates["vipu"]}
         />
       </div>
-      <div className={classes.separatorContainer}>
-        <div className={classes.separator} />
-      </div>
-      <NextButton onClick={handleClickNext} />
+      {props.handleClickNext && (
+        <>
+          <div className={classes.separatorContainer}>
+            <div className={classes.separator} />
+          </div>
+          {props.handleClickNext && <NextButton onClick={handleClickNext} />}
+        </>
+      )}
     </div>
   ) : (
     <></>

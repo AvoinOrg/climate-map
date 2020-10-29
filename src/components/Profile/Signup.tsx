@@ -41,11 +41,9 @@ const steps = [0, 1, 2];
 const Signup = () => {
   const classes = useStyles({});
   const { isLoggedIn }: any = React.useContext(UserContext);
-  const {
-    setIsSignupOpen,
-    setIsSidebarDisabled,
-    setIsSidebarOpen,
-  }: any = React.useContext(StateContext);
+  const { setIsSignupOpen, setIsSidebarOpen }: any = React.useContext(
+    StateContext
+  );
 
   const [activeStep, setActiveStep] = useState(2);
 
@@ -55,7 +53,6 @@ const Signup = () => {
 
   const handleFinish = () => {
     setIsSignupOpen(false);
-    setIsSidebarDisabled(false);
     setIsSidebarOpen(true);
   };
 
