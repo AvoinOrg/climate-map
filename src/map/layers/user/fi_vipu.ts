@@ -1,51 +1,8 @@
-import {
-  addLayer,
-  addSource,
-  removeSource,
-  removeLayer,
-  genericPopupHandler,
-  createPopup,
-} from "src/map/map";
-import { Expression } from "mapbox-gl";
+import { addLayer, addSource, removeSource, removeLayer } from "src/map/map";
 import { registerGroup, unregisterGroup } from "src/map/layer_groups";
 import { fillOpacity } from "../../utils";
 
 import { addDataset, removeDataset } from "./common";
-
-const fillColorSoil: (codeAttr: string) => Expression = (codeAttr) => [
-  "match",
-  ["get", codeAttr],
-
-  // {"pintamaalaji_koodi":195111,"pintamaalaji":"Kalliomaa (Ka) RT"}
-  195111,
-  "#adaaaa",
-  // {"pintamaalaji_koodi":195210,"pintamaalaji":"Sekalajitteinen maalaji, päälajitetta ei selvitetty (SY) RT"}
-  195210,
-  "#b0a978",
-  // {"pintamaalaji_koodi":195310,"pintamaalaji":"Karkearakeinen maalaji, päälajitetta ei selvitetty (KY) RT"}
-  195310,
-  "#a39952",
-  // {"pintamaalaji_koodi":195410,"pintamaalaji":"Hienojakoinen maalaji, päälajitetta ei selvitetty (HY) RT"}
-  195410,
-  "#d4be1e",
-  // {"pintamaalaji_koodi":195413,"pintamaalaji":"Savi (Sa) RT"}
-  195413,
-  "#9c4699",
-  // {"pintamaalaji_koodi":19551822,"pintamaalaji":"Soistuma (Tvs) RT"}
-  19551822,
-  "#397d69",
-  // {"pintamaalaji_koodi":19551891,"pintamaalaji":"Ohut turvekerros (Tvo) RT"}
-  19551891,
-  "#a85858",
-  // {"pintamaalaji_koodi":19551892,"pintamaalaji":"Paksu turvekerros (Tvp) RT"}
-  19551892,
-  "#960c0c",
-  // {"pintamaalaji_koodi":195603,"pintamaalaji":"Vesi (Ve)"}
-  195603,
-  "#4c3cfa",
-
-  "black", // fallback - should not happen.
-];
 
 const URL_PREFIX = `${process.env.REACT_APP_API_URL}/user/data?file=`;
 

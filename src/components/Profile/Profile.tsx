@@ -1,12 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
 
 import DataForm from "./DataForm";
-import SignupStepper from "./SignupStepper";
-import SignupForm from "./SignupForm";
 import IntegrationForm from "./IntegrationForm";
-import Finish from "./Finish";
 import { UserContext } from "../User";
 import { StateContext } from "../State";
 
