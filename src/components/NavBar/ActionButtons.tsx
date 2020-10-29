@@ -26,17 +26,14 @@ const ActionButtons = () => {
     setIsSignupOpen,
     isLoginOpen,
     setIsLoginOpen,
-    setIsSidebarDisabled
   }: any = React.useContext(StateContext);
 
-  const handleLoginClick = (event) => {
-    setIsSidebarDisabled(!isLoginOpen)
+  const handleLoginClick = () => {
     setIsLoginOpen(!isLoginOpen);
     setIsSignupOpen(false);
   };
 
-  const handleSignupClick = (event) => {
-    setIsSidebarDisabled(!isSignupOpen)
+  const handleSignupClick = () => {
     setIsSignupOpen(!isSignupOpen);
     setIsLoginOpen(false);
   };

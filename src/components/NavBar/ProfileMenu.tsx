@@ -7,6 +7,7 @@ import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 
 import { UserContext } from "../User";
+import { StateContext } from "../State";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -53,6 +54,11 @@ const StyledMenu = withStyles({
 const ProfileMenu = () => {
   const classes = useStyles({});
   const { logout }: any = React.useContext(UserContext);
+  const {
+    setIsProfileOpen,
+    setIsLoginOpen,
+    setIsSignupOpen,
+  }: any = React.useContext(StateContext);
 
   const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
 
@@ -70,6 +76,9 @@ const ProfileMenu = () => {
 
   const handleLogOut = () => {
     handleMenuClose();
+    setIsProfileOpen(false);
+    setIsLoginOpen(false);
+    setIsSignupOpen(false);
     logout();
   };
 
