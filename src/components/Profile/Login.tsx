@@ -53,11 +53,7 @@ const useStyles = makeStyles((theme: Theme) =>
 const Login = (props) => {
   const classes = useStyles({});
   const { login }: any = React.useContext(UserContext);
-  const {
-    setIsLoginOpen,
-    setIsSidebarDisabled,
-    setIsSidebarOpen,
-  }: any = React.useContext(StateContext);
+  const { setIsLoginOpen }: any = React.useContext(StateContext);
 
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [bigError, setBigError] = useState("");
@@ -90,8 +86,6 @@ const Login = (props) => {
       await login(values);
 
       setIsLoginOpen(false);
-      setIsSidebarDisabled(false);
-      setIsSidebarOpen(true);
       setValues({
         email: "",
         password: "",
@@ -119,6 +113,7 @@ const Login = (props) => {
           <OutlinedInput
             id="login_email"
             onChange={handleValueChange}
+            value={values.email}
             color={"secondary"}
             labelWidth={96}
           />
