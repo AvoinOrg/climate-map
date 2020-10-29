@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+import {
+  enableUserDataset,
+  disableUserDataset,
+} from "../map/layers/user/common";
 // const claimHashes = {
 //     valio: '75e3e7c68bffb0efc8f893345bfe161f77175b8f9ce31840db93ace7fa46f3db',
 // }
 
 const apiUrl = process.env.REACT_APP_API_URL;
+
+const defaultLayers = { "fi-vipu-fields": false };
 
 export const UserContext = React.createContext({});
 
@@ -13,6 +19,7 @@ export const UserProvider = (props) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [userIntegrations, setUserIntegrations] = useState(null);
+  const [userLayers, setUserLayers] = useState(defaultLayers);
 
   const storeToken = (token, expires) => {
     localStorage.setItem("token", token);
@@ -22,7 +29,16 @@ export const UserProvider = (props) => {
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("expires");
+
+    for (const key in userLayers) {
+      if (userLayers[key]) {
+        disableUserDataset(key);
+      }
+    }
+
+    setUserLayers(defaultLayers);
     setIsLoggedIn(false);
+    setUserIntegrations(null);
     setUserProfile(null);
   };
 
@@ -78,11 +94,52 @@ export const UserProvider = (props) => {
     }
   };
 
+  const updateProfile = async (values) => {
+    try {
+      const config = {
+        method: "put",
+        url: apiUrl + "/user/profile",
+        params: {
+          token: localStorage.getItem("token"),
+        },
+        data: values,
+      };
+      const res = await axios(config);
+
+      if (res.status === 200) {
+        setUserProfile(res.data);
+      }
+    } catch (error) {
+      throw error.response;
+    }
+  };
+
   const fetchIntegrations = async () => {
     try {
       const res = await axios.get(apiUrl + "/user/integrations", {
         params: { token: localStorage.getItem("token") },
       });
+
+      if (res.status === 200) {
+        setUserIntegrations(res.data);
+      }
+    } catch (error) {
+      throw error.response;
+    }
+  };
+
+  const updateIntegrations = async (values) => {
+    try {
+      const config = {
+        method: "put",
+        url: apiUrl + "/user/integrations",
+        params: {
+          token: localStorage.getItem("token"),
+        },
+        data: values,
+      };
+
+      const res = await axios(config);
 
       if (res.status === 200) {
         setUserIntegrations(res.data);
@@ -142,6 +199,19 @@ export const UserProvider = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (userIntegrations) {
+      const newUserLayers = { ...userLayers };
+      if (userIntegrations.vipu_state === 1) {
+        enableUserDataset("fi-vipu-fields", localStorage.getItem("token"));
+        newUserLayers["fi-vipu-fields"] = true;
+      }
+
+      setUserLayers(newUserLayers);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userIntegrations]);
+
   // useEffect(() => {
   //     getUser(props.userRef);
   //     getMerchant(props.merchantId);
@@ -157,8 +227,12 @@ export const UserProvider = (props) => {
     login,
     signup,
     fetchProfile,
+    updateProfile,
+    fetchIntegrations,
+    updateIntegrations,
     userProfile,
     userIntegrations,
+    userLayers,
     initDataAuth,
     fetchDataAuthStatus,
   };

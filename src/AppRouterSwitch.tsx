@@ -12,7 +12,7 @@ import Omaihka from "./components/Sidebar/Omaihka";
 import FFD from "./components/Sidebar/FFD";
 import { MainMenu } from "./components/Sidebar/Sidebar";
 import OverlayMessages from "./components/OverlayMessages";
-import ProfileModal from "./components/Profile/ProfileModal";
+import UserModal from "./components/Profile/UserModal";
 
 export default function AppRouterSwitch() {
   return (
@@ -41,7 +41,7 @@ export default function AppRouterSwitch() {
           </Switch>
         </Sidebar>
       </URLLayerSyncContainer>
-      <ProfileModal />
+      <UserModal />
     </Router>
   );
 }
