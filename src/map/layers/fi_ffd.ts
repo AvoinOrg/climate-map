@@ -1,5 +1,6 @@
+import { Expression } from 'mapbox-gl'
 import { registerGroup } from '../layer_groups'
-import { addLayer, addSource } from '../map'
+import { addLayer, addSource, map } from '../map'
 
 const URL_PREFIX = `https://map.buttonprogram.org/fi-ffd`
 
@@ -24,7 +25,7 @@ addLayer({
         attribution,
     },
     'paint': {},
-    BEFORE: 'BACKGROUND',
+    BEFORE: 'BG_LABEL',
 })
 
 interface GeoBoundariesProperies {
@@ -42,7 +43,7 @@ interface FFDCaseStudyArea {
 }
 
 export const ffdCaseStudyAreas: FFDCaseStudyArea[] = [
-    {"name": "Maraka, Webuye, Kenya", "zoom": 9, "center": [34.73316385, 0.60478945], "areas": [{"shapeName": "WEBUYE", "shapeISO": "None", "shapeID": "KEN-ADM3-3_0_0-B170", "shapeGroup": "KEN", "shapeType": "ADM3"}]},
+    {"name": "Maraka, Webuye, Kenya", "zoom": 9, "center": [34.7622051, 0.58430105], "areas": [{"shapeName": "Maraka", "shapeISO": "None", "shapeID": "KEN-ADM3-3_0_0-B170/Maraka", "shapeGroup": "KEN", "shapeType": "ADM3"}]},
     {"name": "Codajás, Brazil", "zoom": 6, "center": [-63.092999999999996, -3.1290000000000004], "areas": [{"shapeName": "Codaj\u00c3\u00a1s", "shapeISO": "None", "shapeID": "BRA-ADM2-3_0_0-B5027", "shapeGroup": "BRA", "shapeType": "ADM2"}]},
     {"name": "Diana, Madagascar", "zoom": 6, "center": [48.7623536, -13.1086601], "areas": [{"shapeName": "Diana", "shapeISO": "None", "shapeID": "MDG-ADM1-3_0_0-B1", "shapeGroup": "MDG", "shapeType": "ADM1"}]},
     {"name": "Choma, Zambia", "zoom": 7.5, "center": [27.1801379, -16.8605418], "areas": [{"shapeName": "Choma", "shapeISO": "None", "shapeID": "ZMB-ADM2-3_0_0-B5", "shapeGroup": "ZMB", "shapeType": "ADM2"}]},
@@ -71,13 +72,24 @@ const countryIsos = [
     'BEN',
     'PHL',
     'SEN',
-    'GIN',
     'ZMB',
     'BOL',
     'RWA',
     'TZA',
     'UGA',
 ]
+
+const lineWidth: Expression = [
+  "step", ["zoom"],
+  5, // 0..5:  5px
+  5, 8, // 5+: 8px
+]
+
+addSource('fi-ffd-case-study-areas', {
+  "type": 'geojson',
+  'data': `${URL_PREFIX}/case_study_areas.geojson?v=1`,
+  attribution: geoboundariesAttribution,
+})
 
 for (const countryIso of countryIsos) {
     addSource(`geoboundaries-adm0-${countryIso}`, {
@@ -86,38 +98,38 @@ for (const countryIso of countryIsos) {
         attribution: geoboundariesAttribution,
     })
     addLayer({
-        'id': `geoboundaries-adm0-${countryIso}-boundary`,
+        'id': `fi-ffd-geoboundaries-adm0-${countryIso}-boundary`,
         'source': `geoboundaries-adm0-${countryIso}`,
         'type': 'line',
         'paint': {
-            'line-width': 1.5,
+            'line-width': lineWidth,
             'line-color': '#fff',
         },
-        BEFORE: 'OUTLINE',
+        BEFORE: 'LABEL',
     })
+
+    addLayer({
+      'id': `fi-ffd-case-study-areas-${countryIso}-boundary`,
+      'source': 'fi-ffd-case-study-areas',
+      'type': 'line',
+      'minzoom': 4,
+      'paint': {
+          // 'line-opacity': 0.5,
+          'line-width': lineWidth,
+          'line-color': [
+            'case',
+            ['==', ['get', 'shapeGroup'], 'SEN'], '#9e2c00', // Senegal is difficult to see without adjustments
+            '#f5b400',
+          ],
+      },
+      'filter': ['==', ['get', 'shapeGroup'], countryIso],
+      BEFORE: 'TOP',
+  })
 }
 
-const countryLayers = countryIsos.map(countryIso => `geoboundaries-adm0-${countryIso}-boundary`)
 
-
-
-addSource('fi-ffd-case-study-areas', {
-    "type": 'geojson',
-    'data': `${URL_PREFIX}/case_study_areas.geojson?v=1`,
-    attribution: geoboundariesAttribution,
-})
-
-addLayer({
-    'id': `fi-ffd-case-study-areas-boundary`,
-    'source': 'fi-ffd-case-study-areas',
-    'type': 'line',
-    'paint': {
-        // 'line-opacity': 0.5,
-        'line-width': 3,
-        'line-color': '#f5b400',
-    },
-    BEFORE: 'OUTLINE',
-})
+const countryLayers = countryIsos.map(countryIso => `fi-ffd-geoboundaries-adm0-${countryIso}-boundary`)
+const caseStudyAreas = countryIsos.map(countryIso => `fi-ffd-case-study-areas-${countryIso}-boundary`)
 
 
 addLayer({
@@ -139,4 +151,34 @@ addLayer({
     BEFORE: 'LABEL',
 })
 
-registerGroup('fi-ffd', ['s2-cloudless-at-eox-wms', 'fi-ffd-case-study-areas-boundary', 'fi-ffd-case-study-areas-sym', ...countryLayers])
+registerGroup('fi-ffd', [
+  's2-cloudless-at-eox-wms',
+  'fi-ffd-case-study-areas-sym',
+  ...caseStudyAreas,
+  ...countryLayers,
+])
+
+if (process.env.NODE_ENV === 'development') {
+  const allLayers = countryLayers.concat(caseStudyAreas)
+  // @ts-ignore
+  window.fi_ffd_show_country = (selectedIsos: string[]) => {
+    allLayers.forEach(layerId => {
+      const shown = selectedIsos.filter(iso => layerId.includes(iso)).length > 0
+      map.setLayoutProperty(layerId, 'visibility', shown ? 'visible' : 'none');
+    })
+  }
+  // @ts-ignore
+  window.fi_ffd_show_case_study_area = (selectedIsos: string[]) => {
+    allLayers.forEach(layerId => {
+      const shown = selectedIsos.filter(iso => layerId.includes(iso)).length > 0 && !countryLayers.includes(layerId)
+      map.setLayoutProperty(layerId, 'visibility', shown ? 'visible' : 'none');
+    })
+  }
+  // @ts-ignore
+  window.fi_ffd_show_country_only = (selectedIsos: string[]) => {
+    allLayers.forEach(layerId => {
+      const shown = selectedIsos.filter(iso => layerId.includes(iso)).length > 0 && !caseStudyAreas.includes(layerId)
+      map.setLayoutProperty(layerId, 'visibility', shown ? 'visible' : 'none');
+    })
+  }
+}
