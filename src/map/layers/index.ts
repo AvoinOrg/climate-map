@@ -26,5 +26,7 @@ import './hedge_pilot_area';
 import './fi_omaihka'
 import './fi_ffd'
 
+import './kariba_changes'
+
 // Special:
 // import './dataset_query';
