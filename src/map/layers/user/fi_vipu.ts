@@ -42,8 +42,8 @@ const addVipu = (token: string) => {
 
       html += `
         <p>
-        Block number: ${p["PLOHKONRO"]}
-        Year: ${p["VUOSI"]}
+        Year: ${p["VUOSI"]}<br>
+        Block number: ${p["PLOHKONRO"]}<br>
         </p>
         `;
     }
@@ -90,7 +90,9 @@ const addVipu = (token: string) => {
 
       html += `
         <p>
-        Growth block ID: ${p["KLTUNNUS"]}<br>
+        Year: ${p["VUOSI"]}<br>
+        Block number: ${p["PLTUNNUS"]}<br>
+        Block type: ${p["KLTUNNUS"]}<br>
         Plant type: ${p["KASVI"]}<br>
         Strain type: ${p["LAJIKE"]}<br>
         Area: ${p["PINTA_ALA"]}ha<br>
