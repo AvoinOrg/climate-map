@@ -224,6 +224,11 @@ export const UserProvider = (props) => {
         newUserLayers["fi-vipu"] = true;
       }
 
+      if (userIntegrations.vipu_state === 0 && userLayers["fi-vipu"]) {
+        disableUserDataset("fi-vipu");
+        newUserLayers["fi-vipu"] = false;
+      }
+
       setUserLayers(newUserLayers);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

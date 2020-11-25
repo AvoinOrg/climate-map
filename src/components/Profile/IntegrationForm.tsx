@@ -212,6 +212,7 @@ const IntegrationForm = (props) => {
             break;
           case 2:
             val = 3;
+            fetchIntegrations();
             break;
         }
 
