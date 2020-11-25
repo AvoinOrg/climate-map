@@ -12,7 +12,8 @@ import {
 import { AOExpansionPanel } from "./AOExpansionPanel";
 import { UserContext } from "../User";
 import { StateContext } from "../State";
-import { setFilter } from "../../map/map";
+import { setFilter, addMapEventHandler, isSourceReady } from "../../map/map";
+import { removeMapEventHandler } from "src/map/mapbox_map";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -48,9 +49,20 @@ const VipuContent = (props) => {
       );
       vals = vals.reverse();
       setFilterFeatureList(vals);
+      setFilterValue(vals[0]);
+
       if (vals.length > 0) {
-        setFilterValue(vals[0]);
-        setVipuFilter(props.sourceLayer, props.filterFeature, vals[0]);
+        const handler = (data) => {
+          if (
+            data.sourceId === props.sourceLayer &&
+            isSourceReady(props.sourceLayer)
+          ) {
+            setVipuFilter(props.sourceLayer, props.filterFeature, vals[0]);
+            removeMapEventHandler("data", handler);
+          }
+        };
+
+        addMapEventHandler("data", handler);
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -133,7 +145,7 @@ const UserContent = () => {
                   sourceLayer={"fi-vipu-fields"}
                   filterFeature={"VUOSIVAIHE"}
                   filterFunction={(item) => item.properties.VUOSIVAIHE}
-                  filterFeatureName={"Year group"}
+                  filterFeatureName={"Year phase"}
                   subText={
                     "This layer shows the field data you have imported from Vipu."
                   }
@@ -150,7 +162,7 @@ const UserContent = () => {
                   sourceName={"kasvulohkogeometria"}
                   sourceLayer={"fi-vipu-growth"}
                   filterFeature={"VUOSI"}
-                  filterFeatureName={"Year group"}
+                  filterFeatureName={"Year"}
                   filterFunction={(item) => item.properties.VUOSI}
                   subText={
                     "This layer shows the growth block data you have imported from Vipu."
