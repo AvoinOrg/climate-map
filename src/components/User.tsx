@@ -11,7 +11,7 @@ import {
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const defaultLayers = { "fi-vipu-fields": false };
+const defaultLayers = { "fi-vipu": false };
 
 export const UserContext = React.createContext({});
 
@@ -186,6 +186,23 @@ export const UserProvider = (props) => {
     }
   };
 
+  const fetchSource = async (sourceName) => {
+    try {
+      const res = await axios.get(apiUrl + "/user/data", {
+        params: {
+          file: sourceName + ".geojson",
+          token: localStorage.getItem("token"),
+        },
+      });
+
+      if (res.status === 200) {
+        return res.data;
+      }
+    } catch (error) {
+      throw error.response;
+    }
+  };
+
   useEffect(() => {
     if (isLoggedIn) {
       fetchProfile();
@@ -203,8 +220,8 @@ export const UserProvider = (props) => {
     if (userIntegrations) {
       const newUserLayers = { ...userLayers };
       if (userIntegrations.vipu_state === 1) {
-        enableUserDataset("fi-vipu-fields", localStorage.getItem("token"));
-        newUserLayers["fi-vipu-fields"] = true;
+        enableUserDataset("fi-vipu", localStorage.getItem("token"));
+        newUserLayers["fi-vipu"] = true;
       }
 
       setUserLayers(newUserLayers);
@@ -235,6 +252,7 @@ export const UserProvider = (props) => {
     userLayers,
     initDataAuth,
     fetchDataAuthStatus,
+    fetchSource,
   };
 
   return (
