@@ -219,7 +219,7 @@ export const UserProvider = (props) => {
   useEffect(() => {
     if (userIntegrations) {
       const newUserLayers = { ...userLayers };
-      if (userIntegrations.vipu_state === 1) {
+      if (userIntegrations.vipu_state === 1 && !userLayers["fi-vipu"]) {
         enableUserDataset("fi-vipu", localStorage.getItem("token"));
         newUserLayers["fi-vipu"] = true;
       }
