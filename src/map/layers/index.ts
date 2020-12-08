@@ -28,5 +28,7 @@ import './fi_ffd'
 
 import './kariba_changes'
 
+import './ekofolio'
+
 // Special:
 // import './dataset_query';

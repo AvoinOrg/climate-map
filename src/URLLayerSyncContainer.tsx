@@ -8,6 +8,7 @@ const urlLayerMapping = {
   '/layers/fi-omaihka': 'fi-omaihka-topsoil',
   '/layers/fi-ffd': 'fi-ffd',
   '/layers/kariba_changes': 'kariba_changes_2019',
+  '/layers/ekofolio': 'ekofolio',
 }
 
 let activeUrlLayerGroup = null

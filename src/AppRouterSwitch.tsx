@@ -16,6 +16,7 @@ import KaribaForestCoverChanges from './components/Sidebar/KaribaForestCoverChan
 import FFD from './components/Sidebar/FFD'
 import { MainMenu } from './components/Sidebar/Sidebar';
 import OverlayMessages from './components/OverlayMessages';
+import Ekofolio from './components/Sidebar/Ekofolio';
 
 export default function AppRouterSwitch() {
   return (
@@ -40,6 +41,9 @@ export default function AppRouterSwitch() {
             </Route>
             <Route path="/layers/fi-ffd">
               <FFD />
+            </Route>
+            <Route path="/layers/ekofolio">
+              <Ekofolio />
             </Route>
             <Route path="/">
               <MainMenu />
