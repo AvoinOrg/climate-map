@@ -10,8 +10,8 @@ import NavBar from './components/NavBar';
 import MapButtons from './components/MapButtons';
 
 import { URLLayerSyncContainer } from './URLLayerSyncContainer';
-import Hiiliporssi from './components/Sidebar/Hiiliporssi'
 import OverlayMessages from './components/OverlayMessages';
+import Ekofolio from './components/Sidebar/Ekofolio';
 
 export default function AppRouterSwitch() {
   return (
@@ -23,7 +23,7 @@ export default function AppRouterSwitch() {
         <Sidebar>
           <Switch>
             <Route path="/">
-              <Hiiliporssi />
+              <Ekofolio />
             </Route>
           </Switch>
         </Sidebar>

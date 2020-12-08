@@ -25,5 +25,7 @@ import './hedge_pilot_area';
 
 import './fi_omaihka'
 
+import './ekofolio'
+
 // Special:
 // import './dataset_query';
