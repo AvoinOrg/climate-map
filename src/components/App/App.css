@@ -13,6 +13,22 @@ body {
   height: 100vh;
 }
 
+@media (max-width: 475px)  {
+  .mapboxgl-ctrl-geocoder {
+    min-width: 160px !important;
+    max-width: 160px !important;
+    width: 160px !important;
+  }
+}
+
+@media (max-width: 390px)  {
+  .mapboxgl-ctrl-geocoder {
+    min-width: 100px !important;
+    max-width: 100px !important;
+    width: 100px !important;
+  }
+}
+
 
 .neutral-link {
   color: inherit;
@@ -77,7 +93,7 @@ body {
 }
 
 /* Limit the maximum width to 400px always */
-@media (min-width: 400px)  {
+@media (max-width: 400px)  {
   .grid-parent {
     grid-template-columns: 0 400px auto;
   }
@@ -101,18 +117,6 @@ body {
 }
 .mapboxgl-ctrl-geocoder ul {
   font-size: 1rem;
-}
-
-@media (max-width: 400px)  {
-  .mapboxgl-ctrl-geocoder {
-    min-width: 200px !important
-  }
-}
-
-@media (max-width: 350px)  {
-  .mapboxgl-ctrl-geocoder {
-    min-width: 160px !important
-  }
 }
 
 /* OpenLayers specific CSS */
