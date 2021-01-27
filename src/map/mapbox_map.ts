@@ -162,6 +162,21 @@ export const addMapEventHandler = (type: string, listener: (ev: any) => void) =>
     map.on(type, listener)
 }
 
+export const removeMapEventHandler = (type: string, listener: (ev: any) => void) => {
+    map.off(type, listener)
+}
+
+export const isSourceReady = (sourceLayer: string) => {
+  try {
+    if (map.getSource(sourceLayer) && map.isSourceLoaded(sourceLayer)) {
+      return true
+    }
+  } catch (error) {
+    return false
+  }
+  return false
+}
+
 let geocoder
 export const getGeocoder = () => geocoder
 

@@ -10,16 +10,18 @@ const drawerWidth = 340;
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     heading: {
-      fontSize: theme.typography.pxToRem(15),
+      fontSize: theme.typography.pxToRem(16),
       fontWeight: theme.typography.fontWeightRegular,
+      fontFamily: theme.typography.fontFamily[0],
     },
     drawerItem: {
       marginBottom: 8,
-      width: drawerWidth - 46
+      width: drawerWidth - 46,
+      fontFamily: theme.typography.fontFamily[1]
     },
     noExpansionPanelPadding: {
       padding: 0
-    }
+    },
   }),
 );
 

@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme: Theme) =>
       position: 'absolute',
       top: theme.spacing(12),
       right: theme.spacing(2),
-      zIndex: 1000, /* force this to be on top of the map */
+      zIndex: theme.zIndex.mobileStepper, /* force this to be on top of the map */
     },
     btn: {
       color: '#333333',

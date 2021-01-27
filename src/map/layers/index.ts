@@ -6,6 +6,7 @@ import './forests';
 import './fields';
 import './air_quality';
 import './private';
+import './user';
 
 // Individual layer groups:
 import './buildings';

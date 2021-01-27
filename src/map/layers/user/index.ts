@@ -1,0 +1,1 @@
+import "./fi_vipu";
