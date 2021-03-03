@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     iconGroup: {
       position: 'absolute',
-      top: theme.spacing(14),
+      top: theme.spacing(2),
       right: theme.spacing(2),
       zIndex: 1000, /* force this to be on top of the map */
     },

@@ -6,7 +6,7 @@ import * as Analytics from './analytics'
 const backgroundLayerGroups = { 'terramonitor': true }
 interface ILayerGroupState { [s: string]: boolean; }
 export const layerGroupState: ILayerGroupState = {
-  terramonitor: false,
+  terramonitor: true,
   ete: false,
 }
 
