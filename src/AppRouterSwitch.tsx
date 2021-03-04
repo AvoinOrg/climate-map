@@ -22,7 +22,7 @@ export default function AppRouterSwitch() {
       <URLLayerSyncContainer>
         <Sidebar>
           <Switch>
-            <Route path="/">
+            <Route path="*">
               <Ekofolio />
             </Route>
           </Switch>

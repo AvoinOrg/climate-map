@@ -32,18 +32,21 @@ function Ekofolio() {
 
   let {
     // @ts-ignore
-    params: { area },
+    params,
   } = useRouteMatch();
-  if (!area) area = "area-1";
 
   useEffect(() => {
+    let area = "area-1"
+    if (params[0].includes("area")) {
+      area = params[0].substring(1)
+    }
     const areaNum = +area.split("-")[1];
     const areaIdx = areaNum - 1;
     const entry = ekofolioAreas[areaIdx];
     const zoom = entry.zoom;
     console.log(entry.center[0], entry.center[1], zoom);
     flyTo(entry.center[0], entry.center[1], zoom);
-  }, [area]);
+  }, [params]);
 
   // i.e. which projection/scenario is in use:
   return (
@@ -57,7 +60,7 @@ function Ekofolio() {
           <ul>
             {ekofolioAreas.map((x, i) => (
               <li key={x.name}>
-                <Link to={`/layers/ekofolio/area-${i + 1}`}>{x.name}</Link>
+                <Link to={`area-${i + 1}`}>{x.name}</Link>
               </li>
             ))}
           </ul>

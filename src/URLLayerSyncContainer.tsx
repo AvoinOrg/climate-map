@@ -3,15 +3,11 @@ import { useEffect } from "react";
 import * as LayerGroupState from "src/map/LayerGroupState";
 
 // Some URLs are 1:1 associated with certain layer groups:
-const urlLayerMapping = {
-  "/": "ekofolio",
-};
-
-let activeUrlLayerGroup = null;
+let activeUrlLayerGroup = "ekofolio";
 
 const historyListener = (location, action) => {
   console.debug(location, action);
-  const urlLayerGroup = urlLayerMapping[location.pathname];
+  const urlLayerGroup = "ekofolio"
   if (urlLayerGroup) {
     LayerGroupState.enableOnlyOneGroup(urlLayerGroup);
     activeUrlLayerGroup = urlLayerGroup;
