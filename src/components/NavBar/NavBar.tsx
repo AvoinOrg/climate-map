@@ -19,18 +19,20 @@ import * as SidebarState from "../Sidebar/SidebarState";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     menuIcon: {
-      marginRight: theme.spacing(2),
-      position: "fixed",
-      display: "flex",
-      zIndex: 3000,
-      backgroundColor: "white",
-      borderRadius: 100,
-      margin: "14px 0 0 4px",
-      boxShadow: "2px 2px 2px 1px rgba(0, 0, 0, 0.2)"
+      margin: "0 auto 0 auto"
     },
     iconWrapper: {
-      margin: "0 0 0 12px",
+      boxShadow: "2px 2px 2px 1px rgba(0, 0, 0, 0.2)",
+      zIndex: 3000,
+      margin: "14px 0 0 17px",
+      borderRadius: 100,
+      position: "fixed",
+      display: "flex",
+      color: "white",
+      background: "solid",
       backgroundColor: "white",
+      width: "50px",
+      height: "50px"
     },
   })
 );
@@ -45,7 +47,6 @@ const NavBar = () => {
         onClick={SidebarState.toggleSidebar}
         edge="start"
         className={classes.menuIcon}
-        color="inherit"
         aria-label="open drawer"
       >
         {sidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
