@@ -5,16 +5,16 @@ import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 
 import { flyTo } from "src/map/map";
 import { ekofolioAreas } from "src/map/layers/ekofolio";
-import Logo from "../../logo.svg";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     container: {
       display: "flex",
-      flexDirection: "column",
-      paddingTop: 5
+      flexDirection: "column"
     },
-    data: {},
+    data: {
+      marginTop: 65
+    },
     avoinLogoWrapper: {
       maxWidth: 200,
       position: "absolute",
@@ -113,11 +113,11 @@ function Ekofolio() {
         </Container>
       </div>
 
-      <div className={classes.avoinLogoWrapper}>
+      {/* <div className={classes.avoinLogoWrapper}>
         <a href="http://about.avoinmap.org">
           <img className={classes.logo} src={Logo} alt="Logo" />
         </a>
-      </div>
+      </div> */}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { observable } from 'micro-observables';
 
-const sidebarState = observable<boolean>(true)
+const sidebarState = observable<boolean>(false)
 
 export const isOpenObservable = sidebarState.readOnly()
 
