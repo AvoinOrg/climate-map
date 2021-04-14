@@ -41,12 +41,15 @@ const VipuContent = (props) => {
 
   const [filterFeatureList, setFilterFeatureList] = useState([]);
   const [filterValue, setFilterValue] = useState("");
+  const [itemCount, setItemCount] = useState("");
 
   useEffect(() => {
     fetchSource(props.sourceName).then((data) => {
       let vals: string[] = Array.from(
         new Set(data.features.map((item) => props.filterFunction(item)))
       );
+
+      setItemCount(data.features.length)
 
       vals = vals.reverse();
 
@@ -100,6 +103,7 @@ const VipuContent = (props) => {
         </Select>
       </FormControl>
       <p>{props.subText}</p>
+      <p>{`Your data contains ${itemCount} ${props.countUnit}.`}</p>
     </div>
   );
 };
@@ -151,6 +155,9 @@ const UserContent = () => {
                   subText={
                     "This layer shows the field data you have imported from Vipu."
                   }
+                  countUnit={
+                    "field blocks"
+                  }
                 />
               }
             />
@@ -168,6 +175,9 @@ const UserContent = () => {
                   filterFunction={(item) => item.properties.VUOSI}
                   subText={
                     "This layer shows the growth block data you have imported from Vipu."
+                  }
+                  countUnit={
+                    "growth blocks"
                   }
                 />
               }
