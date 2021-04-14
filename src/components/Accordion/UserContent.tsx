@@ -47,11 +47,11 @@ const VipuContent = (props) => {
       let vals: string[] = Array.from(
         new Set(data.features.map((item) => props.filterFunction(item)))
       );
+
       vals = vals.reverse();
-      setFilterFeatureList(vals);
-      setFilterValue(vals[0]);
 
       if (vals.length > 0) {
+        setFilterValue(vals[0]);
         const handler = (data) => {
           if (
             data.sourceId === props.sourceLayer &&
@@ -64,6 +64,8 @@ const VipuContent = (props) => {
 
         addMapEventHandler("data", handler);
       }
+
+      setFilterFeatureList(vals);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
