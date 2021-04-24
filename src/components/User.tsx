@@ -116,7 +116,7 @@ export const UserProvider = (props) => {
 
   const fetchIntegrations = async () => {
     try {
-      const res = await axios.get(apiUrl + "/user/integrations", {
+      const res = await axios.get(apiUrl + "/user/integration", {
         params: { token: localStorage.getItem("token") },
       });
 
@@ -128,11 +128,28 @@ export const UserProvider = (props) => {
     }
   };
 
-  const updateIntegrations = async (values) => {
+  const createIntegration = async (integrationType, values) => {
+    try {
+      const config = {
+        method: "post",
+        url: apiUrl + "/user/integration/" + integrationType,
+        params: {
+          token: localStorage.getItem("token"),
+        },
+        data: values,
+      };
+
+      await axios(config);
+    } catch (error) {
+      throw error.response;
+    }
+  };
+
+  const updateIntegration = async (integrationType, values) => {
     try {
       const config = {
         method: "put",
-        url: apiUrl + "/user/integrations",
+        url: apiUrl + "/user/integration/" + integrationType,
         params: {
           token: localStorage.getItem("token"),
         },
@@ -142,18 +159,19 @@ export const UserProvider = (props) => {
       const res = await axios(config);
 
       if (res.status === 200) {
-        setUserIntegrations(res.data);
+        const newUserIntegrations = { ...userIntegrations, ...res.data };
+        setUserIntegrations(newUserIntegrations);
       }
     } catch (error) {
       throw error.response;
     }
   };
 
-  const initDataAuth = async (integration_type) => {
+  const deleteIntegration = async (integrationType) => {
     try {
       const config = {
-        method: "post",
-        url: apiUrl + "/user/integrations/" + integration_type + "/init",
+        method: "delete",
+        url: apiUrl + "/user/integration/" + integrationType,
         params: {
           token: localStorage.getItem("token"),
         },
@@ -162,7 +180,29 @@ export const UserProvider = (props) => {
       const res = await axios(config);
 
       if (res.status === 200) {
-        return res.data.integration_link;
+        const newUserIntegrations = { ...userIntegrations };
+        delete newUserIntegrations[integrationType];
+        setUserIntegrations(newUserIntegrations);
+      }
+    } catch (error) {
+      throw error.response;
+    }
+  };
+
+  const initDataAuth = async (integrationType) => {
+    try {
+      const config = {
+        method: "post",
+        url: apiUrl + "/user/integration/" + integrationType + "/auth",
+        params: {
+          token: localStorage.getItem("token"),
+        },
+      };
+
+      const res = await axios(config);
+
+      if (res.status === 200) {
+        return res.data.auth_link;
       }
     } catch (error) {
       throw error.response;
@@ -172,14 +212,14 @@ export const UserProvider = (props) => {
   const fetchDataAuthStatus = async (integrationType) => {
     try {
       const res = await axios.get(
-        apiUrl + "/user/integrations/" + integrationType + "/status",
+        apiUrl + "/user/integration/" + integrationType + "/auth",
         {
           params: { token: localStorage.getItem("token") },
         }
       );
 
       if (res.status === 200) {
-        return res.data.integration_status;
+        return res.data.auth_status;
       }
     } catch (error) {
       throw error.response;
@@ -219,12 +259,21 @@ export const UserProvider = (props) => {
   useEffect(() => {
     if (userIntegrations) {
       const newUserLayers = { ...userLayers };
-      if (userIntegrations.vipu_state === 1 && !userLayers["fi-vipu"]) {
+      if (
+        userIntegrations.vipu &&
+        userIntegrations.vipu.integration_status === "integrated" &&
+        !userLayers["fi-vipu"]
+      ) {
         enableUserDataset("fi-vipu", localStorage.getItem("token"));
         newUserLayers["fi-vipu"] = true;
       }
 
-      if (userIntegrations.vipu_state === 0 && userLayers["fi-vipu"]) {
+      if (
+        (!userIntegrations.vipu ||
+          userIntegrations.vipu.integration_status !== "integrated" ||
+          userIntegrations.vipu.is_disabled) &&
+        userLayers["fi-vipu"]
+      ) {
         disableUserDataset("fi-vipu");
         newUserLayers["fi-vipu"] = false;
       }
@@ -251,7 +300,9 @@ export const UserProvider = (props) => {
     fetchProfile,
     updateProfile,
     fetchIntegrations,
-    updateIntegrations,
+    createIntegration,
+    updateIntegration,
+    deleteIntegration,
     userProfile,
     userIntegrations,
     userLayers,

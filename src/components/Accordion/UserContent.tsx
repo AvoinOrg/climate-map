@@ -41,17 +41,20 @@ const VipuContent = (props) => {
 
   const [filterFeatureList, setFilterFeatureList] = useState([]);
   const [filterValue, setFilterValue] = useState("");
+  const [itemCount, setItemCount] = useState("");
 
   useEffect(() => {
     fetchSource(props.sourceName).then((data) => {
       let vals: string[] = Array.from(
         new Set(data.features.map((item) => props.filterFunction(item)))
       );
+
+      setItemCount(data.features.length)
+
       vals = vals.reverse();
-      setFilterFeatureList(vals);
-      setFilterValue(vals[0]);
 
       if (vals.length > 0) {
+        setFilterValue(vals[0]);
         const handler = (data) => {
           if (
             data.sourceId === props.sourceLayer &&
@@ -64,6 +67,8 @@ const VipuContent = (props) => {
 
         addMapEventHandler("data", handler);
       }
+
+      setFilterFeatureList(vals);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -98,6 +103,7 @@ const VipuContent = (props) => {
         </Select>
       </FormControl>
       <p>{props.subText}</p>
+      <p>{`Your data contains ${itemCount} ${props.countUnit}.`}</p>
     </div>
   );
 };
@@ -149,6 +155,9 @@ const UserContent = () => {
                   subText={
                     "This layer shows the field data you have imported from Vipu."
                   }
+                  countUnit={
+                    "field blocks"
+                  }
                 />
               }
             />
@@ -166,6 +175,9 @@ const UserContent = () => {
                   filterFunction={(item) => item.properties.VUOSI}
                   subText={
                     "This layer shows the growth block data you have imported from Vipu."
+                  }
+                  countUnit={
+                    "growth blocks"
                   }
                 />
               }

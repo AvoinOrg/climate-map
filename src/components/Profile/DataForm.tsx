@@ -127,13 +127,18 @@ const DataForm = (props) => {
   useEffect(() => {
     if (userIntegrations) {
       const newDisabled = { ...disabled };
-      if (userIntegrations.vipu_state === 1) {
-        newDisabled["farm_owner"] = true;
-        newDisabled["terms_agreed"] = true;
-      } else {
-        newDisabled["farm_owner"] = false;
-        newDisabled["terms_agreed"] = false;
-      }
+      // if (
+      //   userIntegrations.vipu &&
+      //   userIntegrations.vipu.integration_status === "integrated"
+      // ) {
+      //   newDisabled["farm_owner"] = true;
+      //   newDisabled["terms_agreed"] = true;
+      // } else {
+      //   newDisabled["farm_owner"] = false;
+      //   newDisabled["terms_agreed"] = false;
+      // }
+      newDisabled["farm_owner"] = false;
+      newDisabled["terms_agreed"] = false;
       setDisabled(newDisabled);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

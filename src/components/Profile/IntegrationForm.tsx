@@ -71,11 +71,14 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const IntegrationButton = (props) => {
+const IntegrationButton = (props: {
+  state: IntegrationState;
+  onClick: any;
+}) => {
   const classes = useStyles({});
   return (
     <>
-      {props.state === -1 && (
+      {props.state === "error" && (
         <Button onClick={props.onClick} className={classes.integrationButton}>
           <div className={classes.integrationTextContainer}>
             <p className={classes.integrationText}>Something went wrong.</p>
@@ -85,12 +88,12 @@ const IntegrationButton = (props) => {
           </div>
         </Button>
       )}
-      {props.state === 0 && (
+      {["initialized", "uninitialized"].includes(props.state) && (
         <Button onClick={props.onClick} className={classes.integrationButton}>
           Login to Vipu to retrieve your field data.
         </Button>
       )}
-      {props.state === 1 && (
+      {props.state === "authorizing" && (
         <Button onClick={props.onClick} className={classes.integrationButton}>
           <div className={classes.integrationTextContainer}>
             <p className={classes.integrationText}>
@@ -100,12 +103,12 @@ const IntegrationButton = (props) => {
           </div>
         </Button>
       )}
-      {props.state === 2 && (
+      {props.state === "importing" && (
         <Button className={classes.integrationButton}>
           Importing field data...
         </Button>
       )}
-      {props.state === 3 && (
+      {props.state === "done" && (
         <Button
           color="secondary"
           onClick={props.onClick}
@@ -121,7 +124,7 @@ const IntegrationButton = (props) => {
           </div>
         </Button>
       )}
-      {props.state === 4 && (
+      {props.state === "deleting" && (
         <Button
           color="secondary"
           onClick={props.onClick}
@@ -144,7 +147,8 @@ const IntegrationForm = (props) => {
     fetchIntegrations,
     initDataAuth,
     fetchDataAuthStatus,
-    updateIntegrations,
+    createIntegration,
+    deleteIntegration
   }: any = React.useContext(UserContext);
   const [integrationStates, setIntegrationStates] = useState(null);
   const stateRef = useRef(integrationStates);
@@ -154,11 +158,15 @@ const IntegrationForm = (props) => {
     const newIntegrationStates = { ...integrationStates };
 
     for (const key in userIntegrations) {
-      let val = 0;
-      if (userIntegrations[key] === 1) {
-        val = 3;
+      let val: IntegrationState = "initialized";
+      if (userIntegrations[key].integration_status === "integrated") {
+        val = "done";
       }
-      newIntegrationStates[key.substring(0, key.length - 6)] = val;
+      newIntegrationStates[key] = val;
+    }
+
+    if (!(userIntegrations["vipu"])) {
+      newIntegrationStates["vipu"] = "uninitialized";
     }
 
     setIntegrationStates(newIntegrationStates);
@@ -171,20 +179,24 @@ const IntegrationForm = (props) => {
   };
 
   const onClickVipu = async () => {
-    let val = 0;
+    let val: IntegrationState = "initialized";
     let newIntegrationStates = {};
 
-    if (integrationStates["vipu"] === 0) {
+    if (["initialized", "uninitialized"].includes(integrationStates["vipu"])) {
+      if (integrationStates["vipu"] === "uninitialized") {
+        await createIntegration("vipu");
+      }
+
       const link = await initDataAuth("vipu");
       openInNewTab(link);
-      val = 1;
+      val = "authorizing";
       pollStatus("vipu");
-    } else if (integrationStates["vipu"] === 3) {
+    } else if (integrationStates["vipu"] === "done") {
       newIntegrationStates = { ...integrationStates };
-      newIntegrationStates["vipu"] = 4;
+      newIntegrationStates["vipu"] = "deleting";
       setIntegrationStates(newIntegrationStates);
 
-      await updateIntegrations({ vipu_state: 0 });
+      await deleteIntegration("vipu");
     }
 
     newIntegrationStates = { ...integrationStates };
@@ -195,23 +207,25 @@ const IntegrationForm = (props) => {
   const pollStatus = async (integrationType) => {
     setTimeout(async () => {
       const status = await fetchDataAuthStatus(integrationType);
-      if ([1, 2].includes(stateRef.current[integrationType])) {
-        let val = 0;
+
+      if (["importing", "authorizing"].includes(stateRef.current[integrationType])) {
+        let val: IntegrationState = "initialized";
+
 
         switch (status) {
-          case -1:
-            val = -1;
+          case "error":
+            val = "error";
             break;
-          case 0:
+          case "initialized":
             pollStatus(integrationType);
-            val = 1;
+            val = "authorizing";
             break;
-          case 1:
+          case "authenticated":
             pollStatus(integrationType);
-            val = 2;
+            val = "importing";
             break;
-          case 2:
-            val = 3;
+          case "imported":
+            val = "done";
             fetchIntegrations();
             break;
         }
@@ -257,5 +271,14 @@ const IntegrationForm = (props) => {
     <></>
   );
 };
+
+type IntegrationState =
+  | "error"
+  | "uninitialized"
+  | "initialized"
+  | "authorizing"
+  | "importing"
+  | "deleting"
+  | "done";
 
 export default IntegrationForm;
