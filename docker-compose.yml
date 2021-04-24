@@ -5,10 +5,10 @@ services:
     container_name: climate-map-app
     build: .
     restart: always
+    env_file:
+      - ./default.env
+      - ./.env
     ports:
-        - 3000:3000
+      - "${DEV_PORT}:3000"
     volumes:
         - .:/app:z
-
-volumes:
-    sql_scripts:

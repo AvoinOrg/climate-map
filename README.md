@@ -17,6 +17,12 @@ REACT_APP_WAQI_TOKEN
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Docker
+
+You can run the project with
+
+### `docker-compose up`
+
 ## Available Scripts
 
 In the project directory, you can run:
