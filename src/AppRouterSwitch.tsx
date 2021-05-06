@@ -9,6 +9,7 @@ import MapButtons from "./components/MapButtons";
 import { URLLayerSyncContainer } from './URLLayerSyncContainer';
 import ForestArvometsa from './components/Sidebar/ForestArvometsa'
 import Omaihka from './components/Sidebar/Omaihka'
+import FaoImages2021 from './components/Sidebar/FaoImages2021'
 import KaribaForestCoverChanges from './components/Sidebar/KaribaForestCoverChanges'
 import FFD from './components/Sidebar/FFD'
 import { MainMenu } from './components/Sidebar/Sidebar';
@@ -30,6 +31,9 @@ export default function AppRouterSwitch() {
             </Route>
             <Route path="/layers/fi-omaihka">
               <Omaihka />
+            </Route>
+            <Route path="/layers/fao-images-2021">
+              <FaoImages2021 />
             </Route>
             <Route path="/layers/kariba_changes">
               <KaribaForestCoverChanges />
