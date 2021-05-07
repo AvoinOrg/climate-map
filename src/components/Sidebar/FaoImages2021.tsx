@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme: Theme) =>
       border: "1px solid rgba(0, 0, 0, 0.23)",
       borderRadius: "4px",
       width: "256px",
-      margin: "10px 23px 0 23px",
+      margin: "10px 23px 20px 23px",
     },
     list: {
       padding: "0 0 0 0",
@@ -104,7 +104,8 @@ function FaoImages2021(props) {
   useEffect(() => {
     if (data) {
       if (searchValue === "") {
-        setFilter("fao-images-2021-fill", null);
+        setFilter("fao-images-2021-boundary", null);
+        setFilter("fao-images-2021-boundary2", null);
         setFilter("fao-images-2021-pin", null);
         setFilter("fao-images-2021-label", null);
       } else {
@@ -112,7 +113,8 @@ function FaoImages2021(props) {
           .filter((x) => !x.properties.id.startsWith(searchValue))
           .map((x) => x.properties.id);
 
-        setFilter("fao-images-2021-fill", ["!in", "id", ...result]);
+        setFilter("fao-images-2021-boundary", ["!in", "id", ...result]);
+        setFilter("fao-images-2021-boundary2", ["!in", "id", ...result]);
         setFilter("fao-images-2021-label", ["!in", "id", ...result]);
         setFilter("fao-images-2021-pin", ["!in", "id", ...result]);
       }

@@ -37,15 +37,29 @@ addSource("fao-images-2021-tiles", {
 });
 
 addLayer({
-  id: "fao-images-2021-fill",
+  id: "fao-images-2021-boundary",
   source: "fao-images-2021-polygons",
-  type: "fill",
+  type: "line",
   paint: {
-    "fill-color": "#6e599f",
+    "line-color": "white",
+    "line-width": 2,
   },
-  filter: ["!in", "id"],
   BEFORE: "FILL",
+  filter: ["!in", "id"],
 });
+
+addLayer({
+  id: "fao-images-2021-boundary2",
+  source: "fao-images-2021-polygons",
+  type: "line",
+  paint: {
+    "line-color": "black",
+    "line-width": 1,
+  },
+  BEFORE: "FILL",
+  filter: ["!in", "id"],
+});
+
 
 addLayer({
   id: "fao-images-2021-raster",
@@ -58,13 +72,18 @@ addLayer({
   id: `fao-images-2021-label`,
   source: "fao-images-2021-centroids",
   type: "symbol",
-  maxzoom: 12,
+  maxzoom: 13,
   minzoom: 4,
   layout: {
     "text-font": ["Open Sans Regular"],
     "text-size": 20,
     "text-offset": [0, 0.8],
     "text-field": ["get", "id"],
+  },
+  paint: {
+    "text-halo-width": 2,
+    "text-halo-blur": 1,
+    "text-halo-color": "rgb(242,243,240)",
   },
   filter: ["!in", "id"],
   BEFORE: "TOP",
@@ -76,7 +95,7 @@ addLayer({
   id: "fao-images-2021-pin",
   source: "fao-images-2021-centroids",
   type: "symbol",
-  maxzoom: 12,
+  maxzoom: 13,
   layout: {
     visibility: "visible",
     "symbol-placement": "point",
@@ -89,52 +108,9 @@ addLayer({
   BEFORE: "FILL",
 });
 
-// addLayer({
-//   'id': `fi-omaihka-circle-locator`,
-//   'source': 'fi-omaihka-overlay',
-//   'type': 'circle',
-//   'maxzoom': 11,
-//   "paint": {
-//     'circle-color': 'red',
-//     'circle-radius': {
-//       'base': 20,
-//       'stops': [
-//         [0, 50],
-//         [10, 100]
-//       ]
-//     },
-//   },
-//   BEFORE: 'BG_LABEL',
-// })
-
-// genericPopupHandler(['fi-omaihka-soil-topsoil-fill', 'fi-omaihka-soil-subsoil-fill'], e => {
-//   const f = e.features[0];
-//   const p = f.properties;
-
-//   let html = '<table>'
-//   for (const [k, v] of Object.entries(p)) {
-//     html += `<tr><th>${k}</th><td>${v}</td></tr>`
-//   }
-//   html += '</table>'
-
-//   createPopup(e, html, { maxWidth: '480px' });
-// });
-
-// addLayer({
-//   'id': `fi-omaihka-soils-highlighted`,
-//   "source": 'fi-omaihka-soils',
-//   "type": 'fill',
-//   "paint": {
-//     "fill-outline-color": "#484896",
-//     "fill-color": "#6e599f",
-//     "fill-opacity": 0.4
-//   },
-//   "filter": ["in", 'lohko'],
-//   BEFORE: 'OUTLINE',
-// });
-
 registerGroup("fao-images-2021", [
-  "fao-images-2021-fill",
+  "fao-images-2021-boundary",
+  "fao-images-2021-boundary2",
   "fao-images-2021-raster",
   "fao-images-2021-label",
   "fao-images-2021-pin",
