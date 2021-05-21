@@ -12,3 +12,4 @@ services:
       - "${DEV_PORT}:3000"
     volumes:
         - .:/app:z
+        - /app/node_modules
