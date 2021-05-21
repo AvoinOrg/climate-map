@@ -64,7 +64,7 @@ interface IBuildingSchema {
     distance_poly? : number;
     distance_centroid? : number;
 }
-interface IBuildingSchemaAll extends IBuildingSchemaVRK, IBuildingSchemaNLS, IBuildingSchema {}
+// interface IBuildingSchemaAll extends IBuildingSchemaVRK, IBuildingSchemaNLS, IBuildingSchema {}
 
 genericPopupHandler('fi-buildings-fill', e => {
     const f = e.features[0]

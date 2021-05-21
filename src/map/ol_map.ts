@@ -15,7 +15,7 @@ import olms from 'ol-mapbox-style';
 import Overlay from 'ol/Overlay';
 import RenderFeature from 'ol/src/render/Feature';
 import SourceType from 'ol/source/Source';
-import stylefunction from 'ol-mapbox-style/stylefunction';
+import stylefunction from 'ol-mapbox-style/dist/stylefunction';
 import TileGrid from 'ol/tilegrid/TileGrid';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from 'ol/layer/Vector';
@@ -257,6 +257,7 @@ const setLayerMBStyle = (layerId: string) => {
     "version": 8,
     "name": "export",
     "sources": { [layer.source as string]: mbSources[layer.source as string] },
+    // @ts-ignore
     "layers": [layer],
   };
   stylefunction(layer2, styleDef, layer.source as string);

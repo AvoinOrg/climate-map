@@ -76,7 +76,7 @@ export const addSource = (name: string, source: mapboxgl.AnySourceData) => {
 export const directAddSource = (name: string, source: mapboxgl.AnySourceData) => {
     execWithMapLoaded(() => map.addSource(name, source));
 }
-export const directAddLayer = (layer: mapboxgl.Layer, before?: string) => {
+export const directAddLayer = (layer: mapboxgl.AnyLayer, before?: string) => {
     execWithMapLoaded(() => map.addLayer(layer, before));
 }
 export const getLayer = (layer: string) => map.getLayer(layer);
@@ -96,6 +96,7 @@ export const addLayer = (layer: Layer, visibility: mapboxgl.Visibility = 'none')
         layer.paint['raster-resampling'] = layer.paint['raster-resampling'] || 'nearest';
     }
     originalLayerDefs[layer.id] = layer;
+    // @ts-ignore
     directAddLayer({ layout, ...layer }, layer.BEFORE);
 }
 

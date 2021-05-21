@@ -13,7 +13,7 @@ export interface ContentEntity {
   noExpansionPanelPadding?: boolean;
 }
 
-export default [
+const drawerItems = [
   {
     title: "Forest",
     content: ForestContent,
@@ -62,6 +62,8 @@ export default [
   //   contentType: null
   // },
 ];
+
+export default drawerItems;
 
 export const userDrawerItems = [
   {

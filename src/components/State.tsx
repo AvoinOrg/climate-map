@@ -5,7 +5,9 @@ import { useObservable } from "micro-observables";
 export const StateContext = React.createContext({});
 
 export const StateProvider = (props) => {
+  // for use in non-react components
   const isSidebarOpen = useObservable(isOpenObservable);
+
   const [isSidebarDisabled, setIsSidebarDisabled] = useState(false);
   const [isSignupOpen, setIsSignupOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
