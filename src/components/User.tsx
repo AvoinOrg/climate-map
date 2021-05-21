@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 
 import {
   enableUserDataset,
@@ -96,7 +96,7 @@ export const UserProvider = (props) => {
 
   const updateProfile = async (values) => {
     try {
-      const config = {
+      const config: AxiosRequestConfig = {
         method: "put",
         url: apiUrl + "/user/profile",
         params: {
@@ -130,7 +130,7 @@ export const UserProvider = (props) => {
 
   const createIntegration = async (integrationType, values) => {
     try {
-      const config = {
+      const config: AxiosRequestConfig = {
         method: "post",
         url: apiUrl + "/user/integration/" + integrationType,
         params: {
@@ -147,7 +147,7 @@ export const UserProvider = (props) => {
 
   const updateIntegration = async (integrationType, values) => {
     try {
-      const config = {
+      const config: AxiosRequestConfig = {
         method: "put",
         url: apiUrl + "/user/integration/" + integrationType,
         params: {
@@ -169,7 +169,7 @@ export const UserProvider = (props) => {
 
   const deleteIntegration = async (integrationType) => {
     try {
-      const config = {
+      const config: AxiosRequestConfig = {
         method: "delete",
         url: apiUrl + "/user/integration/" + integrationType,
         params: {
@@ -191,7 +191,7 @@ export const UserProvider = (props) => {
 
   const initDataAuth = async (integrationType) => {
     try {
-      const config = {
+      const config: AxiosRequestConfig = {
         method: "post",
         url: apiUrl + "/user/integration/" + integrationType + "/auth",
         params: {

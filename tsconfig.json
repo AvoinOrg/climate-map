@@ -17,17 +17,16 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react",
+    "jsx": "react-jsx",
     "baseUrl": "./",
     "checkJs": true,
     "noImplicitAny": false,
     "strictNullChecks": false,
-    "outDir": "ts-out/"
+    "outDir": "ts-out/",
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
-    "src",
-    // "node_modules/ol-mapbox-style/**/*.js",
-    // "node_modules/ol/**/*.js"
+    "src"
   ],
   "exclude": [
     "dist/"
