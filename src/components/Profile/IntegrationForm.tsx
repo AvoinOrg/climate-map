@@ -148,7 +148,7 @@ const IntegrationForm = (props) => {
     initDataAuth,
     fetchDataAuthStatus,
     createIntegration,
-    deleteIntegration
+    deleteIntegration,
   }: any = React.useContext(UserContext);
   const [integrationStates, setIntegrationStates] = useState(null);
   const stateRef = useRef(integrationStates);
@@ -159,13 +159,16 @@ const IntegrationForm = (props) => {
 
     for (const key in userIntegrations) {
       let val: IntegrationState = "initialized";
-      if (userIntegrations[key].integration_status === "integrated") {
+      if (
+        userIntegrations[key] &&
+        userIntegrations[key].integrationStatus === "integrated"
+      ) {
         val = "done";
       }
       newIntegrationStates[key] = val;
     }
 
-    if (!(userIntegrations["vipu"])) {
+    if (!userIntegrations["vipu"]) {
       newIntegrationStates["vipu"] = "uninitialized";
     }
 
@@ -208,9 +211,10 @@ const IntegrationForm = (props) => {
     setTimeout(async () => {
       const status = await fetchDataAuthStatus(integrationType);
 
-      if (["importing", "authorizing"].includes(stateRef.current[integrationType])) {
+      if (
+        ["importing", "authorizing"].includes(stateRef.current[integrationType])
+      ) {
         let val: IntegrationState = "initialized";
-
 
         switch (status) {
           case "error":
