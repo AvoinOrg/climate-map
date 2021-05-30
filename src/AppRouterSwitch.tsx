@@ -21,7 +21,6 @@ import OverlayMessages from "./components/OverlayMessages";
 import Ekofolio from "./components/Sidebar/Ekofolio";
 import UserModal from "./components/Profile/UserModal";
 import LoadingModal from "./components/LoadingModal";
-import VerificationForm from "./components/Profile/VerificationForm";
 import { UserContext } from "./components/User";
 import { StateContext } from "./components/State";
 
@@ -32,7 +31,6 @@ const VerificationRouter = () => {
     userProfile,
     hasInitialized,
     verifyEmail,
-    verificationStatus,
     logout,
   }: any = React.useContext(UserContext);
 

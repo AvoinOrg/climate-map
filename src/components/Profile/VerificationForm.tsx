@@ -6,7 +6,6 @@ import Check from "@material-ui/icons/Check";
 
 import { UserContext } from "../User";
 import { NextButton } from "./Signup";
-import { VerificationStatus } from "../Utils/types";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

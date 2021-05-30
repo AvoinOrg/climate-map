@@ -102,7 +102,7 @@ const useStyles = makeStyles((theme: Theme) =>
 const DataForm = (props) => {
   const classes = useStyles({});
 
-  const { userProfile, userIntegrations, updateProfile }: any = useContext(
+  const { userProfile, userIntegrations }: any = useContext(
     UserContext
   );
 
