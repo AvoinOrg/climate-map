@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { observable } from "micro-observables";
 import { useObservable } from "micro-observables";
 
+import { ProfileState } from "./Utils/types";
+
 export const StateContext = React.createContext({});
 
 export const StateProvider = (props) => {
@@ -11,14 +13,18 @@ export const StateProvider = (props) => {
   const [isSidebarDisabled, setIsSidebarDisabled] = useState(false);
   const [isSignupOpen, setIsSignupOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [profileState, setProfileState] = useState(0);
+  const [profileState, setProfileState] = useState<ProfileState>("none");
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [signupFunnelStep, setSignupFunnelStep] = useState(0);
 
   useEffect(() => {
     if (isSignupOpen || isLoginOpen || isProfileOpen) {
       setIsSidebarDisabled(true);
     } else {
       setIsSidebarDisabled(false);
+    }
+    if (isSignupOpen || isLoginOpen) {
+      setIsProfileOpen(false)
     }
   }, [isSignupOpen, isProfileOpen, isLoginOpen]);
 
@@ -35,6 +41,8 @@ export const StateProvider = (props) => {
     setIsProfileOpen,
     profileState,
     setProfileState,
+    signupFunnelStep,
+    setSignupFunnelStep,
   };
 
   return (
