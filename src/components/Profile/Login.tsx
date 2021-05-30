@@ -50,7 +50,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const Login = (props) => {
+const Login = () => {
   const classes = useStyles({});
   const { login }: any = React.useContext(UserContext);
   const { setIsLoginOpen }: any = React.useContext(StateContext);
@@ -65,7 +65,9 @@ const Login = (props) => {
 
   const handleValueChange = (event) => {
     const newValues = { ...values };
-    const id = event.target.id.split("_")[1];
+
+    // form input ID -> value name
+    const id = event.target.id.split(/(?=[A-Z])/)[1].toLowerCase();
     const value = event.target.value;
 
     newValues[id] = value;
@@ -111,7 +113,7 @@ const Login = (props) => {
             Email address
           </InputLabel>
           <OutlinedInput
-            id="login_email"
+            id="loginEmail"
             onChange={handleValueChange}
             value={values.email}
             color={"secondary"}
@@ -123,7 +125,7 @@ const Login = (props) => {
           onChange={handleValueChange}
           value={values.password}
           error={false}
-          id={"login_password"}
+          id={"loginPassword"}
         ></PasswordField>
         <p className={classes.errorMsg}>{bigError}</p>
         <Button
