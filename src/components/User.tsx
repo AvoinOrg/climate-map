@@ -5,6 +5,8 @@ import {
   enableUserDataset,
   disableUserDataset,
 } from "../map/layers/user/common";
+import { StateContext } from "./State";
+import { VerificationStatus } from "./Utils/types";
 // const claimHashes = {
 //     valio: '75e3e7c68bffb0efc8f893345bfe161f77175b8f9ce31840db93ace7fa46f3db',
 // }
@@ -20,6 +22,12 @@ export const UserProvider = (props) => {
   const [userProfile, setUserProfile] = useState(null);
   const [userIntegrations, setUserIntegrations] = useState(null);
   const [userLayers, setUserLayers] = useState(defaultLayers);
+  const [verificationTimeout, setVerificationTimeout] = useState(0);
+  const [verificationStatus, setVerificationStatus] =
+    useState<VerificationStatus>("unverified");
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  const { setSignupFunnelStep }: any = React.useContext(StateContext);
 
   const storeToken = (token, expires) => {
     localStorage.setItem("token", token);
@@ -27,8 +35,8 @@ export const UserProvider = (props) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("expires");
+    localStorage.getItem("token") && localStorage.removeItem("token");
+    localStorage.getItem("expires") && localStorage.removeItem("expires");
 
     for (const key in userLayers) {
       if (userLayers[key]) {
@@ -40,18 +48,29 @@ export const UserProvider = (props) => {
     setIsLoggedIn(false);
     setUserIntegrations(null);
     setUserProfile(null);
+    setVerificationStatus("unverified");
+  };
+
+  const startVerificationTimeout = (time: number) => {
+    setVerificationTimeout(time);
+
+    setTimeout(() => {
+      if (time > 0) {
+        startVerificationTimeout(time - 1);
+      }
+    }, 1000);
   };
 
   const checkAuth = () => {
-    if (
-      localStorage.getItem("token") &&
-      localStorage.getItem("expires") &&
-      Date.now() < parseInt(localStorage.getItem("expires"))
-    ) {
-      !isLoggedIn && setIsLoggedIn(true);
-      return true;
+    if (localStorage.getItem("token") && localStorage.getItem("expires")) {
+      if (Date.now() < parseInt(localStorage.getItem("expires"))) {
+        !isLoggedIn && setIsLoggedIn(true);
+        return true;
+      }
     }
-    isLoggedIn && setIsLoggedIn(false);
+    isLoggedIn && logout();
+    !hasInitialized && setHasInitialized(true);
+
     return false;
   };
 
@@ -73,6 +92,7 @@ export const UserProvider = (props) => {
 
       if (res.status === 200) {
         storeToken(res.data.token, res.data.expires);
+
         return checkAuth();
       }
     } catch (error) {
@@ -88,6 +108,7 @@ export const UserProvider = (props) => {
 
       if (res.status === 200) {
         setUserProfile(res.data);
+        return res.data;
       }
     } catch (error) {
       throw error.response;
@@ -108,8 +129,60 @@ export const UserProvider = (props) => {
 
       if (res.status === 200) {
         setUserProfile(res.data);
+        return res.data;
       }
     } catch (error) {
+      throw error.response;
+    }
+  };
+
+  const sendEmailVerification = async () => {
+    try {
+      const config: AxiosRequestConfig = {
+        method: "post",
+        url: apiUrl + "/user/verify",
+        params: {
+          token: localStorage.getItem("token"),
+        },
+      };
+      const res = await axios(config);
+
+      if (res.status === 200) {
+        startVerificationTimeout(30);
+        setVerificationStatus("emailSent");
+      }
+
+      return res.status;
+    } catch (error) {
+      setVerificationTimeout(0);
+      setVerificationStatus("emailErrored");
+      throw error.response;
+    }
+  };
+
+  const verifyEmail = async (token) => {
+    try {
+      const config: AxiosRequestConfig = {
+        method: "post",
+        url: apiUrl + "/verify",
+        params: {
+          token,
+        },
+      };
+      const res = await axios(config);
+
+      if (res.status === 200) {
+        setVerificationStatus("verified");
+      }
+
+      setVerificationStatus("errored");
+      return res.status;
+    } catch (error) {
+      if (error.response.status && error.response.status === 409) {
+        setVerificationStatus("verified");
+      } else {
+        setVerificationStatus("errored");
+      }
       throw error.response;
     }
   };
@@ -122,6 +195,7 @@ export const UserProvider = (props) => {
 
       if (res.status === 200) {
         setUserIntegrations(res.data);
+        return res.data;
       }
     } catch (error) {
       throw error.response;
@@ -139,8 +213,18 @@ export const UserProvider = (props) => {
         data: values,
       };
 
-      await axios(config);
+      const res = await axios(config);
+
+      if (res.status === 200) {
+        const newUserIntegrations = { ...userIntegrations, ...res.data };
+        setUserIntegrations(newUserIntegrations);
+        return res.data;
+      }
     } catch (error) {
+      if (error.response.status === 409) {
+        const data = await fetchIntegrations();
+        return data.integrationType;
+      }
       throw error.response;
     }
   };
@@ -161,6 +245,7 @@ export const UserProvider = (props) => {
       if (res.status === 200) {
         const newUserIntegrations = { ...userIntegrations, ...res.data };
         setUserIntegrations(newUserIntegrations);
+        return res.data;
       }
     } catch (error) {
       throw error.response;
@@ -183,6 +268,7 @@ export const UserProvider = (props) => {
         const newUserIntegrations = { ...userIntegrations };
         delete newUserIntegrations[integrationType];
         setUserIntegrations(newUserIntegrations);
+        return newUserIntegrations;
       }
     } catch (error) {
       throw error.response;
@@ -202,7 +288,7 @@ export const UserProvider = (props) => {
       const res = await axios(config);
 
       if (res.status === 200) {
-        return res.data.auth_link;
+        return res.data.authLink;
       }
     } catch (error) {
       throw error.response;
@@ -219,7 +305,7 @@ export const UserProvider = (props) => {
       );
 
       if (res.status === 200) {
-        return res.data.auth_status;
+        return res.data.authStatus;
       }
     } catch (error) {
       throw error.response;
@@ -244,6 +330,21 @@ export const UserProvider = (props) => {
   };
 
   useEffect(() => {
+    if (userProfile && isLoggedIn && !hasInitialized) {
+      setHasInitialized(true);
+      setSignupFunnelStep(userProfile.funnelState);
+    }
+    if (
+      userProfile &&
+      userProfile.emailVerified === 1 &&
+      verificationStatus !== "verified"
+    ) {
+      setVerificationStatus("verified");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userProfile]);
+
+  useEffect(() => {
     if (isLoggedIn) {
       fetchProfile();
       fetchIntegrations();
@@ -261,7 +362,7 @@ export const UserProvider = (props) => {
       const newUserLayers = { ...userLayers };
       if (
         userIntegrations.vipu &&
-        userIntegrations.vipu.integration_status === "integrated" &&
+        userIntegrations.vipu.integrationStatus === "integrated" &&
         !userLayers["fi-vipu"]
       ) {
         enableUserDataset("fi-vipu", localStorage.getItem("token"));
@@ -270,8 +371,8 @@ export const UserProvider = (props) => {
 
       if (
         (!userIntegrations.vipu ||
-          userIntegrations.vipu.integration_status !== "integrated" ||
-          userIntegrations.vipu.is_disabled) &&
+          userIntegrations.vipu.integrationStatus !== "integrated" ||
+          userIntegrations.vipu.isDisabled) &&
         userLayers["fi-vipu"]
       ) {
         disableUserDataset("fi-vipu");
@@ -309,6 +410,11 @@ export const UserProvider = (props) => {
     initDataAuth,
     fetchDataAuthStatus,
     fetchSource,
+    verificationTimeout,
+    sendEmailVerification,
+    verifyEmail,
+    hasInitialized,
+    verificationStatus,
   };
 
   return (
