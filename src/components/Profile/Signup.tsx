@@ -6,6 +6,7 @@ import DataForm from "./DataForm";
 import SignupStepper from "./SignupStepper";
 import SignupForm from "./SignupForm";
 import IntegrationForm from "./IntegrationForm";
+import VerificationForm from "./VerificationForm";
 import Finish from "./Finish";
 import { UserContext } from "../User";
 import { StateContext } from "../State";
@@ -36,19 +37,21 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const steps = [0, 1, 2];
+const steps = [0, 1, 2, 3];
 
 const Signup = () => {
   const classes = useStyles({});
-  const { isLoggedIn }: any = React.useContext(UserContext);
-  const { setIsSignupOpen, setIsSidebarOpen }: any = React.useContext(
-    StateContext
-  );
-
-  const [activeStep, setActiveStep] = useState(2);
+  const { isLoggedIn, updateProfile }: any = React.useContext(UserContext);
+  const {
+    setIsSignupOpen,
+    setIsSidebarOpen,
+    signupFunnelStep,
+    setSignupFunnelStep,
+  }: any = React.useContext(StateContext);
 
   const handleClickNext = () => {
-    setActiveStep(activeStep + 1);
+    setSignupFunnelStep(signupFunnelStep + 1);
+    updateProfile({ funnelState: signupFunnelStep + 1 });
   };
 
   const handleFinish = () => {
@@ -57,8 +60,8 @@ const Signup = () => {
   };
 
   useEffect(() => {
-    if (activeStep > 0 && !isLoggedIn) {
-      setActiveStep(0);
+    if (signupFunnelStep > 0 && !isLoggedIn) {
+      setSignupFunnelStep(0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn]);
@@ -67,18 +70,26 @@ const Signup = () => {
     <div className={classes.root}>
       <div className={classes.container}>
         <h2 className={classes.header}>Sign up and create a free profile</h2>
-        <SignupStepper activeStep={activeStep} steps={steps}></SignupStepper>
+        <SignupStepper
+          activeStep={signupFunnelStep}
+          steps={steps}
+        ></SignupStepper>
 
-        {activeStep === 0 && (
+        {signupFunnelStep === 0 && (
           <SignupForm handleClickNext={handleClickNext}></SignupForm>
         )}
-        {activeStep === 1 && isLoggedIn && (
+        {signupFunnelStep === 1 && isLoggedIn && (
+          <VerificationForm
+            handleClickNext={handleClickNext}
+          ></VerificationForm>
+        )}
+        {signupFunnelStep === 2 && isLoggedIn && (
           <DataForm handleClickNext={handleClickNext}></DataForm>
         )}
-        {activeStep === 2 && isLoggedIn && (
+        {signupFunnelStep === 3 && isLoggedIn && (
           <IntegrationForm handleClickNext={handleClickNext}></IntegrationForm>
         )}
-        {activeStep > 2 && isLoggedIn && (
+        {signupFunnelStep > 3 && isLoggedIn && (
           <Finish handleClickNext={handleFinish}></Finish>
         )}
       </div>
