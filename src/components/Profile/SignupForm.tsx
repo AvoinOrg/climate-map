@@ -56,8 +56,8 @@ const defaultValues = {
   email: "",
   password: "",
   name: "",
-  phone_number: "",
-  account_type: "Landowner",
+  phoneNumber: "",
+  accountType: "Landowner",
 };
 
 const SignupForm = (props) => {
@@ -175,12 +175,12 @@ const SignupForm = (props) => {
         />
         <TextField
           className={classes.textField}
-          id="phone_number"
+          id="phoneNumber"
           label="Phone number"
           variant="outlined"
           color={"secondary"}
           onChange={handleValueChange}
-          value={values.phone_number}
+          value={values.phoneNumber}
         />
       </form>
       {bigError && <p className={classes.errorMsg}>{bigError}</p>}
