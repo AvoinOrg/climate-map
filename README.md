@@ -2,8 +2,12 @@ You need to set the following environment variables.
 These can be set in the `.env` file.
 ```
 REACT_APP_MAPBOX_ACCESS_TOKEN
-REACT_APP_TERRAMONITOR_KEY
+
+# URL for the backend
 REACT_APP_API_URL
+
+# Optional
+REACT_APP_TERRAMONITOR_KEY
 
 # NB: Not in use at the moment:
 REACT_APP_ANALYTICS_ID
@@ -13,6 +17,10 @@ REACT_APP_WAQI_TOKEN
 ```
 
 The app needs a running backend for many functionalities. See [Climate Map Backend](https://github.com/avoinorg/climate-map-backend)
+
+A personal Mapbox API key can be gotten by registering at [mapbox.com](https://mapbox.com)
+
+A Terramonitor API key is used only for the satellite base layer and is not strictly required.
 
 -------------
 
