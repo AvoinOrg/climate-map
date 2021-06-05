@@ -16,11 +16,9 @@ REACT_APP_AUTH0_DOMAIN
 REACT_APP_WAQI_TOKEN
 ```
 
-The app needs a running backend for many functionalities. See [Climate Map Backend](https://github.com/avoinorg/climate-map-backend)
-
-A personal Mapbox API key can be gotten by registering at [mapbox.com](https://mapbox.com)
-
-A Terramonitor API key is used only for the satellite base layer and is not strictly required.
+* The app needs a running backend for many functionalities. See [Climate Map Backend](https://github.com/avoinorg/climate-map-backend)
+* A personal Mapbox API key can be gotten by registering at [mapbox.com](https://mapbox.com)
+* A Terramonitor API key is used only for the satellite base layer and is not strictly required.
 
 -------------
 
