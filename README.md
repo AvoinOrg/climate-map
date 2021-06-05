@@ -1,5 +1,10 @@
+# climate-map
+
+See also [Climate Map Backend](https://github.com/avoinorg/climate-map-backend)
+
+## Env variables
 You need to set the following environment variables.
-These can be set in the `.env` file.
+These can be set in the `.env` file. See `.env.example`.
 ```
 REACT_APP_MAPBOX_ACCESS_TOKEN
 
