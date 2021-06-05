@@ -1,17 +1,18 @@
-
-
 You need to set the following environment variables.
 These can be set in the `.env` file.
 ```
 REACT_APP_MAPBOX_ACCESS_TOKEN
 REACT_APP_TERRAMONITOR_KEY
-REACT_APP_ANALYTICS_ID
+REACT_APP_API_URL
 
 # NB: Not in use at the moment:
+REACT_APP_ANALYTICS_ID
 REACT_APP_AUTH0_CLIENT_ID
 REACT_APP_AUTH0_DOMAIN
 REACT_APP_WAQI_TOKEN
 ```
+
+The app needs a running backend for many functionalities. See [Climate Map Backend](https://github.com/avoinorg/climate-map-backend)
 
 -------------
 
