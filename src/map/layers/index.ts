@@ -31,5 +31,7 @@ import './kariba_changes'
 
 import './ekofolio'
 
+import './fao_images_2021'
+
 // Special:
 // import './dataset_query';

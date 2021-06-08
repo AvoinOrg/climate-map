@@ -9,6 +9,7 @@ const urlLayerMapping = {
   '/layers/fi-ffd': 'fi-ffd',
   '/layers/kariba_changes': 'kariba_changes_2019',
   '/layers/ekofolio': 'ekofolio',
+  '/layers/fao-images-2021': 'fao-images-2021',
 }
 
 let activeUrlLayerGroup = null

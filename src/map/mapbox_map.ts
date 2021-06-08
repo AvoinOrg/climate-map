@@ -73,6 +73,10 @@ export const addSource = (name: string, source: mapboxgl.AnySourceData) => {
     directAddSource(name, source);
 }
 
+export const addImage = (name: string, image: HTMLImageElement) => {
+    execWithMapLoaded(() => map.addImage(name, image));
+}
+
 export const directAddSource = (name: string, source: mapboxgl.AnySourceData) => {
     execWithMapLoaded(() => map.addSource(name, source));
 }

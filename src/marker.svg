@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+            width="30"
+            height="30"
+            viewBox="0 0 24 24"
+            fill="#126A42"
+            fill-opacity="1"
+            stroke-opacity="0.8"
+            stroke="black"
+            stroke-width="1" stroke-linecap="round"
+            stroke-linejoin="round"
+            class="feather feather-map-pin">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle></svg>
