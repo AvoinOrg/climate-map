@@ -6,7 +6,7 @@ services:
     build: .
     restart: always
     env_file:
-      - ./default.env
+      - ./.env.example
       - ./.env
     ports:
       - "${DEV_PORT}:3000"
