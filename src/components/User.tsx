@@ -13,7 +13,8 @@ import { VerificationStatus } from "./Utils/types";
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const defaultLayers = { "fi-vipu": false };
+const defaultUserLayers = { vipu: false };
+const defaultPrivateLayers = { "valio-fields-2020": false };
 
 export const UserContext = React.createContext({});
 
@@ -21,7 +22,8 @@ export const UserProvider = (props) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [userIntegrations, setUserIntegrations] = useState(null);
-  const [userLayers, setUserLayers] = useState(defaultLayers);
+  const [userLayers, setUserLayers] = useState(defaultUserLayers);
+  const [privateLayers, setPrivateLayers] = useState(defaultPrivateLayers);
   const [verificationTimeout, setVerificationTimeout] = useState(0);
   const [verificationStatus, setVerificationStatus] =
     useState<VerificationStatus>("unverified");
@@ -44,11 +46,20 @@ export const UserProvider = (props) => {
       }
     }
 
-    setUserLayers(defaultLayers);
+    for (const key in privateLayers) {
+      if (privateLayers[key]) {
+        disableUserDataset(key);
+      }
+    }
+
+    setUserLayers(defaultUserLayers);
+    setPrivateLayers(defaultPrivateLayers);
+
     setIsLoggedIn(false);
     setUserIntegrations(null);
     setUserProfile(null);
     setVerificationStatus("unverified");
+    window.location.reload();
   };
 
   const startVerificationTimeout = (time: number) => {
@@ -330,7 +341,12 @@ export const UserProvider = (props) => {
   };
 
   useEffect(() => {
-    if (userProfile && isLoggedIn && !hasInitialized) {
+    if (
+      userProfile &&
+      isLoggedIn &&
+      userIntegrations !== null &&
+      !hasInitialized
+    ) {
       setHasInitialized(true);
       setSignupFunnelStep(userProfile.funnelState);
     }
@@ -342,7 +358,7 @@ export const UserProvider = (props) => {
       setVerificationStatus("verified");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userProfile]);
+  }, [userProfile, userIntegrations]);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -360,26 +376,42 @@ export const UserProvider = (props) => {
   useEffect(() => {
     if (userIntegrations) {
       const newUserLayers = { ...userLayers };
-      if (
-        userIntegrations.vipu &&
-        userIntegrations.vipu.integrationStatus === "integrated" &&
-        !userLayers["fi-vipu"]
-      ) {
-        enableUserDataset("fi-vipu", localStorage.getItem("token"));
-        newUserLayers["fi-vipu"] = true;
-      }
+      const newPrivateLayers = { ...privateLayers };
 
-      if (
-        (!userIntegrations.vipu ||
-          userIntegrations.vipu.integrationStatus !== "integrated" ||
-          userIntegrations.vipu.isDisabled) &&
-        userLayers["fi-vipu"]
-      ) {
-        disableUserDataset("fi-vipu");
-        newUserLayers["fi-vipu"] = false;
+      for (const integration in userIntegrations) {
+        if (Object.keys(defaultUserLayers).includes(integration)) {
+          if (
+            userIntegrations[integration] === "integrated" &&
+            !userLayers[integration]
+          ) {
+            enableUserDataset(integration, localStorage.getItem("token"));
+            newUserLayers[integration] = true;
+          } else if (
+            userIntegrations[integration] !== "integrated" ||
+            !userLayers[integration]
+          ) {
+            disableUserDataset(integration);
+            newUserLayers[integration] = false;
+          }
+        } else if (Object.keys(defaultPrivateLayers).includes(integration)) {
+          if (
+            userIntegrations[integration] === "integrated" &&
+            !privateLayers[integration]
+          ) {
+            enableUserDataset(integration, localStorage.getItem("token"));
+            newPrivateLayers[integration] = true;
+          } else if (
+            userIntegrations[integration] !== "integrated" ||
+            !privateLayers[integration]
+          ) {
+            disableUserDataset(integration);
+            newPrivateLayers[integration] = false;
+          }
+        }
       }
 
       setUserLayers(newUserLayers);
+      setPrivateLayers(newPrivateLayers);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userIntegrations]);
