@@ -1,1 +1,1 @@
-import "./fi_vipu";
+import "./vipu";
