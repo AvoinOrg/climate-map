@@ -7,7 +7,6 @@ import {
 } from "../map/layers/user/common";
 import { StateContext } from "./State";
 import { VerificationStatus } from "./Utils/types";
-import { AirlineSeatLegroomExtraOutlined } from "@material-ui/icons";
 // const claimHashes = {
 //     valio: '75e3e7c68bffb0efc8f893345bfe161f77175b8f9ce31840db93ace7fa46f3db',
 // }
