@@ -9,6 +9,7 @@ import {
 } from "@material-ui/core";
 
 import { UserContext } from "../User";
+import { StateContext } from "../State";
 import { NextButton } from "./Signup";
 import PasswordField from "./PasswordField";
 
@@ -49,6 +50,21 @@ const useStyles = makeStyles((theme: Theme) =>
       width: "100%",
       borderTop: "solid 3px " + theme.palette.grey[300],
     },
+    loginText: {
+      fontFamily: theme.typography.fontFamily[0],
+      fontWeight: 300,
+      fontSize: "16px",
+      textAlign: "center",
+    },
+    loginTextLink: {
+      fontFamily: theme.typography.fontFamily[0],
+      fontWeight: 300,
+      fontSize: "16px",
+      textAlign: "center",
+      "&:hover": {
+        cursor: "pointer",
+      },
+    },
   })
 );
 
@@ -63,6 +79,7 @@ const defaultValues = {
 const SignupForm = (props) => {
   const classes = useStyles({});
   const { signup }: any = React.useContext(UserContext);
+  const { setIsLoginOpen, setIsSignupOpen }: any = React.useContext(StateContext);
 
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [bigError, setBigError] = useState("");
@@ -139,8 +156,19 @@ const SignupForm = (props) => {
     props.handleClickNext();
   };
 
+  const handleClickLogin = async () => {
+    setIsSignupOpen(false);
+    setIsLoginOpen(true);
+  };
+
   return (
     <div className={classes.root}>
+      <p className={classes.loginText}>
+        Already have an account?{" "}
+        <u className={classes.loginTextLink} onClick={handleClickLogin}>
+          Log in by clicking here.
+        </u>
+      </p>
       <form className={classes.form} noValidate autoComplete="off">
         <FormControl className={classes.textField} variant="outlined">
           <InputLabel color={"secondary"} htmlFor="password">
