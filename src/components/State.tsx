@@ -89,7 +89,7 @@ export const StateProvider = (props) => {
     }
   }, [isSignupOpen, isProfileOpen, isLoginOpen]);
 
-  const notify = (message, severity, duration = 99999) => {
+  const notify = (message, severity, duration = 6000) => {
     const newNotification = {};
     const index = new Date().getTime()
 
@@ -101,8 +101,7 @@ export const StateProvider = (props) => {
 
     setNotificationTimeout(index, duration + 1000);
 
-    setNotifications((not) => {
-      console.log({ ...not, ...newNotification })
+    setNotifications((notifications) => {
       return { ...notifications, ...newNotification };
     });
   };
@@ -141,7 +140,6 @@ export const StateProvider = (props) => {
       {props.children}
       <div className={classes.root}>
         {Object.keys(notifications).map((key) => {
-          console.log(key)
           return (
             <Notification
               key={key}
