@@ -14,7 +14,7 @@ import MapButtons from "./components/MapButtons";
 import { URLLayerSyncContainer } from "./URLLayerSyncContainer";
 import ForestArvometsa from "./components/Sidebar/ForestArvometsa";
 import Omaihka from "./components/Sidebar/Omaihka";
-import FaoImages2021 from './components/Sidebar/FaoImages2021'
+import FaoImages2021 from "./components/Sidebar/FaoImages2021";
 import KaribaForestCoverChanges from "./components/Sidebar/KaribaForestCoverChanges";
 import FFD from "./components/Sidebar/FFD";
 import { MainMenu } from "./components/Sidebar/Sidebar";
@@ -25,9 +25,10 @@ import LoadingModal from "./components/LoadingModal";
 import { UserContext } from "./components/User";
 import { StateContext } from "./components/State";
 
-const VerificationRouter = () => {
+const VerificationRouter = (props) => {
   const {
     fetchUserProfile,
+    fetchUserIntegrations,
     isLoggedIn,
     userProfile,
     hasInitialized,
@@ -44,7 +45,6 @@ const VerificationRouter = () => {
 
   const { token }: any = useParams();
   const [hasRouted, setHasRouted] = useState(false);
-
   useEffect(() => {
     verifyEmail(token)
       .then((res) => {
@@ -52,6 +52,7 @@ const VerificationRouter = () => {
           if (isLoggedIn) {
             if (res.data.email === userProfile.email) {
               fetchUserProfile();
+              fetchUserIntegrations();
             } else {
               logout();
             }
@@ -59,15 +60,14 @@ const VerificationRouter = () => {
         }
       })
       .catch((error) => {
-        console.log(error.data)
         if (error.status === 409 && isLoggedIn) {
-          if (
-            error.data.email &&
-            error.data.email !== userProfile.email
-          ) {
+          if (error.data.email && error.data.email !== userProfile.email) {
             logout();
           }
         }
+      })
+      .finally(() => {
+        window.history.replaceState(null, document.title, "/");
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -84,8 +84,8 @@ const VerificationRouter = () => {
       setIsSignupOpen(true);
     } else if (!hasRouted && hasInitialized) {
       setHasRouted(true);
-      setIsProfileOpen(true);
       setProfileState("verification");
+      setIsProfileOpen(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasInitialized, userProfile]);
@@ -94,6 +94,103 @@ const VerificationRouter = () => {
     <>
       {!hasRouted && <LoadingModal></LoadingModal>}
       <MainMenu />
+    </>
+  );
+};
+
+const LayerRouter = (props) => {
+  const {
+    isLoggedIn,
+    userProfile,
+    userIntegrations,
+    fetchIntegrations,
+    hasInitialized,
+  }: any = React.useContext(UserContext);
+
+  const {
+    setIsSignupOpen,
+    setIsProfileOpen,
+    setProfileState,
+    setSignupFunnelStep,
+    notify,
+  }: any = React.useContext(StateContext);
+
+  const { layer }: any = useParams();
+  const [routeState, setRouteState] =
+    useState<"none" | "allowed" | "verify" | "fetching" | "denied" | "login">(
+      "none"
+    );
+
+  useEffect(() => {
+    if (hasInitialized) {
+      if (isLoggedIn && userProfile && userIntegrations) {
+        if (userProfile.emailVerified === 1) {
+          if (userIntegrations[layer]) {
+            setRouteState("allowed");
+          } else if (["none", "login"].includes(routeState)) {
+            setRouteState("denied");
+            notify("You don't have access to this map layer.", "error", 30000);
+          }
+          if (routeState === "verify") {
+            setRouteState("fetching");
+
+            fetchIntegrations().then((res) => {
+              if (res[layer]) {
+                setRouteState("allowed");
+                notify("Map layer enabled!", "success", 6000);
+              } else {
+                setRouteState("denied");
+                notify(
+                  "You don't have access to this map layer.",
+                  "error",
+                  30000
+                );
+              }
+            });
+          }
+        } else {
+          setRouteState("verify");
+          if (routeState === "none") {
+            notify(
+              "You need to verify your email to view this map layer.",
+              "info",
+              30000
+            );
+          }
+        }
+      } else if (routeState === "none") {
+        setRouteState("login");
+        notify("You need to log in to view this map layer.", "info", 30000);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasInitialized, userProfile, userIntegrations]);
+
+  useEffect(() => {
+    if (routeState === "login") {
+      setIsSignupOpen(true);
+    } else if (routeState === "verify") {
+      if (userProfile && userProfile.funnelState === 1) {
+        setSignupFunnelStep(1);
+        setIsSignupOpen(true);
+      } else {
+        setProfileState("verification");
+        setIsProfileOpen(true);
+      }
+    } else if (routeState === "denied") {
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routeState]);
+
+  return (
+    <>
+      {["none", "fetching"].includes(routeState) && (
+        <LoadingModal></LoadingModal>
+      )}
+      {routeState === "denied" && <MainMenu />}
+      {routeState === "allowed" && (
+        <>{layer === "valio-fields-2020" && <Ekofolio />}</>
+      )}
     </>
   );
 };
@@ -127,6 +224,9 @@ export default function AppRouterSwitch() {
             </Route>
             <Route path="/layers/ekofolio">
               <Ekofolio />
+            </Route>
+            <Route path="/layers/:layer">
+              <LayerRouter />
             </Route>
             <Route path="/verify/:token">
               <VerificationRouter />
