@@ -15,7 +15,6 @@ function Ekofolio() {
     const areaIdx = areaNum - 1
     const entry = ekofolioAreas[areaIdx]
     const zoom = entry.zoom
-    console.log(entry.center[0], entry.center[1], zoom)
     flyTo(entry.center[0], entry.center[1], zoom)
   }, [area])
 
