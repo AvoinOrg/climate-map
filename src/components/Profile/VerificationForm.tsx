@@ -201,10 +201,17 @@ const VerificationForm = (props) => {
             )}
             {}
           </div>
-          <div className={classes.separatorContainer}>
-            <div className={classes.separator} />
-          </div>
-          <NextButton onClick={handleClickNext} disabled={isButtonDisabled} />
+          {props.handleClickNext && (
+            <>
+              <div className={classes.separatorContainer}>
+                <div className={classes.separator} />
+              </div>
+              <NextButton
+                onClick={handleClickNext}
+                disabled={isButtonDisabled}
+              />
+            </>
+          )}
         </>
       ) : (
         <div className={classes.progressContainer}>
