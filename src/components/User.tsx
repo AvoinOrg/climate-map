@@ -7,6 +7,7 @@ import {
 } from "../map/layers/user/common";
 import { StateContext } from "./State";
 import { VerificationStatus } from "./Utils/types";
+import { AirlineSeatLegroomExtraOutlined } from "@material-ui/icons";
 // const claimHashes = {
 //     valio: '75e3e7c68bffb0efc8f893345bfe161f77175b8f9ce31840db93ace7fa46f3db',
 // }
@@ -122,6 +123,9 @@ export const UserProvider = (props) => {
         return res.data;
       }
     } catch (error) {
+      if (error.response.status && error.response.status === 404) {
+        logout();
+      }
       throw error.response;
     }
   };
@@ -143,6 +147,9 @@ export const UserProvider = (props) => {
         return res.data;
       }
     } catch (error) {
+      if (error.response.status && error.response.status === 404) {
+        logout();
+      }
       throw error.response;
     }
   };
@@ -209,6 +216,9 @@ export const UserProvider = (props) => {
         return res.data;
       }
     } catch (error) {
+      if (error.response.status && error.response.status === 404) {
+        logout();
+      }
       throw error.response;
     }
   };
@@ -232,6 +242,9 @@ export const UserProvider = (props) => {
         return res.data;
       }
     } catch (error) {
+      if (error.response.status && error.response.status === 404) {
+        logout();
+      }
       if (error.response.status === 409) {
         const data = await fetchIntegrations();
         return data.integrationType;
@@ -387,8 +400,8 @@ export const UserProvider = (props) => {
             enableUserDataset(integration, localStorage.getItem("token"));
             newUserLayers[integration] = true;
           } else if (
-            userIntegrations[integration] !== "integrated" ||
-            !userLayers[integration]
+            userIntegrations[integration] !== "integrated" &&
+            userLayers[integration]
           ) {
             disableUserDataset(integration);
             newUserLayers[integration] = false;
@@ -401,9 +414,10 @@ export const UserProvider = (props) => {
             enableUserDataset(integration, localStorage.getItem("token"));
             newPrivateLayers[integration] = true;
           } else if (
-            userIntegrations[integration] !== "integrated" ||
-            !privateLayers[integration]
+            userIntegrations[integration] !== "integrated" &&
+            privateLayers[integration]
           ) {
+            console.log(userIntegrations);
             disableUserDataset(integration);
             newPrivateLayers[integration] = false;
           }
