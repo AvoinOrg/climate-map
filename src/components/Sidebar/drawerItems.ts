@@ -5,6 +5,7 @@ import SnowCoverLossContent from "../Accordion/SnowCoverLossContent";
 import ForestContent from "../Accordion/ForestContent";
 import AirQualityContent from "../Accordion/AirQualityContent";
 import UserContent from "../Accordion/UserContent";
+import PrivateContent from "../Accordion/PrivateContent";
 
 export interface ContentEntity {
   title: string;
@@ -69,5 +70,9 @@ export const userDrawerItems = [
   {
     title: "Your data",
     content: UserContent,
+  },
+  {
+    title: "Private data",
+    content: PrivateContent,
   },
 ];
