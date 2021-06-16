@@ -4,6 +4,10 @@ import { execWithMapLoaded, assert, invertLayerTextHalo, originalSourceDefs, ori
 import { sanitize } from "dompurify";
 import { kiinteistorekisteriTunnusGeocoder, enableMMLPalstatLayer } from './layers/fi_property_id';
 
+// @ts-ignore
+// eslint-disable-next-line import/no-webpack-loader-syntax
+mapboxgl.workerClass = require('worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker').default;
+
 declare module "mapbox-gl" {
     export interface Layer {
         BEFORE?: string
