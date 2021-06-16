@@ -1,6 +1,6 @@
 [[redirects]]
-  from = "https://avoin-map.netlify.app"
-  to = "https://map.avoin.org"
+  from = "https://avoin-map.netlify.app/*"
+  to = "https://map.avoin.org/*"
   status = 301
   force = true
 
@@ -9,3 +9,8 @@
   to = "https://map.avoin.org"
   status = 301
   force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
