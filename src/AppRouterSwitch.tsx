@@ -24,6 +24,7 @@ import UserModal from "./components/Profile/UserModal";
 import LoadingModal from "./components/LoadingModal";
 import { UserContext } from "./components/User";
 import { StateContext } from "./components/State";
+import ValioFields2020 from "./components/Sidebar/ValioFields2020";
 
 const VerificationRouter = (props) => {
   const {
@@ -189,7 +190,7 @@ const LayerRouter = (props) => {
       )}
       {routeState === "denied" && <MainMenu />}
       {routeState === "allowed" && (
-        <>{layer === "valio-fields-2020" && <Ekofolio />}</>
+        <>{layer === "valio-fields-2020" && <ValioFields2020 />}</>
       )}
     </>
   );
