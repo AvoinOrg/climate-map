@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme: Theme) =>
       left: 0,
       right: 0,
       bottom: 0,
-      padding: "64px 10px 200px 10px",
+      padding: "64px 10px 20px 10px",
       zIndex: theme.zIndex.modal,
       backgroundColor: "white",
       overflowY: "auto",
@@ -25,11 +25,22 @@ const useStyles = makeStyles((theme: Theme) =>
       position: "absolute",
       top: "94px",
       right: "30px",
+      zIndex: theme.zIndex.modal + 1,
     },
     closeIcon: {
       fontSize: "1.5rem",
     },
-    pane: {},
+    pane: {
+      position: "fixed",
+      top: 64,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      display: "flex",
+      alignItems: "center",
+      flexDirection: "column",
+      backgroundColor: "white",
+    },
   })
 );
 
@@ -55,8 +66,7 @@ const UserModal = () => {
     <div
       className={classes.root}
       style={{
-        display:
-          isSignupOpen || isLoginOpen || isProfileOpen ? "initial" : "none",
+        display: isSignupOpen || isLoginOpen || isProfileOpen ? "flex" : "none",
       }}
     >
       <IconButton
@@ -71,20 +81,20 @@ const UserModal = () => {
       </IconButton>
       <div
         className={classes.pane}
-        style={{ display: isSignupOpen ? "initial" : "none" }}
+        style={{ display: isSignupOpen ? "flex" : "none" }}
       >
         <Signup></Signup>
       </div>
 
       <div
         className={classes.pane}
-        style={{ display: isLoginOpen ? "initial" : "none" }}
+        style={{ display: isLoginOpen ? "flex" : "none" }}
       >
         <Login></Login>
       </div>
       <div
         className={classes.pane}
-        style={{ display: isProfileOpen ? "initial" : "none" }}
+        style={{ display: isProfileOpen ? "flex" : "none" }}
       >
         <Profile></Profile>
       </div>

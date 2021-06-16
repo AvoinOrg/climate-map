@@ -4,6 +4,8 @@ import { Button } from "@material-ui/core";
 
 import DataForm from "./DataForm";
 import IntegrationForm from "./IntegrationForm";
+import VerificationForm from "./VerificationForm";
+import Login from "./Login";
 import { UserContext } from "../User";
 import { StateContext } from "../State";
 
@@ -34,21 +36,19 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-// const states = ["data", "data-integrate"];
-
 const Profile = () => {
   const classes = useStyles({});
   const { userProfile, isLoggedIn }: any = React.useContext(UserContext);
   const { profileState, setProfileState }: any = React.useContext(StateContext);
 
   const handleClickNext = () => {
-    setProfileState("data-integrate");
+    setProfileState("dataIntegrate");
   };
 
   useEffect(() => {
     if (profileState === "data") {
-      if (userProfile && userProfile.funnel_state > 1) {
-        setProfileState("data-integrate");
+      if (userProfile && userProfile.funnelState > 1) {
+        setProfileState("dataIntegrate");
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -60,8 +60,14 @@ const Profile = () => {
         {profileState === "data" && isLoggedIn && (
           <DataForm handleClickNext={handleClickNext}></DataForm>
         )}
-        {profileState === "data-integrate" && isLoggedIn && (
+        {profileState === "dataIntegrate" && isLoggedIn && (
           <IntegrationForm></IntegrationForm>
+        )}
+        {profileState === "verification" && (
+          <>
+            <VerificationForm></VerificationForm>
+            {!isLoggedIn && <Login></Login>}
+          </>
         )}
       </div>
     </div>

@@ -141,14 +141,14 @@ const UserContent = () => {
       </p>
       {hasLayers && (
         <>
-          {userLayers["fi-vipu"] && (
+          {userLayers["vipu"] && (
             <AOExpansionPanel
-              groupName={"fi-vipu-fields"}
+              groupName={"vipu-fields"}
               label={"Fields"}
               content={
                 <VipuContent
                   sourceName={"peltolohko"}
-                  sourceLayer={"fi-vipu-fields"}
+                  sourceLayer={"vipu-fields"}
                   filterFeature={"VUOSIVAIHE"}
                   filterFunction={(item) => item.properties.VUOSIVAIHE}
                   filterFeatureName={"Year phase"}
@@ -162,14 +162,14 @@ const UserContent = () => {
               }
             />
           )}
-          {userLayers["fi-vipu"] && (
+          {userLayers["vipu"] && (
             <AOExpansionPanel
-              groupName={"fi-vipu-growth"}
+              groupName={"vipu-growth"}
               label={"Growth Blocks"}
               content={
                 <VipuContent
                   sourceName={"kasvulohkogeometria"}
-                  sourceLayer={"fi-vipu-growth"}
+                  sourceLayer={"vipu-growth"}
                   filterFeature={"VUOSI"}
                   filterFeatureName={"Year"}
                   filterFunction={(item) => item.properties.VUOSI}

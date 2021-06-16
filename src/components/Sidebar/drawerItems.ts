@@ -5,6 +5,7 @@ import SnowCoverLossContent from "../Accordion/SnowCoverLossContent";
 import ForestContent from "../Accordion/ForestContent";
 import AirQualityContent from "../Accordion/AirQualityContent";
 import UserContent from "../Accordion/UserContent";
+import PrivateContent from "../Accordion/PrivateContent";
 
 export interface ContentEntity {
   title: string;
@@ -13,7 +14,7 @@ export interface ContentEntity {
   noExpansionPanelPadding?: boolean;
 }
 
-export default [
+const drawerItems = [
   {
     title: "Forest",
     content: ForestContent,
@@ -63,9 +64,15 @@ export default [
   // },
 ];
 
+export default drawerItems;
+
 export const userDrawerItems = [
   {
     title: "Your data",
     content: UserContent,
+  },
+  {
+    title: "Private data",
+    content: PrivateContent,
   },
 ];

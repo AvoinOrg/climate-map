@@ -8,14 +8,14 @@ import { addDataset, removeDataset } from "./common";
 const URL_PREFIX = `${process.env.REACT_APP_API_URL}/user/data?file=`;
 
 const addVipu = (token: string) => {
-  addSource("fi-vipu-fields", {
+  addSource("vipu-fields", {
     type: "geojson",
     data: `${URL_PREFIX}peltolohko.geojson&token=${token}`,
   });
 
   addLayer({
-    id: "fi-vipu-fields-fill",
-    source: "fi-vipu-fields",
+    id: "vipu-fields-fill",
+    source: "vipu-fields",
     type: "fill",
     paint: {
       "fill-color": "yellow",
@@ -25,8 +25,8 @@ const addVipu = (token: string) => {
   });
 
   addLayer({
-    id: `fi-vipu-fields-outline`,
-    source: "fi-vipu-fields",
+    id: `vipu-fields-outline`,
+    source: "vipu-fields",
     type: "line",
     paint: {
       "line-opacity": 1,
@@ -35,7 +35,7 @@ const addVipu = (token: string) => {
     BEFORE: "OUTLINE",
   });
 
-  genericPopupHandler("fi-vipu-fields-fill", (ev) => {
+  genericPopupHandler("vipu-fields-fill", (ev) => {
     let html = "";
     for (const f of ev.features) {
       const p = f.properties;
@@ -51,19 +51,19 @@ const addVipu = (token: string) => {
     createPopup(ev, html);
   });
 
-  registerGroup("fi-vipu-fields", [
-    "fi-vipu-fields-fill",
-    "fi-vipu-fields-outline",
+  registerGroup("vipu-fields", [
+    "vipu-fields-fill",
+    "vipu-fields-outline",
   ]);
 
-  addSource("fi-vipu-growth", {
+  addSource("vipu-growth", {
     type: "geojson",
     data: `${URL_PREFIX}kasvulohkogeometria.geojson&token=${token}`,
   });
 
   addLayer({
-    id: "fi-vipu-growth-fill",
-    source: "fi-vipu-growth",
+    id: "vipu-growth-fill",
+    source: "vipu-growth",
     type: "fill",
     paint: {
       "fill-color": "green",
@@ -73,8 +73,8 @@ const addVipu = (token: string) => {
   });
 
   addLayer({
-    id: `fi-vipu-growth-outline`,
-    source: "fi-vipu-growth",
+    id: `vipu-growth-outline`,
+    source: "vipu-growth",
     type: "line",
     paint: {
       "line-opacity": 1,
@@ -83,7 +83,7 @@ const addVipu = (token: string) => {
     BEFORE: "OUTLINE",
   });
 
-  genericPopupHandler("fi-vipu-growth-fill", (ev) => {
+  genericPopupHandler("vipu-growth-fill", (ev) => {
     let html = "";
     for (const f of ev.features) {
       const p = f.properties;
@@ -104,28 +104,28 @@ const addVipu = (token: string) => {
     createPopup(ev, html);
   });
 
-  registerGroup("fi-vipu-growth", [
-    "fi-vipu-growth-fill",
-    "fi-vipu-growth-outline",
+  registerGroup("vipu-growth", [
+    "vipu-growth-fill",
+    "vipu-growth-outline",
   ]);
 };
 
 const removeVipu = () => {
   for (const layer of [
-    "fi-vipu-fields-fill",
-    "fi-vipu-fields-outline",
-    "fi-vipu-growth-fill",
-    "fi-vipu-growth-outline",
+    "vipu-fields-fill",
+    "vipu-fields-outline",
+    "vipu-growth-fill",
+    "vipu-growth-outline",
   ]) {
     removeLayer(layer);
   }
 
-  removeSource("fi-vipu-fields");
-  unregisterGroup("fi-vipu-fields");
+  removeSource("vipu-fields");
+  unregisterGroup("vipu-fields");
 
-  removeSource("fi-vipu-growth");
-  unregisterGroup("fi-vipu-growth");
+  removeSource("vipu-growth");
+  unregisterGroup("vipu-growth");
 };
 
-addDataset("fi-vipu", addVipu);
-removeDataset("fi-vipu", removeVipu);
+addDataset("vipu", addVipu);
+removeDataset("vipu", removeVipu);

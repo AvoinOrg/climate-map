@@ -102,7 +102,7 @@ const useStyles = makeStyles((theme: Theme) =>
 const DataForm = (props) => {
   const classes = useStyles({});
 
-  const { userProfile, userIntegrations, updateProfile }: any = useContext(
+  const { userProfile, userIntegrations }: any = useContext(
     UserContext
   );
 
@@ -111,17 +111,17 @@ const DataForm = (props) => {
 
   const [values, setValues] = useState({
     location: "Finland",
-    forest_owner: false,
-    farm_owner: false,
-    property_owner: false,
-    terms_agreed: false,
+    forestOwner: false,
+    farmOwner: false,
+    propertyOwner: false,
+    termsAgreed: false,
   });
 
   const [disabled, setDisabled] = useState({
-    forest_owner: true,
-    farm_owner: false,
-    property_owner: true,
-    terms_agreed: false,
+    forestOwner: true,
+    farmOwner: false,
+    propertyOwner: true,
+    termsAgreed: false,
   });
 
   useEffect(() => {
@@ -137,8 +137,8 @@ const DataForm = (props) => {
       //   newDisabled["farm_owner"] = false;
       //   newDisabled["terms_agreed"] = false;
       // }
-      newDisabled["farm_owner"] = false;
-      newDisabled["terms_agreed"] = false;
+      newDisabled["farmOwner"] = false;
+      newDisabled["termsAgreed"] = false;
       setDisabled(newDisabled);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -152,7 +152,7 @@ const DataForm = (props) => {
       : event.target.checked;
     newValues[id] = value;
 
-    if (id === "terms_agreed") {
+    if (id === "termsAgreed") {
       setIsButtonDisabled(!value);
     }
 
@@ -161,7 +161,6 @@ const DataForm = (props) => {
 
   const handleClickNext = async () => {
     setIsButtonDisabled(true);
-    updateProfile({ funnel_state: 2 });
     props.handleClickNext();
   };
 
@@ -207,19 +206,19 @@ const DataForm = (props) => {
       <div className={classes.selectionContainer}>
         <div className={classes.checkboxContainer}>
           <Checkbox
-            checked={values.farm_owner}
+            checked={values.farmOwner}
             onChange={handleValueChange}
-            id="farm_owner"
+            id="farmOwner"
             inputProps={{ "aria-label": "primary checkbox" }}
-            disabled={disabled["farm_owner"]}
+            disabled={disabled["farmOwner"]}
           />
           <InputLabel className={classes.checkboxText}>Farm owner</InputLabel>
         </div>
         <div className={classes.checkboxContainer}>
           <Checkbox
-            checked={values.forest_owner}
+            checked={values.forestOwner}
             onChange={handleValueChange}
-            id="forest_owner"
+            id="forestOwner"
             disabled={disabled["forest_owner"]}
             inputProps={{ "aria-label": "primary checkbox" }}
           />
@@ -229,9 +228,9 @@ const DataForm = (props) => {
         </div>
         <div className={classes.checkboxContainer}>
           <Checkbox
-            checked={values.property_owner}
+            checked={values.propertyOwner}
             onChange={handleValueChange}
-            id="property_owner"
+            id="propertyOwner"
             disabled={disabled["property_owner"]}
             inputProps={{ "aria-label": "primary checkbox" }}
           />
@@ -245,11 +244,11 @@ const DataForm = (props) => {
       </div>
       <div className={classes.termsContainer}>
         <Checkbox
-          checked={values.terms_agreed}
+          checked={values.termsAgreed}
           onChange={handleValueChange}
-          id="terms_agreed"
+          id="termsAgreed"
           inputProps={{ "aria-label": "primary checkbox" }}
-          disabled={disabled["terms_agreed"]}
+          disabled={disabled["termsAgreed"]}
         />
         <p>
           I have read and agree on{" "}

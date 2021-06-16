@@ -11,7 +11,7 @@ import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import { setFilter, map } from "src/map/map";
 
 import { flyTo } from "src/map/map";
-import {} from "src/map/layers/ekofolio";
+import addFaoImages2021 from "src/map/layers/fao_images_2021"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -76,6 +76,8 @@ function FaoImages2021(props) {
   const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
+    addFaoImages2021()
+
     map.on("click", "fao-images-2021-pin", function (e) {
       const id = e.features[0].properties.id;
       setCurrentArea("");

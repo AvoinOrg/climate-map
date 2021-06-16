@@ -15,13 +15,13 @@ import { StateProvider } from "./components/State";
 
 ReactDOM.render(
   <ThemeProvider theme={theme}>
-    <UserProvider>
-      <StateProvider>
+    <StateProvider>
+      <UserProvider>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
         <AppRouterSwitch />
-      </StateProvider>
-    </UserProvider>
+      </UserProvider>
+    </StateProvider>
   </ThemeProvider>,
   document.querySelector("#root")
 );

@@ -33,6 +33,21 @@ const useStyles = makeStyles((theme: Theme) =>
       textAlign: "center",
       margin: "80px 0 0 0",
     },
+    signupText: {
+      fontFamily: theme.typography.fontFamily[0],
+      fontWeight: 300,
+      fontSize: "16px",
+      textAlign: "center",
+    },
+    signupTextLink: {
+      fontFamily: theme.typography.fontFamily[0],
+      fontWeight: 300,
+      fontSize: "16px",
+      textAlign: "center",
+      "&:hover": {
+        cursor: "pointer",
+      },
+    },
     textField: {
       width: "100%",
       maxWidth: "384px",
@@ -50,10 +65,11 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const Login = (props) => {
+const Login = () => {
   const classes = useStyles({});
   const { login }: any = React.useContext(UserContext);
-  const { setIsLoginOpen }: any = React.useContext(StateContext);
+  const { setIsLoginOpen, setIsSignupOpen }: any =
+    React.useContext(StateContext);
 
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [bigError, setBigError] = useState("");
@@ -65,7 +81,9 @@ const Login = (props) => {
 
   const handleValueChange = (event) => {
     const newValues = { ...values };
-    const id = event.target.id.split("_")[1];
+
+    // form input ID -> value name
+    const id = event.target.id.split(/(?=[A-Z])/)[1].toLowerCase();
     const value = event.target.value;
 
     newValues[id] = value;
@@ -102,16 +120,27 @@ const Login = (props) => {
     }
   };
 
+  const handleClickSignup = async () => {
+    setIsLoginOpen(false);
+    setIsSignupOpen(true);
+  };
+
   return (
     <div className={classes.root}>
       <h2 className={classes.header}>Log in to your account</h2>
+      <p className={classes.signupText}>
+        Don't have an account?{" "}
+        <u className={classes.signupTextLink} onClick={handleClickSignup}>
+          Sign up by clicking here.
+        </u>
+      </p>
       <form className={classes.form} noValidate autoComplete="off">
         <FormControl className={classes.textField} variant="outlined">
           <InputLabel color={"secondary"} htmlFor="password">
             Email address
           </InputLabel>
           <OutlinedInput
-            id="login_email"
+            id="loginEmail"
             onChange={handleValueChange}
             value={values.email}
             color={"secondary"}
@@ -123,7 +152,7 @@ const Login = (props) => {
           onChange={handleValueChange}
           value={values.password}
           error={false}
-          id={"login_password"}
+          id={"loginPassword"}
         ></PasswordField>
         <p className={classes.errorMsg}>{bigError}</p>
         <Button

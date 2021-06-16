@@ -98,6 +98,7 @@ export const invertLayerTextHalo = (layer: Layer) => {
 export const replaceLayer = (layer: Layer) => {
     // assert('BEFORE' in layer, `Layer ${layer.id} is missing a BEFORE declaration`);
     if (getLayer(layer.id)) { removeLayer(layer.id); }
+    // @ts-ignore
     directAddLayer(layer, layer.BEFORE);
 }
 
