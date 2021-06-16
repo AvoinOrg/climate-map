@@ -4,7 +4,6 @@ import {
   makeStyles,
   Theme,
   Table,
-  TableBody,
   TableRow,
   TableHead,
   TableContainer,
