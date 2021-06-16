@@ -45,7 +45,7 @@ const addValioFields2020 = (token: string) => {
         Vuosi: ${p["VUOSI"]}<br>
         Peruslohko: ${p["PERUSLOHKO"]}<br>
         Tilatunnus: ${p["TILATUNNUS"]}<br>
-        Pinta-ala: ${p["PINTA_ALA"]} ha<br>
+        Pinta-ala: ${p["PINTA_ALA"] / 100} ha<br>
         </p>
         `;
     }
