@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios, { AxiosRequestConfig } from "axios";
 
 import {
-  enableUserDataset,
-  disableUserDataset,
-} from "../map/layers/user/common";
+  enablePersonalDataset,
+  disablePersonalDataset,
+} from "../map/layers/personal/common";
 import { StateContext } from "./State";
 import { VerificationStatus } from "./Utils/types";
 // const claimHashes = {
@@ -13,7 +13,7 @@ import { VerificationStatus } from "./Utils/types";
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const defaultUserLayers = { vipu: false };
+const defaultUserLayers = { "vipu": false };
 const defaultPrivateLayers = { "valio-fields-2020": false };
 
 export const UserContext = React.createContext({});
@@ -42,13 +42,13 @@ export const UserProvider = (props) => {
 
     for (const key in userLayers) {
       if (userLayers[key]) {
-        disableUserDataset(key);
+        disablePersonalDataset(key);
       }
     }
 
     for (const key in privateLayers) {
       if (privateLayers[key]) {
-        disableUserDataset(key);
+        disablePersonalDataset(key);
       }
     }
 
@@ -393,31 +393,30 @@ export const UserProvider = (props) => {
       for (const integration in userIntegrations) {
         if (Object.keys(defaultUserLayers).includes(integration)) {
           if (
-            userIntegrations[integration] === "integrated" &&
+            userIntegrations[integration].integrationStatus === "integrated" &&
             !userLayers[integration]
           ) {
-            enableUserDataset(integration, localStorage.getItem("token"));
+            enablePersonalDataset(integration, localStorage.getItem("token"));
             newUserLayers[integration] = true;
           } else if (
-            userIntegrations[integration] !== "integrated" &&
+            userIntegrations[integration].integrationStatus !== "integrated" &&
             userLayers[integration]
           ) {
-            disableUserDataset(integration);
+            disablePersonalDataset(integration);
             newUserLayers[integration] = false;
           }
         } else if (Object.keys(defaultPrivateLayers).includes(integration)) {
           if (
-            userIntegrations[integration] === "integrated" &&
+            userIntegrations[integration].integrationStatus === "integrated" &&
             !privateLayers[integration]
           ) {
-            enableUserDataset(integration, localStorage.getItem("token"));
+            enablePersonalDataset(integration, localStorage.getItem("token"));
             newPrivateLayers[integration] = true;
           } else if (
-            userIntegrations[integration] !== "integrated" &&
+            userIntegrations[integration].integrationStatus !== "integrated" &&
             privateLayers[integration]
           ) {
-            console.log(userIntegrations);
-            disableUserDataset(integration);
+            disablePersonalDataset(integration);
             newPrivateLayers[integration] = false;
           }
         }
@@ -452,6 +451,7 @@ export const UserProvider = (props) => {
     userProfile,
     userIntegrations,
     userLayers,
+    privateLayers,
     initDataAuth,
     fetchDataAuthStatus,
     fetchSource,
