@@ -1,6 +1,5 @@
 import {
   Container,
-  Paper,
   FormControl,
   InputLabel,
   OutlinedInput,
@@ -11,7 +10,7 @@ import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import { setFilter, map } from "src/map/map";
 
 import { flyTo } from "src/map/map";
-import addFaoImages2021 from "src/map/layers/fao_images_2021"
+import addFaoImages2021 from "src/map/layers/fao_images_2021";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -35,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: "20px 8px 10px 8px",
     },
     listContainer: {
-      overflowX: "scroll",
+      overflowY: "scroll",
       padding: "10px 0 10px 30px",
       border: "1px solid rgba(0, 0, 0, 0.23)",
       borderRadius: "4px",
@@ -76,7 +75,7 @@ function FaoImages2021(props) {
   const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
-    addFaoImages2021()
+    addFaoImages2021();
 
     map.on("click", "fao-images-2021-pin", function (e) {
       const id = e.features[0].properties.id;
@@ -156,25 +155,23 @@ function FaoImages2021(props) {
         </FormControl>
       </div>
       <div className={classes.listContainer}>
-        <Paper className="grid-col1" elevation={5}>
-          {data && (
-            <Container>
-              <ul className={classes.list}>
-                {data.features
-                  .filter((x) => x.properties.id.startsWith(searchValue))
-                  .map((x) => (
-                    <li key={x.properties.id}>
-                      <Link
-                        to={`/layers/fao-images-2021?area=${x.properties.id}&secret=${hashParams.secret}`}
-                      >
-                        {x.properties.id}
-                      </Link>
-                    </li>
-                  ))}
-              </ul>
-            </Container>
-          )}
-        </Paper>
+        {data && (
+          <Container>
+            <ul className={classes.list}>
+              {data.features
+                .filter((x) => x.properties.id.startsWith(searchValue))
+                .map((x) => (
+                  <li key={x.properties.id}>
+                    <Link
+                      to={`/layers/fao-images-2021?area=${x.properties.id}&secret=${hashParams.secret}`}
+                    >
+                      {x.properties.id}
+                    </Link>
+                  </li>
+                ))}
+            </ul>
+          </Container>
+        )}
       </div>
     </div>
   );
