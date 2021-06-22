@@ -24,7 +24,7 @@ import UserModal from "./components/Profile/UserModal";
 import LoadingModal from "./components/LoadingModal";
 import { UserContext } from "./components/User";
 import { StateContext } from "./components/State";
-import ValioFields2020 from "./components/Sidebar/ValioCarbonGrassFields";
+import ValioCarbonGrassFields from "./components/Sidebar/ValioCarbonGrassFields";
 
 const VerificationRouter = (props) => {
   const {
@@ -190,7 +190,9 @@ const LayerRouter = (props) => {
       )}
       {routeState === "denied" && <MainMenu />}
       {routeState === "allowed" && (
-        <>{layer === "valio-carbon-grass-fields" && <ValioFields2020 />}</>
+        <>
+          {layer === "valio-carbon-grass-fields" && <ValioCarbonGrassFields />}
+        </>
       )}
     </>
   );
