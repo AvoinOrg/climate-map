@@ -339,7 +339,7 @@ export const UserProvider = (props) => {
     try {
       const res = await axios.get(apiUrl + "/user/data", {
         params: {
-          file: sourceName + ".geojson",
+          file: sourceName,
           token: localStorage.getItem("token"),
         },
       });

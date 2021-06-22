@@ -44,12 +44,12 @@ const VipuContent = (props) => {
   const [itemCount, setItemCount] = useState("");
 
   useEffect(() => {
-    fetchSource(props.sourceName).then((data) => {
+    fetchSource(props.sourceName + ".geojson").then((data) => {
       let vals: string[] = Array.from(
         new Set(data.features.map((item) => props.filterFunction(item)))
       );
 
-      setItemCount(data.features.length)
+      setItemCount(data.features.length);
 
       vals = vals.reverse();
 
@@ -155,9 +155,7 @@ const UserContent = () => {
                   subText={
                     "This layer shows the field data you have imported from Vipu."
                   }
-                  countUnit={
-                    "field blocks"
-                  }
+                  countUnit={"field blocks"}
                 />
               }
             />
@@ -176,9 +174,7 @@ const UserContent = () => {
                   subText={
                     "This layer shows the growth block data you have imported from Vipu."
                   }
-                  countUnit={
-                    "growth blocks"
-                  }
+                  countUnit={"growth blocks"}
                 />
               }
             />
