@@ -46,7 +46,7 @@ const PrivateContent = () => {
           {privateLayers["valio-carbon-grass-fields"] && (
             <AOExpansionPanelLink
               href="/layers/valio-carbon-grass-fields"
-              label={"Valio Fields"}
+              label={"Valio Carbon Grass Fields"}
             />
           )}
         </>
