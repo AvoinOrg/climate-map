@@ -4,6 +4,10 @@ import { fillOpacity } from "../../utils";
 import { genericPopupHandler, createPopup } from "../../map";
 
 import { addDataset, removeDataset } from "./common";
+import Marker from "../../../marker.svg";
+
+const marker = new Image(50, 50);
+marker.src = Marker;
 
 const URL_PREFIX = `${process.env.REACT_APP_API_URL}/user/data?file=`;
 
