@@ -147,7 +147,7 @@ const ValioCarbonGrassFields = (props) => {
     const field = query.get("field");
     if (data && field && field !== currentField) {
       const entry = data.find((x) => x.properties["TILATUNNUS"] === field);
-      flyTo(entry.geometry.coordinates[0], entry.geometry.coordinates[1], 10);
+      flyTo(entry.geometry.coordinates[0], entry.geometry.coordinates[1], 13);
       setCurrentField(field);
     }
     // eslint-disable-next-line
