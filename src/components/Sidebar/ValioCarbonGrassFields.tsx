@@ -3,11 +3,7 @@ import {
   createStyles,
   makeStyles,
   Theme,
-  Table,
-  TableRow,
-  TableHead,
   TableContainer,
-  TableCell,
   Paper,
   Container,
   FormControl,
@@ -26,15 +22,24 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       width: "100%",
-      padding: "84px 20px 100px 20px",
+      padding: "84px 20px 20px 20px",
       display: "flex",
       flexDirection: "column",
+      overflowY: "hidden",
+    },
+    naviContainer: {
+      height: "54px",
+      minHeight: "54px",
+      maxHeight: "54px",
     },
     naviHeader: {
       display: "flex",
       fontSize: "18px",
       lineHeight: "22px",
+      padding: "15px 5px 15px 5px",
+      width: "300px",
       fontWeight: theme.typography.fontWeightRegular,
+      overflow: "hidden",
     },
     formControl: {
       margin: "0 16px 16px 0",
@@ -44,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontFamily: theme.typography.fontFamily[0],
       display: "flex",
       flexDirection: "column",
-      overflowX: "hidden",
+      overflowX: "auto",
       margin: "16px 0 0 0",
       padding: "16px 16px 0 16px",
     },
@@ -53,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: "0 0 10px 0",
     },
     listContainer: {
-      overflowX: "scroll",
+      overflowY: "auto",
       padding: "10px 0 10px 30px",
       border: "1px solid rgba(0, 0, 0, 0.23)",
       borderRadius: "4px",
@@ -159,28 +164,14 @@ const ValioCarbonGrassFields = (props) => {
 
   return (
     <div className={classes.root}>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                <NavLink
-                  to="/"
-                  className={classes.naviHeader + " neutral-link"}
-                >
-                  <ExpandMoreIcon style={{ transform: "rotate(90deg)" }} />
-                  {"Valio Carbon Grass Fields"}
-                </NavLink>
-              </TableCell>
-              <TableCell align="right">
-                {/* <Button2 onClick={onFitLayerBounds} size="small">
-                  <GpsFixed fontSize="small" />
-                </Button2> */}
-              </TableCell>
-            </TableRow>
-          </TableHead>
-        </Table>
-      </TableContainer>
+      <div className={classes.naviContainer}>
+        <TableContainer component={Paper}>
+          <NavLink to="/" className={classes.naviHeader + " neutral-link"}>
+            <ExpandMoreIcon style={{ transform: "rotate(90deg)" }} />
+            {"Valio Carbon Grass Fields"}
+          </NavLink>
+        </TableContainer>
+      </div>
       <TableContainer component={Paper} className={classes.container}>
         <FormControl className={classes.textField} variant="outlined">
           <InputLabel color={"secondary"}>Filter</InputLabel>
@@ -193,27 +184,25 @@ const ValioCarbonGrassFields = (props) => {
           />
         </FormControl>
         <div className={classes.listContainer}>
-          <Paper className="grid-col1" elevation={6}>
-            {data && (
-              <Container>
-                <ul className={classes.list}>
-                  {data
-                    .filter((x) =>
-                      x.properties["TILATUNNUS"].startsWith(searchValue)
-                    )
-                    .map((x) => (
-                      <li key={x.properties["TILATUNNUS"]}>
-                        <Link
-                          to={`/layers/valio-carbon-grass-fields?field=${x.properties["TILATUNNUS"]}`}
-                        >
-                          {x.properties["TILATUNNUS"]}
-                        </Link>
-                      </li>
-                    ))}
-                </ul>
-              </Container>
-            )}
-          </Paper>
+          {data && (
+            <Container>
+              <ul className={classes.list}>
+                {data
+                  .filter((x) =>
+                    x.properties["TILATUNNUS"].startsWith(searchValue)
+                  )
+                  .map((x) => (
+                    <li key={x.properties["TILATUNNUS"]}>
+                      <Link
+                        to={`/layers/valio-carbon-grass-fields?field=${x.properties["TILATUNNUS"]}`}
+                      >
+                        {x.properties["TILATUNNUS"]}
+                      </Link>
+                    </li>
+                  ))}
+              </ul>
+            </Container>
+          )}
         </div>
       </TableContainer>
     </div>
