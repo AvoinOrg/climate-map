@@ -40,10 +40,10 @@ const ValioFields2020 = () => {
   const classes = useStyles({});
 
   useEffect(() => {
-    LayerGroupState.enableOnlyOneGroup("valio-fields-2020");
+    LayerGroupState.enableOnlyOneGroup("valio-carbon-grass-fields");
 
     return () => {
-      LayerGroupState.disableGroup("valio-fields-2020");
+      LayerGroupState.disableGroup("valio-carbon-grass-fields");
     };
   }, []);
 

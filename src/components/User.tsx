@@ -14,7 +14,7 @@ import { VerificationStatus } from "./Utils/types";
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const defaultUserLayers = { "vipu": false };
-const defaultPrivateLayers = { "valio-fields-2020": false };
+const defaultPrivateLayers = { "valio-carbon-grass-fields": false };
 
 export const UserContext = React.createContext({});
 

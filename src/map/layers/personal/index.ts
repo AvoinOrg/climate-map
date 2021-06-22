@@ -1,2 +1,2 @@
 import "./vipu";
-import "./valio_fields_2020";
+import "./valio_carbon_grass_fields";

@@ -8,14 +8,14 @@ import { addDataset, removeDataset } from "./common";
 const URL_PREFIX = `${process.env.REACT_APP_API_URL}/user/data?file=`;
 
 const addValioFields2020 = (token: string) => {
-  addSource("valio-fields-2020", {
+  addSource("valio-carbon-grass-fields", {
     type: "geojson",
-    data: `${URL_PREFIX}valio-fields-2020.geojson&token=${token}`,
+    data: `${URL_PREFIX}valio-carbon-grass-fields.geojson&token=${token}`,
   });
 
   addLayer({
-    id: "valio-fields-2020-fill",
-    source: "valio-fields-2020",
+    id: "valio-carbon-grass-fields-fill",
+    source: "valio-carbon-grass-fields",
     type: "fill",
     paint: {
       "fill-color": "yellow",
@@ -25,8 +25,8 @@ const addValioFields2020 = (token: string) => {
   });
 
   addLayer({
-    id: `valio-fields-2020-outline`,
-    source: "valio-fields-2020",
+    id: `valio-carbon-grass-fields-outline`,
+    source: "valio-carbon-grass-fields",
     type: "line",
     paint: {
       "line-opacity": 1,
@@ -35,7 +35,7 @@ const addValioFields2020 = (token: string) => {
     BEFORE: "OUTLINE",
   });
 
-  genericPopupHandler("valio-fields-2020-fill", (ev) => {
+  genericPopupHandler("valio-carbon-grass-fields-fill", (ev) => {
     let html = "";
     for (const f of ev.features) {
       const p = f.properties;
@@ -53,20 +53,20 @@ const addValioFields2020 = (token: string) => {
     createPopup(ev, html);
   });
 
-  registerGroup("valio-fields-2020", [
-    "valio-fields-2020-fill",
-    "valio-fields-2020-outline",
+  registerGroup("valio-carbon-grass-fields", [
+    "valio-carbon-grass-fields-fill",
+    "valio-carbon-grass-fields-outline",
   ]);
 };
 
 const removeValioFields2020 = () => {
-  for (const layer of ["valio-fields-2020-fill", "valio-fields-2020-outline"]) {
+  for (const layer of ["valio-carbon-grass-fields-fill", "valio-carbon-grass-fields-outline"]) {
     removeLayer(layer);
   }
 
-  removeSource("valio-fields-2020");
-  unregisterGroup("valio-fields-2020");
+  removeSource("valio-carbon-grass-fields");
+  unregisterGroup("valio-carbon-grass-fields");
 };
 
-addDataset("valio-fields-2020", addValioFields2020);
-removeDataset("valio-fields-2020", removeValioFields2020);
+addDataset("valio-carbon-grass-fields", addValioFields2020);
+removeDataset("valio-carbon-grass-fields", removeValioFields2020);
