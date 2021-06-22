@@ -96,7 +96,6 @@ const ValioCarbonGrassFields = (props) => {
           ? 1
           : -1
       );
-      console.log(features);
       setData(features);
     });
 
