@@ -16,6 +16,7 @@ const useStyles = makeStyles((theme: Theme) =>
       justifyContent: "center",
     },
     container: {
+      overflow: "scroll",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",

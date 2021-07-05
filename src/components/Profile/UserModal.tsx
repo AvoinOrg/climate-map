@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: "64px 10px 20px 10px",
       zIndex: theme.zIndex.modal,
       backgroundColor: "white",
-      overflowY: "auto",
+      overflowY: "scroll",
     },
     closeIconContainer: {
       position: "absolute",
@@ -40,6 +40,8 @@ const useStyles = makeStyles((theme: Theme) =>
       alignItems: "center",
       flexDirection: "column",
       backgroundColor: "white",
+      overflow: "auto",
+      padding: "0 0 128px 0",
     },
   })
 );
