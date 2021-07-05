@@ -97,12 +97,12 @@ const addValioCarbonGrassFields = (token: string) => {
 
       html += `
         <p>
-        Vuosi: ${p["VUOSI"]}<br>
-        Peruslohko: ${p["PERUSLOHKO"]}<br>
-        Tilatunnus: ${p["TILATUNNUS"]}<br>
-        Pinta-ala: ${p["PINTA_ALA"] / 100} ha<br>
-        Nimet: ${p["asia 4691 v2_Nimet"]}<br>
-        Peltolohkojen nimet: ${p["asia 4691 v2_Peltolohkojen nimet"]}<br>
+        Year: ${p["VUOSI"]}<br>
+        Farm ID: ${p["TILATUNNUS"]}<br>
+        Field ID: ${p["PERUSLOHKO"]}<br>
+        Area: ${p["PINTA_ALA"] / 100} ha<br>
+        Farmer Names: ${p["asia 4691 v2_Nimet"]}<br>
+        Field Names: ${p["asia 4691 v2_Peltolohkojen nimet"]}<br>
         </p>
         `;
     }
