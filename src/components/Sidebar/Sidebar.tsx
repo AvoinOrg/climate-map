@@ -5,7 +5,7 @@ import List from "@material-ui/core/List";
 
 import Accordion from "../Accordion";
 
-import drawerItems, { userDrawerItems } from "./drawerItems";
+import drawerItems, { privateDrawerItems } from "./drawerItems";
 
 import { ListItem } from "@material-ui/core";
 import { StateContext } from "../State";
@@ -71,7 +71,7 @@ export function MainMenu() {
   return (
     <List className={classes.dropdownList}>
       {isLoggedIn &&
-        userDrawerItems.map((item, i) => (
+        privateDrawerItems.map((item, i) => (
           <ListItem key={item.title} className={classes.listItem}>
             <Accordion drawerItem={true} item={item} />
           </ListItem>

@@ -16,6 +16,10 @@ export interface ContentEntity {
 
 const drawerItems = [
   {
+    title: "Your data",
+    content: UserContent,
+  },
+  {
     title: "Forest",
     content: ForestContent,
   },
@@ -66,11 +70,7 @@ const drawerItems = [
 
 export default drawerItems;
 
-export const userDrawerItems = [
-  {
-    title: "Your data",
-    content: UserContent,
-  },
+export const privateDrawerItems = [
   {
     title: "Private data",
     content: PrivateContent,
