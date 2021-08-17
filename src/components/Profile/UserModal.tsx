@@ -47,28 +47,19 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const UserModal = () => {
-  const {
-    isSignupOpen,
-    isLoginOpen,
-    isProfileOpen,
-    setIsProfileOpen,
-    setIsLoginOpen,
-    setIsSignupOpen,
-  }: any = React.useContext(StateContext);
+  const { modalState, setModalState }: any = React.useContext(StateContext);
 
   const classes = useStyles({});
 
   const handleCloseClick = () => {
-    setIsProfileOpen(false);
-    setIsLoginOpen(false);
-    setIsSignupOpen(false);
+    setModalState("none");
   };
 
   return (
     <div
       className={classes.root}
       style={{
-        display: isSignupOpen || isLoginOpen || isProfileOpen ? "flex" : "none",
+        display: modalState !== "none" ? "flex" : "none",
       }}
     >
       <IconButton
@@ -83,20 +74,20 @@ const UserModal = () => {
       </IconButton>
       <div
         className={classes.pane}
-        style={{ display: isSignupOpen ? "flex" : "none" }}
+        style={{ display: modalState === "signup" ? "flex" : "none" }}
       >
         <Signup></Signup>
       </div>
 
       <div
         className={classes.pane}
-        style={{ display: isLoginOpen ? "flex" : "none" }}
+        style={{ display: modalState === "login" ? "flex" : "none" }}
       >
         <Login></Login>
       </div>
       <div
         className={classes.pane}
-        style={{ display: isProfileOpen ? "flex" : "none" }}
+        style={{ display: modalState === "profile" ? "flex" : "none" }}
       >
         <Profile></Profile>
       </div>

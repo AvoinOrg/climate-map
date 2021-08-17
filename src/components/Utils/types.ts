@@ -6,3 +6,5 @@ export type VerificationStatus =
   | "emailSent";
 
 export type ProfileState = "none" | "data" | "dataIntegrate" | "verification";
+
+export type ModalState = "none" | "signup" | "login" | "profile";

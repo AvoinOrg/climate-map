@@ -68,8 +68,7 @@ const useStyles = makeStyles((theme: Theme) =>
 const Login = () => {
   const classes = useStyles({});
   const { login }: any = React.useContext(UserContext);
-  const { setIsLoginOpen, setIsSignupOpen }: any =
-    React.useContext(StateContext);
+  const { setModalState }: any = React.useContext(StateContext);
 
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [bigError, setBigError] = useState("");
@@ -103,7 +102,7 @@ const Login = () => {
     try {
       await login(values);
 
-      setIsLoginOpen(false);
+      setModalState("none");
       setValues({
         email: "",
         password: "",
@@ -121,8 +120,7 @@ const Login = () => {
   };
 
   const handleClickSignup = async () => {
-    setIsLoginOpen(false);
-    setIsSignupOpen(true);
+    setModalState("signup");
   };
 
   return (
