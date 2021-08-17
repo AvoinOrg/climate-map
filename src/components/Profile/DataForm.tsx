@@ -112,7 +112,7 @@ const DataForm = (props) => {
   const [values, setValues] = useState({
     location: "Finland",
     forestOwner: false,
-    farmOwner: false,
+    farmOwner: true,
     propertyOwner: false,
     termsAgreed: false,
   });
@@ -179,7 +179,7 @@ const DataForm = (props) => {
         {userProfile.name ? userProfile.name : userProfile.email}
       </p>
       <p className={classes.dataHeader}>
-        Let's start with specifying your data.
+        Let's specify your data.
       </p>
       <div className={classes.locationInputContainer}>
         <InputLabel className={classes.locationInputText}>Location</InputLabel>
@@ -219,7 +219,7 @@ const DataForm = (props) => {
             checked={values.forestOwner}
             onChange={handleValueChange}
             id="forestOwner"
-            disabled={disabled["forest_owner"]}
+            disabled={disabled["forestOwner"]}
             inputProps={{ "aria-label": "primary checkbox" }}
           />
           <InputLabel className={classes.checkboxText} disabled={true}>
@@ -231,7 +231,7 @@ const DataForm = (props) => {
             checked={values.propertyOwner}
             onChange={handleValueChange}
             id="propertyOwner"
-            disabled={disabled["property_owner"]}
+            disabled={disabled["propertyOwner"]}
             inputProps={{ "aria-label": "primary checkbox" }}
           />
           <InputLabel className={classes.checkboxText} disabled={true}>
