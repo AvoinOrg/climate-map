@@ -11,10 +11,9 @@ import {
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { useObservable } from "micro-observables";
-import React, { useContext } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import * as LayerGroupState from "../../map/LayerGroupState";
-import { StateContext } from "../State";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -29,7 +28,6 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export const AOExpansionPanel = (props: any) => {
   const { groupName, label, content, panelProps } = props;
-  const { setProfileState, setIsProfileOpen }: any = useContext(StateContext);
   const layerGroups = useObservable(LayerGroupState.layerGroups);
   const groupEnabled =
     layerGroups.filter((x) => x.name === groupName).length > 0;

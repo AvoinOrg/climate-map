@@ -98,8 +98,10 @@ export const StateProvider = (props) => {
   const handleSetProfileState = (state: ProfileState) => {
     setProfileState(state);
 
-    if (modalState !== "none") {
+    if (state !== "none") {
       setModalState("profile");
+    } else {
+      setModalState("none");
     }
 
     setIsSidebarDisabled(state !== "none");
