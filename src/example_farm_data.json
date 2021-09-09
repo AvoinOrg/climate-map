@@ -1,0 +1,25 @@
+{
+  "products": {
+    "1": {
+      "name": "Oat Milk",
+      "id": 1,
+      "footprints": {
+        "carbon": 2.5
+      }
+    },
+    "2": {
+      "name": "Onions",
+      "id": 2,
+      "footprints": {
+        "carbon": 2.5
+      }
+    },
+    "0": {
+      "name": "Farm Total",
+      "id": 0,
+      "footprints": {
+        "carbon": 2.5
+      }
+    }
+  }
+}
