@@ -47,7 +47,8 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const UserModal = () => {
-  const { modalState, setModalState }: any = React.useContext(StateContext);
+  const { modalState, setModalState }: any =
+    React.useContext(StateContext);
 
   const classes = useStyles({});
 
@@ -59,7 +60,8 @@ const UserModal = () => {
     <div
       className={classes.root}
       style={{
-        display: modalState !== "none" ? "flex" : "none",
+        display:
+          modalState !== "none" ? "flex" : "none",
       }}
     >
       <IconButton

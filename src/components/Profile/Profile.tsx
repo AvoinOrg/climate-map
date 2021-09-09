@@ -5,6 +5,7 @@ import { Button } from "@material-ui/core";
 import DataForm from "./DataForm";
 import IntegrationForm from "./IntegrationForm";
 import VerificationForm from "./VerificationForm";
+import FieldCarbon from "./FieldCarbon";
 import Login from "./Login";
 import { UserContext } from "../User";
 import { StateContext } from "../State";
@@ -68,6 +69,11 @@ const Profile = () => {
           <>
             <VerificationForm></VerificationForm>
             {!isLoggedIn && <Login></Login>}
+          </>
+        )}
+        {profileState === "fieldCarbon" && (
+          <>
+            <FieldCarbon></FieldCarbon>
           </>
         )}
       </div>
