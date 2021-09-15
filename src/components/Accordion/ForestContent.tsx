@@ -1,7 +1,6 @@
-import React from 'react'
-import { createStyles, makeStyles } from '@material-ui/core';
-import { AOExpansionPanelLink, AOExpansionPanel } from './AOExpansionPanel';
-
+import React from "react";
+import { createStyles, makeStyles } from "@material-ui/core";
+import { AOExpansionPanelLink, AOExpansionPanel } from "./AOExpansionPanel";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -80,6 +79,30 @@ const TropicalForestContent = () => (
   </div>
 );
 
+const ForestCoverageContent = () => (
+  <div>
+    <p>
+      <a href="https://developers.google.com/earth-engine/datasets/catalog/UMD_hansen_global_forest_change_2020_v1_8">
+        Hansen/UMD/Google/USGS/NASA
+      </a>
+      {} global forest change data.
+    </p>
+    <p>
+      Shows global forest coverage from year 2000, forest cover loss from years
+      2000-2020, and forest cover gain from years 2000-2012.
+    </p>
+    Legend:
+    <legend
+      id="legend-forest-coverage"
+      style={{ display: "flex", flexDirection: "column", padding: "6px 0 0 0" }}
+    >
+      <LegendBox color="green" title="Forest coverage (2000)" />
+      <LegendBox color="red" title="Forest coverage loss (2000-2020)" />
+      <LegendBox color="blue" title="Forest coverage gain (2000-2012)" />
+      <LegendBox color="purple" title="Both gain (2000-2020) and loss (2000-2012)" />
+    </legend>
+  </div>
+);
 
 const ForestContent = () => {
   const classes = useStyles({});
@@ -88,6 +111,11 @@ const ForestContent = () => {
       <AOExpansionPanelLink
         href="/layers/fi-forest"
         label={"Finland's Forests"}
+      />
+      <AOExpansionPanel
+        groupName={"hansen"}
+        label={"Global forest coverage"}
+        content={<ForestCoverageContent />}
       />
       <AOExpansionPanel
         groupName={"mature-forests"}
@@ -104,7 +132,7 @@ const ForestContent = () => {
         label={"Tree plantations"}
         content={<TropicalForestContent />}
       />
-  </div>
+    </div>
   );
 };
 
