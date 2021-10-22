@@ -187,10 +187,10 @@ const UserContent = () => {
           )}
         </>
       )}
-      {/* <AOExpansionProfilePanel
+      <AOExpansionProfilePanel
         label={"Field Carbon Emissions"}
         onClick={handleClickCarbon}
-      /> */}
+      />
       {isLoggedIn && (
         <Button
           variant="contained"
