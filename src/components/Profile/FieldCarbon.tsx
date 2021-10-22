@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
 import { Bar } from "react-chartjs-2";
 
-import { UserContext } from "../User";
+// import { UserContext } from "../User";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -62,7 +62,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const FieldCarbon = (props) => {
   const classes = useStyles({});
-  const { userProfile }: any = React.useContext(UserContext);
+  // const { userProfile }: any = React.useContext(UserContext);
 
   const handleClickSheet = () => {
     window.location.href =
@@ -95,23 +95,23 @@ const FieldCarbon = (props) => {
     ],
   };
 
-  const options = {
-    scales: {
-      yAxes: [
-        {
-          stacked: true,
-          ticks: {
-            beginAtZero: true,
-          },
-        },
-      ],
-      xAxes: [
-        {
-          stacked: true,
-        },
-      ],
-    },
-  };
+  // const options = {
+  //   scales: {
+  //     yAxes: [
+  //       {
+  //         stacked: true,
+  //         ticks: {
+  //           beginAtZero: true,
+  //         },
+  //       },
+  //     ],
+  //     xAxes: [
+  //       {
+  //         stacked: true,
+  //       },
+  //     ],
+  //   },
+  // };
 
   return (
     <div className={classes.root}>
