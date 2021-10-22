@@ -9,6 +9,7 @@ import './global_forest_watch_plantations';
 import './global_mangrove_watch';
 import './madagascar';
 import './no_nibio_forests';
+import './hansen';
 
 registerGroup('forests', [
   () => hideAllLayersMatchingFilter(x => /mature-forests/.test(x)),
