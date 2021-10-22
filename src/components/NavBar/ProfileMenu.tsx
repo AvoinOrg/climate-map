@@ -55,9 +55,7 @@ const ProfileMenu = () => {
   const classes = useStyles({});
   const { logout }: any = React.useContext(UserContext);
   const {
-    setIsProfileOpen,
-    setIsLoginOpen,
-    setIsSignupOpen,
+    setModalState
   }: any = React.useContext(StateContext);
 
   const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
@@ -76,9 +74,7 @@ const ProfileMenu = () => {
 
   const handleLogOut = () => {
     handleMenuClose();
-    setIsProfileOpen(false);
-    setIsLoginOpen(false);
-    setIsSignupOpen(false);
+    setModalState("none");
     logout();
   };
 

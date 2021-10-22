@@ -252,7 +252,7 @@ const IntegrationForm = (props) => {
       <p className={classes.userName}>
         {userProfile.name ? userProfile.name : userProfile.email}
       </p>
-      <p className={classes.dataHeader}>Let's now fetch your private data.</p>
+      <p className={classes.dataHeader}>Let's fetch your private data.</p>
       <p className={classes.dataText}>
         This data will stay as private, until you give a permission to share.
       </p>

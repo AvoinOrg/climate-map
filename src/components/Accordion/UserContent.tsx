@@ -9,7 +9,7 @@ import {
   MenuItem,
   Select,
 } from "@material-ui/core";
-import { AOExpansionPanel } from "./AOExpansionPanel";
+import { AOExpansionPanel, AOExpansionProfilePanel } from "./AOExpansionPanel";
 import { UserContext } from "../User";
 import { StateContext } from "../State";
 import { setFilter, addMapEventHandler, isSourceReady } from "../../map/map";
@@ -41,7 +41,7 @@ const VipuContent = (props) => {
 
   const [filterFeatureList, setFilterFeatureList] = useState([]);
   const [filterValue, setFilterValue] = useState("");
-  const [itemCount, setItemCount] = useState("");
+  const [itemCount, setItemCount] = useState(0);
 
   useEffect(() => {
     fetchSource(props.sourceName + ".geojson").then((data) => {
@@ -133,11 +133,17 @@ const UserContent = () => {
     setIsProfileOpen("true");
   };
 
+  const handleClickCarbon = () => {
+    setProfileState("fieldCarbon");
+  };
+
   return (
     <div className={classes.root}>
       <p className={classes.text}>
         This panel shows all your imported data.{" "}
-        {!hasLayers && "You have not yet imported any data."}
+        {!isLoggedIn &&
+          "You need to sign up or log in to view and manage your data."}
+        {isLoggedIn && !hasLayers && "You have not yet imported any data."}
       </p>
       {hasLayers && (
         <>
@@ -181,14 +187,20 @@ const UserContent = () => {
           )}
         </>
       )}
-      <Button
-        variant="contained"
-        color="secondary"
-        className={classes.dataButton}
-        onClick={handleClick}
-      >
-        Manage data
-      </Button>
+      <AOExpansionProfilePanel
+        label={"Field Carbon Emissions"}
+        onClick={handleClickCarbon}
+      />
+      {isLoggedIn && (
+        <Button
+          variant="contained"
+          color="secondary"
+          className={classes.dataButton}
+          onClick={handleClick}
+        >
+          Manage data
+        </Button>
+      )}
     </div>
   );
 };

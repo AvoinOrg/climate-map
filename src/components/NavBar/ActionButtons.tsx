@@ -21,21 +21,22 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const ActionButtons = () => {
   const classes = useStyles({});
-  const {
-    isSignupOpen,
-    setIsSignupOpen,
-    isLoginOpen,
-    setIsLoginOpen,
-  }: any = React.useContext(StateContext);
+  const { modalState, setModalState }: any = React.useContext(StateContext);
 
   const handleLoginClick = () => {
-    setIsLoginOpen(!isLoginOpen);
-    setIsSignupOpen(false);
+    if (modalState === "login") {
+      setModalState("none");
+    } else {
+      setModalState("login");
+    }
   };
 
   const handleSignupClick = () => {
-    setIsSignupOpen(!isSignupOpen);
-    setIsLoginOpen(false);
+    if (modalState === "signup") {
+      setModalState("none");
+    } else {
+      setModalState("signup");
+    }
   };
 
   return (
@@ -43,7 +44,7 @@ const ActionButtons = () => {
       <Button
         className={classes.button}
         onClick={handleSignupClick}
-        variant={isSignupOpen ? "contained" : "outlined"}
+        variant={modalState === "signup" ? "contained" : "outlined"}
         disableElevation
       >
         Sign up
@@ -51,7 +52,7 @@ const ActionButtons = () => {
       <Button
         className={classes.button}
         onClick={handleLoginClick}
-        variant={isLoginOpen ? "contained" : "outlined"}
+        variant={modalState === "login" ? "contained" : "outlined"}
         disableElevation
       >
         Log in

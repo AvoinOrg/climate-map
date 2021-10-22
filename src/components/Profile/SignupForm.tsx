@@ -14,7 +14,8 @@ import { NextButton } from "./Signup";
 import PasswordField from "./PasswordField";
 
 const passwordRegex = /^([a-zd!@#$%^&*-_~,./€£]){8,64}$/;
-const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const emailRegex =
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -79,7 +80,7 @@ const defaultValues = {
 const SignupForm = (props) => {
   const classes = useStyles({});
   const { signup }: any = React.useContext(UserContext);
-  const { setIsLoginOpen, setIsSignupOpen }: any = React.useContext(StateContext);
+  const { setModalState }: any = React.useContext(StateContext);
 
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [bigError, setBigError] = useState("");
@@ -157,8 +158,7 @@ const SignupForm = (props) => {
   };
 
   const handleClickLogin = async () => {
-    setIsSignupOpen(false);
-    setIsLoginOpen(true);
+    setModalState("login");
   };
 
   return (

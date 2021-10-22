@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { observable } from "micro-observables";
 import { useObservable } from "micro-observables";
 import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
 import { Snackbar } from "@material-ui/core";
 import MuiAlert from "@material-ui/lab/Alert";
 
-import { ProfileState } from "./Utils/types";
+import { ProfileState, ModalState } from "./Utils/types";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -56,42 +56,18 @@ export const StateProvider = (props) => {
   const isSidebarOpen = useObservable(isOpenObservable);
 
   const [isSidebarDisabled, setIsSidebarDisabled] = useState(false);
-  const [isSignupOpen, setIsSignupOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [profileState, setProfileState] = useState<ProfileState>("none");
+  const [modalState, setModalState] = useState<ModalState>("none");
   // const [profileMessage, setProfileMessage] = useState(null);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [signupFunnelStep, setSignupFunnelStep] = useState(0);
   const [notifications, setNotifications] = useState({});
 
   const notificationsRef = useRef(notifications);
   notificationsRef.current = notifications;
 
-  useEffect(() => {
-    if (isSignupOpen || isLoginOpen || isProfileOpen) {
-      setIsSidebarDisabled(true);
-    } else {
-      setIsSidebarDisabled(false);
-    }
-    if (isSignupOpen || isLoginOpen) {
-      setIsProfileOpen(false);
-    }
-  }, [isSignupOpen, isProfileOpen, isLoginOpen]);
-
-  useEffect(() => {
-    if (isSignupOpen || isLoginOpen || isProfileOpen) {
-      setIsSidebarDisabled(true);
-    } else {
-      setIsSidebarDisabled(false);
-    }
-    if (isSignupOpen || isLoginOpen) {
-      setIsProfileOpen(false);
-    }
-  }, [isSignupOpen, isProfileOpen, isLoginOpen]);
-
   const notify = (message, severity, duration = 6000) => {
     const newNotification = {};
-    const index = new Date().getTime()
+    const index = new Date().getTime();
 
     newNotification[index] = {
       message,
@@ -114,19 +90,32 @@ export const StateProvider = (props) => {
     }, timeout);
   };
 
+  const handleSetModalState = (state: ModalState) => {
+    setModalState(state);
+    setIsSidebarDisabled(state !== "none");
+  };
+
+  const handleSetProfileState = (state: ProfileState) => {
+    setProfileState(state);
+
+    if (state !== "none") {
+      setModalState("profile");
+    } else {
+      setModalState("none");
+    }
+
+    setIsSidebarDisabled(state !== "none");
+  };
+
   const values = {
     isSidebarOpen,
     setIsSidebarOpen,
     isSidebarDisabled,
     setIsSidebarDisabled,
-    isLoginOpen,
-    setIsLoginOpen,
-    isSignupOpen,
-    setIsSignupOpen,
-    isProfileOpen,
-    setIsProfileOpen,
     profileState,
-    setProfileState,
+    setProfileState: handleSetProfileState,
+    modalState,
+    setModalState: handleSetModalState,
     signupFunnelStep,
     setSignupFunnelStep,
     notifications,
