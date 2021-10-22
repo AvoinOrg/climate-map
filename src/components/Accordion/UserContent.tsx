@@ -9,7 +9,7 @@ import {
   MenuItem,
   Select,
 } from "@material-ui/core";
-import { AOExpansionPanel, AOExpansionProfilePanel } from "./AOExpansionPanel";
+import { AOExpansionPanel } from "./AOExpansionPanel";
 import { UserContext } from "../User";
 import { StateContext } from "../State";
 import { setFilter, addMapEventHandler, isSourceReady } from "../../map/map";
@@ -133,9 +133,9 @@ const UserContent = () => {
     setIsProfileOpen("true");
   };
 
-  const handleClickCarbon = () => {
-    setProfileState("fieldCarbon");
-  };
+  // const handleClickCarbon = () => {
+  //   setProfileState("fieldCarbon");
+  // };
 
   return (
     <div className={classes.root}>
