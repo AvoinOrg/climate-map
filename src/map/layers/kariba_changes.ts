@@ -1,7 +1,7 @@
 import { addLayer, addSource } from 'src/map/map';
 import { registerGroup } from 'src/map/layer_groups';
 
-const URL_PREFIX = `https://map.buttonprogram.org/kariba_changes`
+const URL_PREFIX = `https://server.avoin.org/data/map/kariba_changes`
 
 
 addSource('kariba-changes', {

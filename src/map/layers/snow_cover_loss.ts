@@ -5,7 +5,7 @@ import { registerGroup } from '../layer_groups';
 const snowCoverLossDays = ['-', ["get", "avg_snow_cover_1980_1990"], ["get", "avg_snow_cover_1996_2016"]];
 addSource('snow_cover_loss', {
   "type": "vector",
-  "tiles": ["https://map.buttonprogram.org/snow_cover_loss_2016/{z}/{x}/{y}.pbf"],
+  "tiles": ["https://server.avoin.org/data/map/snow_cover_loss_2016/{z}/{x}/{y}.pbf"],
   "maxzoom": 3,
 });
 addLayer({

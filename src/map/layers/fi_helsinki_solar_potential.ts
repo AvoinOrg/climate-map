@@ -7,7 +7,7 @@ import { registerGroup } from '../layer_groups';
 // CC 4.0 BY, ByAttribution
 addSource('hsy-solar-potential', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/hsy-aurinkosahkopotentiaali/{z}/{x}/{y}.pbf"],
+    "tiles": ["https://server.avoin.org/data/map/hsy-aurinkosahkopotentiaali/{z}/{x}/{y}.pbf"],
     "minzoom": 1,
     "maxzoom": 14,
     bounds: [19, 59, 32, 71], // Finland

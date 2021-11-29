@@ -29,7 +29,7 @@ zonationVersions.forEach(v => {
     const id = `${sourceName}-raster`
     addSource(sourceName, {
         "type": 'raster',
-        "tiles": [`https://map.buttonprogram.org/suot/zonation/MetZa2018_VMA0${v}/{z}/{x}/{y}.png?v=7`],
+        "tiles": [`https://server.avoin.org/data/map/suot/zonation/MetZa2018_VMA0${v}/{z}/{x}/{y}.png?v=7`],
         "minzoom": 5,
         "maxzoom": 9,
         bounds: [19, 59, 32, 71], // Finland
@@ -52,7 +52,7 @@ zonationVersions.forEach(v => {
 
 addSource('natura2000', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/natura2000/{z}/{x}/{y}.pbf"],
+    "tiles": ["https://server.avoin.org/data/map/natura2000/{z}/{x}/{y}.pbf"],
     "maxzoom": 11,
     bounds: [19, 59, 32, 71], // Finland
     // SYKE applies Creative Commons By 4.0 International license for open datasets.
@@ -116,7 +116,7 @@ const eteAllSymLayer: Layer = {
 
 addSource('metsaan-ete', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/metsaan-ete/{z}/{x}/{y}.pbf"],
+    "tiles": ["https://server.avoin.org/data/map/metsaan-ete/{z}/{x}/{y}.pbf"],
     "maxzoom": 12,
     bounds: [19, 59, 32, 71], // Finland
     attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',

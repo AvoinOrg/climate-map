@@ -61,7 +61,7 @@ export const arvometsaAreaCO2eFillColor: (expr: Expression) => Expression = expr
 
 addSource('arvometsa', {
   "type": "vector",
-  "tiles": [`https://map.buttonprogram.org/arvometsa/{z}/{x}/{y}.pbf.gz?v=0`],
+  "tiles": [`https://server.avoin.org/data/map/arvometsa/{z}/{x}/{y}.pbf.gz?v=0`],
   minzoom: 13,
   "maxzoom": 14,
   bounds: [19, 59, 32, 71], // Finland
@@ -82,13 +82,13 @@ for (const [source, path] of Object.entries(sources)) {
   const sourceOpts = mvtLayers.indexOf(sourceName) !== -1
     ? {
       "type": "vector",
-      "tiles": [`https://map.buttonprogram.org/arvometsa/${path}/tiles/{z}/{x}/{y}.pbf.gz?v=2`],
+      "tiles": [`https://server.avoin.org/data/map/arvometsa/${path}/tiles/{z}/{x}/{y}.pbf.gz?v=2`],
       minzoom: 0, // Math.floor(opts.minzoom), // minzoom 0 for all is useful for highlights!
       maxzoom: Math.ceil(opts.maxzoom!),
       bounds: [19, 59, 32, 71], // Finland
     } : {
       "type": "geojson",
-      "data": `https://map.buttonprogram.org/arvometsa/${path}.geojson.gz?v=0`,
+      "data": `https://server.avoin.org/data/map/arvometsa/${path}.geojson.gz?v=0`,
     };
   addSource(sourceName, {
     attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',

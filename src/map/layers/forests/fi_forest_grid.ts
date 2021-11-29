@@ -4,7 +4,7 @@ import { registerGroup } from 'src/map/layer_groups';
 
 addSource('metsaan-hila', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/metsaan-hila/{z}/{x}/{y}.pbf"],
+    "tiles": ["https://server.avoin.org/data/map/metsaan-hila/{z}/{x}/{y}.pbf"],
     "maxzoom": 15,
     bounds: [19, 59, 32, 71], // Finland
     attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',

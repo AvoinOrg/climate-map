@@ -14,7 +14,7 @@ for (const key in fmiEnfuserSets) {
     const varName = fmiEnfuserSets[key];
     addSource(sourceName, {
         "type": 'raster',
-        "tiles": [`https://map.buttonprogram.org/fmi-enfuser/${varName}/{z}/{x}/{y}.png?v=2`],
+        "tiles": [`https://server.avoin.org/data/map/fmi-enfuser/${varName}/{z}/{x}/{y}.png?v=2`],
         "minzoom": 9,
         "maxzoom": 13,
         bounds: [24.579, 60.132, 25.200, 60.368], // Helsinki (FMI dataset bounds anyway)

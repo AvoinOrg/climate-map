@@ -4,7 +4,7 @@ import { registerGroup } from 'src/map/layer_groups';
 
 addSource('mavi-peltolohko', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/mavi-peltolohko/{z}/{x}/{y}.pbf"],
+    "tiles": ["https://server.avoin.org/data/map/mavi-peltolohko/{z}/{x}/{y}.pbf"],
     "maxzoom": 11,
     bounds: [19, 59, 32, 71], // Finland
     attribution: '<a href="https://www.ruokavirasto.fi/">© Finnish Food Authority</a>',
@@ -134,7 +134,7 @@ setupPopupHandlerForMaviPeltolohko('Field plot', ['mavi-plohko-fill', 'mavi-ploh
 
 addSource('mavi-peltolohko-removed', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/fi-peltolohko2012/{z}/{x}/{y}.pbf.gz?v=0"],
+    "tiles": ["https://server.avoin.org/data/map/fi-peltolohko2012/{z}/{x}/{y}.pbf.gz?v=0"],
     "maxzoom": 11,
     bounds: [19, 59, 32, 71], // Finland
     attribution: '<a href="https://www.ruokavirasto.fi/">© Finnish Food Authority</a>',

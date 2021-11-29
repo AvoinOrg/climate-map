@@ -48,7 +48,7 @@ const wrbCodeToLabel = v => [
 
 addSource('nibio-ar50', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/nibio-ar50/{z}/{x}/{y}.pbf.gz?v=1"],
+    "tiles": ["https://server.avoin.org/data/map/nibio-ar50/{z}/{x}/{y}.pbf.gz?v=1"],
     "minzoom": 0,
     "maxzoom": 12,
     // bounds: [19, 59, 32, 71], // Finland

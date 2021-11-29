@@ -4,7 +4,7 @@ import { registerGroup } from '../layer_groups';
 
 addSource('hel-energiatodistukset', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/hel-energiatodistukset/{z}/{x}/{y}.pbf?v=3"],
+    "tiles": ["https://server.avoin.org/data/map/hel-energiatodistukset/{z}/{x}/{y}.pbf?v=3"],
     "maxzoom": 14,
     // Bounds source: https://koordinates.com/layer/4257-finland-11000000-administrative-regions/
     // select ST_Extent(ST_Transform(ST_SetSRID(geom,3067), 4326))

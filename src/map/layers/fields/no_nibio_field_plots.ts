@@ -43,7 +43,7 @@ const fieldPlotTextField: Expression = [
 
 addSource('nibio-soils', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/nibio-jordsmonn/{z}/{x}/{y}.pbf.gz?v=1"],
+    "tiles": ["https://server.avoin.org/data/map/nibio-jordsmonn/{z}/{x}/{y}.pbf.gz?v=1"],
     "minzoom": 0,
     "maxzoom": 12,
     // bounds: [19, 59, 32, 71], // Finland

@@ -4,7 +4,7 @@ import { registerGroup } from 'src/map/layer_groups';
 
 addSource('gfw_tree_plantations', {
   "type": "vector",
-  "tiles": ["https://map.buttonprogram.org/gfw_tree_plantations/{z}/{x}/{y}.pbf"],
+  "tiles": ["https://server.avoin.org/data/map/gfw_tree_plantations/{z}/{x}/{y}.pbf"],
   "minzoom": 0,
   "maxzoom": 12,
   attribution: '<a href="https://www.globalforestwatch.org/">© Global Forest Watch</a>',

@@ -2,7 +2,7 @@ import { Expression } from 'mapbox-gl'
 import { registerGroup } from '../layer_groups'
 import { addLayer, addSource, map } from '../map'
 
-const URL_PREFIX = `https://map.buttonprogram.org/fi-ffd`
+const URL_PREFIX = `https://server.avoin.org/data/map/fi-ffd`
 
 const attribution = `
 <i><a class="a-light" xmlns:dct="http://purl.org/dc/terms/" href="https://s2maps.eu" property="dct:title">Sentinel-2 cloudless - https://s2maps.eu</a>

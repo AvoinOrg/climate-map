@@ -51,7 +51,7 @@ addLayer({
 
 addSource('metsaan-stand-mature-raster', {
     "type": 'raster',
-    'tiles': ['https://map.buttonprogram.org/stand2-mature/{z}/{x}/{y}.png'],
+    'tiles': ['https://server.avoin.org/data/map/stand2-mature/{z}/{x}/{y}.png'],
     'tileSize': 512,
     "maxzoom": 12,
     bounds: [19, 59, 32, 71], // Finland

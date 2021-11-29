@@ -4,7 +4,7 @@ import { registerGroup } from '../layer_groups';
 
 addSource('corine_clc2018', {
   "type": "vector",
-  "tiles": ["https://map.buttonprogram.org/corine_clc2018_subset/{z}/{x}/{y}.pbf.gz"],
+  "tiles": ["https://server.avoin.org/data/map/corine_clc2018_subset/{z}/{x}/{y}.pbf.gz"],
   "maxzoom": 10,
 });
 addLayer({

@@ -4,7 +4,7 @@ import { registerGroup } from '../layer_groups';
 
 addSource('fi-buildings', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/fi-buildings/{z}/{x}/{y}.pbf.gz"],
+    "tiles": ["https://server.avoin.org/data/map/fi-buildings/{z}/{x}/{y}.pbf.gz"],
     "minzoom": 9,
     "maxzoom": 13,
     bounds: [19, 59, 32, 71], // Finland
@@ -105,7 +105,7 @@ genericPopupHandler('fi-buildings-fill', e => {
 
 addSource('helsinki-buildings', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/helsinki-buildings/{z}/{x}/{y}.pbf"],
+    "tiles": ["https://server.avoin.org/data/map/helsinki-buildings/{z}/{x}/{y}.pbf"],
     "maxzoom": 14,
     // Bounds source: https://koordinates.com/layer/4257-finland-11000000-administrative-regions/
     // select ST_Extent(ST_Transform(ST_SetSRID(geom,3067), 4326))
@@ -165,7 +165,7 @@ addLayer({
 
 addSource('helsinki-puretut', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/hel-puretut/{z}/{x}/{y}.pbf.gz?v=0"],
+    "tiles": ["https://server.avoin.org/data/map/hel-puretut/{z}/{x}/{y}.pbf.gz?v=0"],
     "maxzoom": 14,
     // Bounds source: https://koordinates.com/layer/4257-finland-11000000-administrative-regions/
     // select ST_Extent(ST_Transform(ST_SetSRID(geom,3067), 4326))

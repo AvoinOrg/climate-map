@@ -4,7 +4,7 @@ import { registerGroup } from '../layer_groups';
 
 addSource('gtk-mp20k-maalajit', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/mp20k_maalajit/{z}/{x}/{y}.pbf?v=2"],
+    "tiles": ["https://server.avoin.org/data/map/mp20k_maalajit/{z}/{x}/{y}.pbf?v=2"],
     "minzoom": 0,
     "maxzoom": 12,
     bounds: [19, 59, 32, 71], // Finland

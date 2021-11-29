@@ -500,7 +500,7 @@ export const UserProvider = (props) => {
 //     function localLogin(authResult) {
 //         const payload = authResult.idTokenPayload
 
-//         const roles = payload['https://map.buttonprogram.org/roles'] || [];
+//         const roles = payload['https://server.avoin.org/data/map/roles'] || [];
 //         enablePrivateDatasets(roles);
 
 //         // Set isLoggedIn flag in localStorage

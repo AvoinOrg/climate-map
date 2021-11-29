@@ -83,7 +83,7 @@ const sampleStyle = {
     "nibio-ar50": {
       "type": "vector",
       "tiles": [
-        "https://map.buttonprogram.org/nibio-ar50/{z}/{x}/{y}.pbf.gz?v=1"
+        "https://server.avoin.org/data/map/nibio-ar50/{z}/{x}/{y}.pbf.gz?v=1"
       ],
       "minzoom": 0,
       "maxzoom": 12,

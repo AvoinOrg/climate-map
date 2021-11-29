@@ -3,7 +3,7 @@ import { Expression } from 'mapbox-gl';
 
 addSource('metsaan-stand', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/stand2/{z}/{x}/{y}.pbf.gz?v=2"],
+    "tiles": ["https://server.avoin.org/data/map/stand2/{z}/{x}/{y}.pbf.gz?v=2"],
     "minzoom": 12,
     "maxzoom": 13,
     bounds: [19, 59, 32, 71], // Finland

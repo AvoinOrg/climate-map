@@ -5,7 +5,7 @@ import { registerGroup } from '../layer_groups';
 
 addSource('fi-vayla-tierummut', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/vayla.fi/TL509_0-tiles/{z}/{x}/{y}.pbf"],
+    "tiles": ["https://server.avoin.org/data/map/vayla.fi/TL509_0-tiles/{z}/{x}/{y}.pbf"],
     "minzoom": 0,
     "maxzoom": 9,
     bounds: [19, 59, 32, 71], // Finland
@@ -34,7 +34,7 @@ addLayer({
 
 addSource('fi-vayla-ratarummut', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/vayla.fi/rata_rumpu_0-tiles/{z}/{x}/{y}.pbf"],
+    "tiles": ["https://server.avoin.org/data/map/vayla.fi/rata_rumpu_0-tiles/{z}/{x}/{y}.pbf"],
     "minzoom": 0,
     "maxzoom": 6,
     bounds: [19, 59, 32, 71], // Finland

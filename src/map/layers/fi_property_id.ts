@@ -31,7 +31,7 @@ export const queryKiinteistoTunnus = async (query: string) => {
     // The prefix used to be equivalent to ktunnus but nowadays it is an opaque number.
     const prefix3 = re[1].padStart(3, '0'); // '5' -> '005'
     const today = new Date().toISOString().slice(0, 10)
-    const response = await fetch(`https://map.buttonprogram.org/kiinteistorekisteri/lookup/${prefix3}.geojson.gz?_=${today}`);
+    const response = await fetch(`https://server.avoin.org/data/map/kiinteistorekisteri/lookup/${prefix3}.geojson.gz?_=${today}`);
     const geojson = await response.json() as IGeoJSON;
     let fs = geojson.features
     .filter(f => f.properties && (
@@ -67,7 +67,7 @@ export const enableMMLPalstatLayer = () => {
 
     directAddSource('fi-mml-palstat', {
         "type": "vector",
-        "tiles": ["https://map.buttonprogram.org/palstat/{z}/{x}/{y}.pbf.gz?v=0"],
+        "tiles": ["https://server.avoin.org/data/map/palstat/{z}/{x}/{y}.pbf.gz?v=0"],
         "minzoom": 14,
         "maxzoom": 14,
         bounds: [19, 59, 32, 71], // Finland

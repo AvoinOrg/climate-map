@@ -9,7 +9,7 @@ const timestampHour = Math.round(+new Date() / 1e6)
 
 addSource('no2-tiles', {
   "type": 'raster',
-  "tiles": ["https://map.buttonprogram.org/atmoshack/mbtiles-dump/" + no2Tileset + "/{z}/{x}/{y}.png?v=5&_=" + timestampHour],
+  "tiles": ["https://server.avoin.org/data/map/atmoshack/mbtiles-dump/" + no2Tileset + "/{z}/{x}/{y}.png?v=5&_=" + timestampHour],
   "maxzoom": 5,
   attribution: '<a href="https://www.esa.int/ESA">ESA</a>',
 });
@@ -66,7 +66,7 @@ const updateNO2Reading = function (ev: MapMouseEvent) {
   const x = ev.lngLat
   const lat = x.lat.toFixed(2)
   const lon = x.lng.toFixed(2)
-  const url = `https://map.buttonprogram.org/query_no2?latitude=${lat}&longitude=${lon}&v=9`
+  const url = `https://server.avoin.org/data/map/query_no2?latitude=${lat}&longitude=${lon}&v=9`
   const currentRequestNum = ++reqCounter
   fetch(url)
     .then(function (response) {

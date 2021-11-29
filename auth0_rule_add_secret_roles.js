@@ -18,7 +18,7 @@ function(user, context, callback){
     // NB: This is the only reliable way I found to add "proper" roles/secrets.
     const roleClaims = context.request.query.roleclaims || [];
 
-    context.idToken['https://map.buttonprogram.org/roles'] = user.app_metadata.roles || [];
+    context.idToken['https://server.avoin.org/data/map/roles'] = user.app_metadata.roles || [];
 
     const secrets = [];
     for (const claim in claimToSecret) {
@@ -38,7 +38,7 @@ function(user, context, callback){
     // persist the app_metadata update
     auth0.users.updateAppMetadata(user.user_id, user.app_metadata)
     .then(function(){
-        context.idToken['https://map.buttonprogram.org/roles'] = user.app_metadata.roles;
+        context.idToken['https://server.avoin.org/data/map/roles'] = user.app_metadata.roles;
         callback(null, user, context);
     })
     .catch(function(err){

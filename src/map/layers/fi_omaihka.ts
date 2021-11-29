@@ -34,7 +34,7 @@ const hashParams: IHashParams =
     Object.assign({ [item.split('=')[0]]: item.split('=')[1] }, prev)
   ), {}) as IHashParams;
 
-const URL_PREFIX = `https://map.buttonprogram.org/private/${hashParams.secret}`
+const URL_PREFIX = `https://server.avoin.org/data/map/private/${hashParams.secret}`
 
 addSource('fi-omaihka-overlay', {
   "type": 'geojson',

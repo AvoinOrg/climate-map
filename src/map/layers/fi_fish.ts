@@ -4,7 +4,7 @@ import { Expression } from 'mapbox-gl';
 
 addSource('fi-fish-pikeperch', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/fi-fish-pikeperch/{z}/{x}/{y}.pbf.gz"],
+    "tiles": ["https://server.avoin.org/data/map/fi-fish-pikeperch/{z}/{x}/{y}.pbf.gz"],
     "minzoom": 12,
     "maxzoom": 13,
     bounds: [19, 59, 32, 71], // Finland
@@ -51,7 +51,7 @@ addLayer({
 
 addSource('fi-fish-pikeperch-raster', {
     "type": 'raster',
-    'tiles': ['https://map.buttonprogram.org/fi-fish-pikeperch/{z}/{x}/{y}.png'],
+    'tiles': ['https://server.avoin.org/data/map/fi-fish-pikeperch/{z}/{x}/{y}.png'],
     'tileSize': 512,
     "maxzoom": 12,
     bounds: [19, 59, 32, 71], // Finland

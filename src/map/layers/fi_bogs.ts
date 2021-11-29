@@ -4,7 +4,7 @@ import { registerGroup } from '../layer_groups';
 
 addSource('fi-mml-suot', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/fi-mml-suot/{z}/{x}/{y}.pbf.gz?v=5"],
+    "tiles": ["https://server.avoin.org/data/map/fi-mml-suot/{z}/{x}/{y}.pbf.gz?v=5"],
     "minzoom": 0,
     "maxzoom": 11,
     bounds: [19, 59, 32, 71], // Finland
@@ -62,7 +62,7 @@ const gtkTurveVaratLuonnontilaisuusluokka = {
 
 addSource('gtk-turvevarat', {
     "type": "vector",
-    "tiles": ["https://map.buttonprogram.org/gtk-turvevarat-suot/{z}/{x}/{y}.pbf.gz?v=5"],
+    "tiles": ["https://server.avoin.org/data/map/gtk-turvevarat-suot/{z}/{x}/{y}.pbf.gz?v=5"],
     "minzoom": 0,
     "maxzoom": 14,
     bounds: [19, 59, 32, 71], // Finland

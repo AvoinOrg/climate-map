@@ -3,7 +3,7 @@ import { registerGroup } from '../layer_groups';
 
 addSource('cifor-peatdepth', {
     "type": 'raster',
-    "tiles": ["https://map.buttonprogram.org/cifor/TROP-SUBTROP_PeatDepthV2_2016_CIFOR/{z}/{x}/{y}.png?v=3"],
+    "tiles": ["https://server.avoin.org/data/map/cifor/TROP-SUBTROP_PeatDepthV2_2016_CIFOR/{z}/{x}/{y}.png?v=3"],
     bounds: [-180, -60, 180, 40],
     "minzoom": 0,
     "maxzoom": 10,
@@ -11,7 +11,7 @@ addSource('cifor-peatdepth', {
 });
 addSource('cifor-wetlands', {
     "type": 'raster',
-    "tiles": ["https://map.buttonprogram.org/cifor/TROP-SUBTROP_WetlandV2_2016_CIFOR/{z}/{x}/{y}.png?v=3"],
+    "tiles": ["https://server.avoin.org/data/map/cifor/TROP-SUBTROP_WetlandV2_2016_CIFOR/{z}/{x}/{y}.png?v=3"],
     bounds: [-180, -60, 180, 40],
     "minzoom": 0,
     "maxzoom": 10,

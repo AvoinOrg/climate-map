@@ -39,7 +39,7 @@ const addValio = (secret: string) => {
 
     addSource('valio_fields', {
         "type": "vector",
-        "tiles": [`https://map.buttonprogram.org/private/${secret}/valio_fields/{z}/{x}/{y}.pbf?v=3`],
+        "tiles": [`https://server.avoin.org/data/map/private/${secret}/valio_fields/{z}/{x}/{y}.pbf?v=3`],
         bounds: [19, 59, 32, 71], // Finland
         "minzoom": 10,
         "maxzoom": 11,
@@ -108,7 +108,7 @@ const addValio = (secret: string) => {
         const opts = layerOptions[sourceName];
         const sourceOpts = {
             "type": "vector",
-            "tiles": [`https://map.buttonprogram.org/private/${secret}/${path}/tiles/{z}/{x}/{y}.pbf.gz?v=1`],
+            "tiles": [`https://server.avoin.org/data/map/private/${secret}/${path}/tiles/{z}/{x}/{y}.pbf.gz?v=1`],
             minzoom: 0,
             maxzoom: Math.ceil(opts.maxzoom!),
             bounds: [19, 59, 32, 71], // Finland

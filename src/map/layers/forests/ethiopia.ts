@@ -3,7 +3,7 @@ import { registerGroup } from 'src/map/layer_groups';
 
 addSource('ethiopia_forest_change_2003_2013', {
     "type": 'raster',
-    'tiles': ['https://map.buttonprogram.org/eth_forest_change_2000-2013_20161019/{z}/{x}/{y}.png?v=1'],
+    'tiles': ['https://server.avoin.org/data/map/eth_forest_change_2000-2013_20161019/{z}/{x}/{y}.png?v=1'],
     'tileSize': 512,
     "minzoom": 0,
     "maxzoom": 12,

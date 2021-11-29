@@ -3,7 +3,7 @@ import { addLayer, addSource } from '../../map';
 
 addSource('madagascar-2017-mosaic', {
     "type": 'raster',
-    'tiles': ['https://map.buttonprogram.org/madagascar-mosaic/{z}/{x}/{y}.png?v=0'],
+    'tiles': ['https://server.avoin.org/data/map/madagascar-mosaic/{z}/{x}/{y}.png?v=0'],
     'tileSize': 512,
     "minzoom": 0,
     "maxzoom": 13,
