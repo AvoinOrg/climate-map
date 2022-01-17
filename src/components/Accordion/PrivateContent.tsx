@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { createStyles, makeStyles, Theme } from "@material-ui/core";
-import { AOExpansionPanelLink } from "./AOExpansionPanel";
+import { AOAccordionLink } from "./AOAccordion";
 import { UserContext } from "../User";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -44,7 +44,7 @@ const PrivateContent = () => {
       {hasLayers && (
         <>
           {privateLayers["valio-carbon-grass-fields"] && (
-            <AOExpansionPanelLink
+            <AOAccordionLink
               href="/layers/valio-carbon-grass-fields"
               label={"Valio Carbon Grass Fields"}
             />

@@ -1,6 +1,6 @@
 import React from "react";
 import { createStyles, makeStyles } from "@material-ui/core";
-import { AOExpansionPanelLink, AOExpansionPanel } from "./AOExpansionPanel";
+import { AOAccordionLink, AOAccordion } from "./AOAccordion";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -108,26 +108,26 @@ const ForestContent = () => {
   const classes = useStyles({});
   return (
     <div className={classes.root}>
-      <AOExpansionPanelLink
+      <AOAccordionLink
         href="/layers/fi-forest"
         label={"Finland's Forests"}
       />
-      <AOExpansionPanel
+      <AOAccordion
         groupName={"hansen"}
         label={"Global forest coverage"}
         content={<ForestCoverageContent />}
       />
-      <AOExpansionPanel
+      <AOAccordion
         groupName={"mature-forests"}
         label={"Mature Forests"}
         content={<MatureForestContent />}
       />
-      <AOExpansionPanel
+      <AOAccordion
         groupName={"mangrove-forests"}
         label={"Mangrove forests"}
         content={<MangroveForestContent />}
       />
-      <AOExpansionPanel
+      <AOAccordion
         groupName={"gfw_tree_plantations"}
         label={"Tree plantations"}
         content={<TropicalForestContent />}

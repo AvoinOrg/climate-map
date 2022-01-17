@@ -9,7 +9,7 @@ import {
   MenuItem,
   Select,
 } from "@material-ui/core";
-import { AOExpansionPanel } from "./AOExpansionPanel";
+import { AOAccordion } from "./AOAccordion";
 import { UserContext } from "../User";
 import { StateContext } from "../State";
 import { setFilter, addMapEventHandler, isSourceReady } from "../../map/map";
@@ -148,7 +148,7 @@ const UserContent = () => {
       {hasLayers && (
         <>
           {userLayers["vipu"] && (
-            <AOExpansionPanel
+            <AOAccordion
               groupName={"vipu-fields"}
               label={"Fields"}
               content={
@@ -167,7 +167,7 @@ const UserContent = () => {
             />
           )}
           {userLayers["vipu"] && (
-            <AOExpansionPanel
+            <AOAccordion
               groupName={"vipu-growth"}
               label={"Growth Blocks"}
               content={
@@ -187,7 +187,7 @@ const UserContent = () => {
           )}
         </>
       )}
-      {/* <AOExpansionProfilePanel
+      {/* <AOProfileAccordion
         label={"Field Carbon Emissions"}
         onClick={handleClickCarbon}
       /> */}

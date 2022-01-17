@@ -1,6 +1,6 @@
 import React from 'react'
 import { createStyles, makeStyles } from '@material-ui/core';
-import { AOExpansionPanel } from './AOExpansionPanel';
+import { AOAccordion } from './AOAccordion';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -27,10 +27,10 @@ const FiZonationContent = () =>
 const BiodiversityContent = () => {
   const classes = useStyles({});
   return <div className={classes.root}>
-    <AOExpansionPanel groupName={'ete'} label={"Potential METSO areas"} content={null} />
-    <AOExpansionPanel groupName={'ete-all-labels'} label={"Especially Important Habitats"} content={null} />
-    <AOExpansionPanel groupName={'zonation6'} label={"Areas important to biodiversity"} content={<FiZonationContent/>} />
-    <AOExpansionPanel groupName={'natura2000'} label={"Natura 2000"} content={null} />
+    <AOAccordion groupName={'ete'} label={"Potential METSO areas"} content={null} />
+    <AOAccordion groupName={'ete-all-labels'} label={"Especially Important Habitats"} content={null} />
+    <AOAccordion groupName={'zonation6'} label={"Areas important to biodiversity"} content={<FiZonationContent/>} />
+    <AOAccordion groupName={'natura2000'} label={"Natura 2000"} content={null} />
   </div>
 }
 

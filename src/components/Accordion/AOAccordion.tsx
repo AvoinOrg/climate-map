@@ -1,9 +1,9 @@
 import {
   Checkbox,
   createStyles,
-  ExpansionPanel,
-  ExpansionPanelDetails,
-  ExpansionPanelSummary,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   makeStyles,
   Theme,
   Typography,
@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export const AOExpansionPanel = (props: any) => {
+export const AOAccordion = (props: any) => {
   const { groupName, label, content, panelProps } = props;
   const layerGroups = useObservable(LayerGroupState.layerGroups);
   const groupEnabled =
@@ -34,8 +34,8 @@ export const AOExpansionPanel = (props: any) => {
   const classes = useStyles({});
 
   return (
-    <ExpansionPanel {...panelProps}>
-      <ExpansionPanelSummary
+    <Accordion {...panelProps}>
+      <AccordionSummary
         className={classes.content}
         expandIcon={<ExpandMoreIcon />}
       >
@@ -55,46 +55,46 @@ export const AOExpansionPanel = (props: any) => {
           checked={groupEnabled}
         />
         {/* <Typography className={classes.heading}>{label}</Typography> */}
-      </ExpansionPanelSummary>
+      </AccordionSummary>
 
-      <ExpansionPanelDetails>{content}</ExpansionPanelDetails>
-    </ExpansionPanel>
+      <AccordionDetails>{content}</AccordionDetails>
+    </Accordion>
   );
 };
 
-export const AOExpansionPanelLink = ({ href, label }: any) => {
+export const AOAccordionLink = ({ href, label }: any) => {
   const classes = useStyles({});
 
   return (
-    <ExpansionPanel expanded={false}>
+    <Accordion expanded={false}>
       <Link to={href} className="neutral-link">
-        <ExpansionPanelSummary
+        <AccordionSummary
           style={{ marginLeft: 31 }}
           className={classes.content}
           expandIcon={<ExpandMoreIcon style={{ transform: "rotate(-90deg" }} />}
         >
           <Typography className={classes.heading}>{label}</Typography>
-        </ExpansionPanelSummary>
+        </AccordionSummary>
       </Link>
-    </ExpansionPanel>
+    </Accordion>
   );
 };
 
-export const AOExpansionProfilePanel = ({ onClick, label }: any) => {
+export const AOProfileAccordion = ({ onClick, label }: any) => {
   const classes = useStyles({});
 
   return (
-    <ExpansionPanel onClick={onClick} expanded={false}>
+    <Accordion onClick={onClick} expanded={false}>
       <div className="neutral-link">
-        <ExpansionPanelSummary
+        <AccordionSummary
           style={{ marginLeft: 31 }}
           className={classes.content}
           expandIcon={<ExpandMoreIcon style={{ transform: "rotate(-90deg" }} />}
         >
           <Typography className={classes.heading}>{label}</Typography>
-        </ExpansionPanelSummary>
+        </AccordionSummary>
       </div>
-    </ExpansionPanel>
+    </Accordion>
   );
 };
 
@@ -126,15 +126,15 @@ export const AOAccordionHeader = ({ href, label }: any) => {
   const classes = useStyles({});
 
   return (
-    <ExpansionPanel expanded={false}>
+    <Accordion expanded={false}>
       <Link to={href} className="neutral-link">
-        <ExpansionPanelSummary
+        <AccordionSummary
           className={classes.content}
           expandIcon={<ExpandMoreIcon style={{ transform: "rotate(90deg" }} />}
         >
           <Typography className={classes.heading}>{label}</Typography>
-        </ExpansionPanelSummary>
+        </AccordionSummary>
       </Link>
-    </ExpansionPanel>
+    </Accordion>
   );
 };

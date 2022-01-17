@@ -11,7 +11,7 @@ export interface ContentEntity {
   title: string;
   content?: null;
   contentType?: null;
-  noExpansionPanelPadding?: boolean;
+  noAccordionPadding?: boolean;
 }
 
 const drawerItems = [

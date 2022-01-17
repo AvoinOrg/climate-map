@@ -1,6 +1,6 @@
 import React from 'react'
 import { Container } from '@material-ui/core';
-import { LayerToggleControl } from './AOExpansionPanel';
+import { LayerToggleControl } from './AOAccordion';
 
 
 const SnowCoverLossContent = () => {

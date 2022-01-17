@@ -1,7 +1,7 @@
 import React from 'react'
 import clsx from 'clsx'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { ExpansionPanel, ExpansionPanelSummary, Typography, ExpansionPanelDetails, makeStyles, Theme, createStyles } from '@material-ui/core';
+import { Accordion, AccordionSummary, Typography, AccordionDetails, makeStyles, Theme, createStyles } from '@material-ui/core';
 
 import './AccordionStyle.css'
 
@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme: Theme) =>
       width: drawerWidth - 46,
       fontFamily: theme.typography.fontFamily[1]
     },
-    noExpansionPanelPadding: {
+    noAccordionPadding: {
       padding: 0
     },
   }),
@@ -27,21 +27,21 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const Dropdown = ({item, drawerItem}) => {
   const classes = useStyles({});
-  return <ExpansionPanel className={clsx({
+  return <Accordion className={clsx({
     [classes.drawerItem]: drawerItem
   })}>
 
-    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
       {item?.title && <Typography className={classes.heading}>{item.title}</Typography>}
-    </ExpansionPanelSummary>
+    </AccordionSummary>
 
-    <ExpansionPanelDetails className={clsx({
-      [classes.noExpansionPanelPadding]: true
+    <AccordionDetails className={clsx({
+      [classes.noAccordionPadding]: true
     })}>
       <Content item={item} />
-    </ExpansionPanelDetails>
+    </AccordionDetails>
 
-  </ExpansionPanel>;
+  </Accordion>;
 }
 
 const Content = (props: any) => {
