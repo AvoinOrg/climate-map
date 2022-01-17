@@ -95,7 +95,9 @@
       "fontSize": "7rem",
       "fontWeight": 300
     },
-    "fontWeightRegular": 400,
+    "regular": {
+      "fontWeight": 400
+    },
     "display1": {
       "color": "rgba(0, 0, 0, 0.54)",
       "fontFamily": "\"Roboto\", \"Helvetica\", \"Arial\", sans-serif",
@@ -126,7 +128,9 @@
       "fontWeight": 400
     },
     "fontSize": 14,
-    "fontWeightMedium": 500,
+    "medium": {
+      "fontWeight": 500
+    },
     "title": {
       "color": "rgba(0, 0, 0, 0.87)",
       "fontFamily": "\"Roboto\", \"Helvetica\", \"Arial\", sans-serif",

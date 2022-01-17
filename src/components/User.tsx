@@ -92,7 +92,7 @@ export const UserProvider = (props) => {
         storeToken(res.data.token, res.data.expires);
         return checkAuth();
       }
-    } catch (error) {
+    } catch (error: any) {
       throw error.response;
     }
   };
@@ -106,7 +106,7 @@ export const UserProvider = (props) => {
 
         return checkAuth();
       }
-    } catch (error) {
+    } catch (error: any) {
       throw error.response;
     }
   };
@@ -121,7 +121,7 @@ export const UserProvider = (props) => {
         setUserProfile(res.data);
         return res.data;
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error.response.status && error.response.status === 404) {
         logout();
       }
@@ -145,7 +145,7 @@ export const UserProvider = (props) => {
         setUserProfile(res.data);
         return res.data;
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error.response.status && error.response.status === 404) {
         logout();
       }
@@ -170,7 +170,7 @@ export const UserProvider = (props) => {
       }
 
       return res.status;
-    } catch (error) {
+    } catch (error: any) {
       setVerificationTimeout(0);
       setVerificationStatus("emailErrored");
       throw error.response;
@@ -194,7 +194,7 @@ export const UserProvider = (props) => {
 
       setVerificationStatus("errored");
       return res.status;
-    } catch (error) {
+    } catch (error: any) {
       if (error.response.status && error.response.status === 409) {
         setVerificationStatus("verified");
       } else {
@@ -214,7 +214,7 @@ export const UserProvider = (props) => {
         setUserIntegrations(res.data);
         return res.data;
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error.response.status && error.response.status === 404) {
         logout();
       }
@@ -240,7 +240,7 @@ export const UserProvider = (props) => {
         setUserIntegrations(newUserIntegrations);
         return res.data;
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error.response.status && error.response.status === 404) {
         logout();
       }
@@ -270,7 +270,7 @@ export const UserProvider = (props) => {
         setUserIntegrations(newUserIntegrations);
         return res.data;
       }
-    } catch (error) {
+    } catch (error: any) {
       throw error.response;
     }
   };
@@ -293,7 +293,7 @@ export const UserProvider = (props) => {
         setUserIntegrations(newUserIntegrations);
         return newUserIntegrations;
       }
-    } catch (error) {
+    } catch (error: any) {
       throw error.response;
     }
   };
@@ -313,7 +313,7 @@ export const UserProvider = (props) => {
       if (res.status === 200) {
         return res.data.authLink;
       }
-    } catch (error) {
+    } catch (error: any) {
       throw error.response;
     }
   };
@@ -330,7 +330,7 @@ export const UserProvider = (props) => {
       if (res.status === 200) {
         return res.data.authStatus;
       }
-    } catch (error) {
+    } catch (error: any) {
       throw error.response;
     }
   };
@@ -347,7 +347,7 @@ export const UserProvider = (props) => {
       if (res.status === 200) {
         return res.data;
       }
-    } catch (error) {
+    } catch (error: any) {
       throw error.response;
     }
   };

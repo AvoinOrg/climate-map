@@ -142,8 +142,8 @@ const SignupForm = (props) => {
 
     try {
       await signup(values);
-    } catch (err) {
-      if (err.status && err.status === 409) {
+    } catch (error: any) {
+      if (error.status && error.status === 409) {
         setBigError("Email address is already in use.");
       } else {
         setBigError("Sorry, something went wrong.");

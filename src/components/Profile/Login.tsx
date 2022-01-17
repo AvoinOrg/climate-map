@@ -107,8 +107,8 @@ const Login = () => {
         email: "",
         password: "",
       });
-    } catch (err) {
-      if (err.status && err.status === 401) {
+    } catch (error: any) {
+      if (error.status && error.status === 401) {
         setBigError("Invalid username or password.");
       } else {
         setBigError("Sorry, something went wrong.");

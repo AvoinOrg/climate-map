@@ -10,7 +10,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     text: {
       padding: "0 16px 0 16px",
-      fontWeight: theme.typography.fontWeightRegular,
+      fontWeight: theme.typography["regular"].fontWeight,
     },
   })
 );

@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     heading: {
       fontSize: theme.typography.pxToRem(16),
-      fontWeight: theme.typography.fontWeightRegular,
+      fontWeight: theme.typography["regular"].fontWeight,
       fontFamily: theme.typography.fontFamily[0],
     },
     drawerItem: {

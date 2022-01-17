@@ -1,6 +1,6 @@
-import { createMuiTheme, StyleRules } from "@material-ui/core/styles";
+import { createTheme, StyleRules } from "@material-ui/core/styles";
 
-declare module "@material-ui/core/styles/createMuiTheme" {
+declare module "@material-ui/core/styles/createTheme" {
   interface ThemeOptions {
     themeName?: string; // optional
   }
@@ -99,7 +99,7 @@ const typography: StyleRules = {
 
 const themeName = "Avoin Green and White";
 
-export default createMuiTheme({
+export default createTheme({
   palette,
   typography,
   zIndex,

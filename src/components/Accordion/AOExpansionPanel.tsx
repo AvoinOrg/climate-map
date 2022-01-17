@@ -18,7 +18,7 @@ import * as LayerGroupState from "../../map/LayerGroupState";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     heading: {
-      fontWeight: theme.typography.fontWeightRegular,
+      fontWeight: theme.typography["regular"].fontWeight,
     },
     content: {
       margin: "unset",

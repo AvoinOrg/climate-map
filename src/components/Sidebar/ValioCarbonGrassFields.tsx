@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme: Theme) =>
       lineHeight: "22px",
       padding: "15px 5px 15px 5px",
       width: "300px",
-      fontWeight: theme.typography.fontWeightRegular,
+      fontWeight: theme.typography["regular"].fontWeight,
       overflow: "hidden",
     },
     formControl: {

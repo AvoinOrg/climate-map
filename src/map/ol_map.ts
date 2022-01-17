@@ -139,7 +139,7 @@ export const addSource = (name: string, source: mapboxgl.AnySourceData) => {
   directAddSource(name, source);
 }
 
-
+// TODO: fix after version upgrade
 // Calculation of tile urls for zoom levels 1, 3, 5, 7, 9, 11, 13, 15.
 const resolutions: number[] = [];
 for (let i = 0; i <= 8; ++i) {
@@ -189,28 +189,29 @@ const mbSourceToSource: (source: mapboxgl.AnySourceData) => SourceType | null = 
   }
 }
 
-const mbLayerToLayer: (layer: mapboxgl.Layer) => LayerOL | null = layer => {
-  const source = sources[layer.source as string];
-  switch (layer.type) {
-    case 'raster':
-      // @ts-ignore
-      return new TileLayer({ source });
-    case 'fill':
-    case 'line':
-    case 'circle':
-    case 'symbol':
-      const sourceType = sourceTypes[layer.source as string];
-      if (sourceType === 'geojson') {
-        // @ts-ignore
-        return new VectorLayer({ source });
-      } else {
-        // @ts-ignore
-        return new VectorTileLayer({ source, declutter: true });
-      }
-    default:
-      return null;
-  }
-}
+// TODO: fix after version upgrade
+// const mbLayerToLayer: (layer: mapboxgl.Layer) => LayerOL | null = layer => {
+//   const source = sources[layer.source as string];
+//   switch (layer.type) {
+//     case 'raster':
+//       // @ts-ignore
+//       return new TileLayer({ source });
+//     case 'fill':
+//     case 'line':
+//     case 'circle':
+//     case 'symbol':
+//       const sourceType = sourceTypes[layer.source as string];
+//       if (sourceType === 'geojson') {
+//         // @ts-ignore
+//         return new VectorLayer({ source });
+//       } else {
+//         // @ts-ignore
+//         return new VectorTileLayer({ source, declutter: true });
+//       }
+//     default:
+//       return null;
+//   }
+// }
 
 interface IZIndexes { [s: string]: number }
 const zIndexes: IZIndexes = {
@@ -263,33 +264,34 @@ const setLayerMBStyle = (layerId: string) => {
   stylefunction(layer2, styleDef, layer.source as string);
 }
 
-export const directAddLayer = (layer: mapboxgl.Layer, before?: string) => {
-  assert(layer.source, `source is required for layer "${layer.id}`);
+// TODO: fix after version upgrade
+// export const directAddLayer = (layer: mapboxgl.Layer, before?: string) => {
+//   assert(layer.source, `source is required for layer "${layer.id}`);
 
-  if (typeof layer.source !== 'string') {
-    directAddSource(layer.id, layer.source!);
-    layer.source = layer.id;
-  }
-  const layer2 = mbLayerToLayer(layer);
-  if (!layer2) {
-    return console.error(`Unknown source type for "${layer.id}": ${layer.type}`);
-  }
+//   if (typeof layer.source !== 'string') {
+//     directAddSource(layer.id, layer.source!);
+//     layer.source = layer.id;
+//   }
+//   const layer2 = mbLayerToLayer(layer);
+//   if (!layer2) {
+//     return console.error(`Unknown source type for "${layer.id}": ${layer.type}`);
+//   }
 
-  const zIndex = zIndexes[before || layer.BEFORE || 'BACKGROUND']
-  layer2.setZIndex(zIndex)
-  mbLayers[layer.id] = layer;
-  layers[layer.id] = layer2;
-  // @ts-ignore TODO figure out a better way to map layer names/ids around
-  olUIDToLayerName[layer2.ol_uid] = layer.id;
+//   const zIndex = zIndexes[before || layer.BEFORE || 'BACKGROUND']
+//   layer2.setZIndex(zIndex)
+//   mbLayers[layer.id] = layer;
+//   layers[layer.id] = layer2;
+//   // @ts-ignore TODO figure out a better way to map layer names/ids around
+//   olUIDToLayerName[layer2.ol_uid] = layer.id;
 
-  layer.layout = layer.layout || {};
+//   layer.layout = layer.layout || {};
 
-  if (layer2 instanceof VectorLayer || layer2 instanceof VectorTileLayer) {
-    setLayerMBStyle(layer.id);
-  }
+//   if (layer2 instanceof VectorLayer || layer2 instanceof VectorTileLayer) {
+//     setLayerMBStyle(layer.id);
+//   }
 
-  setLayoutProperty(layer.id, 'visibility', layer.layout.visibility);
-}
+//   setLayoutProperty(layer.id, 'visibility', layer.layout.visibility);
+// }
 
 export const getLayer = (layer: string) => layers[layer];
 
@@ -307,28 +309,29 @@ const lineDefaults: Object = {
   'line-width': 1,
 }
 
-export const addLayer = (layer: Layer, visibility = 'none') => {
-  assert('BEFORE' in layer, `Layer ${layer.id} is missing a BEFORE declaration`);
+// TODO: fix after version upgrade
+// export const addLayer = (layer: Layer, visibility = 'none') => {
+//   assert('BEFORE' in layer, `Layer ${layer.id} is missing a BEFORE declaration`);
 
-  layer.layout = layer.layout || {};
-  layer.layout.visibility = visibility === 'visible' ? 'visible' : 'none';
-  layer.paint = layer.paint || {};
-  originalLayerDefs[layer.id] = layer;
-  if (layer.type === 'line') {
-    for (const [key, value] of Object.entries(lineDefaults)) {
-      if (key in layer.paint) continue;
-      // @ts-ignore
-      layer.paint[key] = value;
-    }
-  }
-  directAddLayer({ layout: layer.layout, ...layer }, layer.BEFORE);
-}
+//   layer.layout = layer.layout || {};
+//   layer.layout.visibility = visibility === 'visible' ? 'visible' : 'none';
+//   layer.paint = layer.paint || {};
+//   originalLayerDefs[layer.id] = layer;
+//   if (layer.type === 'line') {
+//     for (const [key, value] of Object.entries(lineDefaults)) {
+//       if (key in layer.paint) continue;
+//       // @ts-ignore
+//       layer.paint[key] = value;
+//     }
+//   }
+//   directAddLayer({ layout: layer.layout, ...layer }, layer.BEFORE);
+// }
 
-export const toggleBaseMapSymbols = () => {
-  getMapLayers()
-    .filter(x => x.type === 'symbol')
-    .forEach(invertLayerTextHalo)
-}
+// export const toggleBaseMapSymbols = () => {
+//   getMapLayers()
+//     .filter(x => x.type === 'symbol')
+//     .forEach(invertLayerTextHalo)
+// }
 
 
 const coordFromRenderFeature = (f: RenderFeature) => {
@@ -428,15 +431,16 @@ export const panTo = (lon: number, lat: number) =>
   new View({ center: fromLonLat([lon, lat]) })
     .animate();
 
-export const querySourceFeatures: (id: string, sourceLayer: string) => mapboxgl.MapboxGeoJSONFeature[] =
-  (layerId: string, sourceLayer: string) => {
-    const features = map.getFeaturesAtPixel([0, 0], {
-      hitTolerance: 1e99,
-      // @ts-ignore TODO ol_uid
-      layerFilter: (l: string) => layerId === olUIDToLayerName[l.ol_uid]
-    });
-    return features.map(normalizeFeature);
-  }
+// TODO: fix after version upgrade
+// export const querySourceFeatures: (id: string, sourceLayer: string) => mapboxgl.MapboxGeoJSONFeature[] =
+//   (layerId: string, sourceLayer: string) => {
+//     const features = map.getFeaturesAtPixel([0, 0], {
+//       hitTolerance: 1e99,
+//       // @ts-ignore TODO ol_uid
+//       layerFilter: (l: string) => layerId === olUIDToLayerName[l.ol_uid]
+//     });
+//     return features.map(normalizeFeature);
+//   }
 
 export const getSource = (id: string) => sources[id];
 export const removeSource = (id: string) => {
@@ -455,9 +459,10 @@ export const getBounds: () => mapboxgl.LngLatBounds = () => {
 }
 
 // TODO a different sort of Layer is returned now
-export const getMapLayers: () => Layer[] = () => map.getLayers().getArray();
+// export const getMapLayers: () => Layer[] = () => map.getLayers().getArray();
 
-export const addMapEventHandler = (type: string, listener: (ev: any) => void) => map.on(type, listener);
+// TODO: fix after version upgrade
+//export const addMapEventHandler = (type: string, listener: (ev: any) => void) => map.on(type, listener);
 
 // Nothing to do
 export const mapInit = () => { }
