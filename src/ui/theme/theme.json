@@ -98,6 +98,7 @@
     "regular": {
       "fontWeight": 400
     },
+    "fontWeightRegular": 400,
     "display1": {
       "color": "rgba(0, 0, 0, 0.54)",
       "fontFamily": "\"Roboto\", \"Helvetica\", \"Arial\", sans-serif",
@@ -131,6 +132,7 @@
     "medium": {
       "fontWeight": 500
     },
+    "fontWeightMedium": 500,
     "title": {
       "color": "rgba(0, 0, 0, 0.87)",
       "fontFamily": "\"Roboto\", \"Helvetica\", \"Arial\", sans-serif",

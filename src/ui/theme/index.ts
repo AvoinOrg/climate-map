@@ -94,6 +94,15 @@ const typography: StyleRules = {
     fontSize: "1rem",
     fontWeight: 400,
   },
+  light: {
+    fontWeight: 300,
+  },
+  regular: {
+    fontWeight: 400,
+  },
+  medium: {
+    fontWeight: 500,
+  },
   fontFamily,
 };
 
