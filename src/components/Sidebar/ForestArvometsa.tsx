@@ -396,22 +396,18 @@ const getChartProps = ({
   const options = {
     animation: { duration: 0 },
     scales: {
-      xAxes: [
-        {
-          stacked,
-          scaleLabel: { display: true, labelString: "years from now" },
+      x: {
+        stacked,
+        scaleLabel: { display: true, labelString: "years from now" },
+      },
+      y: {
+        stacked,
+        ticks: {
+          maxTicksLimit: 8,
+          beginAtZero: true,
+          callback: (value, _index, _values) => value.toLocaleString(),
         },
-      ],
-      yAxes: [
-        {
-          stacked,
-          ticks: {
-            maxTicksLimit: 8,
-            beginAtZero: true,
-            callback: (value, _index, _values) => value.toLocaleString(),
-          },
-        },
-      ],
+      },
     },
     tooltips: {
       callbacks: { label: labelCallback },
