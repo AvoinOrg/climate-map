@@ -4,6 +4,32 @@
   "main": "index.html",
   "repository": "git@github.com:ButtonProgram/climate-map.git",
   "license": "MIT",
+  "scripts": {
+    "start": "ln -sf mapbox_map.ts src/map/map.ts && react-scripts start",
+    "start-ol": "ln -sf ol_map.ts src/map/map.ts && react-scripts start",
+    "build": "rm -rf build/ && ln -sf mapbox_map.ts src/map/map.ts && react-scripts build",
+    "build-ol": "rm -rf build/ && ln -sf ol_map.ts src/map/map.ts && react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "favicon": "real-favicon generate faviconDescription.json faviconData.json favicon/"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not ie 11",
+      "not chrome < 51",
+      "not safari < 10"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
   "dependencies": {
     "@esri/arcgis-to-geojson-utils": "^1.3.0",
     "@material-ui/core": "^4.11.4",
@@ -41,32 +67,6 @@
     "typescript": "~4.5.4",
     "whatwg-fetch": "^3.6.2",
     "worker-loader": "^3.0.8"
-  },
-  "scripts": {
-    "start": "ln -sf mapbox_map.ts src/map/map.ts && react-scripts start",
-    "start-ol": "ln -sf ol_map.ts src/map/map.ts && react-scripts start",
-    "build": "rm -rf build/ && ln -sf mapbox_map.ts src/map/map.ts && react-scripts build",
-    "build-ol": "rm -rf build/ && ln -sf ol_map.ts src/map/map.ts && react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "favicon": "real-favicon generate faviconDescription.json faviconData.json favicon/"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not ie 11",
-      "not chrome < 51",
-      "not safari < 10"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
   },
   "devDependencies": {
     "@types/chart.js": "^2.9.32",
