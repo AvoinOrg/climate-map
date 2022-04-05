@@ -1,6 +1,6 @@
 import { Expression } from 'mapbox-gl'
 import { registerGroup } from '../layer_groups'
-import { addLayer, addSource, map } from '../map'
+import { addLayer, addSource, setLayoutProperty } from '../map'
 
 const URL_PREFIX = `https://server.avoin.org/data/map/fi-ffd`
 
@@ -164,21 +164,21 @@ if (process.env.NODE_ENV === 'development') {
   window.fi_ffd_show_country = (selectedIsos: string[]) => {
     allLayers.forEach(layerId => {
       const shown = selectedIsos.filter(iso => layerId.includes(iso)).length > 0
-      map.setLayoutProperty(layerId, 'visibility', shown ? 'visible' : 'none');
+      setLayoutProperty(layerId, 'visibility', shown ? 'visible' : 'none');
     })
   }
   // @ts-ignore
   window.fi_ffd_show_case_study_area = (selectedIsos: string[]) => {
     allLayers.forEach(layerId => {
       const shown = selectedIsos.filter(iso => layerId.includes(iso)).length > 0 && !countryLayers.includes(layerId)
-      map.setLayoutProperty(layerId, 'visibility', shown ? 'visible' : 'none');
+      setLayoutProperty(layerId, 'visibility', shown ? 'visible' : 'none');
     })
   }
   // @ts-ignore
   window.fi_ffd_show_country_only = (selectedIsos: string[]) => {
     allLayers.forEach(layerId => {
       const shown = selectedIsos.filter(iso => layerId.includes(iso)).length > 0 && !caseStudyAreas.includes(layerId)
-      map.setLayoutProperty(layerId, 'visibility', shown ? 'visible' : 'none');
+      setLayoutProperty(layerId, 'visibility', shown ? 'visible' : 'none');
     })
   }
 }

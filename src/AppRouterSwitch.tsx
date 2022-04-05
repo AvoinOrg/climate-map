@@ -12,19 +12,19 @@ import NavBar from "./components/NavBar";
 import MapButtons from "./components/MapButtons";
 
 import { URLLayerSyncContainer } from "./URLLayerSyncContainer";
-import ForestArvometsa from "./components/Sidebar/ForestArvometsa";
-import Omaihka from "./components/Sidebar/Omaihka";
-import FaoImages2021 from "./components/Sidebar/FaoImages2021";
-import KaribaForestCoverChanges from "./components/Sidebar/KaribaForestCoverChanges";
-import FFD from "./components/Sidebar/FFD";
+// import ForestArvometsa from "./components/Sidebar/ForestArvometsa";
+// import Omaihka from "./components/Sidebar/Omaihka";
+// import FaoImages2021 from "./components/Sidebar/FaoImages2021";
+// import KaribaForestCoverChanges from "./components/Sidebar/KaribaForestCoverChanges";
+// import FFD from "./components/Sidebar/FFD";
 import { MainMenu } from "./components/Sidebar/Sidebar";
 import OverlayMessages from "./components/OverlayMessages";
-import Ekofolio from "./components/Sidebar/Ekofolio";
+// import Ekofolio from "./components/Sidebar/Ekofolio";
 import UserModal from "./components/Profile/UserModal";
 import LoadingModal from "./components/LoadingModal";
 import { UserContext } from "./components/User";
 import { StateContext } from "./components/State";
-import ValioCarbonGrassFields from "./components/Sidebar/ValioCarbonGrassFields";
+// import ValioCarbonGrassFields from "./components/Sidebar/ValioCarbonGrassFields";
 
 const VerificationRouter = (props) => {
   const {
@@ -189,11 +189,11 @@ const LayerRouter = (props) => {
         <LoadingModal></LoadingModal>
       )}
       {routeState === "denied" && <MainMenu />}
-      {routeState === "allowed" && (
+      {/* {routeState === "allowed" && (
         <>
           {layer === "valio-carbon-grass-fields" && <ValioCarbonGrassFields />}
         </>
-      )}
+      )} */}
     </>
   );
 };
@@ -207,7 +207,7 @@ export default function AppRouterSwitch() {
       <URLLayerSyncContainer>
         <Sidebar>
           <Switch>
-            <Route path="/layers/fi-forest">
+            {/* <Route path="/layers/fi-forest">
               <ForestArvometsa />
             </Route>
             <Route path="/layers/fi-omaihka">
@@ -227,7 +227,7 @@ export default function AppRouterSwitch() {
             </Route>
             <Route path="/layers/ekofolio">
               <Ekofolio />
-            </Route>
+            </Route> */}
             <Route path="/layers/:layer">
               <LayerRouter />
             </Route>

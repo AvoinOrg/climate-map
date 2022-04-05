@@ -89,6 +89,7 @@ const ValioCarbonGrassFields = (props) => {
   useEffect(() => {
     LayerGroupState.enableOnlyOneGroup("valio-carbon-grass-fields");
 
+    //@ts-ignore
     map.on("click", "valio-carbon-grass-fields-pin", function (e) {
       const id = e.features[0].properties["TILATUNNUS"];
       setCurrentField("");

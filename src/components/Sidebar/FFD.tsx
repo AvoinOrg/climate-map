@@ -2,6 +2,7 @@ import { Container, Paper } from '@material-ui/core';
 import React, { useEffect } from 'react';
 import { Link,useRouteMatch} from "react-router-dom";
 
+// @ts-ignore
 import { flyTo } from 'src/map/map';
 import {ffdCaseStudyAreas} from 'src/map/layers/fi_ffd';
 

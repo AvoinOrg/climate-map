@@ -6,7 +6,7 @@ import './forests';
 import './fields';
 import './air_quality';
 import './private';
-import './personal';
+// import './personal';
 
 // Individual layer groups:
 import './buildings';
@@ -31,7 +31,7 @@ import './kariba_changes'
 
 import './ekofolio'
 
-import './fao_images_2021'
+// import './fao_images_2021'
 
 // Special:
 // import './dataset_query';

@@ -2,8 +2,6 @@
 scripts/**/scratch/
 scripts/**/tiles/
 
-#symlink now:
-src/map/map.ts
 
 dist/
 

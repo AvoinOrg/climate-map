@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useObservable } from 'micro-observables';
 
 import * as LayerGroupState from 'src/map/LayerGroupState';
+// @ts-ignore
 import { flyTo } from 'src/map/map';
 
 

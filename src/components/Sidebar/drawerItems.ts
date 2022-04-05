@@ -4,7 +4,7 @@ import BuildingsContent from "../Accordion/BuildingsContent";
 import SnowCoverLossContent from "../Accordion/SnowCoverLossContent";
 import ForestContent from "../Accordion/ForestContent";
 import AirQualityContent from "../Accordion/AirQualityContent";
-import UserContent from "../Accordion/UserContent";
+// import UserContent from "../Accordion/UserContent";
 import PrivateContent from "../Accordion/PrivateContent";
 
 export interface ContentEntity {
@@ -15,10 +15,10 @@ export interface ContentEntity {
 }
 
 const drawerItems = [
-  {
-    title: "Your data",
-    content: UserContent,
-  },
+  // {
+  //   title: "Your data",
+  //   content: UserContent,
+  // },
   {
     title: "Forest",
     content: ForestContent,

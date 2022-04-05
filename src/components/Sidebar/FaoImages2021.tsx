@@ -77,6 +77,7 @@ function FaoImages2021(props) {
   useEffect(() => {
     addFaoImages2021();
 
+    // @ts-ignore
     map.on("click", "fao-images-2021-pin", function (e) {
       const id = e.features[0].properties.id;
       setCurrentArea("");

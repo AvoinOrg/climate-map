@@ -13,7 +13,7 @@ import { AOAccordion } from "./AOAccordion";
 import { UserContext } from "../User";
 import { StateContext } from "../State";
 import { setFilter, addMapEventHandler, isSourceReady } from "../../map/map";
-import { removeMapEventHandler } from "src/map/mapbox_map";
+import { removeMapEventHandler } from "src/map/map";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
