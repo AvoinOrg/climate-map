@@ -4,7 +4,7 @@ import {
   genericPopupHandler,
   querySourceFeatures,
 } from "./map";
-import { getGeoJsonGeometryBounds, assert } from "./utils";
+import { getGeoJsonGeometryBounds, assert } from "../src/map/utils";
 import { Expression, MapboxGeoJSONFeature } from "mapbox-gl";
 
 export interface ILayerOption {

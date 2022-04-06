@@ -1,5 +1,5 @@
 // import './auth'
 // import './layers'
-// import '../../legacy/debug'
+import '../../legacy/debug'
 
 // export { default } from './MapComponent';

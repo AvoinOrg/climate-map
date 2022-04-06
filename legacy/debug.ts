@@ -1,19 +1,24 @@
-import { map } from '../../map/map'
-import * as LayerGroupState from '../../map/LayerGroupState'
+import { layerGroupDefinitions } from './layer_groups'
+import { originalLayerDefs, originalSourceDefs } from './utils';
 
-// These help in development and debugging:
-if (process.env.NODE_ENV !== 'production') {
-  // @ts-ignore
-  window.map = map
-  // @ts-ignore
-  window.LayerGroupState = LayerGroupState
+// TODO: export pre-multiplied alpha colors:
+// https://github.com/mapbox/mapbox-gl-native/issues/193#issuecomment-43077841
+// > A color component can be from 0 to N where N is the alpha component of the color.
+// > So a color like rgba(1, 1, 1, 0.5) turns into a premultiplied color of rgba(0.5, 0.5, 0.5, 0.5),
+// > i.e. N is 0.5 here because alpha is 0.5.
 
-  const devBanner = document.createElement('div')
-  devBanner.innerHTML = `
-  <h1 onclick="map.showTileBoundaries=!map.showTileBoundaries"
-  style="position:absolute; top:0;left:50vw; z-index:9999; color:red; cursor:pointer">
-    DEV MODE
-  </h1>
-  `
-  document.body.appendChild(devBanner)
+// @ts-ignore
+window.exportLayerGroup = groupName => {
+    const e = { "version": 8, "name": "export", sources: {}, layers: [] }
+    e.layers = layerGroupDefinitions[groupName]
+        .filter(x => typeof x === 'string')
+        .map(x => originalLayerDefs[x as any])
+        .filter(x => x.type !== 'symbol')
+        .filter(x => x.type !== 'raster')
+        ;
+    e.layers.forEach(({ source }) => {
+        e.sources[source] = originalSourceDefs[source];
+    });
+
+    console.log(JSON.stringify(e));
 }
