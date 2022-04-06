@@ -1,12 +1,12 @@
 import { map } from '../../map/map'
-import * as LayerGroupState from '../../map/LayerGroupState';
+import * as LayerGroupState from '../../map/LayerGroupState'
 
 // These help in development and debugging:
 if (process.env.NODE_ENV !== 'production') {
   // @ts-ignore
-  window.map = map;
+  window.map = map
   // @ts-ignore
-  window.LayerGroupState = LayerGroupState;
+  window.LayerGroupState = LayerGroupState
 
   const devBanner = document.createElement('div')
   devBanner.innerHTML = `
