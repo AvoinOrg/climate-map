@@ -12,7 +12,7 @@ import theme from './ui/theme'
 // import * as serviceWorker from "./serviceWorker";
 import { UserProvider } from './components/User'
 import { StateProvider } from './components/State'
-import { MapProvider } from './components/Map/MapContext'
+import { MapProvider } from './components/Map/Map'
 
 ReactDOM.render(
   <ThemeProvider theme={theme}>
