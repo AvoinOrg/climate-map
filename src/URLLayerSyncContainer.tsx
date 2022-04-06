@@ -1,6 +1,6 @@
-import { useHistory } from 'react-router-dom';
-import { useEffect } from 'react';
-import * as LayerGroupState from 'src/map/LayerGroupState';
+import { useHistory } from 'react-router-dom'
+import { useEffect } from 'react'
+import * as LayerGroupState from 'src/map/LayerGroupState'
 
 // Some URLs are 1:1 associated with certain layer groups:
 const urlLayerMapping = {
@@ -12,9 +12,9 @@ const urlLayerMapping = {
   '/layers/fao-images-2021': 'fao-images-2021',
 }
 
-let activeUrlLayerGroup = null
+let activeUrlLayerGroup: any = null
 
-const historyListener = (location, action) => {
+const historyListener = (location: any, action: any) => {
   console.debug(location, action)
   // TODO: add more sophisticated routing eventually?
   for (const [url, urlLayerGroup] of Object.entries(urlLayerMapping)) {
@@ -28,7 +28,7 @@ const historyListener = (location, action) => {
   }
 }
 
-export const URLLayerSyncContainer = ({children}) => {
+export const URLLayerSyncContainer = ({ children }: any) => {
   const history = useHistory()
 
   useEffect(() => {

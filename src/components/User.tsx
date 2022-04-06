@@ -1,432 +1,404 @@
-import React, { useEffect, useState } from "react";
-import axios, { AxiosRequestConfig } from "axios";
+import React, { useEffect, useState } from 'react'
+import axios, { AxiosRequestConfig } from 'axios'
 
-import {
-  enablePersonalDataset,
-  disablePersonalDataset,
-} from "../map/layers/personal/common";
-import { StateContext } from "./State";
-import { VerificationStatus } from "./Utils/types";
+import { enablePersonalDataset, disablePersonalDataset } from '../map/layers/personal/common'
+import { StateContext } from './State'
+import { VerificationStatus } from './Utils/types'
 // const claimHashes = {
 //     valio: '75e3e7c68bffb0efc8f893345bfe161f77175b8f9ce31840db93ace7fa46f3db',
 // }
 
-const apiUrl = process.env.REACT_APP_API_URL;
+const apiUrl = process.env.REACT_APP_API_URL
 
-const defaultUserLayers = { "vipu": false };
-const defaultPrivateLayers = { "valio-carbon-grass-fields": false };
+const defaultUserLayers = { vipu: false }
+const defaultPrivateLayers = { 'valio-carbon-grass-fields': false }
 
-export const UserContext = React.createContext({});
+export const UserContext = React.createContext({})
 
 export const UserProvider = (props) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userProfile, setUserProfile] = useState(null);
-  const [userIntegrations, setUserIntegrations] = useState(null);
-  const [userLayers, setUserLayers] = useState(defaultUserLayers);
-  const [privateLayers, setPrivateLayers] = useState(defaultPrivateLayers);
-  const [verificationTimeout, setVerificationTimeout] = useState(0);
-  const [verificationStatus, setVerificationStatus] =
-    useState<VerificationStatus>("unverified");
-  const [hasInitialized, setHasInitialized] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [userProfile, setUserProfile] = useState(null)
+  const [userIntegrations, setUserIntegrations] = useState(null)
+  const [userLayers, setUserLayers] = useState(defaultUserLayers)
+  const [privateLayers, setPrivateLayers] = useState(defaultPrivateLayers)
+  const [verificationTimeout, setVerificationTimeout] = useState(0)
+  const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>('unverified')
+  const [hasInitialized, setHasInitialized] = useState(false)
 
-  const { setSignupFunnelStep }: any = React.useContext(StateContext);
+  const { setSignupFunnelStep }: any = React.useContext(StateContext)
 
   const storeToken = (token, expires) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("expires", expires);
-  };
+    localStorage.setItem('token', token)
+    localStorage.setItem('expires', expires)
+  }
 
   const logout = () => {
-    localStorage.getItem("token") && localStorage.removeItem("token");
-    localStorage.getItem("expires") && localStorage.removeItem("expires");
+    localStorage.getItem('token') && localStorage.removeItem('token')
+    localStorage.getItem('expires') && localStorage.removeItem('expires')
 
     for (const key in userLayers) {
       if (userLayers[key]) {
-        disablePersonalDataset(key);
+        disablePersonalDataset(key)
       }
     }
 
     for (const key in privateLayers) {
       if (privateLayers[key]) {
-        disablePersonalDataset(key);
+        disablePersonalDataset(key)
       }
     }
 
-    setUserLayers(defaultUserLayers);
-    setPrivateLayers(defaultPrivateLayers);
+    setUserLayers(defaultUserLayers)
+    setPrivateLayers(defaultPrivateLayers)
 
-    setIsLoggedIn(false);
-    setUserIntegrations(null);
-    setUserProfile(null);
-    setVerificationStatus("unverified");
-    window.location.reload();
-  };
+    setIsLoggedIn(false)
+    setUserIntegrations(null)
+    setUserProfile(null)
+    setVerificationStatus('unverified')
+    window.location.reload()
+  }
 
   const startVerificationTimeout = (time: number) => {
-    setVerificationTimeout(time);
+    setVerificationTimeout(time)
 
     setTimeout(() => {
       if (time > 0) {
-        startVerificationTimeout(time - 1);
+        startVerificationTimeout(time - 1)
       }
-    }, 1000);
-  };
+    }, 1000)
+  }
 
   const checkAuth = () => {
-    if (localStorage.getItem("token") && localStorage.getItem("expires")) {
-      if (Date.now() < parseInt(localStorage.getItem("expires"))) {
-        !isLoggedIn && setIsLoggedIn(true);
-        return true;
+    if (localStorage.getItem('token') && localStorage.getItem('expires')) {
+      if (Date.now() < parseInt(localStorage.getItem('expires'))) {
+        !isLoggedIn && setIsLoggedIn(true)
+        return true
       }
     }
-    isLoggedIn && logout();
-    !hasInitialized && setHasInitialized(true);
+    isLoggedIn && logout()
+    !hasInitialized && setHasInitialized(true)
 
-    return false;
-  };
+    return false
+  }
 
   const login = async (values) => {
     try {
-      const res = await axios.post(apiUrl + "/login", values);
+      const res = await axios.post(apiUrl + '/login', values)
       if (res.status === 200) {
-        storeToken(res.data.token, res.data.expires);
-        return checkAuth();
+        storeToken(res.data.token, res.data.expires)
+        return checkAuth()
       }
     } catch (error: any) {
-      throw error.response;
+      throw error.response
     }
-  };
+  }
 
   const signup = async (values) => {
     try {
-      const res = await axios.post(apiUrl + "/signup", values);
+      const res = await axios.post(apiUrl + '/signup', values)
 
       if (res.status === 200) {
-        storeToken(res.data.token, res.data.expires);
+        storeToken(res.data.token, res.data.expires)
 
-        return checkAuth();
+        return checkAuth()
       }
     } catch (error: any) {
-      throw error.response;
+      throw error.response
     }
-  };
+  }
 
   const fetchProfile = async () => {
     try {
-      const res = await axios.get(apiUrl + "/user/profile", {
-        params: { token: localStorage.getItem("token") },
-      });
+      const res = await axios.get(apiUrl + '/user/profile', {
+        params: { token: localStorage.getItem('token') },
+      })
 
       if (res.status === 200) {
-        setUserProfile(res.data);
-        return res.data;
+        setUserProfile(res.data)
+        return res.data
       }
     } catch (error: any) {
       if (error.response.status && error.response.status === 404) {
-        logout();
+        logout()
       }
-      throw error.response;
+      throw error.response
     }
-  };
+  }
 
   const updateProfile = async (values) => {
     try {
       const config: AxiosRequestConfig = {
-        method: "put",
-        url: apiUrl + "/user/profile",
+        method: 'put',
+        url: apiUrl + '/user/profile',
         params: {
-          token: localStorage.getItem("token"),
+          token: localStorage.getItem('token'),
         },
         data: values,
-      };
-      const res = await axios(config);
+      }
+      const res = await axios(config)
 
       if (res.status === 200) {
-        setUserProfile(res.data);
-        return res.data;
+        setUserProfile(res.data)
+        return res.data
       }
     } catch (error: any) {
       if (error.response.status && error.response.status === 404) {
-        logout();
+        logout()
       }
-      throw error.response;
+      throw error.response
     }
-  };
+  }
 
   const sendEmailVerification = async () => {
     try {
       const config: AxiosRequestConfig = {
-        method: "post",
-        url: apiUrl + "/user/verify",
+        method: 'post',
+        url: apiUrl + '/user/verify',
         params: {
-          token: localStorage.getItem("token"),
+          token: localStorage.getItem('token'),
         },
-      };
-      const res = await axios(config);
+      }
+      const res = await axios(config)
 
       if (res.status === 200) {
-        startVerificationTimeout(30);
-        setVerificationStatus("emailSent");
+        startVerificationTimeout(30)
+        setVerificationStatus('emailSent')
       }
 
-      return res.status;
+      return res.status
     } catch (error: any) {
-      setVerificationTimeout(0);
-      setVerificationStatus("emailErrored");
-      throw error.response;
+      setVerificationTimeout(0)
+      setVerificationStatus('emailErrored')
+      throw error.response
     }
-  };
+  }
 
   const verifyEmail = async (token) => {
     try {
       const config: AxiosRequestConfig = {
-        method: "post",
-        url: apiUrl + "/verify",
+        method: 'post',
+        url: apiUrl + '/verify',
         params: {
           token,
         },
-      };
-      const res = await axios(config);
+      }
+      const res = await axios(config)
 
       if (res.status === 200) {
-        setVerificationStatus("verified");
+        setVerificationStatus('verified')
       }
 
-      setVerificationStatus("errored");
-      return res.status;
+      setVerificationStatus('errored')
+      return res.status
     } catch (error: any) {
       if (error.response.status && error.response.status === 409) {
-        setVerificationStatus("verified");
+        setVerificationStatus('verified')
       } else {
-        setVerificationStatus("errored");
+        setVerificationStatus('errored')
       }
-      throw error.response;
+      throw error.response
     }
-  };
+  }
 
   const fetchIntegrations = async () => {
     try {
-      const res = await axios.get(apiUrl + "/user/integration", {
-        params: { token: localStorage.getItem("token") },
-      });
+      const res = await axios.get(apiUrl + '/user/integration', {
+        params: { token: localStorage.getItem('token') },
+      })
 
       if (res.status === 200) {
-        setUserIntegrations(res.data);
-        return res.data;
+        setUserIntegrations(res.data)
+        return res.data
       }
     } catch (error: any) {
       if (error.response.status && error.response.status === 404) {
-        logout();
+        logout()
       }
-      throw error.response;
+      throw error.response
     }
-  };
+  }
 
   const createIntegration = async (integrationType, values) => {
     try {
       const config: AxiosRequestConfig = {
-        method: "post",
-        url: apiUrl + "/user/integration/" + integrationType,
+        method: 'post',
+        url: apiUrl + '/user/integration/' + integrationType,
         params: {
-          token: localStorage.getItem("token"),
+          token: localStorage.getItem('token'),
         },
         data: values,
-      };
+      }
 
-      const res = await axios(config);
+      const res = await axios(config)
 
       if (res.status === 200) {
-        const newUserIntegrations = { ...userIntegrations, ...res.data };
-        setUserIntegrations(newUserIntegrations);
-        return res.data;
+        const newUserIntegrations = { ...userIntegrations, ...res.data }
+        setUserIntegrations(newUserIntegrations)
+        return res.data
       }
     } catch (error: any) {
       if (error.response.status && error.response.status === 404) {
-        logout();
+        logout()
       }
       if (error.response.status === 409) {
-        const data = await fetchIntegrations();
-        return data.integrationType;
+        const data = await fetchIntegrations()
+        return data.integrationType
       }
-      throw error.response;
+      throw error.response
     }
-  };
+  }
 
   const updateIntegration = async (integrationType, values) => {
     try {
       const config: AxiosRequestConfig = {
-        method: "put",
-        url: apiUrl + "/user/integration/" + integrationType,
+        method: 'put',
+        url: apiUrl + '/user/integration/' + integrationType,
         params: {
-          token: localStorage.getItem("token"),
+          token: localStorage.getItem('token'),
         },
         data: values,
-      };
+      }
 
-      const res = await axios(config);
+      const res = await axios(config)
 
       if (res.status === 200) {
-        const newUserIntegrations = { ...userIntegrations, ...res.data };
-        setUserIntegrations(newUserIntegrations);
-        return res.data;
+        const newUserIntegrations = { ...userIntegrations, ...res.data }
+        setUserIntegrations(newUserIntegrations)
+        return res.data
       }
     } catch (error: any) {
-      throw error.response;
+      throw error.response
     }
-  };
+  }
 
   const deleteIntegration = async (integrationType) => {
     try {
       const config: AxiosRequestConfig = {
-        method: "delete",
-        url: apiUrl + "/user/integration/" + integrationType,
+        method: 'delete',
+        url: apiUrl + '/user/integration/' + integrationType,
         params: {
-          token: localStorage.getItem("token"),
+          token: localStorage.getItem('token'),
         },
-      };
+      }
 
-      const res = await axios(config);
+      const res = await axios(config)
 
       if (res.status === 200) {
-        const newUserIntegrations = { ...userIntegrations };
-        delete newUserIntegrations[integrationType];
-        setUserIntegrations(newUserIntegrations);
-        return newUserIntegrations;
+        const newUserIntegrations = { ...userIntegrations }
+        delete newUserIntegrations[integrationType]
+        setUserIntegrations(newUserIntegrations)
+        return newUserIntegrations
       }
     } catch (error: any) {
-      throw error.response;
+      throw error.response
     }
-  };
+  }
 
   const initDataAuth = async (integrationType) => {
     try {
       const config: AxiosRequestConfig = {
-        method: "post",
-        url: apiUrl + "/user/integration/" + integrationType + "/auth",
+        method: 'post',
+        url: apiUrl + '/user/integration/' + integrationType + '/auth',
         params: {
-          token: localStorage.getItem("token"),
+          token: localStorage.getItem('token'),
         },
-      };
+      }
 
-      const res = await axios(config);
+      const res = await axios(config)
 
       if (res.status === 200) {
-        return res.data.authLink;
+        return res.data.authLink
       }
     } catch (error: any) {
-      throw error.response;
+      throw error.response
     }
-  };
+  }
 
   const fetchDataAuthStatus = async (integrationType) => {
     try {
-      const res = await axios.get(
-        apiUrl + "/user/integration/" + integrationType + "/auth",
-        {
-          params: { token: localStorage.getItem("token") },
-        }
-      );
+      const res = await axios.get(apiUrl + '/user/integration/' + integrationType + '/auth', {
+        params: { token: localStorage.getItem('token') },
+      })
 
       if (res.status === 200) {
-        return res.data.authStatus;
+        return res.data.authStatus
       }
     } catch (error: any) {
-      throw error.response;
+      throw error.response
     }
-  };
+  }
 
   const fetchSource = async (sourceName) => {
     try {
-      const res = await axios.get(apiUrl + "/user/data", {
+      const res = await axios.get(apiUrl + '/user/data', {
         params: {
           file: sourceName,
-          token: localStorage.getItem("token"),
+          token: localStorage.getItem('token'),
         },
-      });
+      })
 
       if (res.status === 200) {
-        return res.data;
+        return res.data
       }
     } catch (error: any) {
-      throw error.response;
+      throw error.response
     }
-  };
+  }
 
   useEffect(() => {
-    if (
-      userProfile &&
-      isLoggedIn &&
-      userIntegrations !== null &&
-      !hasInitialized
-    ) {
-      setHasInitialized(true);
-      setSignupFunnelStep(userProfile.funnelState);
+    if (userProfile && isLoggedIn && userIntegrations !== null && !hasInitialized) {
+      setHasInitialized(true)
+      setSignupFunnelStep(userProfile.funnelState)
     }
-    if (
-      userProfile &&
-      userProfile.emailVerified === 1 &&
-      verificationStatus !== "verified"
-    ) {
-      setVerificationStatus("verified");
+    if (userProfile && userProfile.emailVerified === 1 && verificationStatus !== 'verified') {
+      setVerificationStatus('verified')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userProfile, userIntegrations]);
+  }, [userProfile, userIntegrations])
 
   useEffect(() => {
     if (isLoggedIn) {
-      fetchProfile();
-      fetchIntegrations();
+      fetchProfile()
+      fetchIntegrations()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn]);
+  }, [isLoggedIn])
 
   useEffect(() => {
-    checkAuth();
+    checkAuth()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [])
 
   useEffect(() => {
     if (userIntegrations) {
-      const newUserLayers = { ...userLayers };
-      const newPrivateLayers = { ...privateLayers };
+      const newUserLayers = { ...userLayers }
+      const newPrivateLayers = { ...privateLayers }
 
       for (const integration in userIntegrations) {
         if (Object.keys(defaultUserLayers).includes(integration)) {
-          if (
-            userIntegrations[integration].integrationStatus === "integrated" &&
-            !userLayers[integration]
-          ) {
-            enablePersonalDataset(integration, localStorage.getItem("token"));
-            newUserLayers[integration] = true;
-          } else if (
-            userIntegrations[integration].integrationStatus !== "integrated" &&
-            userLayers[integration]
-          ) {
-            disablePersonalDataset(integration);
-            newUserLayers[integration] = false;
+          if (userIntegrations[integration].integrationStatus === 'integrated' && !userLayers[integration]) {
+            enablePersonalDataset(integration, localStorage.getItem('token'))
+            newUserLayers[integration] = true
+          } else if (userIntegrations[integration].integrationStatus !== 'integrated' && userLayers[integration]) {
+            disablePersonalDataset(integration)
+            newUserLayers[integration] = false
           }
         } else if (Object.keys(defaultPrivateLayers).includes(integration)) {
-          if (
-            userIntegrations[integration].integrationStatus === "integrated" &&
-            !privateLayers[integration]
-          ) {
-            enablePersonalDataset(integration, localStorage.getItem("token"));
-            newPrivateLayers[integration] = true;
-          } else if (
-            userIntegrations[integration].integrationStatus !== "integrated" &&
-            privateLayers[integration]
-          ) {
-            disablePersonalDataset(integration);
-            newPrivateLayers[integration] = false;
+          if (userIntegrations[integration].integrationStatus === 'integrated' && !privateLayers[integration]) {
+            enablePersonalDataset(integration, localStorage.getItem('token'))
+            newPrivateLayers[integration] = true
+          } else if (userIntegrations[integration].integrationStatus !== 'integrated' && privateLayers[integration]) {
+            disablePersonalDataset(integration)
+            newPrivateLayers[integration] = false
           }
         }
       }
 
-      setUserLayers(newUserLayers);
-      setPrivateLayers(newPrivateLayers);
+      setUserLayers(newUserLayers)
+      setPrivateLayers(newPrivateLayers)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userIntegrations]);
+  }, [userIntegrations])
 
   // useEffect(() => {
   //     getUser(props.userRef);
@@ -460,12 +432,10 @@ export const UserProvider = (props) => {
     verifyEmail,
     hasInitialized,
     verificationStatus,
-  };
+  }
 
-  return (
-    <UserContext.Provider value={values}>{props.children}</UserContext.Provider>
-  );
-};
+  return <UserContext.Provider value={values}>{props.children}</UserContext.Provider>
+}
 
 // const initAuth = function (claims = []) {
 //     let idToken;
