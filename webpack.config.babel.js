@@ -10,6 +10,7 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { GitRevisionPlugin } from 'git-revision-webpack-plugin'
 import { CleanWebpackPlugin } from 'clean-webpack-plugin'
+import Dotenv from 'dotenv-webpack'
 
 const buildReport = process.env.BUILD_REPORT === 'true'
 
@@ -34,11 +35,9 @@ const plugins = [
     __APPLICATION_VERSION__: gitRevisionPlugin
       ? JSON.stringify(gitRevisionPlugin.version())
       : JSON.stringify(process.env.APP_VERSION),
-    __API_URL__: JSON.stringify(process.env.API_URL),
-    __MAPBOX_ACCESS_TOKEN__: JSON.stringify(process.env.MAPBOX_ACCESS_TOKEN),
-    __TERRAMONITOR_KEY__: JSON.stringify(process.env.TERRAMONITOR_KEY),
   }),
   new CleanWebpackPlugin(),
+  new Dotenv(),
 ]
 
 if (isDevelopment) {
