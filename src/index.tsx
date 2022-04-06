@@ -12,15 +12,18 @@ import theme from './ui/theme'
 // import * as serviceWorker from "./serviceWorker";
 import { UserProvider } from './components/User'
 import { StateProvider } from './components/State'
+import { MapProvider } from './components/Map/MapContext'
 
 ReactDOM.render(
   <ThemeProvider theme={theme}>
     <StateProvider>
-      <UserProvider>
-        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-        <CssBaseline />
-        <AppRouterSwitch />
-      </UserProvider>
+      <MapProvider zoom={12} center={[60, 50]}>
+        <UserProvider>
+          {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+          <CssBaseline />
+          <AppRouterSwitch />
+        </UserProvider>
+      </MapProvider>
     </StateProvider>
   </ThemeProvider>,
   document.querySelector('#root')
