@@ -1,6 +1,6 @@
 {
   "allowSyntheticDefaults": true,
-  "include": ["src"],
+  "include": ["./src/**/*"],
 
   "compilerOptions": {
     "allowJs": true,
@@ -13,12 +13,13 @@
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": "./build/",
+    "outDir": "build/",
     "paths": {
-      "@components/*": [".src/components/*"],
-      "@utils/*": [".src/utils/*"],
-      "@store/*": [".src/store/*"],
-      "@common/*": [".src/common/*"],
+      "Root/*": ["src/*"],
+      "Components/*": ["src/components/*"],
+      "Utils/*": ["./src/utils/*"],
+      "Store/*": ["./src/store/*"],
+      "Types/*": ["./src/types/*"]
     },
     //    "strict": true,
     "target": "ESNext"

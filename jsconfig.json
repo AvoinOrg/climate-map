@@ -4,11 +4,11 @@
     "target": "es2021",
     "baseUrl": "./",
     "paths": {
-      "@components/*": [".src/components/*"],
-      "@utils/*": [".src/utils/*"],
-      "@store/*": [".src/store/*"],
-      "@common/*": [".src/common/*"],
+      "Components/*": ["src/components/*"],
+      "Utils/*": ["src/utils/*"],
+      "Store/*": ["src/store/*"],
+      "Types/*": ["src/types/*"]
     }
   },
-  "include": ["src"]
+  "include": ["./src/**/*"]
 }

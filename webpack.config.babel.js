@@ -12,6 +12,7 @@ import { GitRevisionPlugin } from 'git-revision-webpack-plugin'
 import { CleanWebpackPlugin } from 'clean-webpack-plugin'
 import ESLintPlugin from 'eslint-webpack-plugin'
 import Dotenv from 'dotenv-webpack'
+import { PartyModeSharp } from '@material-ui/icons'
 
 const buildReport = process.env.BUILD_REPORT === 'true'
 
@@ -51,6 +52,8 @@ if (buildReport) {
   plugins.push(new BundleAnalyzerPlugin())
 }
 
+console.log(path.resolve(__dirname, 'src/components/'))
+
 const appConfig = {
   mode: config.mode,
   devtool: 'source-map',
@@ -59,10 +62,10 @@ const appConfig = {
     extensions: ['.webpack-loader.js', '.web-loader.js', '.loader.js', '.js', '.jsx', '.ts', '.tsx'],
     modules: ['./node_modules', '.'],
     alias: {
-      '@components/*': path.resolve(__dirname, 'src/components/'),
-      '@utils/*': path.resolve(__dirname, 'src/utils/'),
-      '@store/*': path.resolve(__dirname, 'src/store/'),
-      '@common/*': path.resolve(__dirname, 'src/common/'),
+      Components: path.resolve(__dirname, 'src/components/'),
+      Utils: path.resolve(__dirname, 'src/utils/'),
+      Store: path.resolve(__dirname, 'src/store/'),
+      Types: path.resolve(__dirname, 'src/types/'),
     },
   },
   output: {
