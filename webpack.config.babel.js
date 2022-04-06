@@ -10,6 +10,7 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { GitRevisionPlugin } from 'git-revision-webpack-plugin'
 import { CleanWebpackPlugin } from 'clean-webpack-plugin'
+import ESLintPlugin from 'eslint-webpack-plugin'
 import Dotenv from 'dotenv-webpack'
 
 const buildReport = process.env.BUILD_REPORT === 'true'
@@ -38,6 +39,7 @@ const plugins = [
   }),
   new CleanWebpackPlugin(),
   new Dotenv(),
+  new ESLintPlugin(),
 ]
 
 if (isDevelopment) {
