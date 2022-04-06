@@ -1,10 +1,10 @@
 import ReactGA from 'react-ga'
 
 const isDev = process.env.NODE_ENV !== 'production'
-const enabled = process.env.REACT_APP_ANALYTICS_ID && !isDev
+const enabled = process.env.ANALYTICS_ID && !isDev
 
 if (enabled) {
-  ReactGA.initialize(process.env.REACT_APP_ANALYTICS_ID)
+  ReactGA.initialize(process.env.ANALYTICS_ID)
 }
 
 const state = {lastLayer: ''}

@@ -8,7 +8,7 @@ import { VerificationStatus } from './Utils/types'
 //     valio: '75e3e7c68bffb0efc8f893345bfe161f77175b8f9ce31840db93ace7fa46f3db',
 // }
 
-const apiUrl = process.env.REACT_APP_API_URL
+const apiUrl = process.env.API_URL
 
 const defaultUserLayers = { vipu: false }
 const defaultPrivateLayers = { 'valio-carbon-grass-fields': false }
@@ -519,8 +519,8 @@ export const UserProvider = (props) => {
 
 //     // @ts-ignore External dependency
 //     const webAuth = new auth0.WebAuth({
-//         domain: process.env.REACT_APP_AUTH0_DOMAIN,
-//         clientID: process.env.REACT_APP_AUTH0_CLIENT_ID,
+//         domain: process.env.AUTH0_DOMAIN,
+//         clientID: process.env.AUTH0_CLIENT_ID,
 //         responseType: 'token id_token',
 //         scope: 'openid email',
 //         redirectUri: window.location.href

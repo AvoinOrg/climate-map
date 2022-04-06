@@ -15,7 +15,7 @@ const waqiAqis = [
 const waqiAqi = 'usepa-aqi';
 addSource('waqi', {
     "type": 'raster',
-    "tiles": [`https://tiles.waqi.info/tiles/${waqiAqi}/{z}/{x}/{y}.png?token=${process.env.REACT_APP_WAQI_TOKEN}`],
+    "tiles": [`https://tiles.waqi.info/tiles/${waqiAqi}/{z}/{x}/{y}.png?token=${process.env.WAQI_TOKEN}`],
     attribution: '<a href="https://waqi.info/">© The World Air Quality Project</a>',
 });
 addLayer({
