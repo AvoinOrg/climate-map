@@ -15,7 +15,7 @@ const buildReport = process.env.BUILD_REPORT === 'true'
 
 const config = {
   mode: process.env.NODE_ENV || 'development',
-  path: path.resolve(__dirname, 'src'),
+  path: path.resolve(__dirname, 'build'),
 }
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -53,15 +53,15 @@ if (buildReport) {
 const appConfig = {
   mode: config.mode,
   devtool: 'source-map',
-  entry: config.path,
+  entry: ['./src'],
   resolve: {
     extensions: ['.webpack-loader.js', '.web-loader.js', '.loader.js', '.js', '.jsx', '.ts', '.tsx'],
     modules: ['./node_modules', '.'],
     alias: {
-      '@components/*': path.resolve(config.path, 'components/'),
-      '@utils/*': path.resolve(config.path, 'utils/'),
-      '@store/*': path.resolve(config.path, 'store/'),
-      '@common/*': path.resolve(config.path, 'common/'),
+      '@components/*': path.resolve(__dirname, 'src/components/'),
+      '@utils/*': path.resolve(__dirname, 'src/utils/'),
+      '@store/*': path.resolve(__dirname, 'src/store/'),
+      '@common/*': path.resolve(__dirname, 'src/common/'),
     },
   },
   output: {
