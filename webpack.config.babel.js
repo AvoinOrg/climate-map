@@ -66,7 +66,6 @@ const appConfig = {
   output: {
     filename: 'js/bundle-[fullhash].js',
     path: config.path,
-    publicPath: '/',
   },
   devServer: {
     hot: true,
