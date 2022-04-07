@@ -1,7 +1,7 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import CssBaseline from '@mui/material/CssBaseline'
-import { ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles';
+import { ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles'
 
 import './index.css'
 import AppRouterSwitch from './AppRouterSwitch'
@@ -14,14 +14,15 @@ import { UserProvider } from './components/User'
 import { StateProvider } from './components/State'
 import { MapProvider } from './components/Map/Map'
 
-
 declare module '@mui/styles/defaultTheme' {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface DefaultTheme extends Theme {}
 }
 
+const container = document.getElementById('root')
+const root = createRoot(container)
 
-ReactDOM.render(
+root.render(
   <StyledEngineProvider injectFirst>
     <ThemeProvider theme={theme}>
       <StateProvider>
@@ -34,8 +35,7 @@ ReactDOM.render(
         </MapProvider>
       </StateProvider>
     </ThemeProvider>
-  </StyledEngineProvider>,
-  document.querySelector('#root')
+  </StyledEngineProvider>
 )
 
 // If you want your app to work offline and load faster, you can change
