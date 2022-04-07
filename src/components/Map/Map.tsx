@@ -4,7 +4,10 @@ import Box from '@mui/material/Box'
 import { fromLonLat } from 'ol/proj'
 import { Map, View } from 'ol'
 import TileLayer from 'ol/layer/Tile'
+import VectorLayer from 'ol/layer/Vector'
+import VectorSource from 'ol/source/Vector'
 import OSM, { ATTRIBUTION } from 'ol/source/OSM'
+import { Attribution, ScaleLine, defaults as defaultControls } from 'ol/control'
 import olms from 'ol-mapbox-style'
 
 interface Props {
@@ -36,6 +39,10 @@ export const MapProvider = ({ children }: Props) => {
   const [layerGroups, setLayerGroups] = useState<any[]>([])
   const mapRef = useRef()
 
+  const attribution = new Attribution({
+    collapsible: false,
+  })
+
   useEffect(() => {
     const options = {
       view: new View({ zoom: 5, center: fromLonLat([15, 62]) }),
@@ -43,9 +50,16 @@ export const MapProvider = ({ children }: Props) => {
         new TileLayer({
           source: new OSM(),
         }),
+        new VectorLayer({
+          source: new VectorSource({
+            attributions: '© Powered by <a href="https://www.netlify.com/" target="_blank">Netlify</a>',
+          }),
+        }),
       ],
+      controls: defaultControls({ attribution: false }).extend([attribution, new ScaleLine()]),
       overlays: [] as any[],
     }
+    console.log(attribution.getProperties())
     const mapObject = new Map(options)
 
     mapObject.setTarget(mapRef.current)

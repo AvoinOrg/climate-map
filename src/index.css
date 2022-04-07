@@ -23,3 +23,10 @@ li {
 input::placeholder {
   font-family: 'Raleway';
 }
+
+.ol-scale-line {
+  right: 8px;
+  left: auto !important;
+  bottom: 26px !important;
+  z-index: 100;
+}
