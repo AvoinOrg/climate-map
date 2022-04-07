@@ -1,7 +1,6 @@
 import { observable, useObservable } from 'micro-observables'
 import React, { useRef, useEffect } from 'react'
 import MapContext from 'Components/Map'
-import * as LayerGroupState from 'src/map/LayerGroupState'
 
 const DEFAULT_PLACEHOLDER = 'Look up location'
 
@@ -13,9 +12,8 @@ const searchPlaceholder = observable<Placeholder>(nullPlaceholder)
 export const setSearchPlaceholder = (x: Placeholder) => searchPlaceholder.set(x)
 
 export const NavBarSearch: React.FC = () => {
-  const { map, getGeocoder } = React.useContext(MapContext)
+  const { map, getGeocoder, activeLayers } = React.useContext(MapContext)
   const { placeholder, layer } = useObservable(searchPlaceholder.readOnly())
-  const activeLayers = useObservable(LayerGroupState.layerGroups)
   const isActive = activeLayers.filter((x) => x.name === layer).length > 0
 
   const geocoderSearchRef = useRef(null)
