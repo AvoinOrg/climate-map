@@ -5,7 +5,7 @@ import Sidebar from './components/Sidebar'
 import NavBar from './components/NavBar'
 import MapButtons from './components/MapButtons'
 
-import { URLLayerSyncContainer } from './URLLayerSyncContainer'
+// import { URLLayerSyncContainer } from './URLLayerSyncContainer'
 // import ForestArvometsa from "./components/Sidebar/ForestArvometsa";
 // import Omaihka from "./components/Sidebar/Omaihka";
 // import FaoImages2021 from "./components/Sidebar/FaoImages2021";
@@ -159,10 +159,10 @@ export default function AppRouterSwitch() {
       <MapButtons />
       <NavBar />
       <OverlayMessages />
-      <URLLayerSyncContainer>
-        <Sidebar>
-          <Switch>
-            {/* <Route path="/layers/fi-forest">
+      {/* <URLLayerSyncContainer> */}
+      <Sidebar>
+        <Switch>
+          {/* <Route path="/layers/fi-forest">
               <ForestArvometsa />
             </Route>
             <Route path="/layers/fi-omaihka">
@@ -183,18 +183,18 @@ export default function AppRouterSwitch() {
             <Route path="/layers/ekofolio">
               <Ekofolio />
             </Route> */}
-            <Route path="/layers/:layer">
-              <LayerRouter />
-            </Route>
-            <Route path="/verify/:token">
-              <VerificationRouter />
-            </Route>
-            <Route path="/">
-              <MainMenu />
-            </Route>
-          </Switch>
-        </Sidebar>
-      </URLLayerSyncContainer>
+          <Route path="/layers/:layer">
+            <LayerRouter />
+          </Route>
+          <Route path="/verify/:token">
+            <VerificationRouter />
+          </Route>
+          <Route path="/">
+            <MainMenu />
+          </Route>
+        </Switch>
+      </Sidebar>
+      {/* </URLLayerSyncContainer> */}
       <UserModal />
     </Router>
   )
