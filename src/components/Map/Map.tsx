@@ -1,5 +1,5 @@
 import 'ol/ol.css'
-import React, { useContext, createContext, useState, useRef, useEffect } from 'react'
+import React, { createContext, useState, useRef, useEffect } from 'react'
 import Box from '@mui/material/Box'
 import { Map, View } from 'ol'
 import olms from 'ol-mapbox-style'
