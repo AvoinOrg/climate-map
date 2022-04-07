@@ -17,12 +17,16 @@ interface IMapContext {
   mapRelocate?: () => void
   mapZoomIn?: () => void
   mapZoomOut?: () => void
+  activeLayers?: any[]
+  layerGroups?: any[]
 }
 
 const MapContext = createContext<IMapContext>({})
 
 export const MapProvider = ({ children, zoom, center }: Props) => {
   const [map, setMap] = useState<Map>(null)
+  const [activeLayers, setActiveLayers] = useState<any[]>([])
+  const [layerGroups, setLayerGroups] = useState<any[]>([])
   const mapRef = useRef()
 
   useEffect(() => {
@@ -58,6 +62,14 @@ export const MapProvider = ({ children, zoom, center }: Props) => {
   const mapZoomIn = () => {}
   const mapZoomOut = () => {}
 
+  // use REDUX for these?
+  const enableGroup = () => {}
+  const disableGroup = () => {}
+  const eetGroupState = () => {}
+  const toggleGroup = () => {}
+  const enableOnlyOneGroup = () => {}
+  const isGroupEnable = () => {}
+
   const values = {
     map,
     mapToggleTerrain,
@@ -66,6 +78,9 @@ export const MapProvider = ({ children, zoom, center }: Props) => {
     mapRelocate,
     mapZoomIn,
     mapZoomOut,
+    activeLayers,
+    layerGroups,
+    enableGroup,
   }
 
   return (
