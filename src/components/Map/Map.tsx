@@ -1,5 +1,6 @@
 import 'ol/ol.css'
 import React, { useContext, createContext, useState, useRef, useEffect } from 'react'
+import Box from '@mui/material/Box'
 import { Map, View } from 'ol'
 import olms from 'ol-mapbox-style'
 
@@ -85,7 +86,18 @@ export const MapProvider = ({ children, zoom, center }: Props) => {
 
   return (
     <MapContext.Provider value={values}>
-      <div ref={mapRef} id="map" className="ol-map"></div>
+      <Box
+        ref={mapRef}
+        id="map"
+        className="ol-map"
+        sx={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100vh',
+        }}
+      ></Box>
       {children}
     </MapContext.Provider>
   )
