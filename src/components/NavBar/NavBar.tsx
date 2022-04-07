@@ -1,16 +1,13 @@
 import React from "react";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import IconButton from "@material-ui/core/IconButton";
-import {
-  createStyles,
-  alpha,
-  Theme,
-  makeStyles,
-} from "@material-ui/core/styles";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import IconButton from "@mui/material/IconButton";
+import { alpha, Theme } from "@mui/material/styles";
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { Link } from "react-router-dom";
 
 import Logo from "../../logo.svg";
@@ -128,7 +125,7 @@ const NavBar = () => {
           color="inherit"
           aria-label="open drawer"
           disabled={isSidebarDisabled}
-        >
+          size="large">
           {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
         </IconButton>
 
@@ -138,7 +135,7 @@ const NavBar = () => {
 
         <div className={classes.helpWrapper}>
           <a href="https://about.map.avoin.org">
-            <IconButton className={classes.helpIcon} color="inherit">
+            <IconButton className={classes.helpIcon} color="inherit" size="large">
               <HelpOutlineIcon className={classes.HelpOutlineIcon} />
             </IconButton>
           </a>

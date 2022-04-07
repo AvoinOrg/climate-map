@@ -1,12 +1,14 @@
 import React, { useState } from "react";
-import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
+import { Theme } from "@mui/material/styles";
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 import {
   TextField,
   FormControl,
   OutlinedInput,
   InputLabel,
   FormHelperText,
-} from "@material-ui/core";
+} from "@mui/material";
 
 import { UserContext } from "../User";
 import { StateContext } from "../State";

@@ -1,18 +1,21 @@
 import React, { useContext } from 'react'
-import { makeStyles, useTheme, Theme, createStyles } from '@material-ui/core/styles'
+import { useTheme, Theme } from '@mui/material/styles';
 
-import ButtonGroup from '@material-ui/core/ButtonGroup'
+import makeStyles from '@mui/styles/makeStyles';
+import createStyles from '@mui/styles/createStyles';
 
-import SatelliteIcon from '@material-ui/icons/Satellite'
+import ButtonGroup from '@mui/material/ButtonGroup'
 
-import ExploreIcon from '@material-ui/icons/Explore'
-import AddIcon from '@material-ui/icons/Add'
-import RemoveIcon from '@material-ui/icons/Remove'
+import SatelliteIcon from '@mui/icons-material/Satellite'
 
-import GpsFixedIcon from '@material-ui/icons/GpsFixed'
+import ExploreIcon from '@mui/icons-material/Explore'
+import AddIcon from '@mui/icons-material/Add'
+import RemoveIcon from '@mui/icons-material/Remove'
+
+import GpsFixedIcon from '@mui/icons-material/GpsFixed'
 
 import MapContext from 'Components/Map/Map'
-import { Button } from '@material-ui/core'
+import { Button } from '@mui/material'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

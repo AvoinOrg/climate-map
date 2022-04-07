@@ -1,15 +1,8 @@
-import {
-  Checkbox,
-  createStyles,
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  makeStyles,
-  Theme,
-  Typography,
-} from '@material-ui/core'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import { Checkbox, Accordion, AccordionDetails, AccordionSummary, Theme, Typography } from '@mui/material';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import FormControlLabel from '@mui/material/FormControlLabel'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import React from 'react'
 import { Link } from 'react-router-dom'
 

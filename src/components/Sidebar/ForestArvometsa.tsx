@@ -8,12 +8,12 @@ import {
   InputLabel,
   Paper,
   Select,
-} from "@material-ui/core";
+} from "@mui/material";
 import Chart from "chart.js/auto";
 import { Expression } from "mapbox-gl";
 import { NavLink } from "react-router-dom";
 import { useObservable } from "micro-observables";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, { useEffect, useRef, useState } from "react";
 
 import * as Analytics from "src/map/analytics";

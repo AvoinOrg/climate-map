@@ -1,13 +1,15 @@
 import React, { useContext } from "react";
-import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import Drawer from "@material-ui/core/Drawer";
-import List from "@material-ui/core/List";
+import { Theme } from "@mui/material/styles";
+import makeStyles from '@mui/styles/makeStyles';
+import createStyles from '@mui/styles/createStyles';
+import Drawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
 
 import Accordion from "../Accordion";
 
 import drawerItems, { privateDrawerItems } from "./drawerItems";
 
-import { ListItem } from "@material-ui/core";
+import { ListItem } from "@mui/material";
 import { StateContext } from "../State";
 import { UserContext } from "../User";
 

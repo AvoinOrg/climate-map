@@ -1,9 +1,11 @@
 import React, { useState, useRef } from "react";
 import { observable } from "micro-observables";
 import { useObservable } from "micro-observables";
-import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
-import { Snackbar } from "@material-ui/core";
-import MuiAlert from "@material-ui/lab/Alert";
+import { Theme } from "@mui/material/styles";
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import { Snackbar } from "@mui/material";
+import MuiAlert from '@mui/material/Alert';
 
 import { ProfileState, ModalState } from "./Utils/types";
 

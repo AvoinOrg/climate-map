@@ -1,6 +1,8 @@
 import React from "react";
-import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
-import { Button } from "@material-ui/core";
+import { Theme } from "@mui/material/styles";
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import { Button } from "@mui/material";
 import { Bar } from "react-chartjs-2";
 
 // import { UserContext } from "../User";

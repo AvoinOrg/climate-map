@@ -1,10 +1,12 @@
 import React from "react";
-import Menu from "@material-ui/core/Menu";
-import { withStyles } from "@material-ui/core/styles";
-import MenuItem from "@material-ui/core/MenuItem";
-import IconButton from "@material-ui/core/IconButton";
-import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
-import AccountCircleIcon from "@material-ui/icons/AccountCircle";
+import Menu from "@mui/material/Menu";
+import withStyles from '@mui/styles/withStyles';
+import MenuItem from "@mui/material/MenuItem";
+import IconButton from "@mui/material/IconButton";
+import { Theme } from "@mui/material/styles";
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 import { UserContext } from "../User";
 import { StateContext } from "../State";
@@ -78,31 +80,29 @@ const ProfileMenu = () => {
     logout();
   };
 
-  return (
-    <>
-      <IconButton
-        className={classes.iconContainer}
-        aria-label="display more actions"
-        aria-controls="actions-menu"
-        aria-haspopup="true"
-        onClick={handleMenuClick}
-        color="inherit"
-      >
-        <AccountCircleIcon className={classes.icon} />
-      </IconButton>
-      <StyledMenu
-        id="actions-menu"
-        anchorEl={menuAnchorEl}
-        keepMounted
-        open={Boolean(menuAnchorEl)}
-        onClose={handleMenuClose}
-      >
-        <MenuItem id="btn-logout" onClick={handleLogOut}>
-          Log out
-        </MenuItem>
-      </StyledMenu>
-    </>
-  );
+  return <>
+    <IconButton
+      className={classes.iconContainer}
+      aria-label="display more actions"
+      aria-controls="actions-menu"
+      aria-haspopup="true"
+      onClick={handleMenuClick}
+      color="inherit"
+      size="large">
+      <AccountCircleIcon className={classes.icon} />
+    </IconButton>
+    <StyledMenu
+      id="actions-menu"
+      anchorEl={menuAnchorEl}
+      keepMounted
+      open={Boolean(menuAnchorEl)}
+      onClose={handleMenuClose}
+    >
+      <MenuItem id="btn-logout" onClick={handleLogOut}>
+        Log out
+      </MenuItem>
+    </StyledMenu>
+  </>;
 };
 
 export default ProfileMenu;

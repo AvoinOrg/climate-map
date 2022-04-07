@@ -1,4 +1,4 @@
-import { Container, Paper } from "@material-ui/core";
+import { Container, Paper } from "@mui/material";
 import React, { useEffect } from "react";
 import { Link, useRouteMatch } from "react-router-dom";
 

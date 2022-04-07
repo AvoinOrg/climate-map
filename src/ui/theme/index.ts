@@ -1,7 +1,9 @@
-import { createTheme, StyleRules } from "@material-ui/core/styles";
+import { createTheme, adaptV4Theme } from "@mui/material/styles";
 
-declare module "@material-ui/core/styles/createTheme" {
-  interface ThemeOptions {
+import { StyleRules } from '@mui/styles';
+
+declare module "@mui/material/styles/createTheme" {
+  interface DeprecatedThemeOptions {
     themeName?: string; // optional
   }
 }
@@ -108,9 +110,9 @@ const typography: StyleRules = {
 
 const themeName = "Avoin Green and White";
 
-export default createTheme({
+export default createTheme(adaptV4Theme({
   palette,
   typography,
   zIndex,
   themeName,
-});
+}));

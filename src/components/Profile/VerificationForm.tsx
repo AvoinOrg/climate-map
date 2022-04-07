@@ -1,8 +1,10 @@
 import React, { useEffect, useContext, useRef, useState } from "react";
-import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
-import { CircularProgress } from "@material-ui/core";
-import AccountCircleIcon from "@material-ui/icons/AccountCircle";
-import Check from "@material-ui/icons/Check";
+import { Theme } from "@mui/material/styles";
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import { CircularProgress } from "@mui/material";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import Check from "@mui/icons-material/Check";
 
 import { UserContext } from "../User";
 import { NextButton } from "./Signup";

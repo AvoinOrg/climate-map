@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import CssBaseline from '@material-ui/core/CssBaseline'
-import { ThemeProvider } from '@material-ui/core/styles'
+import CssBaseline from '@mui/material/CssBaseline'
+import { ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles';
 
 import './index.css'
 import AppRouterSwitch from './AppRouterSwitch'
@@ -14,18 +14,27 @@ import { UserProvider } from './components/User'
 import { StateProvider } from './components/State'
 import { MapProvider } from './components/Map/Map'
 
+
+declare module '@mui/styles/defaultTheme' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface DefaultTheme extends Theme {}
+}
+
+
 ReactDOM.render(
-  <ThemeProvider theme={theme}>
-    <StateProvider>
-      <MapProvider zoom={12} center={[60, 50]}>
-        <UserProvider>
-          {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-          <CssBaseline />
-          <AppRouterSwitch />
-        </UserProvider>
-      </MapProvider>
-    </StateProvider>
-  </ThemeProvider>,
+  <StyledEngineProvider injectFirst>
+    <ThemeProvider theme={theme}>
+      <StateProvider>
+        <MapProvider zoom={12} center={[60, 50]}>
+          <UserProvider>
+            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+            <CssBaseline />
+            <AppRouterSwitch />
+          </UserProvider>
+        </MapProvider>
+      </StateProvider>
+    </ThemeProvider>
+  </StyledEngineProvider>,
   document.querySelector('#root')
 )
 

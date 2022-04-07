@@ -1,7 +1,9 @@
 import React from "react";
-import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
-import IconButton from "@material-ui/core/IconButton";
-import Close from "@material-ui/icons/Close";
+import { Theme } from "@mui/material/styles";
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import IconButton from "@mui/material/IconButton";
+import Close from "@mui/icons-material/Close";
 
 import { StateContext } from "../State";
 import Login from "./Login";
@@ -71,7 +73,7 @@ const UserModal = () => {
         aria-haspopup="true"
         onClick={handleCloseClick}
         color="inherit"
-      >
+        size="large">
         <Close className={classes.closeIcon} />
       </IconButton>
       <div

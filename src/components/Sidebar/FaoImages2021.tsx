@@ -3,10 +3,12 @@ import {
   FormControl,
   InputLabel,
   OutlinedInput,
-} from "@material-ui/core";
+} from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, withRouter } from "react-router-dom";
-import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
+import { Theme } from "@mui/material/styles";
+import makeStyles from '@mui/styles/makeStyles';
+import createStyles from '@mui/styles/createStyles';
 import { setFilter, map } from "src/map/map";
 
 import { flyTo } from "src/map/map";

@@ -1,7 +1,5 @@
 import React, { useEffect, useContext, useState } from "react";
 import {
-  createStyles,
-  makeStyles,
   Theme,
   TableContainer,
   Paper,
@@ -9,9 +7,11 @@ import {
   FormControl,
   InputLabel,
   OutlinedInput,
-} from "@material-ui/core";
+} from "@mui/material";
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 import { NavLink, useLocation, Link, withRouter } from "react-router-dom";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import { flyTo } from "src/map/map";
 import { setFilter, map } from "src/map/map";

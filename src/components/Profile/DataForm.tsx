@@ -1,5 +1,7 @@
 import React, { useEffect, useContext, useState } from "react";
-import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
+import { Theme } from "@mui/material/styles";
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 import {
   Checkbox,
   FormControl,
@@ -7,8 +9,8 @@ import {
   Select,
   MenuItem,
   Modal,
-} from "@material-ui/core";
-import AccountCircleIcon from "@material-ui/icons/AccountCircle";
+} from "@mui/material";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 import { UserContext } from "../User";
 import { NextButton } from "./Signup";

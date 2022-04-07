@@ -1,14 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
-import {
-  createStyles,
-  makeStyles,
-  Theme,
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-} from "@material-ui/core";
+import { Theme, Button, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 import { AOAccordion } from "./AOAccordion";
 import { UserContext } from "../User";
 import { StateContext } from "../State";

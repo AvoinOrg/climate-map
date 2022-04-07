@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
+import { Theme } from "@mui/material/styles";
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
 import {
   FormControl,
   InputAdornment,
@@ -7,8 +9,8 @@ import {
   InputLabel,
   IconButton,
   FormHelperText,
-} from "@material-ui/core";
-import { Visibility, VisibilityOff } from "@material-ui/icons";
+} from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -47,7 +49,7 @@ const PasswordField = (props) => {
             <IconButton
               aria-label="toggle password visibility"
               onClick={handleClickTogglePassword}
-            >
+              size="large">
               {props.showPassword ? <Visibility /> : <VisibilityOff />}
             </IconButton>
           </InputAdornment>

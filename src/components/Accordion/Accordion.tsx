@@ -1,7 +1,10 @@
 import React from 'react'
 import clsx from 'clsx'
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { Accordion, AccordionSummary, Typography, AccordionDetails, makeStyles, Theme, createStyles } from '@material-ui/core';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Accordion, AccordionSummary, Typography, AccordionDetails, Theme } from '@mui/material';
+
+import makeStyles from '@mui/styles/makeStyles';
+import createStyles from '@mui/styles/createStyles';
 
 import './AccordionStyle.css'
 
