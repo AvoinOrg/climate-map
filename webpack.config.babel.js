@@ -60,7 +60,7 @@ const appConfig = {
   entry: ['./src'],
   resolve: {
     extensions: ['.webpack-loader.js', '.web-loader.js', '.loader.js', '.js', '.jsx', '.ts', '.tsx'],
-    modules: ['./node_modules', '.'],
+    modules: ['node_modules', path.resolve(__dirname, 'src')],
     alias: {
       Components: path.resolve(__dirname, 'src/components/'),
       Utils: path.resolve(__dirname, 'src/utils/'),
