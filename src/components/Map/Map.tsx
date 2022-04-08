@@ -110,6 +110,7 @@ export const MapProvider = ({ children }: Props) => {
           bottom: 0,
           width: '100vw',
           height: '100vh',
+          '.ol-scale-line': { right: '8px', left: 'auto', bottom: '26px' },
         }}
       ></Box>
       {children}
