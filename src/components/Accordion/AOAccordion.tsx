@@ -1,33 +1,37 @@
-import { Checkbox, Accordion, AccordionDetails, AccordionSummary, Theme, Typography } from '@mui/material';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
+import { Checkbox, Accordion, AccordionDetails, AccordionSummary, Theme, Typography } from '@mui/material'
+
 import FormControlLabel from '@mui/material/FormControlLabel'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { Style } from 'mapbox-gl'
 
 import MapContext from 'Components/Map'
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    heading: {
-      fontWeight: theme.typography['regular'].fontWeight,
-    },
-    content: {
-      margin: 'unset',
-    },
-  })
-)
+const styles = {
+  heading: {
+    fontWeight: "theme.typography['regular'].fontWeight",
+  },
+  content: {
+    margin: 'unset',
+  },
+}
 
-export const AOAccordion = (props: any) => {
-  const { groupName, label, content, panelProps } = props
+interface AOAccordionProps {
+  groupName: string
+  label: string
+  content: any
+  layerStyle: Style
+  panelProps: any
+}
+
+export const AOAccordion = (props: AOAccordionProps) => {
+  const { groupName, label, content, layerStyle, panelProps } = props
   const { layerGroups } = React.useContext(MapContext)
   // const groupEnabled = layerGroups.filter((x) => x.name === groupName).length > 0
-  const classes = useStyles({})
-
   return (
     <Accordion {...panelProps}>
-      <AccordionSummary className={classes.content} expandIcon={<ExpandMoreIcon />}>
+      <AccordionSummary sx={styles.content} expandIcon={<ExpandMoreIcon />}>
         <FormControlLabel
           onClick={(event) => {
             event.stopPropagation()
@@ -48,17 +52,15 @@ export const AOAccordion = (props: any) => {
 }
 
 export const AOAccordionLink = ({ href, label }: any) => {
-  const classes = useStyles({})
-
   return (
     <Accordion expanded={false}>
       <Link to={href} className="neutral-link">
         <AccordionSummary
           style={{ marginLeft: 31 }}
-          className={classes.content}
+          sx={styles.content}
           expandIcon={<ExpandMoreIcon style={{ transform: 'rotate(-90deg' }} />}
         >
-          <Typography className={classes.heading}>{label}</Typography>
+          <Typography sx={styles.heading}>{label}</Typography>
         </AccordionSummary>
       </Link>
     </Accordion>
@@ -66,54 +68,59 @@ export const AOAccordionLink = ({ href, label }: any) => {
 }
 
 export const AOProfileAccordion = ({ onClick, label }: any) => {
-  const classes = useStyles({})
-
   return (
     <Accordion onClick={onClick} expanded={false}>
       <div className="neutral-link">
         <AccordionSummary
           style={{ marginLeft: 31 }}
-          className={classes.content}
+          sx={styles.content}
           expandIcon={<ExpandMoreIcon style={{ transform: 'rotate(-90deg' }} />}
         >
-          <Typography className={classes.heading}>{label}</Typography>
+          <Typography sx={styles.heading}>{label}</Typography>
         </AccordionSummary>
       </div>
     </Accordion>
   )
 }
 
-export const LayerToggleControl = ({ groupName, label }: any) => {
-  const { layerGroups } = React.useContext(MapContext)
-  // OL_FIX: ENABLE LATER
-  // const groupEnabled = layerGroups.filter((x) => x.name === groupName).length > 0
+interface LayerToggleControlProps {
+  layerName: string
+  label: string
+  layerStyle?: Style
+}
+
+// USE REDUX HERE, HHMM
+export const LayerToggleControl = ({ layerName, label, layerStyle }: LayerToggleControlProps) => {
+  const { activeLayers, toggleLayer } = React.useContext(MapContext)
+
+  // React.useEffect(() => {
+  //   if ([isLayerEnabled && activeLayers.includes(layerName)]) {
+  //     toggleLayer(layerName, layerStyle)
+  //   }
+  // }, [])
 
   return (
     <FormControlLabel
       onClick={(event) => {
         event.stopPropagation()
       }}
-      // OL_FIX: ENABLE LATER
-      // onChange={(event) => LayerGroupState.setGroupState(groupName, (event.target as HTMLInputElement).checked)}
+      onChange={(_event) => {
+        toggleLayer(layerName, layerStyle)
+      }}
       onFocus={(event) => event.stopPropagation()}
       control={<Checkbox />}
       label={label}
-      // checked={groupEnabled}
+      checked={activeLayers.includes(layerName)}
     />
   )
 }
 
 export const AOAccordionHeader = ({ href, label }: any) => {
-  const classes = useStyles({})
-
   return (
     <Accordion expanded={false}>
       <Link to={href} className="neutral-link">
-        <AccordionSummary
-          className={classes.content}
-          expandIcon={<ExpandMoreIcon style={{ transform: 'rotate(90deg' }} />}
-        >
-          <Typography className={classes.heading}>{label}</Typography>
+        <AccordionSummary sx={styles.content} expandIcon={<ExpandMoreIcon style={{ transform: 'rotate(90deg' }} />}>
+          <Typography sx={styles.heading}>{label}</Typography>
         </AccordionSummary>
       </Link>
     </Accordion>
