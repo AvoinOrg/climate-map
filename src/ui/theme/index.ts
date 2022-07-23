@@ -3,8 +3,9 @@ import { createTheme } from '@mui/material/styles'
 import { StyleRules } from '@mui/styles'
 
 const palette = {
-  primary: { main: '#fbfbfb', contrastText: '#282c34' },
-  secondary: { main: '#126A42', contrastText: '#fbfbfb' },
+  primary: { main: '#0B2027' },
+  secondary: { main: '#126A42' },
+  info: { main: '##fbfbfb' },
 }
 
 const zIndex = {

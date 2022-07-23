@@ -1,21 +1,21 @@
-import React from "react";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
-import { alpha, Theme } from "@mui/material/styles";
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { Link } from "react-router-dom";
+import React from 'react'
+import AppBar from '@mui/material/AppBar'
+import Toolbar from '@mui/material/Toolbar'
+import IconButton from '@mui/material/IconButton'
+import { alpha, Theme } from '@mui/material/styles'
+import createStyles from '@mui/styles/createStyles'
+import makeStyles from '@mui/styles/makeStyles'
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
+import { Link } from 'react-router-dom'
 
-import Logo from "../../logo.svg";
-import { NavBarSearch } from "./NavBarSearch";
-import ProfileMenu from "./ProfileMenu";
-import ActionButtons from "./ActionButtons";
-import { UserContext } from "../User";
-import { StateContext } from "../State";
+import Logo from '../../logo.svg'
+import { NavBarSearch } from './NavBarSearch'
+import ProfileMenu from './ProfileMenu'
+import ActionButtons from './ActionButtons'
+import { UserContext } from '../User'
+import { StateContext } from '../State'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -29,17 +29,17 @@ const useStyles = makeStyles((theme: Theme) =>
     menuIcon: {
       marginRight: theme.spacing(4),
       marginLeft: theme.spacing(2),
-      padding: "0 5px 0 5px",
+      padding: '0 5px 0 5px',
     },
     helpWrapper: {
-      position: "relative",
+      position: 'relative',
       marginRight: theme.spacing(2),
       marginLeft: 0,
-      width: "100%",
+      width: '100%',
     },
     helpIcon: {
       padding: 0,
-      margin: "0 0 0 10px",
+      margin: '0 0 0 10px',
     },
     HelpOutlineIcon: {},
     appBar: {
@@ -48,75 +48,71 @@ const useStyles = makeStyles((theme: Theme) =>
     title: {
       flexGrow: 1,
       marginLeft: theme.spacing(2),
-      display: "none",
+      display: 'none',
       minWidth: 100,
-      [theme.breakpoints.up("sm")]: {
-        display: "block",
+      [theme.breakpoints.up('sm')]: {
+        display: 'block',
       },
     },
     search: {
-      position: "relative",
+      position: 'relative',
       borderRadius: theme.shape.borderRadius,
       backgroundColor: alpha(theme.palette.common.white, 0.15),
-      "&:hover": {
+      '&:hover': {
         backgroundColor: alpha(theme.palette.common.white, 0.25),
       },
       marginLeft: 0,
-      width: "100%",
-      [theme.breakpoints.up("sm")]: {
+      width: '100%',
+      [theme.breakpoints.up('sm')]: {
         marginLeft: theme.spacing(1),
-        width: "auto",
+        width: 'auto',
       },
     },
     searchIcon: {
       width: theme.spacing(7),
-      height: "100%",
-      position: "absolute",
-      pointerEvents: "none",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
+      height: '100%',
+      position: 'absolute',
+      pointerEvents: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     inputRoot: {
-      color: "inherit",
+      color: 'inherit',
     },
     inputInput: {
       padding: theme.spacing(1, 1, 1, 7),
-      transition: theme.transitions.create("width"),
-      width: "100%",
-      [theme.breakpoints.up("sm")]: {
+      transition: theme.transitions.create('width'),
+      width: '100%',
+      [theme.breakpoints.up('sm')]: {
         width: 120,
-        "&:focus": {
+        '&:focus': {
           width: 200,
         },
       },
     },
     logo: {
       width: 160,
-      padding: "8px 0 0 0",
+      padding: '8px 0 0 0',
     },
     toolBar: {
       padding: 0,
       height: 64,
     },
   })
-);
+)
 
 const NavBar = () => {
-  const classes = useStyles({});
-  const {
-    isSidebarOpen,
-    setIsSidebarOpen,
-    isSidebarDisabled,
-  }: any = React.useContext(StateContext);
-  const { isLoggedIn }: any = React.useContext(UserContext);
+  const classes = useStyles({})
+  const { isSidebarOpen, setIsSidebarOpen, isSidebarDisabled }: any = React.useContext(StateContext)
+  const { isLoggedIn }: any = React.useContext(UserContext)
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+    setIsSidebarOpen(!isSidebarOpen)
+  }
 
   return (
-    <AppBar position="fixed" className={classes.appBar}>
+    <AppBar position="fixed" color="info" className={classes.appBar}>
       <Toolbar className={classes.toolBar}>
         <IconButton
           onClick={toggleSidebar}
@@ -125,7 +121,8 @@ const NavBar = () => {
           color="inherit"
           aria-label="open drawer"
           disabled={isSidebarDisabled}
-          size="large">
+          size="large"
+        >
           {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
         </IconButton>
 
@@ -143,11 +140,9 @@ const NavBar = () => {
 
         <NavBarSearch />
 
-        <div className={classes.menuContainer}>
-          {isLoggedIn ? <ProfileMenu /> : <ActionButtons />}
-        </div>
+        <div className={classes.menuContainer}>{isLoggedIn ? <ProfileMenu /> : <ActionButtons />}</div>
       </Toolbar>
     </AppBar>
-  );
-};
-export default NavBar;
+  )
+}
+export default NavBar

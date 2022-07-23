@@ -29,6 +29,7 @@ export const AOAccordion = (props: AOAccordionProps) => {
   const { groupName, label, content, layerStyle, panelProps } = props
   const { layerGroups } = React.useContext(MapContext)
   // const groupEnabled = layerGroups.filter((x) => x.name === groupName).length > 0
+
   return (
     <Accordion {...panelProps}>
       <AccordionSummary sx={styles.content} expandIcon={<ExpandMoreIcon />}>
