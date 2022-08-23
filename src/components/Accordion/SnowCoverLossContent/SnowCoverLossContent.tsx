@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { Container } from '@mui/material'
 import { Style } from 'mapbox-gl'
 
-import { LayerToggleControl } from './AOAccordion'
+import { LayerToggleControl } from '../AOAccordion'
 import { fillOpacity } from 'Utils/mapUtils'
 
 const SnowCoverLossContent = () => {
