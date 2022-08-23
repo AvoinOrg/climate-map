@@ -1,5 +1,4 @@
 import { Checkbox, Accordion, AccordionDetails, AccordionSummary, Theme, Typography } from '@mui/material'
-
 import FormControlLabel from '@mui/material/FormControlLabel'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import React from 'react'
@@ -7,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { Style } from 'mapbox-gl'
 
 import MapContext from 'Components/Map'
+import { LayerId } from 'Types/map'
 
 const styles = {
   heading: {
@@ -18,16 +18,14 @@ const styles = {
 }
 
 interface AOAccordionProps {
-  groupName: string
+  layerId: LayerId
   label: string
-  content: any
-  layerStyle: Style
-  panelProps: any
+  content?: any
+  panelProps?: any
 }
 
-export const AOAccordion = (props: AOAccordionProps) => {
-  const { groupName, label, content, layerStyle, panelProps } = props
-  const { layerGroups } = React.useContext(MapContext)
+export const AOAccordion = ({ layerId, label, content, panelProps }: AOAccordionProps) => {
+  const { activeLayers, toggleLayer } = React.useContext(MapContext)
   // const groupEnabled = layerGroups.filter((x) => x.name === groupName).length > 0
 
   return (
@@ -37,12 +35,13 @@ export const AOAccordion = (props: AOAccordionProps) => {
           onClick={(event) => {
             event.stopPropagation()
           }}
-          // OL_FIX: ENABLE LATER
-          // onChange={(event) => LayerGroupState.setGroupState(groupName, (event.target as HTMLInputElement).checked)}
+          onChange={(_event) => {
+            toggleLayer(layerId)
+          }}
           onFocus={(event) => event.stopPropagation()}
           control={<Checkbox />}
           label={label}
-          // checked={groupEnabled}
+          checked={activeLayers.includes(layerId)}
         />
         {/* <Typography className={classes.heading}>{label}</Typography> */}
       </AccordionSummary>
