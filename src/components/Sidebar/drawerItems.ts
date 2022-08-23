@@ -1,9 +1,9 @@
 import BiodiversityContent from "../Accordion/BiodiversityContent";
 import WetlandsContent from "../Accordion/WetlandsContent";
-import BuildingsContent from "../Accordion/BuildingsContent";
-import SnowCoverLossContent from "../Accordion/SnowCoverLossContent";
+import BuildingsContent from "../Accordion/BuildingsContent/BuildingsContent";
+import SnowCoverLossContent from "../Accordion/SnowCoverLossContent/SnowCoverLossContent";
 import ForestContent from "../Accordion/ForestContent";
-import AirQualityContent from "../Accordion/AirQualityContent";
+import AirQualityContent from "../Accordion/AirQualityContent/AirQualityContent";
 // import UserContent from "../Accordion/UserContent";
 import PrivateContent from "../Accordion/PrivateContent";
 
