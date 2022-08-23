@@ -3,11 +3,18 @@ import React, { createContext, useState, useRef, useEffect } from 'react'
 import Box from '@mui/material/Box'
 import { fromLonLat } from 'ol/proj'
 import { Map, View } from 'ol'
+import { unByKey } from 'ol/Observable'
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
+import Overlay from 'ol/Overlay'
 import { OSM, Vector as VectorSource } from 'ol/source'
 import { Attribution, ScaleLine, defaults as defaultControls } from 'ol/control'
 import olms from 'ol-mapbox-style'
-import { Style } from 'mapbox-gl'
+import { Style as MbStyle } from 'mapbox-gl'
+import { Style } from 'ol/style'
+import { sanitize } from 'dompurify'
+
+import { LayerId, LayerConf } from 'Types/map'
+import layerConfs from './Layers/layers'
 
 interface Props {
   children: any
@@ -22,7 +29,7 @@ interface IMapContext {
   mapRelocate?: () => void
   mapZoomIn?: () => void
   mapZoomOut?: () => void
-  toggleLayer?: (layer: string, style: Style) => void
+  toggleLayer?: (layer: string, style: MbStyle | Style) => void
   activeLayers?: string[]
   layerGroups?: {}
   registerGroup?: (layerGroup: any) => void
@@ -36,7 +43,10 @@ export const MapProvider = ({ children }: Props) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [activeLayers, setActiveLayers] = useState<any[]>([])
   const [layers, setLayers] = useState<any>({})
+  const [popupFuncs, setPopupFuncs] = useState<any>({})
   const [sources, setSources] = useState<any>({})
+  const [popupFuncKey, setPopupFuncKey] = useState<any>(null)
+
   const mapRef = useRef()
 
   const attribution = new Attribution({
@@ -45,6 +55,7 @@ export const MapProvider = ({ children }: Props) => {
 
   useEffect(() => {
     const options = {
+      rendered: 'webgl',
       view: new View({ zoom: 5, center: fromLonLat([15, 62]) }),
       layers: [
         new TileLayer({
@@ -56,8 +67,8 @@ export const MapProvider = ({ children }: Props) => {
           }),
         }),
       ],
+      overlays: [popupOverlay],
       controls: defaultControls({ attribution: false }).extend([attribution, new ScaleLine()]),
-      overlays: [] as any[],
     }
 
     const mapObject = new Map(options)
@@ -69,10 +80,91 @@ export const MapProvider = ({ children }: Props) => {
   }, [])
 
   useEffect(() => {
-    if (map) {
+    if (isLoaded === false && map) {
       setIsLoaded(true)
     }
   }, [map])
+
+  useEffect(() => {
+    if (isLoaded) {
+      // remove the old callback and create a new one each time state is updated
+      unByKey(popupFuncKey)
+
+      const newPopupFunc = (evt: any) => {
+        let featureObjs: any[] = []
+
+        map.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
+          featureObjs.push({ feature, layer })
+        })
+
+        if (featureObjs.length > 0) {
+          featureObjs = featureObjs.sort((a: any, b: any) => {
+            const aZ = a.layer.getZIndex()
+            const bZ = b.layer.getZIndex()
+
+            if (aZ > bZ) {
+              return -1
+            } else if (bZ > aZ) {
+              return 1
+            } else {
+              return 0
+            }
+          })
+
+          const featureObj = featureObjs[0]
+
+          const html = popupFuncs[featureObj.layer.get('title')](featureObj.feature)
+
+          console.log(evt)
+          console.log(evt.coordinate)
+          createPopup(evt.coordinate, html)
+          // console.log(features)
+          // for (const i in activeLayers) {
+          //   console.log(layers[activeLayers[i]].getSource)
+          //   if (layers[activeLayers[i]].hasFeature(features[0])) {
+          //     console.log("asdfasdf")
+          //   }
+          // }
+          // map.forEachLayerAtPixel(evt.pixel, function (layer: any) {})
+        }
+      }
+
+      const newPopupFuncKey = map.on('singleclick', newPopupFunc)
+
+      setPopupFuncKey(newPopupFuncKey)
+    }
+  }, [activeLayers, map, isLoaded, popupFuncs])
+
+  const popupContainer = document.createElement('div')
+  popupContainer.innerHTML = `
+<div id="popup" class="ol-popup">
+    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+    <div id="popup-content"></div>
+</div>
+`
+  document.body.appendChild(popupContainer)
+
+  const popupContent = document.getElementById('popup-content') as HTMLElement
+  const popupCloser = document.getElementById('popup-closer') as HTMLElement
+
+  const popupOverlay = new Overlay({
+    element: popupContainer,
+    autoPan: true,
+    autoPanAnimation: {
+      duration: 250,
+    },
+  })
+
+  popupCloser.onclick = () => {
+    popupOverlay.setPosition(undefined)
+    popupCloser.blur()
+    return false
+  }
+
+  const createPopup = (coords: any, html: string) => {
+    popupOverlay.setPosition(coords)
+    popupContent.innerHTML = sanitize(html)
+  }
 
   // TODO ZONE
   const getGeocoder = () => {}
@@ -122,16 +214,22 @@ export const MapProvider = ({ children }: Props) => {
   //   let layer = null
   // }
 
-  const addMbStyle = (style: any, isVisible: boolean = true) => {
+  const addMbStyle = (style: MbStyle, popupFunc?: any, isVisible: boolean = true) => {
     const sourceKey = Object.entries(style.sources)[0][0]
     olms(map, style).then((map) => {
       map
         .getLayers()
         .getArray()
         .forEach((layer: any) => {
-          if (layer.values_['mapbox-source'] && layer.values_['mapbox-source'] === sourceKey) {
+          if (layer.get('mapbox-source') && layer.get('mapbox-source') === sourceKey) {
+            layer.set('title', sourceKey)
             const layersCopy = { ...layers, [sourceKey]: layer }
             setLayers(layersCopy)
+
+            if (popupFunc) {
+              const popupFuncsCopy = { ...popupFuncs, [sourceKey]: popupFunc }
+              setPopupFuncs(popupFuncsCopy)
+            }
 
             if (isVisible) {
               const activeLayersCopy = [...activeLayers, sourceKey]
@@ -148,23 +246,29 @@ export const MapProvider = ({ children }: Props) => {
       // })
     })
   }
-  const toggleLayer = (layerName: string, style?: Style) => {
-    if (activeLayers.includes(layerName)) {
+  const toggleLayer = (layerId: LayerId) => {
+    if (activeLayers.includes(layerId)) {
       const activeLayersCopy = [...activeLayers]
-      activeLayersCopy.splice(activeLayers.indexOf(layerName), 1)
+      activeLayersCopy.splice(activeLayers.indexOf(layerId), 1)
 
       setActiveLayers(activeLayersCopy)
-      layers[layerName].setVisible(false)
+      layers[layerId].setVisible(false)
     } else {
-      if (layers[layerName]) {
-        layers[layerName].setVisible(true)
+      if (layers[layerId]) {
+        layers[layerId].setVisible(true)
 
-        const activeLayersCopy = [...activeLayers, layerName]
+        const activeLayersCopy = [...activeLayers, layerId]
         setActiveLayers(activeLayersCopy)
-      } else if (style) {
-        addMbStyle(style)
       } else {
-        console.error('Layer not initialized: ' + layerName)
+        const layerConf = layerConfs.find((el: LayerConf) => {
+          return el.id === layerId
+        })
+
+        if (layerConf) {
+          addMbStyle(layerConf.style, layerConf.popupFunc)
+        } else {
+          console.error('No layer config found for id: ' + layerId)
+        }
       }
     }
   }
