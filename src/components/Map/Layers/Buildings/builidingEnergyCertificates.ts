@@ -11,7 +11,7 @@ const style: MbStyle = {
   version: 8,
   name: id,
   sources: {
-    building_energy_certs: {
+    [id]: {
       type: 'vector',
       tiles: ['https://server.avoin.org/data/map/hel-energiatodistukset/{z}/{x}/{y}.pbf?v=3'],
       maxzoom: 14,
