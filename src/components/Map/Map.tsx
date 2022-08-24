@@ -44,7 +44,7 @@ export const MapProvider = ({ children }: Props) => {
   const [activeLayers, setActiveLayers] = useState<any[]>([])
   const [layers, setLayers] = useState<any>({})
   const [popupFuncs, setPopupFuncs] = useState<any>({})
-  const [sources, setSources] = useState<any>({})
+  const [popup, setPopup] = useState<any>(null)
   const [popupFuncKey, setPopupFuncKey] = useState<any>(null)
 
   const mapRef = useRef()
@@ -67,7 +67,6 @@ export const MapProvider = ({ children }: Props) => {
           }),
         }),
       ],
-      overlays: [popupOverlay],
       controls: defaultControls({ attribution: false }).extend([attribution, new ScaleLine()]),
     }
 
@@ -82,6 +81,37 @@ export const MapProvider = ({ children }: Props) => {
   useEffect(() => {
     if (isLoaded === false && map) {
       setIsLoaded(true)
+
+      const popupContainer = document.createElement('div')
+      popupContainer.innerHTML = `
+          <div id="popup" class="ol-popup">
+              <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+              <div id="popup-content"></div>
+          </div>
+      `
+      document.body.appendChild(popupContainer)
+
+      const content = document.getElementById('popup-content') as HTMLElement
+      const closer = document.getElementById('popup-closer') as HTMLElement
+
+      const overlay = new Overlay({
+        element: popupContainer,
+        autoPan: true,
+        autoPanAnimation: {
+          duration: 250,
+        },
+      })
+
+      closer.onclick = () => {
+        overlay.setPosition(undefined)
+        closer.blur()
+        return false
+      }
+
+      const popup = { content, closer, overlay }
+      setPopup(popup)
+
+      map.addOverlay(overlay)
     }
   }, [map])
 
@@ -135,35 +165,9 @@ export const MapProvider = ({ children }: Props) => {
     }
   }, [activeLayers, map, isLoaded, popupFuncs])
 
-  const popupContainer = document.createElement('div')
-  popupContainer.innerHTML = `
-<div id="popup" class="ol-popup">
-    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
-    <div id="popup-content"></div>
-</div>
-`
-  document.body.appendChild(popupContainer)
-
-  const popupContent = document.getElementById('popup-content') as HTMLElement
-  const popupCloser = document.getElementById('popup-closer') as HTMLElement
-
-  const popupOverlay = new Overlay({
-    element: popupContainer,
-    autoPan: true,
-    autoPanAnimation: {
-      duration: 250,
-    },
-  })
-
-  popupCloser.onclick = () => {
-    popupOverlay.setPosition(undefined)
-    popupCloser.blur()
-    return false
-  }
-
   const createPopup = (coords: any, html: string) => {
-    popupOverlay.setPosition(coords)
-    popupContent.innerHTML = sanitize(html)
+    popup.overlay.setPosition(coords)
+    popup.content.innerHTML = sanitize(html)
   }
 
   // TODO ZONE
