@@ -1,5 +1,4 @@
 import { Style as MbStyle } from 'mapbox-gl'
-import _ from 'lodash'
 
 import { fillOpacity } from 'Utils/mapUtils'
 import { LayerId, LayerConf } from 'Types/map'
@@ -12,7 +11,7 @@ const style: MbStyle = {
   version: 8,
   name: 'snow_cover_loss',
   sources: {
-    snow_cover_loss: {
+    [id]: {
       type: 'vector',
       tiles: ['https://server.avoin.org/data/map/snow_cover_loss_2016/{z}/{x}/{y}.pbf'],
       maxzoom: 3,
@@ -20,8 +19,8 @@ const style: MbStyle = {
   },
   layers: [
     {
-      id: 'snow_cover_loss-fill',
-      source: 'snow_cover_loss',
+      id: id + '-fill',
+      source: id,
       'source-layer': 'snow_cover_loss_1980_through_2016',
       type: 'fill',
       paint: {
@@ -43,8 +42,8 @@ const style: MbStyle = {
       BEFORE: 'FILL',
     },
     {
-      id: 'snow_cover_loss-sym',
-      source: 'snow_cover_loss',
+      id: id + '-sym',
+      source: id,
       'source-layer': 'snow_cover_loss_1980_through_2016',
       type: 'symbol',
       minzoom: 10,
