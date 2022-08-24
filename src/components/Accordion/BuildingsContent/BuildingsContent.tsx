@@ -19,8 +19,8 @@ const BuildingsContent = () => {
     <div className={classes.root}>
       <AOAccordion layerId={'building_energy_certs'} label={'Building energy certificates (Finland)'} content={null} />
       {/* <AOAccordion layerId={'fi_buildings'} label={'Buildings (Finland)'} content={null} /> */}
+      <AOAccordion layerId={'helsinki_buildings'} label={'Buildings (Helsinki area)'} content={null} />
       {/*
-        <AOAccordion groupName={'helsinki_buildings'} label={'Buildings (Helsinki area)'} content={null} />
         <AOAccordion groupName={'hsy-solar_potential'} label={'Helsinki Area Solar Power Potential'} content={null} /> */}
     </div>
   )
