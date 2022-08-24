@@ -1,46 +1,19 @@
-import { Select } from 'ol/interaction'
-import { click } from 'ol/events/condition'
+import { Expression } from 'mapbox-gl'
 
 export const fillOpacity = 0.65
 
-export const createPopup = (layers: any, selectedStyle: any, map: any, popup?: any) => {
-  // let select: any = null // ref to currently selected interaction
-
-  // const selectStyle = (feature: any, selectedStyle: any) => {
-  //   const color = feature.get('COLOR') || '#eeeeee'
-  //   selectedStyle.getFill().setColor(color)
-  //   return selectedStyle
-  // }
-
-  // // select interaction working on "click"
-  // const selectClick = new Select({
-  //   // condition: click,
-  //   style: selectStyle,
-  //   layers: layers,
-  // })
-
-  // select = selectClick
-
-  // // map.removeInteraction(select)
-
-  // if (select !== null) {
-  //   map.addInteraction(select)
-  //   select.on('select', function (e: any) {
-  //     console.log("sdafasdfasdf")
-  //     document.getElementById('status').innerHTML =
-  //       '&nbsp;' +
-  //       e.target.getFeatures().getLength() +
-  //       ' selected features (last operation selected ' +
-  //       e.selected.length +
-  //       ' and deselected ' +
-  //       e.deselected.length +
-  //       ' features)'
-  //   })
-  // }
-
-  // map.on('singleclick', function (evt: any) {
-  //   const features = map.getFeaturesAtPixel(evt.pixel)
-  //   console.log(features)
-  //   map.forEachLayerAtPixel(evt.pixel, function (layer: any) {})
-  // })
-}
+export const roundToSignificantDigitsPos = (n: number, expr: Expression) => [
+  // Multiply back by true scale
+  '/',
+  // Round to two significant digits:
+  ['round', ['/', expr, ['^', 10, ['+', -n + 1, ['floor', ['log10', expr]]]]]],
+  ['^', 10, ['-', n - 1, ['floor', ['log10', expr]]]],
+]
+export const roundToSignificantDigits = (n: number, expr: Expression) => [
+  'case',
+  ['==', 0, expr],
+  0,
+  ['>', 0, expr],
+  ['*', -1, roundToSignificantDigitsPos(n, ['*', -1, expr])],
+  roundToSignificantDigitsPos(n, expr),
+]
