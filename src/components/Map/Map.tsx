@@ -29,11 +29,11 @@ interface IMapContext {
   mapRelocate?: () => void
   mapZoomIn?: () => void
   mapZoomOut?: () => void
-  toggleLayer?: (layer: string, style: MbStyle | Style) => void
-  activeLayers?: string[]
+  toggleLayerGroup?: (layer: string) => void
+  activeLayerGroups?: string[]
   layerGroups?: {}
   registerGroup?: (layerGroup: any) => void
-  addMbStyle?: (style: any) => void
+  // addMbStyle?: (style: any) => void
 }
 
 const MapContext = createContext<IMapContext>({ isLoaded: false })
@@ -41,8 +41,8 @@ const MapContext = createContext<IMapContext>({ isLoaded: false })
 export const MapProvider = ({ children }: Props) => {
   const [map, setMap] = useState<Map>(null)
   const [isLoaded, setIsLoaded] = useState(false)
-  const [activeLayers, setActiveLayers] = useState<any[]>([])
-  const [layers, setLayers] = useState<any>({})
+  const [activeLayerGroups, setActiveLayerGroups] = useState<any[]>([])
+  const [layerGroups, setLayerGroups] = useState<any>({})
   const [popupFuncs, setPopupFuncs] = useState<any>({})
   const [popup, setPopup] = useState<any>(null)
   const [popupFuncKey, setPopupFuncKey] = useState<any>(null)
@@ -142,8 +142,8 @@ export const MapProvider = ({ children }: Props) => {
           })
 
           const featureObj = featureObjs[0]
-
-          const html = popupFuncs[featureObj.layer.get('title')](featureObj.feature)
+          console.log(featureObjs)
+          const html = popupFuncs[featureObj.layer.get('group')](featureObj.feature)
 
           console.log(evt)
           console.log(evt.coordinate)
@@ -163,7 +163,7 @@ export const MapProvider = ({ children }: Props) => {
 
       setPopupFuncKey(newPopupFuncKey)
     }
-  }, [activeLayers, map, isLoaded, popupFuncs])
+  }, [activeLayerGroups, map, isLoaded, popupFuncs])
 
   const createPopup = (coords: any, html: string) => {
     popup.overlay.setPosition(coords)
@@ -218,31 +218,47 @@ export const MapProvider = ({ children }: Props) => {
   //   let layer = null
   // }
 
-  const addMbStyle = (style: MbStyle, popupFunc?: any, isVisible: boolean = true) => {
-    const sourceKey = Object.entries(style.sources)[0][0]
+  const setGroupVisibility = (layerId: LayerId, isVisible: boolean) => {
+    const layerGroup = layerGroups[layerId]
+    for (const layer in layerGroup) {
+      layerGroup[layer].setVisible(isVisible)
+    }
+  }
+
+  const addMbStyle = (id: LayerId, style: MbStyle, popupFunc?: any, isVisible: boolean = true) => {
+    const sourceKeys = Object.keys(style.sources)
+
+    const layerGroup: any = {}
+
     olms(map, style).then((map) => {
       map
         .getLayers()
         .getArray()
         .forEach((layer: any) => {
-          if (layer.get('mapbox-source') && layer.get('mapbox-source') === sourceKey) {
-            layer.set('title', sourceKey)
-            const layersCopy = { ...layers, [sourceKey]: layer }
-            setLayers(layersCopy)
+          const sourceKey = layer.get('mapbox-source')
 
-            if (popupFunc) {
-              const popupFuncsCopy = { ...popupFuncs, [sourceKey]: popupFunc }
-              setPopupFuncs(popupFuncsCopy)
-            }
-
-            if (isVisible) {
-              const activeLayersCopy = [...activeLayers, sourceKey]
-              setActiveLayers(activeLayersCopy)
-            } else {
-              layer.setVisible(false)
-            }
+          if (layer.get('mapbox-source') && sourceKeys.includes(sourceKey)) {
+            layer.set('group', id)
+            layerGroup[sourceKey] = layer
           }
         })
+
+      const layerGroupsCopy = { ...layerGroups, [id]: layerGroup }
+      setLayerGroups(layerGroupsCopy)
+
+      if (isVisible) {
+        const activeLayerGroupsCopy = [...activeLayerGroups, id]
+        setActiveLayerGroups(activeLayerGroupsCopy)
+      } else {
+        for (const layer in layerGroup) {
+          layerGroup[layer].setVisible(false)
+        }
+      }
+
+      if (popupFunc) {
+        const popupFuncsCopy = { ...popupFuncs, [id]: popupFunc }
+        setPopupFuncs(popupFuncsCopy)
+      }
       // applyStyle(olLayer, { version: style.version, sources: style.sources, layers }, sourceKey).then((data) => {
       //   map.addLayer(olLayer)
       //   console.log(olLayer)
@@ -250,34 +266,32 @@ export const MapProvider = ({ children }: Props) => {
       // })
     })
   }
-  const toggleLayer = (layerId: LayerId) => {
-    if (activeLayers.includes(layerId)) {
-      const activeLayersCopy = [...activeLayers]
-      activeLayersCopy.splice(activeLayers.indexOf(layerId), 1)
+  const toggleLayerGroup = (layerId: LayerId) => {
+    if (activeLayerGroups.includes(layerId)) {
+      const activeLayerGroupsCopy = [...activeLayerGroups]
+      activeLayerGroupsCopy.splice(activeLayerGroupsCopy.indexOf(layerId), 1)
 
-      setActiveLayers(activeLayersCopy)
-      layers[layerId].setVisible(false)
+      setActiveLayerGroups(activeLayerGroupsCopy)
+      setGroupVisibility(layerId, false)
     } else {
-      if (layers[layerId]) {
-        layers[layerId].setVisible(true)
+      if (layerGroups[layerId]) {
+        setGroupVisibility(layerId, true)
 
-        const activeLayersCopy = [...activeLayers, layerId]
-        setActiveLayers(activeLayersCopy)
+        const activeLayerGroupsCopy = [...activeLayerGroups, layerId]
+        setActiveLayerGroups(activeLayerGroupsCopy)
       } else {
         const layerConf = layerConfs.find((el: LayerConf) => {
           return el.id === layerId
         })
 
         if (layerConf) {
-          addMbStyle(layerConf.style, layerConf.popupFunc)
+          addMbStyle(layerId, layerConf.style, layerConf.popupFunc)
         } else {
           console.error('No layer config found for id: ' + layerId)
         }
       }
     }
   }
-
-  const addMbLayer = (layer: any) => {}
 
   // use REDUX for these?
   const enableGroup = () => {}
@@ -290,7 +304,7 @@ export const MapProvider = ({ children }: Props) => {
   const values = {
     map,
     isLoaded,
-    activeLayers,
+    activeLayerGroups,
     mapToggleTerrain,
     mapResetNorth,
     getGeocoder,
@@ -298,8 +312,7 @@ export const MapProvider = ({ children }: Props) => {
     mapZoomIn,
     mapZoomOut,
     enableGroup,
-    addMbStyle,
-    toggleLayer,
+    toggleLayerGroup,
   }
 
   return (
