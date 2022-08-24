@@ -5,4 +5,4 @@ export type SourceType = 'geojson' | 'vector' | 'raster' | 'image' | 'video' | '
 
 export type LayerId = 'building_energy_certs' | 'no2' | 'snow_cover_loss'
 
-export type LayerConf = { id: LayerId; style: MbStyle; popupFunc: any }
+export type LayerConf = { id: LayerId; style: MbStyle; popupFunc?: any }
