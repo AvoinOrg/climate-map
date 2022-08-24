@@ -1,9 +1,8 @@
 import { Style as MbStyle } from 'mapbox-gl'
-import { Fill, Stroke, Style } from 'ol/style'
 import Feature from 'ol/Feature'
 import _ from 'lodash'
 
-import { fillOpacity, createPopup } from 'Utils/mapUtils'
+import { fillOpacity } from 'Utils/mapUtils'
 import { LayerId, LayerConf } from 'Types/map'
 
 const id: LayerId = 'building_energy_certs'
