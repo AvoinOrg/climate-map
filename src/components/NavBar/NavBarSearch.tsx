@@ -12,9 +12,9 @@ const searchPlaceholder = observable<Placeholder>(nullPlaceholder)
 export const setSearchPlaceholder = (x: Placeholder) => searchPlaceholder.set(x)
 
 export const NavBarSearch: React.FC = () => {
-  const { map, getGeocoder, activeLayers } = React.useContext(MapContext)
+  const { map, getGeocoder, activeLayerGroups } = React.useContext(MapContext)
   const { placeholder, layer } = useObservable(searchPlaceholder.readOnly())
-  const isActive = activeLayers.filter((x) => x.name === layer).length > 0
+  const isActive = activeLayerGroups.filter((x) => x.name === layer).length > 0
 
   const geocoderSearchRef = useRef(null)
   useEffect(() => {

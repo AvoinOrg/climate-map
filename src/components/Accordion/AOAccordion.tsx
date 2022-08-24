@@ -24,7 +24,7 @@ interface AOAccordionProps {
 }
 
 export const AOAccordion = ({ layerId, label, content, panelProps }: AOAccordionProps) => {
-  const { activeLayers, toggleLayer } = React.useContext(MapContext)
+  const { activeLayerGroups, toggleLayerGroup } = React.useContext(MapContext)
   // const groupEnabled = layerGroups.filter((x) => x.name === groupName).length > 0
 
   return (
@@ -35,12 +35,12 @@ export const AOAccordion = ({ layerId, label, content, panelProps }: AOAccordion
             event.stopPropagation()
           }}
           onChange={(_event) => {
-            toggleLayer(layerId)
+            toggleLayerGroup(layerId)
           }}
           onFocus={(event) => event.stopPropagation()}
           control={<Checkbox />}
           label={label}
-          checked={activeLayers.includes(layerId)}
+          checked={activeLayerGroups.includes(layerId)}
         />
         {/* <Typography className={classes.heading}>{label}</Typography> */}
       </AccordionSummary>
@@ -89,11 +89,11 @@ interface LayerToggleControlProps {
 
 // USE REDUX HERE, HHMM
 export const LayerToggleControl = ({ layerId, label }: LayerToggleControlProps) => {
-  const { activeLayers, toggleLayer } = React.useContext(MapContext)
+  const { activeLayerGroups, toggleLayerGroup } = React.useContext(MapContext)
 
   // React.useEffect(() => {
-  //   if ([isLayerEnabled && activeLayers.includes(layerName)]) {
-  //     toggleLayer(layerName, layerStyle)
+  //   if ([isLayerEnabled && activeLayerGroups.includes(layerName)]) {
+  //     toggleLayerGroup(layerName, layerStyle)
   //   }
   // }, [])
 
@@ -103,12 +103,12 @@ export const LayerToggleControl = ({ layerId, label }: LayerToggleControlProps) 
         event.stopPropagation()
       }}
       onChange={(_event) => {
-        toggleLayer(layerId)
+        toggleLayerGroup(layerId)
       }}
       onFocus={(event) => event.stopPropagation()}
       control={<Checkbox />}
       label={label}
-      checked={activeLayers.includes(layerId)}
+      checked={activeLayerGroups.includes(layerId)}
     />
   )
 }
