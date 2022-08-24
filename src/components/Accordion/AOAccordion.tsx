@@ -3,7 +3,6 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Style } from 'mapbox-gl'
 
 import MapContext from 'Components/Map'
 import { LayerId } from 'Types/map'
@@ -84,13 +83,12 @@ export const AOProfileAccordion = ({ onClick, label }: any) => {
 }
 
 interface LayerToggleControlProps {
-  layerName: string
+  layerId: LayerId
   label: string
-  layerStyle?: Style
 }
 
 // USE REDUX HERE, HHMM
-export const LayerToggleControl = ({ layerName, label, layerStyle }: LayerToggleControlProps) => {
+export const LayerToggleControl = ({ layerId, label }: LayerToggleControlProps) => {
   const { activeLayers, toggleLayer } = React.useContext(MapContext)
 
   // React.useEffect(() => {
@@ -105,12 +103,12 @@ export const LayerToggleControl = ({ layerName, label, layerStyle }: LayerToggle
         event.stopPropagation()
       }}
       onChange={(_event) => {
-        toggleLayer(layerName, layerStyle)
+        toggleLayer(layerId)
       }}
       onFocus={(event) => event.stopPropagation()}
       control={<Checkbox />}
       label={label}
-      checked={activeLayers.includes(layerName)}
+      checked={activeLayers.includes(layerId)}
     />
   )
 }
