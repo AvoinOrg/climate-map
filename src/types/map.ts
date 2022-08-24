@@ -7,8 +7,8 @@ export type LayerId =
   | 'building_energy_certs'
   | 'no2'
   | 'snow_cover_loss'
-  | 'fi-buildings'
-  | 'helsinki-buildings'
-  | 'hsy-solar-potential'
+  | 'fi_buildings'
+  | 'helsinki_buildings'
+  | 'hsy_solarpotential'
 
 export type LayerConf = { id: LayerId; style: MbStyle; popupFunc?: any }

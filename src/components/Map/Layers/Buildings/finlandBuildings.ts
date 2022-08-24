@@ -5,7 +5,7 @@ import _ from 'lodash'
 import { fillOpacity } from 'Utils/mapUtils'
 import { LayerId, LayerConf } from 'Types/map'
 
-const id: LayerId = 'fi-buildings'
+const id: LayerId = 'fi_buildings'
 
 interface IBuildingSchemaVRK {
   building_id: string
