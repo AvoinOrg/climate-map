@@ -142,9 +142,14 @@ export const MapProvider = ({ children }: Props) => {
           })
 
           const featureObj = featureObjs[0]
-          const html = popupFuncs[featureObj.layer.get('group')](featureObj.feature)
+          const popupFunc = popupFuncs[featureObj.layer.get('group')]
 
-          createPopup(evt.coordinate, html)
+          if (popupFunc != null) {
+            const html = popupFunc(featureObj.feature)
+
+            createPopup(evt.coordinate, html)
+          }
+
           // console.log(features)
           // for (const i in activeLayers) {
           //   console.log(layers[activeLayers[i]].getSource)
