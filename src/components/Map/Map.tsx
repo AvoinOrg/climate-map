@@ -302,6 +302,13 @@ export const MapProvider = ({ children }: Props) => {
   const enablePersonalDataset = () => {}
   const disablePersonalDataset = () => {}
 
+  // used in ForestArvometsa.tsx. Not all of these are needed
+  const fitBounds = () => {}
+  const genericPopupHandler = () => {}
+  const querySourceFeatures = () => {}
+  const setLayoutProperty = () => {}
+  const setPaintProperty = () => {}
+
   // use REDUX for these?
   const enableGroup = () => {}
   const disableGroup = () => {}
@@ -329,6 +336,12 @@ export const MapProvider = ({ children }: Props) => {
     removeMapEventHandler,
     enablePersonalDataset,
     disablePersonalDataset,
+
+    fitBounds,
+    genericPopupHandler,
+    querySourceFeatures,
+    setLayoutProperty,
+    setPaintProperty,
   }
 
   return (
