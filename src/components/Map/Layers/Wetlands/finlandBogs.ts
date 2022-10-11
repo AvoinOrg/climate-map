@@ -108,6 +108,6 @@ const gtkTurveVaratLuonnontilaisuusluokka: any = {
   5: 'The bog is in its natural state',
 }
 
-const layerConf: LayerConf = { id: id, style: getStyle(), popupFunc: popupFunc }
+const layerConf: LayerConf = { id: id, style: getStyle, popupFunc: popupFunc }
 
 export default layerConf

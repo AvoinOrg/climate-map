@@ -117,6 +117,6 @@ const popupFunc = (f: Feature) => {
   return html
 }
 
-const layerConf: LayerConf = { id: id, style: getStyle(), popupFunc: popupFunc }
+const layerConf: LayerConf = { id: id, style: getStyle, popupFunc: popupFunc }
 
 export default layerConf
