@@ -1,1 +1,4 @@
-export { default } from './Map'
+import { MapContext, MapProvider } from './Map'
+import { GroupOrientation } from './MapButtons'
+
+export { MapContext, MapProvider, GroupOrientation }

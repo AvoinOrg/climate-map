@@ -1,8 +1,8 @@
 import React, { useContext } from 'react'
-import { useTheme, Theme } from '@mui/material/styles';
+import { useTheme, Theme } from '@mui/material/styles'
 
-import makeStyles from '@mui/styles/makeStyles';
-import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles'
+import createStyles from '@mui/styles/createStyles'
 
 import ButtonGroup from '@mui/material/ButtonGroup'
 
@@ -14,7 +14,7 @@ import RemoveIcon from '@mui/icons-material/Remove'
 
 import GpsFixedIcon from '@mui/icons-material/GpsFixed'
 
-import MapContext from 'Components/Map/Map'
+import { MapContext } from 'Components/Map'
 import { Button } from '@mui/material'
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   })
 )
-export default function GroupOrientation() {
+export const GroupOrientation = () => {
   const theme = useTheme()
   const classes = useStyles(theme)
   const { mapToggleTerrain, mapResetNorth, mapZoomIn, mapZoomOut, mapRelocate } = React.useContext(MapContext)

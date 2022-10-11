@@ -36,7 +36,7 @@ interface IMapContext {
   // addMbStyle?: (style: any) => void
 }
 
-const MapContext = createContext<IMapContext>({ isLoaded: false })
+export const MapContext = createContext<IMapContext>({ isLoaded: false })
 
 export const MapProvider = ({ children }: Props) => {
   const [map, setMap] = useState<Map>(null)
@@ -335,5 +335,3 @@ export const MapProvider = ({ children }: Props) => {
     </MapContext.Provider>
   )
 }
-
-export default MapContext
