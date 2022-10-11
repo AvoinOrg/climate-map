@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Switch, useParams } from 'react-router-
 
 import Sidebar from './components/Sidebar'
 import NavBar from './components/NavBar'
-import MapButtons from './components/MapButtons'
+import { GroupOrientation } from './components/Map'
 
 // import { URLLayerSyncContainer } from './URLLayerSyncContainer'
 // import ForestArvometsa from "./components/Sidebar/ForestArvometsa";
@@ -12,20 +12,20 @@ import MapButtons from './components/MapButtons'
 // import KaribaForestCoverChanges from "./components/Sidebar/KaribaForestCoverChanges";
 // import FFD from "./components/Sidebar/FFD";
 import { MainMenu } from './components/Sidebar/Sidebar'
-import OverlayMessages from './components/OverlayMessages'
+import OverlayMessages from './components/OverlayMessages/OverlayMessages'
 // import Ekofolio from "./components/Sidebar/Ekofolio";
 import UserModal from './components/Profile/UserModal'
-import LoadingModal from './components/LoadingModal'
-import { UserContext } from './components/User'
-import { StateContext } from './components/State'
+import { LoadingModal } from './components/Loading/LoadingModal'
+import { UserStateContext } from './components/State/UserState'
+import { UiStateContext } from './components/State/UiState'
 // import ValioCarbonGrassFields from "./components/Sidebar/ValioCarbonGrassFields";
 
 const VerificationRouter = (props) => {
   const { fetchUserProfile, fetchUserIntegrations, isLoggedIn, userProfile, hasInitialized, verifyEmail, logout }: any =
-    React.useContext(UserContext)
+    React.useContext(UserStateContext)
 
   const { setSignupFunnelStep, setIsSignupOpen, setIsProfileOpen, setProfileState }: any =
-    React.useContext(StateContext)
+    React.useContext(UiStateContext)
 
   const { token }: any = useParams()
   const [hasRouted, setHasRouted] = useState(false)
@@ -79,10 +79,10 @@ const VerificationRouter = (props) => {
 
 const LayerRouter = (props) => {
   const { isLoggedIn, userProfile, userIntegrations, fetchIntegrations, hasInitialized }: any =
-    React.useContext(UserContext)
+    React.useContext(UserStateContext)
 
   const { setIsSignupOpen, setIsProfileOpen, setProfileState, setSignupFunnelStep, notify }: any =
-    React.useContext(StateContext)
+    React.useContext(UiStateContext)
 
   const { layer }: any = useParams()
   const [routeState, setRouteState] = useState<'none' | 'allowed' | 'verify' | 'fetching' | 'denied' | 'login'>('none')
@@ -156,7 +156,7 @@ const LayerRouter = (props) => {
 export default function AppRouterSwitch() {
   return (
     <Router>
-      <MapButtons />
+      <GroupOrientation />
       <NavBar />
       <OverlayMessages />
       {/* <URLLayerSyncContainer> */}
