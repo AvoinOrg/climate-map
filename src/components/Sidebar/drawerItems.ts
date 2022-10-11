@@ -1,11 +1,12 @@
-import BiodiversityContent from '../Accordion/BiodiversityContent/BiodiversityContent'
-import WetlandsContent from '../Accordion/WetlandsContent/WetlandsContent'
-import BuildingsContent from '../Accordion/BuildingsContent/BuildingsContent'
-import SnowCoverLossContent from '../Accordion/SnowCoverLossContent/SnowCoverLossContent'
-import ForestContent from '../Accordion/ForestContent'
-import AirQualityContent from '../Accordion/AirQualityContent/AirQualityContent'
-// import UserContent from "../Accordion/UserContent";
-import PrivateContent from '../Accordion/PrivateContent/PrivateContent'
+import {
+  ForestContent,
+  BiodiversityContent,
+  WetlandsContent,
+  BuildingsContent,
+  SnowCoverLossContent,
+  AirQualityContent,
+  PrivateContent,
+} from '../Accordion'
 
 export interface ContentEntity {
   title: string
