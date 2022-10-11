@@ -3,7 +3,7 @@ import Button from '@mui/material/Button'
 import { Theme } from '@mui/material/styles'
 import createStyles from '@mui/styles/createStyles'
 import makeStyles from '@mui/styles/makeStyles'
-import { StateContext } from '../State'
+import { UiStateContext } from '../State'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const ActionButtons = () => {
   const classes = useStyles({})
-  const { modalState, setModalState }: any = React.useContext(StateContext)
+  const { modalState, setModalState }: any = React.useContext(UiStateContext)
 
   const handleLoginClick = () => {
     if (modalState === 'login') {
