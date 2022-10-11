@@ -268,7 +268,7 @@ export const MapProvider = ({ children }: Props) => {
       // })
     })
   }
-  const toggleLayerGroup = (layerId: LayerId) => {
+  const toggleLayerGroup = async (layerId: LayerId) => {
     if (activeLayerGroups.includes(layerId)) {
       const activeLayerGroupsCopy = [...activeLayerGroups]
       activeLayerGroupsCopy.splice(activeLayerGroupsCopy.indexOf(layerId), 1)
@@ -286,7 +286,8 @@ export const MapProvider = ({ children }: Props) => {
           return el.id === layerId
         })
         if (layerConf) {
-          addMbStyle(layerId, layerConf.style, layerConf.popupFunc)
+          const style = await layerConf.style()
+          addMbStyle(layerId, style, layerConf.popupFunc)
         } else {
           console.error('No layer config found for id: ' + layerId)
         }

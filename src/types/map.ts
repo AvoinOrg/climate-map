@@ -18,4 +18,4 @@ export type LayerId =
   | 'zonation6'
   | 'natura2000'
 
-export type LayerConf = { id: LayerId; style: MbStyle; popupFunc?: any }
+export type LayerConf = { id: LayerId; style: () => Promise<MbStyle>; popupFunc?: any }
