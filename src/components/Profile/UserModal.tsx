@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 )
 
-const UserModal = () => {
+export const UserModal = () => {
   const { modalState, setModalState }: any = React.useContext(UiStateContext)
 
   const classes = useStyles({})
@@ -88,5 +88,3 @@ const UserModal = () => {
     </div>
   )
 }
-
-export default UserModal
