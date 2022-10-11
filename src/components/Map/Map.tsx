@@ -285,7 +285,6 @@ export const MapProvider = ({ children }: Props) => {
         const layerConf = layerConfs.find((el: LayerConf) => {
           return el.id === layerId
         })
-        console.log(layerConf)
         if (layerConf) {
           addMbStyle(layerId, layerConf.style, layerConf.popupFunc)
         } else {
