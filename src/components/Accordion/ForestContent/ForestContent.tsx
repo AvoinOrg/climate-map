@@ -93,10 +93,10 @@ const ForestContent = () => {
   return (
     <div className={classes.root}>
       <AOAccordionLink href="/layers/fi-forest" label={"Finland's Forests"} />
-      <AOAccordion groupName={'hansen'} label={'Global forest coverage'} content={<ForestCoverageContent />} />
-      <AOAccordion groupName={'mature-forests'} label={'Mature Forests'} content={<MatureForestContent />} />
-      <AOAccordion groupName={'mangrove-forests'} label={'Mangrove forests'} content={<MangroveForestContent />} />
-      <AOAccordion groupName={'gfw_tree_plantations'} label={'Tree plantations'} content={<TropicalForestContent />} />
+      <AOAccordion layerId={'hansen'} label={'Global forest coverage'} content={<ForestCoverageContent />} />
+      <AOAccordion layerId={'mature-forests'} label={'Mature Forests'} content={<MatureForestContent />} />
+      <AOAccordion layerId={'mangrove-forests'} label={'Mangrove forests'} content={<MangroveForestContent />} />
+      <AOAccordion layerId={'gfw_tree_plantations'} label={'Tree plantations'} content={<TropicalForestContent />} />
     </div>
   )
 }
