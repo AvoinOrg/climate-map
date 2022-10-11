@@ -12,7 +12,7 @@ export const setOverlayMessage = (condition: boolean, message: Message) => {
 }
 
 //OL_FIX: check later what is happening in this component and remove micro-observables
-const OverlayMessages: React.FC = () => {
+export const OverlayMessages: React.FC = () => {
   const { activeLayerGroups } = React.useContext(MapContext)
   const { message, layer } = useObservable(overlayMessage.readOnly())
   const isActive = activeLayerGroups.filter((x) => x.name === layer).length > 0
@@ -25,5 +25,3 @@ const OverlayMessages: React.FC = () => {
     </div>
   )
 }
-
-export default OverlayMessages

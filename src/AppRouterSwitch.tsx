@@ -1,24 +1,23 @@
 import React, { useEffect, useState } from 'react'
 import { BrowserRouter as Router, Route, Switch, useParams } from 'react-router-dom'
 
-import Sidebar from './components/Sidebar'
-import NavBar from './components/NavBar'
-import { GroupOrientation } from './components/Map'
-
+import Sidebar from 'Components/Sidebar'
+import { NavBar } from 'Components/NavBar'
+import { GroupOrientation } from 'Components/Map'
 // import { URLLayerSyncContainer } from './URLLayerSyncContainer'
-// import ForestArvometsa from "./components/Sidebar/ForestArvometsa";
-// import Omaihka from "./components/Sidebar/Omaihka";
-// import FaoImages2021 from "./components/Sidebar/FaoImages2021";
-// import KaribaForestCoverChanges from "./components/Sidebar/KaribaForestCoverChanges";
-// import FFD from "./components/Sidebar/FFD";
-import { MainMenu } from './components/Sidebar/Sidebar'
-import OverlayMessages from './components/OverlayMessages/OverlayMessages'
-// import Ekofolio from "./components/Sidebar/Ekofolio";
-import UserModal from './components/Profile/UserModal'
-import { LoadingModal } from './components/Loading/LoadingModal'
-import { UserStateContext } from './components/State/UserState'
-import { UiStateContext } from './components/State/UiState'
-// import ValioCarbonGrassFields from "./components/Sidebar/ValioCarbonGrassFields";
+// import ForestArvometsa from "Components/Sidebar/ForestArvometsa";
+// import Omaihka from "Components/Sidebar/Omaihka";
+// import FaoImages2021 from "Components/Sidebar/FaoImages2021";
+// import KaribaForestCoverChanges from "Components/Sidebar/KaribaForestCoverChanges";
+// import FFD from "Components/Sidebar/FFD";
+import { MainMenu } from 'Components/Sidebar/Sidebar'
+import { OverlayMessages } from 'Components/OverlayMessages'
+// import Ekofolio from "Components/Sidebar/Ekofolio";
+import UserModal from 'Components/Profile/UserModal'
+import { LoadingModal } from 'Components/Loading/LoadingModal'
+import { UserStateContext } from 'Components/State'
+import { UiStateContext } from 'Components/State'
+// import ValioCarbonGrassFields from "Components/Sidebar/ValioCarbonGrassFields";
 
 const VerificationRouter = (props) => {
   const { fetchUserProfile, fetchUserIntegrations, isLoggedIn, userProfile, hasInitialized, verifyEmail, logout }: any =
