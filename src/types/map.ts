@@ -17,5 +17,6 @@ export type LayerId =
   | 'metsaan_ete_important'
   | 'zonation'
   | 'natura2000'
+  | 'hansen'
 
 export type LayerConf = { id: LayerId; style: () => Promise<MbStyle>; popupFunc?: any }

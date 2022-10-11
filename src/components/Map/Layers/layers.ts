@@ -12,6 +12,8 @@ import ciforWetlands from './Wetlands/ciforWetlands'
 import metsaanEteBasic from './Biodiversity/metsaanEteBasic'
 import metsaanEteImportant from './Biodiversity/metsaanEteImportant'
 import zonation from './Biodiversity/zonation'
+import natura2000 from './Biodiversity/natura2000'
+import hansen from './Forests/hansen'
 
 const layerConfs = [
   buildingEnergyCertificates,
@@ -25,6 +27,8 @@ const layerConfs = [
   metsaanEteBasic,
   metsaanEteImportant,
   zonation,
+  natura2000,
+  hansen,
 ]
 
 export default layerConfs
