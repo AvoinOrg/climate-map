@@ -1,60 +1,58 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Theme } from "@mui/material";
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
-import { AOAccordionLink } from "../AOAccordion";
-import { UserContext } from "../../User";
+import React, { useContext, useEffect, useState } from 'react'
+import { Theme } from '@mui/material'
+import createStyles from '@mui/styles/createStyles'
+import makeStyles from '@mui/styles/makeStyles'
+
+import { AOAccordionLink } from 'Components/Accordion'
+import { UserStateContext } from 'Components/State/UserState'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      width: "100%",
+      width: '100%',
     },
     text: {
-      padding: "0 16px 0 16px",
-      fontWeight: theme.typography["regular"].fontWeight,
+      padding: '0 16px 0 16px',
+      fontWeight: theme.typography['regular'].fontWeight,
     },
   })
-);
+)
 
 const PrivateContent = () => {
-  const classes = useStyles({});
-  const { isLoggedIn, privateLayers }: any = useContext(UserContext);
+  const classes = useStyles({})
+  const { isLoggedIn, privateLayers }: any = useContext(UserStateContext)
 
-  const [hasLayers, setHasLayers] = useState(false);
+  const [hasLayers, setHasLayers] = useState(false)
 
   useEffect(() => {
     if (isLoggedIn) {
       for (const key in privateLayers) {
         if (privateLayers[key]) {
-          !hasLayers && setHasLayers(true);
-          return;
+          !hasLayers && setHasLayers(true)
+          return
         }
       }
     }
 
-    setHasLayers(false);
+    setHasLayers(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn, privateLayers]);
+  }, [isLoggedIn, privateLayers])
 
   return (
     <div className={classes.root}>
       <p className={classes.text}>
-        This panel shows all the private data you have access to.{" "}
+        This panel shows all the private data you have access to.{' '}
         {!hasLayers && "You don't currently have access to any private data."}
       </p>
       {hasLayers && (
         <>
-          {privateLayers["valio-carbon-grass-fields"] && (
-            <AOAccordionLink
-              href="/layers/valio-carbon-grass-fields"
-              label={"Valio Carbon Grass Fields"}
-            />
+          {privateLayers['valio-carbon-grass-fields'] && (
+            <AOAccordionLink href="/layers/valio-carbon-grass-fields" label={'Valio Carbon Grass Fields'} />
           )}
         </>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default PrivateContent;
+export default PrivateContent
