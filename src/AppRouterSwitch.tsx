@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { BrowserRouter as Router, Route, Switch, useParams } from 'react-router-dom'
 
-import Sidebar from 'Components/Sidebar'
+import { Sidebar } from 'Components/Sidebar'
 import { NavBar } from 'Components/NavBar'
 import { GroupOrientation } from 'Components/Map'
 // import { URLLayerSyncContainer } from './URLLayerSyncContainer'
@@ -10,11 +10,11 @@ import { GroupOrientation } from 'Components/Map'
 // import FaoImages2021 from "Components/Sidebar/FaoImages2021";
 // import KaribaForestCoverChanges from "Components/Sidebar/KaribaForestCoverChanges";
 // import FFD from "Components/Sidebar/FFD";
-import { MainMenu } from 'Components/Sidebar/Sidebar'
+import { MainMenu } from 'Components/Sidebar'
 import { OverlayMessages } from 'Components/OverlayMessages'
 // import Ekofolio from "Components/Sidebar/Ekofolio";
-import UserModal from 'Components/Profile/UserModal'
-import { LoadingModal } from 'Components/Loading/LoadingModal'
+import { UserModal } from 'Components/Profile'
+import { LoadingModal } from 'Components/Loading'
 import { UserStateContext } from 'Components/State'
 import { UiStateContext } from 'Components/State'
 // import ValioCarbonGrassFields from "Components/Sidebar/ValioCarbonGrassFields";
