@@ -5,7 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Button } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
-import { UserContext } from "../User";
+import { UserStateContext } from 'Components/State'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const Finish = (props) => {
   const classes = useStyles({});
-  const { userProfile }: any = React.useContext(UserContext);
+  const { userProfile }: any = React.useContext(UserStateContext);
 
   return (
     <div className={classes.root}>

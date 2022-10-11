@@ -5,7 +5,7 @@ import makeStyles from '@mui/styles/makeStyles'
 import { FormControl, OutlinedInput, InputLabel, Button } from '@mui/material'
 
 import { UserContext } from '../User'
-import { StateContext } from '../State'
+import { StateContext } from '../State/UiState'
 import PasswordField from './PasswordField'
 
 const useStyles = makeStyles((theme: Theme) =>
