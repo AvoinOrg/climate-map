@@ -13,5 +13,9 @@ export type LayerId =
   | 'fi_bogs'
   | 'cifor_peatdepth'
   | 'cifor_wetlands'
+  | 'metsaan_ete_basic'
+  | 'metsaan_ete_important'
+  | 'zonation6'
+  | 'natura2000'
 
 export type LayerConf = { id: LayerId; style: MbStyle; popupFunc?: any }
