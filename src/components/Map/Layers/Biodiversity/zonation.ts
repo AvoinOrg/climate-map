@@ -6,19 +6,11 @@ const id: LayerId = 'zonation'
 
 const zonationVersions = [1, 2, 3, 4, 5, 6]
 
-const getZonationId = (v: number) => {
-  if (v === 1) {
-    return id
-  }
-
-  return `zonation-v${v}`
-}
-
 const getZonationSources = () => {
   const sources: { [index: string]: RasterSource } = {}
 
   zonationVersions.forEach((v) => {
-    const id = getZonationId(v)
+    const id = `zonation-v${v}`
 
     sources[id] = {
       type: 'raster',
@@ -40,7 +32,7 @@ const getZonationLayers = () => {
   const layers: AnyLayer[] = []
 
   zonationVersions.forEach((v) => {
-    const id = getZonationId(v)
+    const id = `zonation-v${v}`
 
     layers.push({
       id: id + `-fill`,
