@@ -9,7 +9,8 @@ import airQuality from './AirQuality/airQuality'
 import finlandBogs from './Wetlands/finlandBogs'
 import ciforPeatlands from './Wetlands/ciforPeatlands'
 import ciforWetlands from './Wetlands/ciforWetlands'
-import metsaanEte from './Biodiversity/metsaanEte'
+import metsaanEteBasic from './Biodiversity/metsaanEteBasic'
+import metsaanEteImportant from './Biodiversity/metsaanEteImportant'
 
 const layerConfs = [
   buildingEnergyCertificates,
@@ -20,7 +21,8 @@ const layerConfs = [
   finlandBogs,
   ciforPeatlands,
   ciforWetlands,
-  metsaanEte,
+  metsaanEteBasic,
+  metsaanEteImportant,
 ]
 
 export default layerConfs
