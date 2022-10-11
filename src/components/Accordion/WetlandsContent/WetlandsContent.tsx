@@ -15,9 +15,9 @@ const WetlandsContent = () => {
   const classes = useStyles({})
   return (
     <div className={classes.root}>
-      <AOAccordion groupName={'bogs'} label={'Bogs and swamps (Finland)'} content={null} />
-      <AOAccordion groupName={'cifor-peatdepth'} label={'Tropical Peatlands'} content={null} />
-      <AOAccordion groupName={'cifor-wetlands'} label={'Tropical Wetlands'} content={null} />
+      <AOAccordion layerId={'fi_bogs'} label={'Bogs and swamps (Finland)'} content={null} />
+      <AOAccordion layerId={'cifor_peatdepth'} label={'Tropical Peatlands'} content={null} />
+      <AOAccordion layerId={'cifor_wetlands'} label={'Tropical Wetlands'} content={null} />
     </div>
   )
 }
