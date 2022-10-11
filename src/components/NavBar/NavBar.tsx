@@ -14,8 +14,7 @@ import Logo from '../../logo.svg'
 import { NavBarSearch } from './NavBarSearch'
 import ProfileMenu from './ProfileMenu'
 import ActionButtons from './ActionButtons'
-import { UserContext } from '../User'
-import { StateContext } from '../State'
+import { UserStateContext, UiStateContext } from 'Components/State'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -102,10 +101,10 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 )
 
-const NavBar = () => {
+export const NavBar = () => {
   const classes = useStyles({})
-  const { isSidebarOpen, setIsSidebarOpen, isSidebarDisabled }: any = React.useContext(StateContext)
-  const { isLoggedIn }: any = React.useContext(UserContext)
+  const { isSidebarOpen, setIsSidebarOpen, isSidebarDisabled }: any = React.useContext(UiStateContext)
+  const { isLoggedIn }: any = React.useContext(UserStateContext)
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen)
@@ -145,4 +144,3 @@ const NavBar = () => {
     </AppBar>
   )
 }
-export default NavBar
