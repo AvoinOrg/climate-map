@@ -18,5 +18,8 @@ export type LayerId =
   | 'zonation'
   | 'natura2000'
   | 'hansen'
+  | 'fi_mature_forests'
+  | 'mangrove_forests'
+  | 'gfw_tree_plantations'
 
 export type LayerConf = { id: LayerId; style: () => Promise<MbStyle>; popupFunc?: any }
