@@ -10,7 +10,6 @@ import { Accordion } from 'Components/Accordion'
 import { UserStateContext, UiStateContext } from 'Components/State'
 import drawerItems, { privateDrawerItems } from './drawerItems'
 
-
 const drawerWidth = 340
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -63,7 +62,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 )
 
-export function MainMenu() {
+export const MainMenu = () => {
   const classes = useStyles({})
 
   const { isLoggedIn }: any = useContext(UserStateContext)
@@ -85,7 +84,7 @@ export function MainMenu() {
   )
 }
 
-function Sidebar({ children }) {
+export const Sidebar = ({ children }) => {
   const classes = useStyles({})
   const { isSidebarOpen }: any = useContext(UiStateContext)
 
