@@ -10,5 +10,8 @@ export type LayerId =
   | 'fi_buildings'
   | 'helsinki_buildings'
   | 'hsy_solarpotential'
+  | 'fi_bogs'
+  | 'cifor_peatdepth'
+  | 'cifor_wetlands'
 
 export type LayerConf = { id: LayerId; style: MbStyle; popupFunc?: any }
