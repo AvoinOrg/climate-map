@@ -4,8 +4,7 @@ import createStyles from '@mui/styles/createStyles'
 import makeStyles from '@mui/styles/makeStyles'
 import { FormControl, OutlinedInput, InputLabel, Button } from '@mui/material'
 
-import { UserContext } from '../User'
-import { StateContext } from '../State/UiState'
+import { UserStateContext, UiStateContext } from 'Components/State'
 import PasswordField from './PasswordField'
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -64,8 +63,8 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const Login = () => {
   const classes = useStyles({})
-  const { login }: any = React.useContext(UserContext)
-  const { setModalState }: any = React.useContext(StateContext)
+  const { login }: any = React.useContext(UserStateContext)
+  const { setModalState }: any = React.useContext(UiStateContext)
 
   const [isButtonDisabled, setIsButtonDisabled] = useState(true)
   const [bigError, setBigError] = useState('')
