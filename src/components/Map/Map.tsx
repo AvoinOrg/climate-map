@@ -294,6 +294,14 @@ export const MapProvider = ({ children }: Props) => {
     }
   }
 
+  // implement at some point
+  const setFilter = () => {}
+  const AddMapEventHandler = () => {}
+  const isSourceReady = () => {}
+  const removeMapEventHandler = () => {}
+  const enablePersonalDataset = () => {}
+  const disablePersonalDataset = () => {}
+
   // use REDUX for these?
   const enableGroup = () => {}
   const disableGroup = () => {}
@@ -314,6 +322,13 @@ export const MapProvider = ({ children }: Props) => {
     mapZoomOut,
     enableGroup,
     toggleLayerGroup,
+
+    setFilter,
+    AddMapEventHandler,
+    isSourceReady,
+    removeMapEventHandler,
+    enablePersonalDataset,
+    disablePersonalDataset,
   }
 
   return (
