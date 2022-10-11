@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import axios, { AxiosRequestConfig } from 'axios'
 
-import { enablePersonalDataset, disablePersonalDataset } from '../map/layers/personal/common'
+import { MapContext } from 'Components/Map'
 import { UiStateContext } from './UiState'
 import { VerificationStatus } from 'Utils/types'
 // const claimHashes = {
@@ -25,7 +25,8 @@ export const UserStateProvider = (props) => {
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>('unverified')
   const [hasInitialized, setHasInitialized] = useState(false)
 
-  const { setSignupFunnelStep }: any = React.useContext(StateContext)
+  const { setSignupFunnelStep }: any = React.useContext(UiStateContext)
+  const { enablePersonalDataset, disablePersonalDataset }: any = React.useContext(MapContext)
 
   const storeToken = (token, expires) => {
     localStorage.setItem('token', token)
