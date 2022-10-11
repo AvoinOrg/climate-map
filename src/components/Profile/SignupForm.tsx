@@ -4,8 +4,7 @@ import createStyles from '@mui/styles/createStyles'
 import makeStyles from '@mui/styles/makeStyles'
 import { TextField, FormControl, OutlinedInput, InputLabel, FormHelperText } from '@mui/material'
 
-import { UserContext } from '../User'
-import { StateContext } from '../State'
+import { UserStateContext, UiStateContext } from 'Components/State'
 import { NextButton } from './Signup'
 import PasswordField from './PasswordField'
 
@@ -75,8 +74,8 @@ const defaultValues = {
 
 const SignupForm = (props) => {
   const classes = useStyles({})
-  const { signup }: any = React.useContext(UserContext)
-  const { setModalState }: any = React.useContext(StateContext)
+  const { signup }: any = React.useContext(UserStateContext)
+  const { setModalState }: any = React.useContext(UiStateContext)
 
   const [isButtonDisabled, setIsButtonDisabled] = useState(true)
   const [bigError, setBigError] = useState('')
