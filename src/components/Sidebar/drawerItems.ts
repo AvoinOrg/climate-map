@@ -1,17 +1,17 @@
-import BiodiversityContent from "../Accordion/BiodiversityContent";
-import WetlandsContent from "../Accordion/WetlandsContent";
-import BuildingsContent from "../Accordion/BuildingsContent/BuildingsContent";
-import SnowCoverLossContent from "../Accordion/SnowCoverLossContent/SnowCoverLossContent";
-import ForestContent from "../Accordion/ForestContent";
-import AirQualityContent from "../Accordion/AirQualityContent/AirQualityContent";
+import BiodiversityContent from '../Accordion/BiodiversityContent/BiodiversityContent'
+import WetlandsContent from '../Accordion/WetlandsContent/WetlandsContent'
+import BuildingsContent from '../Accordion/BuildingsContent/BuildingsContent'
+import SnowCoverLossContent from '../Accordion/SnowCoverLossContent/SnowCoverLossContent'
+import ForestContent from '../Accordion/ForestContent'
+import AirQualityContent from '../Accordion/AirQualityContent/AirQualityContent'
 // import UserContent from "../Accordion/UserContent";
-import PrivateContent from "../Accordion/PrivateContent";
+import PrivateContent from '../Accordion/PrivateContent/PrivateContent'
 
 export interface ContentEntity {
-  title: string;
-  content?: null;
-  contentType?: null;
-  noAccordionPadding?: boolean;
+  title: string
+  content?: null
+  contentType?: null
+  noAccordionPadding?: boolean
 }
 
 const drawerItems = [
@@ -20,7 +20,7 @@ const drawerItems = [
   //   content: UserContent,
   // },
   {
-    title: "Forest",
+    title: 'Forest',
     content: ForestContent,
   },
   // {
@@ -37,19 +37,19 @@ const drawerItems = [
   //   contentType: 'textWithLink'
   // },
   {
-    title: "Biodiversity",
+    title: 'Biodiversity',
     content: BiodiversityContent,
   },
   {
-    title: "Wetlands",
+    title: 'Wetlands',
     content: WetlandsContent,
   },
   {
-    title: "Buildings",
+    title: 'Buildings',
     content: BuildingsContent,
   },
   {
-    title: "Air quality",
+    title: 'Air quality',
     content: AirQualityContent,
   },
   // {
@@ -58,7 +58,7 @@ const drawerItems = [
   //   contentType: null
   // },
   {
-    title: "Snow cover loss",
+    title: 'Snow cover loss',
     content: SnowCoverLossContent,
   },
   // {
@@ -66,13 +66,13 @@ const drawerItems = [
   //   content: null,
   //   contentType: null
   // },
-];
+]
 
-export default drawerItems;
+export default drawerItems
 
 export const privateDrawerItems = [
   {
-    title: "Private data",
+    title: 'Private data',
     content: PrivateContent,
   },
-];
+]
