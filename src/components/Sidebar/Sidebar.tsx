@@ -4,14 +4,12 @@ import makeStyles from '@mui/styles/makeStyles'
 import createStyles from '@mui/styles/createStyles'
 import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
+import { ListItem } from '@mui/material'
 
 import { Accordion } from 'Components/Accordion'
-
+import { UserStateContext, UiStateContext } from 'Components/State'
 import drawerItems, { privateDrawerItems } from './drawerItems'
 
-import { ListItem } from '@mui/material'
-import { StateContext } from '../State/UiState'
-import { UserContext } from '../User'
 
 const drawerWidth = 340
 
@@ -68,7 +66,7 @@ const useStyles = makeStyles((theme: Theme) =>
 export function MainMenu() {
   const classes = useStyles({})
 
-  const { isLoggedIn }: any = useContext(UserContext)
+  const { isLoggedIn }: any = useContext(UserStateContext)
 
   return (
     <List className={classes.dropdownList}>
@@ -89,7 +87,7 @@ export function MainMenu() {
 
 function Sidebar({ children }) {
   const classes = useStyles({})
-  const { isSidebarOpen }: any = useContext(StateContext)
+  const { isSidebarOpen }: any = useContext(UiStateContext)
 
   return (
     <div className={'left-drawer'}>
