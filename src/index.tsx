@@ -10,8 +10,7 @@ import './map'
 import theme from './ui/theme'
 
 // import * as serviceWorker from "./serviceWorker";
-import { UserProvider } from './components/User'
-import { StateProvider } from './components/State'
+import { UiStateProvider, UserStateProvider } from './components/State'
 import { MapProvider } from './components/Map/Map'
 
 declare module '@mui/styles/defaultTheme' {
@@ -25,15 +24,15 @@ const root = createRoot(container)
 root.render(
   <StyledEngineProvider injectFirst>
     <ThemeProvider theme={theme}>
-      <StateProvider>
-        <MapProvider zoom={12} center={[60, 50]}>
-          <UserProvider>
+      <UiStateProvider>
+        <MapProvider>
+          <UserStateProvider>
             {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
             <CssBaseline />
             <AppRouterSwitch />
-          </UserProvider>
+          </UserStateProvider>
         </MapProvider>
-      </StateProvider>
+      </UiStateProvider>
     </ThemeProvider>
   </StyledEngineProvider>
 )
