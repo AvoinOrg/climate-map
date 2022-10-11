@@ -1,86 +1,79 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Theme, Button, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
-import { AOAccordion } from "./AOAccordion";
-import { UserContext } from "../User";
-import { StateContext } from "../State";
-import { setFilter, addMapEventHandler, isSourceReady } from "../../map/map";
-import { removeMapEventHandler } from "src/map/map";
+import React, { useContext, useEffect, useState } from 'react'
+import { Theme, Button, FormControl, InputLabel, MenuItem, Select } from '@mui/material'
+import createStyles from '@mui/styles/createStyles'
+import makeStyles from '@mui/styles/makeStyles'
+
+import { AOAccordion } from 'Components/Accordion'
+import { UserStateContext, UiStateContext } from 'Components/State'
+import { MapContext } from 'Components/Map'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      width: "100%",
+      width: '100%',
     },
     text: {
-      padding: "0 16px 0 16px",
-      fontWeight: theme.typography["regular"].fontWeight,
+      padding: '0 16px 0 16px',
+      fontWeight: theme.typography['regular'].fontWeight,
     },
     dataButton: {
-      margin: "16px 16px 16px 16px",
+      margin: '16px 16px 16px 16px',
       fontSize: 14,
     },
     formControl: {
-      margin: "0 16px 16px 0",
+      margin: '0 16px 16px 0',
       minWidth: 120,
     },
   })
-);
+)
 
 const VipuContent = (props) => {
-  const classes = useStyles({});
-  const { fetchSource }: any = useContext(UserContext);
+  const classes = useStyles({})
+  const { fetchSource }: any = useContext(UserStateContext)
+  const { isSourceReady, setFilter, removeMapEventHandler }: any = useContext(MapContext)
 
-  const [filterFeatureList, setFilterFeatureList] = useState([]);
-  const [filterValue, setFilterValue] = useState("");
-  const [itemCount, setItemCount] = useState(0);
+  const [filterFeatureList, setFilterFeatureList] = useState([])
+  const [filterValue, setFilterValue] = useState('')
+  const [itemCount, setItemCount] = useState(0)
 
   useEffect(() => {
-    fetchSource(props.sourceName + ".geojson").then((data) => {
-      let vals: string[] = Array.from(
-        new Set(data.features.map((item) => props.filterFunction(item)))
-      );
+    fetchSource(props.sourceName + '.geojson').then((data) => {
+      let vals: string[] = Array.from(new Set(data.features.map((item) => props.filterFunction(item))))
 
-      setItemCount(data.features.length);
+      setItemCount(data.features.length)
 
-      vals = vals.reverse();
+      vals = vals.reverse()
 
       if (vals.length > 0) {
-        setFilterValue(vals[0]);
+        setFilterValue(vals[0])
         const handler = (data) => {
-          if (
-            data.sourceId === props.sourceLayer &&
-            isSourceReady(props.sourceLayer)
-          ) {
-            setVipuFilter(props.sourceLayer, props.filterFeature, vals[0]);
-            removeMapEventHandler("data", handler);
+          if (data.sourceId === props.sourceLayer && isSourceReady(props.sourceLayer)) {
+            setVipuFilter(props.sourceLayer, props.filterFeature, vals[0])
+            removeMapEventHandler('data', handler)
           }
-        };
+        }
 
-        addMapEventHandler("data", handler);
+        addMapEventHandler('data', handler)
       }
 
-      setFilterFeatureList(vals);
-    });
+      setFilterFeatureList(vals)
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [])
 
   const setVipuFilter = (sourceLayer, filterFeature, value) => {
-    setFilter(`${sourceLayer}-fill`, ["in", filterFeature, value]);
-  };
+    setFilter(`${sourceLayer}-fill`, ['in', filterFeature, value])
+  }
 
   const handleChange = (event) => {
-    setFilterValue(event.target.value);
-    setVipuFilter(props.sourceLayer, props.filterFeature, event.target.value);
-  };
+    setFilterValue(event.target.value)
+    setVipuFilter(props.sourceLayer, props.filterFeature, event.target.value)
+  }
 
   return (
     <div>
       <FormControl variant="outlined" className={classes.formControl}>
-        <InputLabel id="demo-simple-select-outlined-label">
-          {props.filterFeatureName}
-        </InputLabel>
+        <InputLabel id="demo-simple-select-outlined-label">{props.filterFeatureName}</InputLabel>
         <Select
           labelId="demo-simple-select-outlined-label"
           id="demo-simple-select-outlined"
@@ -98,33 +91,33 @@ const VipuContent = (props) => {
       <p>{props.subText}</p>
       <p>{`Your data contains ${itemCount} ${props.countUnit}.`}</p>
     </div>
-  );
-};
+  )
+}
 
 const UserContent = () => {
-  const classes = useStyles({});
-  const { isLoggedIn, userLayers }: any = useContext(UserContext);
-  const { setProfileState, setIsProfileOpen }: any = useContext(StateContext);
+  const classes = useStyles({})
+  const { isLoggedIn, userLayers }: any = useContext(UserStateContext)
+  const { setProfileState, setIsProfileOpen }: any = useContext(UiStateContext)
 
-  const [hasLayers, setHasLayers] = useState(false);
+  const [hasLayers, setHasLayers] = useState(false)
 
   useEffect(() => {
     if (isLoggedIn) {
       for (const key in userLayers) {
         if (userLayers[key]) {
-          !hasLayers && setHasLayers(true);
-          return;
+          !hasLayers && setHasLayers(true)
+          return
         }
       }
     }
-    setHasLayers(false);
+    setHasLayers(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn, userLayers]);
+  }, [isLoggedIn, userLayers])
 
   const handleClick = () => {
-    setProfileState("data");
-    setIsProfileOpen("true");
-  };
+    setProfileState('data')
+    setIsProfileOpen('true')
+  }
 
   // const handleClickCarbon = () => {
   //   setProfileState("fieldCarbon");
@@ -133,47 +126,42 @@ const UserContent = () => {
   return (
     <div className={classes.root}>
       <p className={classes.text}>
-        This panel shows all your imported data.{" "}
-        {!isLoggedIn &&
-          "You need to sign up or log in to view and manage your data."}
-        {isLoggedIn && !hasLayers && "You have not yet imported any data."}
+        This panel shows all your imported data.{' '}
+        {!isLoggedIn && 'You need to sign up or log in to view and manage your data.'}
+        {isLoggedIn && !hasLayers && 'You have not yet imported any data.'}
       </p>
       {hasLayers && (
         <>
-          {userLayers["vipu"] && (
+          {userLayers['vipu'] && (
             <AOAccordion
-              groupName={"vipu-fields"}
-              label={"Fields"}
+              groupName={'vipu-fields'}
+              label={'Fields'}
               content={
                 <VipuContent
-                  sourceName={"peltolohko"}
-                  sourceLayer={"vipu-fields"}
-                  filterFeature={"VUOSIVAIHE"}
+                  sourceName={'peltolohko'}
+                  sourceLayer={'vipu-fields'}
+                  filterFeature={'VUOSIVAIHE'}
                   filterFunction={(item) => item.properties.VUOSIVAIHE}
-                  filterFeatureName={"Year phase"}
-                  subText={
-                    "This layer shows the field data you have imported from Vipu."
-                  }
-                  countUnit={"field blocks"}
+                  filterFeatureName={'Year phase'}
+                  subText={'This layer shows the field data you have imported from Vipu.'}
+                  countUnit={'field blocks'}
                 />
               }
             />
           )}
-          {userLayers["vipu"] && (
+          {userLayers['vipu'] && (
             <AOAccordion
-              groupName={"vipu-growth"}
-              label={"Growth Blocks"}
+              groupName={'vipu-growth'}
+              label={'Growth Blocks'}
               content={
                 <VipuContent
-                  sourceName={"kasvulohkogeometria"}
-                  sourceLayer={"vipu-growth"}
-                  filterFeature={"VUOSI"}
-                  filterFeatureName={"Year"}
+                  sourceName={'kasvulohkogeometria'}
+                  sourceLayer={'vipu-growth'}
+                  filterFeature={'VUOSI'}
+                  filterFeatureName={'Year'}
                   filterFunction={(item) => item.properties.VUOSI}
-                  subText={
-                    "This layer shows the growth block data you have imported from Vipu."
-                  }
-                  countUnit={"growth blocks"}
+                  subText={'This layer shows the growth block data you have imported from Vipu.'}
+                  countUnit={'growth blocks'}
                 />
               }
             />
@@ -185,17 +173,12 @@ const UserContent = () => {
         onClick={handleClickCarbon}
       /> */}
       {isLoggedIn && (
-        <Button
-          variant="contained"
-          color="secondary"
-          className={classes.dataButton}
-          onClick={handleClick}
-        >
+        <Button variant="contained" color="secondary" className={classes.dataButton} onClick={handleClick}>
           Manage data
         </Button>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default UserContent;
+export default UserContent
