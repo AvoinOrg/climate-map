@@ -4,7 +4,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import MapContext from 'Components/Map'
+import { MapContext } from 'Components/Map'
 import { LayerId } from 'Types/map'
 
 const styles = {
