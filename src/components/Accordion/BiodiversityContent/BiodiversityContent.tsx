@@ -32,7 +32,7 @@ const BiodiversityContent = () => {
     <div className={classes.root}>
       <AOAccordion layerId={'metsaan_ete_basic'} label={'Potential METSO areas'} content={null} />
       <AOAccordion layerId={'metsaan_ete_important'} label={'Especially Important Habitats'} content={null} />
-      <AOAccordion layerId={'zonation6'} label={'Areas important to biodiversity'} content={<FiZonationContent />} />
+      <AOAccordion layerId={'zonation'} label={'Areas important to biodiversity'} content={<FiZonationContent />} />
       <AOAccordion layerId={'natura2000'} label={'Natura 2000'} content={null} />
     </div>
   )

@@ -15,7 +15,7 @@ export type LayerId =
   | 'cifor_wetlands'
   | 'metsaan_ete_basic'
   | 'metsaan_ete_important'
-  | 'zonation6'
+  | 'zonation'
   | 'natura2000'
 
 export type LayerConf = { id: LayerId; style: () => Promise<MbStyle>; popupFunc?: any }
