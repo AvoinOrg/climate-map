@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react'
 import axios, { AxiosRequestConfig } from 'axios'
 
 import { enablePersonalDataset, disablePersonalDataset } from '../map/layers/personal/common'
-import { StateContext } from './State'
-import { VerificationStatus } from './Utils/types'
+import { UiStateContext } from './UiState'
+import { VerificationStatus } from 'Utils/types'
 // const claimHashes = {
 //     valio: '75e3e7c68bffb0efc8f893345bfe161f77175b8f9ce31840db93ace7fa46f3db',
 // }
@@ -13,9 +13,9 @@ const apiUrl = process.env.API_URL
 const defaultUserLayers = { vipu: false }
 const defaultPrivateLayers = { 'valio-carbon-grass-fields': false }
 
-export const UserContext = React.createContext({})
+export const UserStateContext = React.createContext({})
 
-export const UserProvider = (props) => {
+export const UserStateProvider = (props) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userProfile, setUserProfile] = useState(null)
   const [userIntegrations, setUserIntegrations] = useState(null)
@@ -434,7 +434,7 @@ export const UserProvider = (props) => {
     verificationStatus,
   }
 
-  return <UserContext.Provider value={values}>{props.children}</UserContext.Provider>
+  return <UserStateContext.Provider value={values}>{props.children}</UserStateContext.Provider>
 }
 
 // const initAuth = function (claims = []) {
