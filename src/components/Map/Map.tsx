@@ -14,7 +14,7 @@ import { Style } from 'ol/style'
 import { sanitize } from 'dompurify'
 
 import { LayerId, LayerConf } from 'Types/map'
-import layerConfs from './Layers/layers'
+import { layerConfs } from './Layers'
 
 interface Props {
   children: any
@@ -282,6 +282,7 @@ export const MapProvider = ({ children }: Props) => {
         const activeLayerGroupsCopy = [...activeLayerGroups, layerId]
         setActiveLayerGroups(activeLayerGroupsCopy)
       } else {
+        console.log(layerConfs)
         const layerConf = layerConfs.find((el: LayerConf) => {
           return el.id === layerId
         })

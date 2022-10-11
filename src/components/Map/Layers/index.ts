@@ -14,8 +14,9 @@ import metsaanEteImportant from './Biodiversity/metsaanEteImportant'
 import zonation from './Biodiversity/zonation'
 import natura2000 from './Biodiversity/natura2000'
 import hansen from './Forests/hansen'
+import finlandMatureForests from './Forests/finlandMatureForests'
 
-const layerConfs = [
+export const layerConfs = [
   buildingEnergyCertificates,
   snowCoverLoss,
   airQuality,
@@ -29,6 +30,5 @@ const layerConfs = [
   zonation,
   natura2000,
   hansen,
+  finlandMatureForests,
 ]
-
-export default layerConfs
