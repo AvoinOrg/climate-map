@@ -28,7 +28,7 @@ export const MetsaanPopup = (f: Feature) => {
   const ditching =
     p.ditch_completed_at || p.ditchingyear ? `Completed at: {p.ditch_completion_date || p.ditchingyear}` : ''
 
-  const html = (
+  return (
     <Paper>
       <TableContainer>
         <Table>
@@ -103,6 +103,4 @@ export const MetsaanPopup = (f: Feature) => {
       </TableContainer>
     </Paper>
   )
-
-  return html
 }
