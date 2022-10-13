@@ -15,9 +15,10 @@ import { sanitize } from 'dompurify'
 
 import { LayerId, LayerConf } from 'Types/map'
 import { layerConfs } from './Layers'
+import { MapPopup } from './MapPopup'
 
 interface Props {
-  children: any
+  children?: React.ReactNode
 }
 
 interface IMapContext {
@@ -39,15 +40,18 @@ interface IMapContext {
 export const MapContext = createContext<IMapContext>({ isLoaded: false })
 
 export const MapProvider = ({ children }: Props) => {
+  const mapRef = useRef()
   const [map, setMap] = useState<Map>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [activeLayerGroups, setActiveLayerGroups] = useState<any[]>([])
   const [layerGroups, setLayerGroups] = useState<any>({})
-  const [popupFuncs, setPopupFuncs] = useState<any>({})
-  const [popup, setPopup] = useState<any>(null)
-  const [popupFuncKey, setPopupFuncKey] = useState<any>(null)
 
-  const mapRef = useRef()
+  const popupRef = useRef<HTMLDivElement>(null)
+  const [popups, setPopups] = useState<any>({})
+  const [popupOverlay, setPopupOverlay] = useState<any>(null)
+  const [popupOnClose, setPopupOnClose] = useState<any>(null)
+  const [popupKey, setPopupKey] = useState<any>(null)
+  const [popupContent, setPopupContent] = useState<any>(null)
 
   const attribution = new Attribution({
     collapsible: false,
@@ -82,34 +86,33 @@ export const MapProvider = ({ children }: Props) => {
     if (isLoaded === false && map) {
       setIsLoaded(true)
 
-      const popupContainer = document.createElement('div')
-      popupContainer.innerHTML = `
-          <div id="popup" class="ol-popup">
-              <a href="#" id="popup-closer" class="ol-popup-closer"></a>
-              <div id="popup-content"></div>
-          </div>
-      `
-      document.body.appendChild(popupContainer)
+      // const popupContainer = document.createElement('div')
+      // popupContainer.innerHTML = `
+      //     <div id="popup" class="ol-popup">
+      //         <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+      //         <div id="popup-content"></div>
+      //     </div>
+      // `
+      // document.body.appendChild(popupContainer)
 
-      const content = document.getElementById('popup-content') as HTMLElement
-      const closer = document.getElementById('popup-closer') as HTMLElement
+      // const content = document.getElementById('popup-content') as HTMLElement
+      // const closer = document.getElementById('popup-closer') as HTMLElement
 
       const overlay = new Overlay({
-        element: popupContainer,
+        element: popupRef.current,
         autoPan: true,
         autoPanAnimation: {
           duration: 250,
         },
       })
 
-      closer.onclick = () => {
+      const onclick = () => {
         overlay.setPosition(undefined)
-        closer.blur()
         return false
       }
 
-      const popup = { content, closer, overlay }
-      setPopup(popup)
+      setPopupOnClose(() => onclick)
+      setPopupOverlay(overlay)
 
       map.addOverlay(overlay)
     }
@@ -118,7 +121,7 @@ export const MapProvider = ({ children }: Props) => {
   useEffect(() => {
     if (isLoaded) {
       // remove the old callback and create a new one each time state is updated
-      unByKey(popupFuncKey)
+      unByKey(popupKey)
 
       const newPopupFunc = (evt: any) => {
         let featureObjs: any[] = []
@@ -142,7 +145,7 @@ export const MapProvider = ({ children }: Props) => {
           })
 
           const featureObj = featureObjs[0]
-          const popupFunc = popupFuncs[featureObj.layer.get('group')]
+          const popupFunc = popups[featureObj.layer.get('group')]
 
           if (popupFunc != null) {
             const html = popupFunc(featureObj.feature)
@@ -161,15 +164,15 @@ export const MapProvider = ({ children }: Props) => {
         }
       }
 
-      const newPopupFuncKey = map.on('singleclick', newPopupFunc)
+      const newpopupKey = map.on('singleclick', newPopupFunc)
 
-      setPopupFuncKey(newPopupFuncKey)
+      setPopupKey(newpopupKey)
     }
-  }, [activeLayerGroups, map, isLoaded, popupFuncs])
+  }, [activeLayerGroups, map, isLoaded, popups])
 
   const createPopup = (coords: any, html: string) => {
-    popup.overlay.setPosition(coords)
-    popup.content.innerHTML = sanitize(html)
+    popupOverlay.setPosition(coords)
+    setPopupContent(html)
   }
 
   // TODO ZONE
@@ -258,8 +261,8 @@ export const MapProvider = ({ children }: Props) => {
       }
 
       if (popupFunc) {
-        const popupFuncsCopy = { ...popupFuncs, [id]: popupFunc }
-        setPopupFuncs(popupFuncsCopy)
+        const popupsCopy = { ...popups, [id]: popupFunc }
+        setPopups(popupsCopy)
       }
       // applyStyle(olLayer, { version: style.version, sources: style.sources, layers }, sourceKey).then((data) => {
       //   map.addLayer(olLayer)
@@ -288,7 +291,7 @@ export const MapProvider = ({ children }: Props) => {
         })
         if (layerConf) {
           const style = await layerConf.style()
-          addMbStyle(layerId, style, layerConf.popupFunc)
+          addMbStyle(layerId, style, layerConf.popup)
         } else {
           console.error('No layer config found for id: ' + layerId)
         }
@@ -361,6 +364,9 @@ export const MapProvider = ({ children }: Props) => {
           '.ol-scale-line': { right: '8px', left: 'auto', bottom: '26px' },
         }}
       ></Box>
+      <MapPopup onClose={popupOnClose} ref={popupRef}>
+        {popupContent}
+      </MapPopup>
       {children}
     </MapContext.Provider>
   )
