@@ -1,5 +1,6 @@
 import { Style as MbStyle } from 'mapbox-gl'
 import { ReactNode } from 'react'
+import Feature from 'ol/Feature'
 // interface mapFunctions {}
 
 export type SourceType = 'geojson' | 'vector' | 'raster' | 'image' | 'video' | 'canvas'
@@ -23,4 +24,8 @@ export type LayerId =
   | 'mangrove_forests'
   | 'gfw_tree_plantations'
 
-export type LayerConf = { id: LayerId; style: () => Promise<MbStyle>; popup?: ({}: any) => ReactNode }
+export type LayerConf = {
+  id: LayerId
+  style: () => Promise<MbStyle>
+  popup?: (props: { features: Feature[] }) => ReactNode
+}

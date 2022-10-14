@@ -127,7 +127,6 @@ export const MapProvider = ({ children }: Props) => {
         let featureObjs: any[] = []
 
         map.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
-          console.log(layer)
           featureObjs.push({ feature, layer })
         })
 
@@ -145,11 +144,16 @@ export const MapProvider = ({ children }: Props) => {
             }
           })
 
-          const featureObj = featureObjs[0]
-          const Popup = popups[featureObj.layer.get('group')]
+          const featureGroup = featureObjs[0].layer.get('group')
+          const features = featureObjs.map((f) => {
+            if (f.layer.get('group') === featureGroup) {
+              return f.feature
+            }
+          })
 
+          const Popup = popups[featureGroup]
           if (Popup != null) {
-            const popupElement = <Popup f={featureObj.feature}></Popup>
+            const popupElement = <Popup features={features}></Popup>
 
             createPopup(evt.coordinate, popupElement)
           }
@@ -175,6 +179,8 @@ export const MapProvider = ({ children }: Props) => {
     popupOverlay.setPosition(coords)
     setPopupElement(popupElement)
   }
+
+  const getFeaturesForPopup = (layer: string, feature: any) => {}
 
   // TODO ZONE
   const getGeocoder = () => {}
