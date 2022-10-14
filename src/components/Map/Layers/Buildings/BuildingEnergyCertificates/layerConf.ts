@@ -1,9 +1,9 @@
 import { Style as MbStyle } from 'mapbox-gl'
-import Feature from 'ol/Feature'
 import _ from 'lodash'
 
 import { fillOpacity } from 'Utils/mapUtils'
 import { LayerId, LayerConf } from 'Types/map'
+import Popup from './Popup'
 
 const id: LayerId = 'building_energy_certs'
 
@@ -83,28 +83,6 @@ const getStyle = async (): Promise<MbStyle> => {
   }
 }
 
-const popupFunc = (f: Feature) => {
-  let html = ''
-  const p = f.getProperties()
-
-  const energyUse = p.e_luku * p.lämmitetty_nettoala
-  const energyPerVolume = p.i_raktilav
-    ? `<br/>Energy use per m³: ${_.round(energyUse / p.i_raktilav)} kWh per year`
-    : ''
-
-  const url = `https://www.energiatodistusrekisteri.fi/public_html?energiatodistus-id=${p.todistustunnus}&command=access&t=energiatodistus&p=energiatodistukset`
-  html += `
-        <p>
-        Certificate ID: <a href="${url}">${p.todistustunnus}</a><br/>
-        Total energy consumption: ${_.round(energyUse)} kWh per year<br/>
-        Energy use per m²: ${p.e_luku} kWh per year
-        ${energyPerVolume}
-        </p>
-        `
-
-  return html
-}
-
-const layerConf: LayerConf = { id: id, style: getStyle, popupFunc: popupFunc }
+const layerConf: LayerConf = { id: id, style: getStyle, popup: Popup }
 
 export default layerConf
