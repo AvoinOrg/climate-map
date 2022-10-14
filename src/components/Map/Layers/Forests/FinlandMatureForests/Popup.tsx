@@ -1,7 +1,7 @@
 import React from 'react'
 import _ from 'lodash'
 import Feature from 'ol/Feature'
-import { Table, TableBody, TableCell, TableContainer, TableRow } from '@mui/material'
+import { Table, TableBody, TableCell, TableRow } from '@mui/material'
 
 import {
   metsaanFiTreeSpecies,
@@ -14,7 +14,11 @@ import {
   metsaanFiSoilTypes,
 } from './defs'
 
-export const MetsaanPopup = (f: Feature) => {
+interface Props {
+  f: Feature
+}
+
+export const MetsaanPopup = ({ f }: Props) => {
   const p = f.getProperties()
 
   const soilTypeInfo = metsaanFiSoilTypes.filter((x: any) => x[0] === p.soiltype)[0]

@@ -1,8 +1,8 @@
 import { Style as MbStyle, Expression } from 'mapbox-gl'
 
 import { LayerId, LayerConf } from 'Types/map'
-import { metsaanFiTreeSpecies } from './common/defs'
-import { MetsaanPopup } from './common/MetsaanPopup'
+import { metsaanFiTreeSpecies } from './defs'
+import { MetsaanPopup } from './Popup'
 
 const id: LayerId = 'fi_mature_forests'
 const fillRegenerationFelling: Expression = [
