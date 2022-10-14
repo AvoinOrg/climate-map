@@ -29,7 +29,7 @@ export const MetsaanPopup = (f: Feature) => {
     p.ditch_completed_at || p.ditchingyear ? `Completed at: {p.ditch_completion_date || p.ditchingyear}` : ''
 
   return (
-    <Table sx={{ width: '500px' }}>
+    <Table sx={{ width: '500px' }} size={'small'}>
       <TableBody>
         <TableRow>
           <TableCell>Main Tree species</TableCell>
