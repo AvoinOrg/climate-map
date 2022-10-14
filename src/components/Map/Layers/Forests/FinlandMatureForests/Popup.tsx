@@ -15,11 +15,11 @@ import {
 } from './defs'
 
 interface Props {
-  f: Feature
+  features: Feature[]
 }
 
 export const MetsaanPopup = ({ f }: Props) => {
-  const p = f.getProperties()
+  const p = features[0].getProperties()
 
   const soilTypeInfo = metsaanFiSoilTypes.filter((x: any) => x[0] === p.soiltype)[0]
   let soilEn = '',

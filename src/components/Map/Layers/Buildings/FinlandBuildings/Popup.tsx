@@ -36,15 +36,15 @@ interface IBuildingSchema {
 }
 
 interface Props {
-  f: Feature
+  features: Feature[]
 }
 
-const popup = ({ f }: Props) => {
+const popup = ({ features }: Props) => {
   let p = null
 
   let vrk = <></>
   let nls = <></>
-  const props = f.getProperties() as IBuildingSchema
+  const props = features[0].getProperties() as IBuildingSchema
 
   if (props.building_id) {
     p = props as unknown as IBuildingSchemaVRK

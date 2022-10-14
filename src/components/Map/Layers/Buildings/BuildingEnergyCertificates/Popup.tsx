@@ -4,11 +4,11 @@ import { Table, TableBody, TableCell, TableRow } from '@mui/material'
 import _ from 'lodash'
 
 interface Props {
-  f: Feature
+  features: Feature[]
 }
 
-const popup = ({ f }: Props) => {
-  const p = f.getProperties()
+const popup = ({ features }: Props) => {
+  const p = features[0].getProperties()
 
   const energyUse = p.e_luku * p.lämmitetty_nettoala
   const energyPerVolume = p.i_raktilav
