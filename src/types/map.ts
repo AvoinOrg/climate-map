@@ -23,4 +23,4 @@ export type LayerId =
   | 'mangrove_forests'
   | 'gfw_tree_plantations'
 
-export type LayerConf = { id: LayerId; style: () => Promise<MbStyle>; popup?: ReactNode }
+export type LayerConf = { id: LayerId; style: () => Promise<MbStyle>; popup?: ({}: any) => ReactNode }
