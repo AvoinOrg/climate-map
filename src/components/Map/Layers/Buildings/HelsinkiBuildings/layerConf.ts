@@ -1,9 +1,9 @@
 import { Style as MbStyle } from 'mapbox-gl'
-import Feature from 'ol/Feature'
 import _ from 'lodash'
 
 import { fillOpacity, roundToSignificantDigits } from 'Utils/mapUtils'
 import { LayerId, LayerConf } from 'Types/map'
+import Popup from './Popup'
 
 const id: LayerId = 'helsinki_buildings'
 const idDemolished: string = 'helsinki_puretut'
@@ -127,52 +127,6 @@ const getStyle = async (): Promise<MbStyle> => {
   }
 }
 
-const popupFunc = (f: Feature) => {
-  const htmlParts: any = []
-  const buildingIdMap: any = {}
-
-  const p = f.getProperties()
-  const buildingIdText = p.vtj_prt && p.ratu ? `${p.vtj_prt} (${p.ratu})` : p.vtj_prt || p.ratu
-  const s = `
-        <p>
-        XXX_BUILDING_ID_TEMPLATE_XXX
-        <address>
-        ${p.osoite}<br/>
-        ${p.postinumero}
-        </address>
-        <strong>Demolition requested by:</strong> <address>
-        ${p.hakija}<br/>
-        ${p.hakija_osoite}<br/>
-        ${p.hakija_postinumero}<br/>
-        </address>
-        <strong>Demolition permit valid until:</strong> ${p.lupa_voimassa_asti}
-        </p>
-        `
-  // Deduplicate info texts:
-  if (htmlParts.indexOf(s) === -1) {
-    htmlParts.push(s)
-  }
-  buildingIdMap[s] = buildingIdMap[s] || []
-  if (buildingIdText) buildingIdMap[s].push(buildingIdText)
-
-  const html = htmlParts.reduce(
-    (a: string, b: string) =>
-      a +
-      b.replace(
-        'XXX_BUILDING_ID_TEMPLATE_XXX',
-        buildingIdMap[b]
-          ? buildingIdMap[b].reduce(
-              (c: string, d: string) => (c ? `${c}, ${d}` : `<strong>Building ID:</strong> ${d}`),
-              ''
-            )
-          : ''
-      ),
-    ''
-  )
-
-  return html
-}
-
-const layerConf: LayerConf = { id: id, style: getStyle, popupFunc: popupFunc }
+const layerConf: LayerConf = { id: id, style: getStyle, popup: Popup }
 
 export default layerConf
