@@ -51,7 +51,7 @@ export const MapProvider = ({ children }: Props) => {
   const [popupOverlay, setPopupOverlay] = useState<any>(null)
   const [popupOnClose, setPopupOnClose] = useState<any>(null)
   const [popupKey, setPopupKey] = useState<any>(null)
-  const [popupContent, setPopupContent] = useState<any>(null)
+  const [popupElement, setPopupElement] = useState<React.ReactNode | null>(null)
 
   const attribution = new Attribution({
     collapsible: false,
@@ -127,6 +127,7 @@ export const MapProvider = ({ children }: Props) => {
         let featureObjs: any[] = []
 
         map.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
+          console.log(layer)
           featureObjs.push({ feature, layer })
         })
 
@@ -145,12 +146,12 @@ export const MapProvider = ({ children }: Props) => {
           })
 
           const featureObj = featureObjs[0]
-          const popupFunc = popups[featureObj.layer.get('group')]
+          const Popup = popups[featureObj.layer.get('group')]
 
-          if (popupFunc != null) {
-            const html = popupFunc(featureObj.feature)
+          if (Popup != null) {
+            const popupElement = <Popup f={featureObj.feature}></Popup>
 
-            createPopup(evt.coordinate, html)
+            createPopup(evt.coordinate, popupElement)
           }
 
           // console.log(features)
@@ -170,9 +171,9 @@ export const MapProvider = ({ children }: Props) => {
     }
   }, [activeLayerGroups, map, isLoaded, popups])
 
-  const createPopup = (coords: any, html: string) => {
+  const createPopup = (coords: any, popupElement: React.ReactNode) => {
     popupOverlay.setPosition(coords)
-    setPopupContent(html)
+    setPopupElement(popupElement)
   }
 
   // TODO ZONE
@@ -225,6 +226,7 @@ export const MapProvider = ({ children }: Props) => {
 
   const setGroupVisibility = (layerId: LayerId, isVisible: boolean) => {
     const layerGroup = layerGroups[layerId]
+
     for (const layer in layerGroup) {
       layerGroup[layer].setVisible(isVisible)
     }
@@ -235,16 +237,18 @@ export const MapProvider = ({ children }: Props) => {
 
     const layerGroup: any = {}
 
+    // After addings the layers using style, find them and add them to the layerGroup
     olms(map, style).then((map) => {
       map
         .getLayers()
         .getArray()
         .forEach((layer: any) => {
           const sourceKey = layer.get('mapbox-source')
+          const layerKeys = layer.get('mapbox-layers')
 
-          if (layer.get('mapbox-source') && sourceKeys.includes(sourceKey)) {
+          if (sourceKeys.includes(sourceKey) && layerKeys != null && layerKeys.length > 0) {
             layer.set('group', id)
-            layerGroup[sourceKey] = layer
+            layerGroup[layerKeys[0]] = layer
           }
         })
 
@@ -285,7 +289,6 @@ export const MapProvider = ({ children }: Props) => {
         const activeLayerGroupsCopy = [...activeLayerGroups, layerId]
         setActiveLayerGroups(activeLayerGroupsCopy)
       } else {
-        console.log(layerConfs)
         const layerConf = layerConfs.find((el: LayerConf) => {
           return el.id === layerId
         })
@@ -365,7 +368,7 @@ export const MapProvider = ({ children }: Props) => {
         }}
       ></Box>
       <MapPopup onClose={popupOnClose} ref={popupRef}>
-        {popupContent}
+        {popupElement}
       </MapPopup>
       {children}
     </MapContext.Provider>
