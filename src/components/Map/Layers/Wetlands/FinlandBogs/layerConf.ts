@@ -1,9 +1,9 @@
 import { Style as MbStyle } from 'mapbox-gl'
-import Feature from 'ol/Feature'
 import _ from 'lodash'
 
-import { fillOpacity, roundToSignificantDigits } from 'Utils/mapUtils'
+import { fillOpacity } from 'Utils/mapUtils'
 import { LayerId, LayerConf } from 'Types/map'
+import Popup from './Popup'
 
 const id: LayerId = 'fi_bogs'
 const idGtk: string = 'gtk_peat'
@@ -59,55 +59,6 @@ const getStyle = async (): Promise<MbStyle> => {
   }
 }
 
-const popupFunc = (f: Feature) => {
-  const p = f.getProperties()
-
-  let html = `
-      Name: ${p.suon_nimi}<br/>
-      Surveyed: ${p.tutkimusvuosi}<br/>
-      Area: ${p.suon_pinta_ala_ha} ha<br/>
-      Peat volume: ${p.suon_turvemaara_mm3} million cubic metres<br/>
-      Average peat depth: ${p.turvekerroksen_keskisyvyys_m} metres<br/>
-      Evaluation of how close the bog is to its natural state (class ${
-        p.luonnontilaisuusluokka === -1 ? '?' : p.luonnontilaisuusluokka
-      } out of 5):<br/> ${gtkTurveVaratLuonnontilaisuusluokka[p.luonnontilaisuusluokka]}<br/>
-      `
-
-  if (!p.photos_json) {
-    return html
-  }
-
-  html += '<div style="overflow:scroll; max-height: 500px">'
-
-  const photos = JSON.parse(p.photos_json)
-  for (const x of photos) {
-    const { kuva_id, kuvausaika, kuvaaja } = x
-    const imageURL = `https://gtkdata.gtk.fi/Turvevarojen_tilinpito/Turve_valokuvat/${kuva_id}.jpg`
-    html += `<p>
-          <a target="_blank" href="${imageURL}">
-              <img style="max-width:200px; max-height:150px;" src="${imageURL}"/>
-          </a>
-          <br/>
-          Date: ${kuvausaika.toLowerCase() === 'tuntematon' ? 'Unknown' : kuvausaika}
-          <br/>
-          Photographer: ${kuvaaja}
-          </p>`
-  }
-  html += '</div>'
-
-  return html
-}
-
-const gtkTurveVaratLuonnontilaisuusluokka: any = {
-  '-1': 'Unclassified',
-  0: 'Irreversible changes',
-  1: 'Water flow thoroughly changed and there are clear changes to the vegetation',
-  2: 'Contains drained and non-drained parts',
-  3: 'Most of the bog is non-drained',
-  4: 'Immediate vicinity of the bog contains non-visible sources of disruption like ditches and roads',
-  5: 'The bog is in its natural state',
-}
-
-const layerConf: LayerConf = { id: id, style: getStyle, popupFunc: popupFunc }
+const layerConf: LayerConf = { id: id, style: getStyle, popup: Popup }
 
 export default layerConf
