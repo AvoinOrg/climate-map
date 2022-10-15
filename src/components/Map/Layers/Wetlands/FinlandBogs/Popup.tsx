@@ -18,7 +18,7 @@ const Popup = ({ features }: Props) => {
         <TableBody>
           <TableRow>
             <TableCell>Name</TableCell>
-            <TableCell>{p.suon_nim}</TableCell>
+            <TableCell>{p.suon_nimi}</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>Surveyed</TableCell>
@@ -38,7 +38,7 @@ const Popup = ({ features }: Props) => {
           </TableRow>
           <TableRow>
             <TableCell>
-              Evaluation of how close the bog is to its natural state (class
+              Evaluation of how close the bog is to its natural state (class{' '}
               {p.luonnontilaisuusluokka === -1 ? '?' : p.luonnontilaisuusluokka} out of 5)
             </TableCell>
             <TableCell>{gtkTurveVaratLuonnontilaisuusluokka[p.luonnontilaisuusluokka]}</TableCell>
