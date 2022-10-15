@@ -12,13 +12,13 @@ import {
   metsaanFiDatasources,
   metsaanFiSubgroups,
   metsaanFiSoilTypes,
-} from './defs'
+} from './constants'
 
 interface Props {
   features: Feature[]
 }
 
-export const MetsaanPopup = ({ f }: Props) => {
+export const MetsaanPopup = ({ features }: Props) => {
   const p = features[0].getProperties()
 
   const soilTypeInfo = metsaanFiSoilTypes.filter((x: any) => x[0] === p.soiltype)[0]
