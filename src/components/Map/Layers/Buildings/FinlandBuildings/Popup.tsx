@@ -39,7 +39,7 @@ interface Props {
   features: Feature[]
 }
 
-const popup = ({ features }: Props) => {
+const Popup = ({ features }: Props) => {
   let p = null
 
   let vrk = <></>
@@ -114,4 +114,4 @@ const popup = ({ features }: Props) => {
   )
 }
 
-export default popup
+export default Popup

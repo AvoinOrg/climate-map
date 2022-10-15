@@ -7,7 +7,7 @@ interface Props {
   features: Feature[]
 }
 
-const popup = ({ features }: Props) => {
+const Popup = ({ features }: Props) => {
   const p = features[0].getProperties()
 
   const energyUse = p.e_luku * p.lämmitetty_nettoala
@@ -41,4 +41,4 @@ const popup = ({ features }: Props) => {
   )
 }
 
-export default popup
+export default Popup

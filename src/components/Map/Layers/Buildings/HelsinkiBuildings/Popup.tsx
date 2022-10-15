@@ -7,7 +7,7 @@ interface Props {
   features: Feature[]
 }
 
-const popup = ({ features }: Props) => {
+const Popup = ({ features }: Props) => {
   let buildingIds: any = []
   const tableValues: any = {}
 
@@ -75,4 +75,4 @@ const popup = ({ features }: Props) => {
   )
 }
 
-export default popup
+export default Popup
