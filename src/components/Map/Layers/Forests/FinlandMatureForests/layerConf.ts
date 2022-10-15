@@ -5,6 +5,7 @@ import { metsaanFiTreeSpecies } from './constants'
 import { MetsaanPopup } from './Popup'
 
 const id: LayerId = 'fi_mature_forests'
+
 const fillRegenerationFelling: Expression = [
   'case',
   ['>=', 0.5, ['get', 'regeneration_felling_prediction']],

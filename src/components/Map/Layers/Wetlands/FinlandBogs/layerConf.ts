@@ -6,14 +6,15 @@ import { LayerId, LayerConf } from 'Types/map'
 import Popup from './Popup'
 
 const id: LayerId = 'fi_bogs'
-const idGtk: string = 'gtk_peat'
 
 const getStyle = async (): Promise<MbStyle> => {
+  const sourceNames = ['fi_bogs', 'gtk_peat']
+
   return {
     version: 8,
     name: id,
     sources: {
-      [id]: {
+      [sourceNames[0]]: {
         type: 'vector',
         tiles: ['https://server.avoin.org/data/map/fi-mml-suot/{z}/{x}/{y}.pbf.gz?v=5'],
         minzoom: 0,
@@ -21,7 +22,7 @@ const getStyle = async (): Promise<MbStyle> => {
         bounds: [19, 59, 32, 71], // Finland
         attribution: '<a href="http://mml.fi/">© National Land Survey of Finland</a>',
       },
-      [idGtk]: {
+      [sourceNames[1]]: {
         type: 'vector',
         tiles: ['https://server.avoin.org/data/map/gtk-turvevarat-suot/{z}/{x}/{y}.pbf.gz?v=5'],
         minzoom: 0,
@@ -32,8 +33,8 @@ const getStyle = async (): Promise<MbStyle> => {
     },
     layers: [
       {
-        id: id + '-fill',
-        source: id,
+        id: sourceNames[0] + '-fill',
+        source: sourceNames[0],
         'source-layer': 'default',
         type: 'fill',
         paint: {
@@ -43,8 +44,8 @@ const getStyle = async (): Promise<MbStyle> => {
         BEFORE: 'FILL',
       },
       {
-        id: idGtk + '-fill',
-        source: idGtk,
+        id: sourceNames[1] + '-fill',
+        source: sourceNames[1],
         'source-layer': 'default',
         type: 'fill',
         paint: {

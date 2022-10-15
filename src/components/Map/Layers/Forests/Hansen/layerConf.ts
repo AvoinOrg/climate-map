@@ -3,6 +3,7 @@ import { Style as MbStyle } from 'mapbox-gl'
 import { LayerId, LayerConf } from 'Types/map'
 
 const id: LayerId = 'hansen'
+
 const URL_PREFIX = `https://server.avoin.org/data/map/hansen/`
 
 const getStyle = async (): Promise<MbStyle> => {

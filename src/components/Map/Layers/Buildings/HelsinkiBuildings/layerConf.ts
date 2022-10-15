@@ -6,14 +6,15 @@ import { LayerId, LayerConf } from 'Types/map'
 import Popup from './Popup'
 
 const id: LayerId = 'helsinki_buildings'
-const idDemolished: string = 'helsinki_puretut'
 
 const getStyle = async (): Promise<MbStyle> => {
+  const sourceNames = ['helsinki_buildings', 'helsinki_puretut']
+
   return {
     version: 8,
     name: id,
     sources: {
-      [id]: {
+      [sourceNames[0]]: {
         type: 'vector',
         tiles: ['https://server.avoin.org/data/map/helsinki-buildings/{z}/{x}/{y}.pbf'],
         maxzoom: 14,
@@ -23,7 +24,7 @@ const getStyle = async (): Promise<MbStyle> => {
         bounds: [24, 59, 26, 61],
         attribution: '<a href="https://www.hel.fi">© City of Helsinki</a>',
       },
-      [idDemolished]: {
+      [sourceNames[1]]: {
         type: 'vector',
         tiles: ['https://server.avoin.org/data/map/hel-puretut/{z}/{x}/{y}.pbf.gz?v=0'],
         maxzoom: 14,
@@ -36,8 +37,8 @@ const getStyle = async (): Promise<MbStyle> => {
     },
     layers: [
       {
-        id: id + '-fill',
-        source: id,
+        id: sourceNames[0] + '-fill',
+        source: sourceNames[0],
         'source-layer': 'Rakennukset_alue',
         type: 'fill',
         paint: {
@@ -47,8 +48,8 @@ const getStyle = async (): Promise<MbStyle> => {
         BEFORE: 'FILL',
       },
       {
-        id: id + '-outline',
-        source: id,
+        id: sourceNames[0] + '-outline',
+        source: sourceNames[0],
         'source-layer': 'Rakennukset_alue',
         type: 'line',
         minzoom: 11,
@@ -58,8 +59,8 @@ const getStyle = async (): Promise<MbStyle> => {
         BEFORE: 'OUTLINE',
       },
       {
-        id: id + '-co2',
-        source: id,
+        id: sourceNames[0] + '-co2',
+        source: sourceNames[0],
         'source-layer': 'Rakennukset_alue',
         type: 'symbol',
         minzoom: 16,
@@ -87,8 +88,8 @@ const getStyle = async (): Promise<MbStyle> => {
         BEFORE: 'LABEL',
       },
       {
-        id: idDemolished + '-fill',
-        source: idDemolished,
+        id: sourceNames[1] + '-fill',
+        source: sourceNames[1],
         'source-layer': 'default',
         type: 'fill',
         paint: {
@@ -98,8 +99,8 @@ const getStyle = async (): Promise<MbStyle> => {
         BEFORE: 'FILL',
       },
       {
-        id: idDemolished + '-outline',
-        source: idDemolished,
+        id: sourceNames[1] + '-outline',
+        source: sourceNames[1],
         'source-layer': 'default',
         type: 'line',
         minzoom: 11,
@@ -109,8 +110,8 @@ const getStyle = async (): Promise<MbStyle> => {
         BEFORE: 'OUTLINE',
       },
       {
-        id: idDemolished + '-sym',
-        source: idDemolished,
+        id: sourceNames[1] + '-sym',
+        source: sourceNames[1],
         'source-layer': 'default',
         type: 'symbol',
         minzoom: 16,
