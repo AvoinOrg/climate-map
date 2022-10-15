@@ -2,7 +2,7 @@ import { Style as MbStyle, Expression } from 'mapbox-gl'
 
 import { LayerId, LayerConf } from 'Types/map'
 import { metsaanFiTreeSpecies } from './constants'
-import { MetsaanPopup } from './Popup'
+import Popup from './Popup'
 
 const id: LayerId = 'fi_mature_forests'
 
@@ -95,6 +95,6 @@ const getStyle = async (): Promise<MbStyle> => {
   }
 }
 
-const layerConf: LayerConf = { id: id, style: getStyle, popup: MetsaanPopup }
+const layerConf: LayerConf = { id: id, style: getStyle, popup: Popup }
 
 export default layerConf

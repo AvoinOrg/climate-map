@@ -18,7 +18,7 @@ interface Props {
   features: Feature[]
 }
 
-export const MetsaanPopup = ({ features }: Props) => {
+const Popup = ({ features }: Props) => {
   const p = features[0].getProperties()
 
   const soilTypeInfo = metsaanFiSoilTypes.filter((x: any) => x[0] === p.soiltype)[0]
@@ -102,3 +102,5 @@ export const MetsaanPopup = ({ features }: Props) => {
     </Table>
   )
 }
+
+export default Popup
