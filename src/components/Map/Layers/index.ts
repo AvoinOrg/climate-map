@@ -15,6 +15,7 @@ import zonation from './Biodiversity/Zonation'
 import natura2000 from './Biodiversity/Natura2000'
 import hansen from './Forests/Hansen'
 import finlandMatureForests from './Forests/FinlandMatureForests'
+import mangroveForests from './Forests/MangroveForests'
 
 export const layerConfs = [
   buildingEnergyCertificates,
@@ -31,4 +32,5 @@ export const layerConfs = [
   natura2000,
   hansen,
   finlandMatureForests,
+  mangroveForests,
 ]
