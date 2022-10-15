@@ -180,8 +180,6 @@ export const MapProvider = ({ children }: Props) => {
     setPopupElement(popupElement)
   }
 
-  const getFeaturesForPopup = (layer: string, feature: any) => {}
-
   // TODO ZONE
   const getGeocoder = () => {}
   const mapRelocate = () => {}
