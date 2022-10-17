@@ -15,11 +15,12 @@
     "noUnusedParameters": true,
     "outDir": "build/",
     "paths": {
-      "Root/*": ["src/*"],
       "Components/*": ["src/components/*"],
       "Utils/*": ["./src/utils/*"],
-      "Store/*": ["./src/store/*"],
-      "Types/*": ["./src/types/*"]
+      "State/*": ["./src/state/*"],
+      "Types/*": ["./src/types/*"],
+      "Assets/*": ["src/assets/*"],
+      "Root/*": ["src/*"]
     },
     //    "strict": true,
     "target": "ESNext"

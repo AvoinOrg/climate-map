@@ -6,8 +6,9 @@
     "paths": {
       "Components/*": ["src/components/*"],
       "Utils/*": ["src/utils/*"],
-      "Store/*": ["src/store/*"],
-      "Types/*": ["src/types/*"]
+      "State/*": ["src/state/*"],
+      "Types/*": ["src/types/*"],
+      "Assets/*": ["src/assets/*"]
     }
   },
   "include": ["./src/**/*"]

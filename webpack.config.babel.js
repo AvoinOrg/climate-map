@@ -64,10 +64,19 @@ const appConfig = {
     alias: {
       Components: path.resolve(__dirname, 'src/components/'),
       Utils: path.resolve(__dirname, 'src/utils/'),
-      Store: path.resolve(__dirname, 'src/store/'),
+      State: path.resolve(__dirname, 'src/state/'),
       Types: path.resolve(__dirname, 'src/types/'),
+      Assets: path.resolve(__dirname, 'src/assets/'),
     },
   },
+  // baseUrl: './src',
+  // paths: {
+  //   'Components/*': ['components/*'],
+  //   'Utils/*': ['utils/*'],
+  //   'State/*': ['state/*'],
+  //   'Types/*': ['types/*'],
+  //   'Assets/*': ['assets/*'],
+  // },
   output: {
     filename: 'js/bundle-[fullhash].js',
     path: config.path,
