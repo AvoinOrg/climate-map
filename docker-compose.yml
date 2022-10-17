@@ -8,6 +8,7 @@ services:
       - ./.env.example
       - ./.env
     ports:
-      - "${DEV_PORT}:3000"
+      - '${DEV_PORT}:3000'
     volumes:
-        - .:/app:z
+      - .:/app:z
+    entrypoint: '/bin/bash /app/docker-entrypoint.sh'
