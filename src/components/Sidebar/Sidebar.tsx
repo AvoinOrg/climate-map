@@ -6,7 +6,7 @@ import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
 import { ListItem } from '@mui/material'
 
-import { Accordion } from 'Components/Accordion'
+import { Accordion } from 'Components/Sidebar/Accordion'
 import { UserStateContext, UiStateContext } from 'Components/State'
 import drawerItems, { privateDrawerItems } from './drawerItems'
 

@@ -3,7 +3,7 @@ import { Theme } from '@mui/material'
 import createStyles from '@mui/styles/createStyles'
 import makeStyles from '@mui/styles/makeStyles'
 
-import { AOAccordionLink } from 'Components/Accordion'
+import { AOAccordionLink } from 'Root/components/Sidebar/Accordion'
 import { UserStateContext } from 'Components/State/UserState'
 
 const useStyles = makeStyles((theme: Theme) =>

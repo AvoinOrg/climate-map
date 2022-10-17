@@ -6,7 +6,7 @@ import {
   SnowCoverLossContent,
   AirQualityContent,
   PrivateContent,
-} from '../Accordion'
+} from './Accordion'
 
 export interface ContentEntity {
   title: string
