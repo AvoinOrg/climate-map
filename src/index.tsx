@@ -5,9 +5,8 @@ import { ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles
 
 import './index.css'
 import AppRouterSwitch from './AppRouterSwitch'
-import './map'
 
-import theme from './ui/theme'
+import theme from './style/theme'
 
 // import * as serviceWorker from "./serviceWorker";
 import { UiStateProvider, UserStateProvider } from './components/State'
