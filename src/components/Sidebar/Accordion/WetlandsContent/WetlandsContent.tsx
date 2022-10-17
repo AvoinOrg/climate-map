@@ -1,7 +1,7 @@
 import React from 'react'
 import createStyles from '@mui/styles/createStyles'
 import makeStyles from '@mui/styles/makeStyles'
-import { AOAccordion } from 'Root/components/Sidebar/Accordion'
+import { AOAccordion } from 'Components/Sidebar/Accordion'
 
 const useStyles = makeStyles(() =>
   createStyles({

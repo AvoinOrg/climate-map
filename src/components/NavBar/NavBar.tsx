@@ -10,7 +10,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import { Link } from 'react-router-dom'
 
-import Logo from '../../logo.svg'
+import Logo from 'Assets/logo.svg'
 import { NavBarSearch } from './NavBarSearch'
 import ProfileMenu from './ProfileMenu'
 import ActionButtons from './ActionButtons'
