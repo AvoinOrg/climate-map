@@ -12,9 +12,7 @@ const Popup = ({ features }: Props) => {
   const tableValues: any = {}  
 
   features.forEach((feature) => {
-    const p = feature.getProperties()
-    // const buildingdate = p.c_valmpvm
-    //const resultdate = buildingdate?.toString().substr(0, 9) || '0000-0-0'
+    const p = feature.getProperties()    
 
     buildingIds.push({ vtj_prt: p.vtj_prt, ratu: p.ratu })
 
