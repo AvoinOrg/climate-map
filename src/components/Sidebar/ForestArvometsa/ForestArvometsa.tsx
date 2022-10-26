@@ -24,7 +24,7 @@ import {
   arvometsaSumMethodAttrs,
   arvometsaTextfieldExpression,
   layerOptions,
-} from '../../map/layers/forests/fi_arvometsa'
+} from '../../../map/layers/forests/fi_arvometsa'
 import {
   fitBounds,
   genericPopupHandler,
@@ -34,11 +34,11 @@ import {
   setPaintProperty,
 } from '../../map/map'
 import { assert, execWithMapLoaded, getGeoJsonGeometryBounds, pp } from '../../map/utils'
-import { setOverlayMessage } from '../OverlayMessages/OverlayMessages'
+import { setOverlayMessage } from '../../OverlayMessages/OverlayMessages'
 import * as SelectedFeatureState from './ArvometsaSelectedLayer'
-import { HeaderTable, SimpleTable } from './ForestArvometsaTable'
-import { setIsSidebarOpen } from '../State/UiState'
-import { setSearchPlaceholder } from '../NavBar/NavBarSearch'
+import { HeaderTable, SimpleTable } from '../ForestArvometsaTable'
+import { setIsSidebarOpen } from '../../State/UiState'
+import { setSearchPlaceholder } from '../../NavBar/NavBarSearch'
 
 import arvometsaLogo from './arvometsa_logo.png'
 
