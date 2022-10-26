@@ -9,7 +9,7 @@ import { getGeoJsonGeometryBounds } from 'src/map/utils'
 import * as Analytics from 'src/map/analytics'
 
 import { setIsSidebarOpen } from '../State/UiState'
-import * as SelectedFeatureState from './ArvometsaSelectedLayer'
+import * as SelectedFeatureState from './ForestArvometsa/ArvometsaSelectedLayer'
 import * as LayerGroupState from 'src/map/LayerGroupState'
 
 const sourceName = 'fi-omaihka-soils'
