@@ -57,7 +57,7 @@ console.log(path.resolve(__dirname, 'src/components/'))
 const appConfig = {
   mode: config.mode,
   devtool: 'source-map',
-  entry: ['./src'],
+  entry: ['./src/Entry.tsx'],
   resolve: {
     extensions: ['.webpack-loader.js', '.web-loader.js', '.loader.js', '.js', '.jsx', '.ts', '.tsx'],
     modules: ['node_modules', path.resolve(__dirname, 'src')],
