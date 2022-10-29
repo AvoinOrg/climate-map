@@ -185,6 +185,9 @@ export default function AppRouterSwitch() {
           <Route path="/layers/:layer">
             <LayerRouter />
           </Route>
+          <Route path="/carbon">
+            <LayerRouter />
+          </Route>
           <Route path="/verify/:token">
             <VerificationRouter />
           </Route>
