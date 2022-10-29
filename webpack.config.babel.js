@@ -67,6 +67,7 @@ const appConfig = {
       State: path.resolve(__dirname, 'src/state/'),
       Types: path.resolve(__dirname, 'src/types/'),
       Assets: path.resolve(__dirname, 'src/assets/'),
+      Style: path.resolve(__dirname, 'src/style/'),
     },
   },
   // baseUrl: './src',

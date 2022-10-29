@@ -20,6 +20,7 @@
       "State/*": ["./src/state/*"],
       "Types/*": ["./src/types/*"],
       "Assets/*": ["src/assets/*"],
+      "Style/*": ["src/style/*"],
       "Root/*": ["src/*"]
     },
     //    "strict": true,
