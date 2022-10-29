@@ -15,6 +15,7 @@ import { NavLink } from 'react-router-dom'
 import { useObservable } from 'micro-observables'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import React, { useEffect, useRef, useState } from 'react'
+import _ from 'lodash'
 
 import * as Analytics from 'src/map/analytics'
 
@@ -33,7 +34,7 @@ import {
   setLayoutProperty,
   setPaintProperty,
 } from '../../map/map'
-import { assert, execWithMapLoaded, getGeoJsonGeometryBounds, pp } from '../../map/utils'
+import { assert, execWithMapLoaded, getGeoJsonGeometryBounds } from 'Utils/mapUtils'
 import { setOverlayMessage } from '../../OverlayMessages/OverlayMessages'
 import * as SelectedFeatureState from './ArvometsaSelectedLayer'
 import { HeaderTable, SimpleTable } from '../ForestArvometsaTable'
