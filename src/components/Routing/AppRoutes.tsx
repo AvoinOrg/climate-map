@@ -1,11 +1,11 @@
 import React from 'react'
-import { Route, Switch } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 
 import { CarbonMap, MainMenu } from 'Components/Sidebar'
 
-const Routes = () => {
+const AppRoutes = () => {
   return (
-    <Switch>
+    <Routes>
       {/* <Route path="/layers/fi-forest">
                 <ForestArvometsa />
               </Route>
@@ -30,17 +30,13 @@ const Routes = () => {
       {/* <Route path="/layers/:layer">
           <LayerRouter />
         </Route> */}
-      <Route path="/carbon">
-        <CarbonMap />
-      </Route>
+      <Route path="/carbon" element={<CarbonMap />}></Route>
       {/* <Route path="/verify/:token">
           <VerificationRouter />
         </Route> */}
-      <Route path="/">
-        <MainMenu />
-      </Route>
-    </Switch>
+      <Route path="/" element={<MainMenu />}></Route>
+    </Routes>
   )
 }
 
-export default Routes
+export default AppRoutes

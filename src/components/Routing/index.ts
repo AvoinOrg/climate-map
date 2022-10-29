@@ -1,3 +1,3 @@
-import Routes from './Routes'
+import AppRoutes from './AppRoutes'
 
-export { Routes }
+export { AppRoutes }

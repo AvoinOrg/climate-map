@@ -7,7 +7,7 @@ import { Sidebar } from 'Components/Sidebar'
 import { NavBar } from 'Components/NavBar'
 import { OverlayMessages } from 'Components/OverlayMessages'
 import { UserModal } from 'Components/Profile'
-import { Routes } from 'Components/Routing'
+import { AppRoutes } from 'Components/Routing'
 import theme from 'Style/theme'
 import { UiStateProvider, UserStateProvider } from 'Components/State'
 import { MapProvider, GroupOrientation } from 'Components/Map'
@@ -26,7 +26,7 @@ const App = () => {
                   <NavBar />
                   <OverlayMessages />
                   <Sidebar>
-                    <Routes />
+                    <AppRoutes />
                   </Sidebar>
                   <UserModal />
                 </CssBaseline>
