@@ -57,6 +57,7 @@
     "react-chartjs-2": "^4.3.1",
     "react-dom": "^18.2.0",
     "react-ga": "^3.3.1",
+    "react-query": "^3.39.2",
     "react-redux": "^8.0.4",
     "react-router-dom": "^6.4.2",
     "sass-loader": "^13.1.0",
