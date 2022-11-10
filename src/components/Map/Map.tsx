@@ -1,21 +1,23 @@
 import 'ol/ol.css'
 import React, { createContext, useState, useRef, useEffect } from 'react'
 import Box from '@mui/material/Box'
-import { fromLonLat } from 'ol/proj'
 import { Map, View } from 'ol'
 import { unByKey } from 'ol/Observable'
-import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
+import { Layer, Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import Overlay from 'ol/Overlay'
 import { OSM, Vector as VectorSource } from 'ol/source'
 import { Attribution, ScaleLine, defaults as defaultControls } from 'ol/control'
 import olms from 'ol-mapbox-style'
 import { Style as MbStyle } from 'mapbox-gl'
-import GeoJSON from 'ol/format/GeoJSON'
+// import GeoJSON from 'ol/format/GeoJSON'
+import mapboxgl from 'mapbox-gl'
+import { fromLonLat, toLonLat } from 'ol/proj'
+import Source from 'ol/source/Source'
 
 import { LayerId, LayerConf } from 'Types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
-import { defaultVectorStyleFunction } from 'Utils/mapUtils'
+// import { defaultVectorStyleFunction, WebGLLayer } from 'Utils/mapUtils'
 
 interface Props {
   children?: React.ReactNode
@@ -42,6 +44,7 @@ export const MapContext = createContext<IMapContext>({ isLoaded: false })
 export const MapProvider = ({ children }: Props) => {
   const mapRef = useRef()
   const [map, setMap] = useState<Map>(null)
+  const [mbMap, setMbMap] = useState<mapboxgl.Map>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [activeLayerGroups, setActiveLayerGroups] = useState<any[]>([])
   const [layerGroups, setLayerGroups] = useState<any>({})
@@ -58,8 +61,66 @@ export const MapProvider = ({ children }: Props) => {
   })
 
   useEffect(() => {
+    mapboxgl.accessToken = process.env.MAPBOX_ACCESS_TOKEN
+
+    const mbMap = new mapboxgl.Map({
+      // style: 'mapbox://styles/mapbox/satellite-v9',
+      attributionControl: false,
+      boxZoom: false,
+      container: 'map',
+      doubleClickZoom: false,
+      dragPan: false,
+      dragRotate: false,
+      interactive: false,
+      keyboard: false,
+      pitchWithRotate: false,
+      scrollZoom: false,
+      touchZoomRotate: false,
+    })
+
+    const mbLayer = new Layer({
+      render: function (frameState) {
+        const canvas: any = mbMap.getCanvas()
+        const viewState = frameState.viewState
+
+        const visible = mbLayer.getVisible()
+        canvas.style.display = visible ? 'block' : 'none'
+        canvas.style.position = 'absolute'
+
+        const opacity = mbLayer.getOpacity()
+        canvas.style.opacity = opacity
+
+        // adjust view parameters in mapbox
+        const rotation = viewState.rotation
+        mbMap.jumpTo({
+          center: toLonLat(viewState.center),
+          zoom: viewState.zoom - 1,
+          bearing: (-rotation * 180) / Math.PI,
+          animate: false,
+        })
+
+        // cancel the scheduled update & trigger synchronous redraw
+        // see https://github.com/mapbox/mapbox-gl-js/issues/7893#issue-408992184
+        // NOTE: THIS MIGHT BREAK IF UPDATING THE MAPBOX VERSION
+        if (mbMap._frame) {
+          mbMap._frame.cancel()
+          mbMap._frame = null
+        }
+        mbMap._render()
+
+        return canvas
+      },
+      source: new Source({
+        attributions: [
+          '<a href="https://www.maptiler.com/copyright/" target="_blank">© MapTiler</a>',
+          '<a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>',
+        ],
+      }),
+    })
+
     const options = {
-      rendered: 'webgl',
+      renderer: 'webgl',
+      target: 'map',
       view: new View({ zoom: 5, center: fromLonLat([15, 62]) }),
       layers: [
         new TileLayer({
@@ -70,6 +131,7 @@ export const MapProvider = ({ children }: Props) => {
             attributions: '© Powered by <a href="https://www.netlify.com/" target="_blank">Netlify</a>',
           }),
         }),
+        mbLayer,
       ],
       controls: defaultControls({ attribution: false }).extend([attribution, new ScaleLine()]),
     }
@@ -79,6 +141,8 @@ export const MapProvider = ({ children }: Props) => {
     mapObject.setTarget(mapRef.current)
 
     setMap(mapObject)
+    setMbMap(mbMap)
+
     return () => mapObject.setTarget(undefined)
   }, [])
 
@@ -281,32 +345,57 @@ export const MapProvider = ({ children }: Props) => {
   }
 
   const addJSONLayer = (id: string, groupId: string, json: any, projection: string) => {
-    const vectorSource = new VectorSource({
-      features: new GeoJSON().readFeatures(json, {
-        featureProjection: projection,
-      }),
+    // const vectorSource = new VectorSource({
+    //   features: new GeoJSON().readFeatures(json, {
+    //     featureProjection: projection,
+    //   }),
+    // })
+
+    // const vectorLayer = new VectorLayer({
+    //   source: vectorSource,
+    //   // style: defaultVectorStyleFunction,
+    // })
+
+    // map.addLayer(vectorLayer)
+
+    mbMap.addSource('carbon-shapes', {
+      type: 'geojson',
+      // Use a URL for the value for the `data` property.
+      data: json,
+    })
+    mbMap.addLayer({
+      id: 'carbon-shapes-outline',
+      type: 'line',
+      source: 'carbon-shapes',
+      paint: {
+        'line-opacity': 0.5,
+      },
     })
 
-    const vectorLayer = new VectorLayer({
-      source: vectorSource,
-      style: defaultVectorStyleFunction,
+    mbMap.addLayer({
+      id: 'carbon-shapes-fill',
+      type: 'fill',
+      source: 'carbon-shapes', // reference the data source
+      layout: {},
+      paint: {
+        'fill-color': '#0080ff', // blue color fill
+        'fill-opacity': 0.1,
+      },
     })
 
-    map.addLayer(vectorLayer)
+    //   let layerGroup: any = {}
 
-    let layerGroup: any = {}
+    //   if (layerGroups[groupId]) {
+    //     layerGroup = layerGroups[groupId]
+    //   }
 
-    if (layerGroups[groupId]) {
-      layerGroup = layerGroups[groupId]
-    }
+    //   layerGroup[id] = vectorLayer
 
-    layerGroup[id] = vectorLayer
+    //   const layerGroupsCopy = { ...layerGroups, [groupId]: vectorLayer }
+    //   setLayerGroups(layerGroupsCopy)
 
-    const layerGroupsCopy = { ...layerGroups, [groupId]: vectorLayer }
-    setLayerGroups(layerGroupsCopy)
-
-    const activeLayerGroupsCopy = [...activeLayerGroups, groupId]
-    setActiveLayerGroups(activeLayerGroupsCopy)
+    //   const activeLayerGroupsCopy = [...activeLayerGroups, groupId]
+    //   setActiveLayerGroups(activeLayerGroupsCopy)
   }
 
   const toggleLayerGroup = async (layerId: LayerId) => {
