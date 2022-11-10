@@ -7,10 +7,10 @@ import App from 'Components/App'
 
 // import * as serviceWorker from "./serviceWorker";
 
-declare module '@mui/styles/defaultTheme' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface DefaultTheme extends Theme {}
-}
+// declare module '@mui/styles/defaultTheme' {
+//   // eslint-disable-next-line @typescript-eslint/no-empty-interface
+//   interface DefaultTheme extends Theme {}
+// }
 
 const container = document.getElementById('root')
 const root = createRoot(container)
