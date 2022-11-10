@@ -41,6 +41,9 @@ const plugins = [
   new CleanWebpackPlugin(),
   new Dotenv(),
   new ESLintPlugin(),
+  new webpack.ProvidePlugin({
+    Buffer: ['buffer', 'Buffer'],
+  }),
 ]
 
 if (isDevelopment) {
