@@ -4,10 +4,13 @@ import { Button, Box } from '@mui/material'
 import shp from 'shpjs'
 
 // import { useFileUploadMutation } from 'Queries/carbon'
+import { MapContext } from 'Components/Map'
 
 const CarbonMap = () => {
   const [uploadFile, setUploadFile] = useState(null)
   const [res, setRes] = useState(null)
+  const { addJSONLayer }: any = useContext(MapContext)
+
   const handleSubmit = async () => {
     const formData = new FormData()
     formData.append('file', uploadFile)
@@ -22,9 +25,20 @@ const CarbonMap = () => {
 
     setRes(response.data)
   }
+
   const handleFileInput = async (e: any) => {
+    const f = e.target.files[0]
+    const reader = new window.FileReader()
+    reader.readAsArrayBuffer(f)
+
+    reader.onloadend = async () => {
+      const json = await shp(reader.result)
+      addJSONLayer('userCarbonJson', '1', json, 'EPSG:3857')
+    }
+
     setUploadFile(f)
   }
+
   return (
     <Box sx={{ margin: '100px', display: 'flex', flexDirection: 'column' }}>
       <Button variant="contained" component="label">
