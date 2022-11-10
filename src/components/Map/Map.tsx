@@ -10,12 +10,12 @@ import { OSM, Vector as VectorSource } from 'ol/source'
 import { Attribution, ScaleLine, defaults as defaultControls } from 'ol/control'
 import olms from 'ol-mapbox-style'
 import { Style as MbStyle } from 'mapbox-gl'
-import { Style } from 'ol/style'
-import { sanitize } from 'dompurify'
+import GeoJSON from 'ol/format/GeoJSON'
 
 import { LayerId, LayerConf } from 'Types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
+import { defaultVectorStyleFunction } from 'Utils/mapUtils'
 
 interface Props {
   children?: React.ReactNode
@@ -279,6 +279,36 @@ export const MapProvider = ({ children }: Props) => {
       // })
     })
   }
+
+  const addJSONLayer = (id: string, groupId: string, json: any, projection: string) => {
+    const vectorSource = new VectorSource({
+      features: new GeoJSON().readFeatures(json, {
+        featureProjection: projection,
+      }),
+    })
+
+    const vectorLayer = new VectorLayer({
+      source: vectorSource,
+      style: defaultVectorStyleFunction,
+    })
+
+    map.addLayer(vectorLayer)
+
+    let layerGroup: any = {}
+
+    if (layerGroups[groupId]) {
+      layerGroup = layerGroups[groupId]
+    }
+
+    layerGroup[id] = vectorLayer
+
+    const layerGroupsCopy = { ...layerGroups, [groupId]: vectorLayer }
+    setLayerGroups(layerGroupsCopy)
+
+    const activeLayerGroupsCopy = [...activeLayerGroups, groupId]
+    setActiveLayerGroups(activeLayerGroupsCopy)
+  }
+
   const toggleLayerGroup = async (layerId: LayerId) => {
     if (activeLayerGroups.includes(layerId)) {
       const activeLayerGroupsCopy = [...activeLayerGroups]
@@ -341,6 +371,7 @@ export const MapProvider = ({ children }: Props) => {
     mapZoomOut,
     enableGroup,
     toggleLayerGroup,
+    addJSONLayer,
 
     setFilter,
     AddMapEventHandler,
