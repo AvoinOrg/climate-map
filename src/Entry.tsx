@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { Theme } from '@mui/material/styles'
 
 import './style/index.css'
+import './style/mapbox.css'
 import App from 'Components/App'
 
 // import * as serviceWorker from "./serviceWorker";
