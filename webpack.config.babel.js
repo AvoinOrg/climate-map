@@ -71,6 +71,8 @@ const appConfig = {
       Types: path.resolve(__dirname, 'src/types/'),
       Assets: path.resolve(__dirname, 'src/assets/'),
       Style: path.resolve(__dirname, 'src/style/'),
+      Queries: path.resolve(__dirname, 'src/queries/'),
+      Root: path.resolve(__dirname, 'src/'),
     },
   },
   // baseUrl: './src',

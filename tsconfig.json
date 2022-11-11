@@ -16,9 +16,10 @@
     "outDir": "build/",
     "paths": {
       "Components/*": ["src/components/*"],
-      "Utils/*": ["./src/utils/*"],
-      "State/*": ["./src/state/*"],
-      "Types/*": ["./src/types/*"],
+      "Utils/*": ["src/utils/*"],
+      "Queries/*": ["src/queries/*"],
+      "State/*": ["src/state/*"],
+      "Types/*": ["src/types/*"],
       "Assets/*": ["src/assets/*"],
       "Style/*": ["src/style/*"],
       "Root/*": ["src/*"]
