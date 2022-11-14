@@ -1,11 +1,11 @@
-{"consuption":[ 
-{"Oil": 70.917, "dis_heating": 66.272, "direct_heating":62.625, "awhpump":45.955, "ghpump":35.928},  
-{"Oil": 64.053, "dis_heating":59.901, "direct_heating": 56.309, "awhpump": 41.838, "ghpump": 32.857},   
-{"Oil":55.573, "dis_heating":52.022, "direct_heating":48.554, "awhpump":36.507, "ghpump":28.958},
-{"Oil":53.097, "dis_heating":49.738, "direct_heating":46.352, "awhpump":35.047, "ghpump":27.861},  
-{"Oil":48.289, "dis_heating":45.339, "direct_heating":43.156, "awhpump":32.839, "ghpump":26.574},  
-{"Oil":47.917, "dis_heating":44.999, "direct_heating":42.832, "awhpump":32.612, "ghpump":26.411},  
-{"Oil":40.39, "dis_heating":38.03, "direct_heating":36.216, "awhpump":28.204, "ghpump":23.408},  
-{"Oil":37.074, "dis_heating":34.92, "direct_heating":33.122, "awhpump":26.018, "ghpump":21.708},  
-{"Oil":34.911, "dis_heating":32.903, "direct_heating":31.101, "awhpump":24.632, "ghpump":20.722}
-]}
+{"consuption": { 
+    "0_1975": {"Oil": 70.917, "dis_heating": 66.272, "direct_heating":62.625, "awhpump":45.955, "ghpump":35.928},  
+    "1976_77": {"Oil": 64.053, "dis_heating": 59.901, "direct_heating": 56.309, "awhpump": 41.838, "ghpump": 32.857},   
+    "1978_84": {"Oil":55.573, "dis_heating":52.022, "direct_heating":48.554, "awhpump":36.507, "ghpump":28.958},
+    "1985_02": {"Oil":53.097, "dis_heating":49.738, "direct_heating":46.352, "awhpump":35.047, "ghpump":27.861},  
+    "2003_07": {"Oil":48.289, "dis_heating":45.339, "direct_heating":43.156, "awhpump":32.839, "ghpump":26.574},  
+    "2008_09": {"Oil":47.917, "dis_heating":44.999, "direct_heating":42.832, "awhpump":32.612, "ghpump":26.411},  
+    "2010_11": {"Oil":40.39, "dis_heating":38.03, "direct_heating":36.216, "awhpump":28.204, "ghpump":23.408},  
+    "2012_17": {"Oil":37.074, "dis_heating":34.92, "direct_heating":33.122, "awhpump":26.018, "ghpump":21.708},  
+    "2018_0": {"Oil":34.911, "dis_heating":32.903, "direct_heating":31.101, "awhpump":24.632, "ghpump":20.722}
+}}
