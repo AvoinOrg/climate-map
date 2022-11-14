@@ -1,3 +1,5 @@
+'use client'
+
 import { observable, useObservable } from 'micro-observables'
 import React, { useRef, useEffect } from 'react'
 import { MapContext } from '#/components/Map'

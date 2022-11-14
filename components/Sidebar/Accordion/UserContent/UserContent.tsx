@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useContext, useEffect, useState } from 'react'
 import { Theme, Button, FormControl, InputLabel, MenuItem, Select } from '@mui/material'
 import createStyles from '@mui/styles/createStyles'

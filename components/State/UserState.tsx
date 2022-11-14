@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react'
+'use client'
+
+import React, { createContext, useEffect, useState } from 'react'
 import axios, { AxiosRequestConfig } from 'axios'
 
 import { MapContext } from '#/components/Map'
@@ -13,7 +15,7 @@ const apiUrl = process.env.API_URL
 const defaultUserLayers = { vipu: false }
 const defaultPrivateLayers = { 'valio-carbon-grass-fields': false }
 
-export const UserStateContext = React.createContext({})
+export const UserStateContext = createContext({})
 
 export const UserStateProvider = (props) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false)

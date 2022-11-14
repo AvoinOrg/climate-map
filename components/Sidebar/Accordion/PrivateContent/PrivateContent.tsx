@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useContext, useEffect, useState } from 'react'
 import { Theme } from '@mui/material'
 import createStyles from '@mui/styles/createStyles'
