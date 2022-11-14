@@ -6,6 +6,8 @@
   "license": "MIT",
   "scripts": {
     "start": "NODE_ENV=development webpack serve --config webpack.config.babel.js",
+    "nstart": "next start",
+    "dev": "next dev",
     "build": "yarn build",
     "test": "node scripts/test.js",
     "favicon": "real-favicon generate faviconDescription.json faviconData.json favicon/"
@@ -53,11 +55,12 @@
     "mapbox-gl": "^2.10.0",
     "micro-observables": "^1.7.2",
     "mini-css-extract-plugin": "^2.6.1",
+    "next": "latest",
     "ol": "^7.1.0",
     "ol-mapbox-style": "^9.2.0",
-    "react": "^18.2.0",
+    "react": "latest",
     "react-chartjs-2": "^4.3.1",
-    "react-dom": "^18.2.0",
+    "react-dom": "latest",
     "react-ga": "^3.3.1",
     "react-query": "^3.39.2",
     "react-redux": "^8.0.4",
@@ -67,7 +70,6 @@
     "style-loader": "^3.3.1",
     "terser-webpack-plugin": "^5.3.6",
     "typescript": "^4.8.4",
-    "webpack": "^5.74.0",
     "webpack-bundle-analyzer": "^4.6.1"
   },
   "devDependencies": {
@@ -94,6 +96,7 @@
     "dotenv-webpack": "^8.0.1",
     "eslint": "^8.25.0",
     "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-next": "latest",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-import": "^2.26.0",

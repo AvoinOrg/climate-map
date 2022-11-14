@@ -1,12 +1,16 @@
 {
   "allowSyntheticDefaults": true,
-  "include": ["./src/**/*"],
-
+  "include": [
+    "./src/**/*",
+    "style",
+    "components",
+    ".next/types/**/*.ts"
+, "utils"  ],
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./",
-    "jsx": "react",
+    "jsx": "preserve",
     "isolatedModules": true,
     "module": "CommonJS",
     "moduleResolution": "Node",
@@ -15,16 +19,31 @@
     "noUnusedParameters": true,
     "outDir": "build/",
     "paths": {
-      "Components/*": ["src/components/*"],
-      "Utils/*": ["src/utils/*"],
-      "Queries/*": ["src/queries/*"],
-      "State/*": ["src/state/*"],
-      "Types/*": ["src/types/*"],
-      "Assets/*": ["src/assets/*"],
-      "Style/*": ["src/style/*"],
-      "Root/*": ["src/*"]
+      "#/*": [
+        "./*"
+      ]
     },
     //    "strict": true,
-    "target": "ESNext"
-  }
+    "target": "ESNext",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "skipLibCheck": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "incremental": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }
