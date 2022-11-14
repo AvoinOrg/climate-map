@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
-import MapContext from 'Components/Map'
+import MapContext from '#/components/Map'
 
 // Some URLs are 1:1 associated with certain layer groups:
 const urlLayerMapping = {
