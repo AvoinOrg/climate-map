@@ -40,6 +40,7 @@
     "@mui/lab": "^5.0.0-alpha.103",
     "@mui/material": "^5.10.9",
     "@mui/styles": "^5.10.9",
+    "@next/font": "^13.0.3",
     "@reduxjs/toolkit": "^1.8.6",
     "@turf/boolean-within": "^6.5.0",
     "@turf/helpers": "^6.5.0",
