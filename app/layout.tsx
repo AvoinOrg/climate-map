@@ -18,6 +18,9 @@ import theme from '#/style/theme'
 import { UiStateProvider, UserStateProvider } from '#/components/State'
 import { MapProvider, GroupOrientation } from '#/components/Map'
 
+import '#/style/index.css'
+import '#/style/mapbox.css'
+
 const RootLayout = ({
   // Layouts must accept a children prop.
   // This will be populated with nested layouts or pages
