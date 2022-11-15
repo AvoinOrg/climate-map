@@ -18,8 +18,10 @@ import theme from '#/style/theme'
 import { UiStateProvider, UserStateProvider } from '#/components/State'
 import { MapProvider, GroupOrientation } from '#/components/Map'
 
-import '#/style/index.css'
-import '#/style/mapbox.css'
+// const raleway = Raleway({
+//   weight: ['400', '500'],
+//   subsets: ['latin'],
+// })
 
 const RootLayout = ({
   // Layouts must accept a children prop.
@@ -31,7 +33,7 @@ const RootLayout = ({
   return (
     <html lang="en">
       <body>
-        <main className={raleway.className}>
+        {/* <main className={raleway.className}> */}
           <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme}>
               <UiStateProvider>
@@ -50,7 +52,7 @@ const RootLayout = ({
               </UiStateProvider>
             </ThemeProvider>
           </StyledEngineProvider>
-        </main>
+        {/* </main> */}
       </body>
     </html>
   )
