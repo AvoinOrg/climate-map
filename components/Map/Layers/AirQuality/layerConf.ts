@@ -1,10 +1,14 @@
+"use client"
+
 import { Style as MbStyle } from 'mapbox-gl'
 
 import { LayerId, LayerConf } from '#/types/map'
 
 const id: LayerId = 'no2'
 
-const no2Tileset = Number.parseInt(window.location.search.substring(1), 10) || 0
+// TODO: Figure out what the tilesets are, and how the timestampHour affects the tiles
+// const no2Tileset = Number.parseInt(window.location.search.substring(1), 10) || 0
+const no2Tileset = 0
 const timestampHour = Math.round(+new Date() / 1e6)
 
 const getStyle = async (): Promise<MbStyle> => {
@@ -34,7 +38,6 @@ const getStyle = async (): Promise<MbStyle> => {
         paint: {
           'raster-opacity': 0.7,
         },
-        BEFORE: 'FILL',
       },
     ],
   }
