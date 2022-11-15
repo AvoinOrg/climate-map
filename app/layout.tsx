@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles'
@@ -6,7 +8,6 @@ import { Sidebar } from '#/components/Sidebar'
 import { NavBar } from '#/components/NavBar'
 import { OverlayMessages } from '#/components/OverlayMessages'
 import { UserModal } from '#/components/Profile'
-import { AppRoutes } from '#/components/Routing'
 import theme from '#/style/theme'
 import { UiStateProvider, UserStateProvider } from '#/components/State'
 import { MapProvider, GroupOrientation } from '#/components/Map'
@@ -31,10 +32,7 @@ const RootLayout = ({
                     <GroupOrientation />
                     <NavBar />
                     <OverlayMessages />
-                    <Sidebar>
-                      <AppRoutes />
-                      {children}
-                    </Sidebar>
+                    <Sidebar>{children}</Sidebar>
                     <UserModal />
                   </CssBaseline>
                 </UserStateProvider>
