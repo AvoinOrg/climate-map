@@ -18,8 +18,8 @@ const zIndex = {
 }
 
 const fontFamily = {
-  0: 'raleway',
-  1: '"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+  0: '"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+  // 1: 'raleway',
 }
 
 const typography: StyleRules = {
