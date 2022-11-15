@@ -9,6 +9,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import Link from 'next/link'
+import Image from 'next/image'
 
 import Logo from '#/assets/logo.svg'
 import { NavBarSearch } from './NavBarSearch'
@@ -126,7 +127,7 @@ export const NavBar = () => {
         </IconButton>
 
         <Link href="/" className="neutral-link">
-          <img className={classes.logo} src={Logo} alt="Logo" />
+          <Image className={classes.logo} src={Logo} alt="Logo" />
         </Link>
 
         <div className={classes.helpWrapper}>
