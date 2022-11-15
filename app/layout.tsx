@@ -1,5 +1,7 @@
 'use client'
 
+import '#/style/index.css'
+import '#/style/mapbox.css'
 import React from 'react'
 import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles'
