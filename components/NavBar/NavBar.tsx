@@ -8,7 +8,7 @@ import makeStyles from '@mui/styles/makeStyles'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 
 import Logo from '#/assets/logo.svg'
 import { NavBarSearch } from './NavBarSearch'
@@ -125,7 +125,7 @@ export const NavBar = () => {
           {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
         </IconButton>
 
-        <Link to="/" className="neutral-link">
+        <Link href="/" className="neutral-link">
           <img className={classes.logo} src={Logo} alt="Logo" />
         </Link>
 
