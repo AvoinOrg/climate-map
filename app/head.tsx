@@ -40,8 +40,8 @@ export default async function Head() {
       <meta property="og:description" content="Helping you improve carbon balance. See it here!" />
       <meta property="og:image:height" content="102" />
       <meta property="og:image:width" content="932" />
-      <meta property="og:url" content="https://avoinmap.org/" />
-      <meta property="og:image" content="https://avoinmap.org/og-image.jpg?v=2" />
+      <meta property="og:url" content="https://map.avoin.org/" />
+      <meta property="og:image" content="https://map.avoin.org/og-image.jpg?v=2" />
       <meta name="facebook-domain-verification" content="ob9uoavh9ht9brv2p1z19ggg19l4ci" />
       {/* <link rel="stylesheet" href="src/app.css" /> */}
 
