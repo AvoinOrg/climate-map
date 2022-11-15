@@ -5,7 +5,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 
 import { MapContext } from '#/components/Map'
-import { LayerId } from 'Types/map'
+import { LayerId } from '#/types/map'
 
 const styles = {
   heading: {

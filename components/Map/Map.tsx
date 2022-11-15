@@ -16,7 +16,7 @@ import mapboxgl from 'mapbox-gl'
 import { fromLonLat, toLonLat } from 'ol/proj'
 import Source from 'ol/source/Source'
 
-import { LayerId, LayerConf } from 'Types/map'
+import { LayerId, LayerConf } from '#/types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
 // import { defaultVectorStyleFunction, WebGLLayer } from '#/utils/mapUtils'

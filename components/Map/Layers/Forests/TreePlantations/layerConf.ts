@@ -1,6 +1,6 @@
 import { Style as MbStyle } from 'mapbox-gl'
 
-import { LayerId, LayerConf } from 'Types/map'
+import { LayerId, LayerConf } from '#/types/map'
 import { fillOpacity } from '#/utils/mapUtils'
 import Popup from './Popup'
 

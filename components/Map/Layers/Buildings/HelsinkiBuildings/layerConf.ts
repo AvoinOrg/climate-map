@@ -2,7 +2,7 @@ import { Style as MbStyle } from 'mapbox-gl'
 import _ from 'lodash'
 
 import { fillOpacity, roundToSignificantDigits } from '#/utils/mapUtils'
-import { LayerId, LayerConf } from 'Types/map'
+import { LayerId, LayerConf } from '#/types/map'
 import Popup from './Popup'
 
 const id: LayerId = 'helsinki_buildings'
