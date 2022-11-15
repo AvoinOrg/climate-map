@@ -2,5 +2,5 @@
 if [ "$NODE_ENV" = "production" ]; then
     yarn install --only=prod && node start;
 else
-    yarn install && yarn start;
+    yarn install && yarn dev;
 fi
