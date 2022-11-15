@@ -10,7 +10,7 @@ const Page = ({
 }: {
   children: React.ReactNode
 }) => {
-  return <MainMenu />
+  return <MainMenu>{children}</MainMenu>
 }
 
 export default Page
