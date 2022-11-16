@@ -125,7 +125,5 @@ yarn-error.log*
 
 .env
 
-.yarnrc.yml
-
 .pnp.*
 
