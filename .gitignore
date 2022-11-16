@@ -122,3 +122,5 @@ yarn-error.log*
 .yarn
 
 /temp
+
+.env.docker

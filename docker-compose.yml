@@ -5,8 +5,8 @@ services:
     container_name: climate-map-app
     build: .
     env_file:
-      - ./.env.example
-      - ./.env
+      - ./.env.local
+      - ./.env.docker
     ports:
       - '${DEV_PORT}:3000'
     volumes:
