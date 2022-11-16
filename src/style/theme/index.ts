@@ -1,6 +1,22 @@
 import { createTheme } from '@mui/material/styles'
-
 import { StyleRules } from '@mui/styles'
+import { Roboto } from '@next/font/google'
+
+export const roboto = Roboto({
+  weight: ['300', '400', '500', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+  fallback: [
+    'BlinkMacSystemFont',
+    'Segoe UI',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+  ],
+})
 
 const palette = {
   primary: { main: '#0B2027' },
@@ -18,7 +34,7 @@ const zIndex = {
 }
 
 const fontFamily = {
-  0: '"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+  0: roboto.style.fontFamily,
   // 1: 'raleway',
 }
 
