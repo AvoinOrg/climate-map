@@ -8,6 +8,7 @@
     "start": "next start",
     "dev": "next dev",
     "build": "next build",
+    "build-analyze": "ANALYZE=true yarn build",
     "test": "node scripts/test.js",
     "favicon": "real-favicon generate faviconDescription.json faviconData.json favicon/"
   },
