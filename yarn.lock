@@ -2295,10 +2295,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/font@npm:^13.0.3":
-  version: 13.0.3
-  resolution: "@next/font@npm:13.0.3"
-  checksum: 1e703a93b14129e147121589cdb3b6b19c2e473077b9fe611676d1913f5302333346cd5e7dcb1b9068aa899cb8386aa31259f58e52ee48ed5c6566ef04de0fec
+"@next/font@npm:canary":
+  version: 13.0.4-canary.2
+  resolution: "@next/font@npm:13.0.4-canary.2"
+  checksum: 8b3c15290b08ba9fd236880fe1dfbe36e95690c501fe7cd7c25ae4d22543da3409f9ee164ebd7874a44013d3579bd658239dc30bc05cc73b8763e28e2944876c
   languageName: node
   linkType: hard
 
@@ -4093,7 +4093,7 @@ __metadata:
     "@mui/lab": ^5.0.0-alpha.103
     "@mui/material": ^5.10.9
     "@mui/styles": ^5.10.9
-    "@next/font": ^13.0.3
+    "@next/font": canary
     "@pmmmwh/react-refresh-webpack-plugin": ^0.5.8
     "@reduxjs/toolkit": ^1.8.6
     "@turf/boolean-within": ^6.5.0

@@ -5,10 +5,9 @@
   "repository": "git@github.com:ButtonProgram/climate-map.git",
   "license": "MIT",
   "scripts": {
-    "start": "NODE_ENV=development webpack serve --config webpack.config.babel.js",
-    "nstart": "next start",
+    "start": "next start",
     "dev": "next dev",
-    "build": "yarn build",
+    "build": "next build",
     "test": "node scripts/test.js",
     "favicon": "real-favicon generate faviconDescription.json faviconData.json favicon/"
   },
@@ -40,7 +39,7 @@
     "@mui/lab": "^5.0.0-alpha.103",
     "@mui/material": "^5.10.9",
     "@mui/styles": "^5.10.9",
-    "@next/font": "^13.0.3",
+    "@next/font": "canary",
     "@reduxjs/toolkit": "^1.8.6",
     "@turf/boolean-within": "^6.5.0",
     "@turf/helpers": "^6.5.0",
