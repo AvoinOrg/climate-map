@@ -1,5 +1,4 @@
 'use client'
-
 import '#/style/index.css'
 import '#/style/mapbox.css'
 
@@ -7,8 +6,6 @@ import React from 'react'
 import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
 // import { Raleway } from '@next/font/google'
-import createEmotionCache from '../utils/createEmotionCache'
-import { CacheProvider } from '@emotion/react'
 
 import { Sidebar } from '#/components/Sidebar'
 import { NavBar } from '#/components/NavBar'
@@ -17,13 +14,7 @@ import { UserModal } from '#/components/Profile'
 import theme from '#/style/theme'
 import { UiStateProvider, UserStateProvider } from '#/components/State'
 import { MapProvider, GroupOrientation } from '#/components/Map'
-
-// const raleway = Raleway({
-//   weight: ['400', '500'],
-//   subsets: ['latin'],
-// })
-
-const cache = createEmotionCache()
+import RootStyleRegistry from './emotion'
 
 const RootLayout = ({
   // Layouts must accept a children prop.
@@ -35,26 +26,23 @@ const RootLayout = ({
   return (
     <html lang="en">
       <body>
-        {/* <main className={raleway.className}> */}
-          <CacheProvider value={cache}>
-            <ThemeProvider theme={theme}>
-              <UiStateProvider>
-                <MapProvider>
-                  <UserStateProvider>
-                    {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-                    <CssBaseline>
-                      <GroupOrientation />
-                      <NavBar />
-                      <OverlayMessages />
-                      <Sidebar>{children}</Sidebar>
-                      <UserModal />
-                    </CssBaseline>
-                  </UserStateProvider>
-                </MapProvider>
-              </UiStateProvider>
-            </ThemeProvider>
-          </CacheProvider>
-        {/* </main> */}
+        <RootStyleRegistry>
+          <ThemeProvider theme={theme}>
+            <UiStateProvider>
+              <MapProvider>
+                <UserStateProvider>
+                  <CssBaseline>
+                    <GroupOrientation />
+                    <NavBar />
+                    <OverlayMessages />
+                    <Sidebar>{children}</Sidebar>
+                    <UserModal />
+                  </CssBaseline>
+                </UserStateProvider>
+              </MapProvider>
+            </UiStateProvider>
+          </ThemeProvider>
+        </RootStyleRegistry>
       </body>
     </html>
   )
