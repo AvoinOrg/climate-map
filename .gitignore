@@ -123,4 +123,9 @@ yarn-error.log*
 
 /temp
 
-.env.docker
+.env
+
+.yarnrc.yml
+
+.pnp.*
+
