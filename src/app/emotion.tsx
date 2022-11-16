@@ -1,8 +1,12 @@
 'use client'
+
 import { CacheProvider } from '@emotion/react'
 import createCache from '@emotion/cache'
 import { useServerInsertedHTML } from 'next/navigation'
 import { useState } from 'react'
+import { ThemeProvider } from '@mui/material/styles'
+
+import theme from '#/style/theme'
 
 const RootStyleRegistry = ({ children }: { children: JSX.Element }) => {
   const [cache] = useState(() => {
@@ -22,7 +26,11 @@ const RootStyleRegistry = ({ children }: { children: JSX.Element }) => {
     )
   })
 
-  return <CacheProvider value={cache}>{children}</CacheProvider>
+  return (
+    <CacheProvider value={cache}>
+      <ThemeProvider theme={theme}>{children}</ThemeProvider>
+    </CacheProvider>
+  )
 }
 
 export default RootStyleRegistry
