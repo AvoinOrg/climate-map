@@ -1,12 +1,10 @@
-version: '3.1'
+version: '3.8'
 
 services:
   app:
     container_name: climate-map-app
     build: .
-    env_file:
-      - ./.env.local
-      - ./.env.docker
+    env_file: ./.env.local
     ports:
       - '${DEV_PORT}:3000'
     volumes:
