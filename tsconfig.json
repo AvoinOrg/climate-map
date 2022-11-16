@@ -1,12 +1,8 @@
 {
   "allowSyntheticDefaults": true,
   "include": [
-    "src/app/**/*/.ts*",
-    "style/**/*.ts*",
-    "components/**/*.ts",
+    "src/**/*/.ts*",
     ".next/types/**/*.ts",
-    "utils/**/*.ts",
-    "types/**/*.ts"
   ],
   "compilerOptions": {
     "allowJs": true,
@@ -21,7 +17,7 @@
     "noUnusedParameters": true,
     "outDir": "build/",
     "paths": {
-      "#/*": ["./*"]
+      "#/*": ["./src/*"]
     },
     //    "strict": true,
     "target": "ESNext",
