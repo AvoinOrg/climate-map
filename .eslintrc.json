@@ -10,7 +10,13 @@
       "jsx": true
     }
   },
-  "extends": ["prettier", "airbnb", "plugin:@typescript-eslint/recommended", "plugin:prettier/recommended"],
+  "extends": [
+    "next",
+    "prettier",
+    "airbnb",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended"
+  ],
   "env": {
     "browser": true,
     "commonjs": true,
