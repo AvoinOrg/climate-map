@@ -3,16 +3,18 @@ const nextConfig = {
   experimental: {
     appDir: true,
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   webpack: (config, { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }) => {
     // Important: return the modified config
 
-    const plugins = [
+    config.plugins.push(
       new webpack.ProvidePlugin({
         Buffer: ['buffer', 'Buffer'],
-      }),
-    ]
-
-    config.plugins = [...config.plugins, ...plugins]
+      })
+    )
+    config.resolve.mainFields.push(['browser', 'main'])
 
     return config
   },
