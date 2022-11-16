@@ -5,7 +5,7 @@ import '#/style/mapbox.css'
 
 import React from 'react'
 import CssBaseline from '@mui/material/CssBaseline'
-import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles'
+import { ThemeProvider } from '@mui/material/styles'
 // import { Raleway } from '@next/font/google'
 import createEmotionCache from '../utils/createEmotionCache'
 import { CacheProvider } from '@emotion/react'
