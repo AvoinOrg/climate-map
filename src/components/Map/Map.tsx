@@ -7,14 +7,14 @@ import { Map, View } from 'ol'
 import { unByKey } from 'ol/Observable'
 import { Layer, Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import Overlay from 'ol/Overlay'
-import { OSM, Vector as VectorSource } from 'ol/source'
+import OSM from 'ol/source/OSM'
+import VectorSource from 'ol/source/Vector'
 import { Attribution, ScaleLine, defaults as defaultControls } from 'ol/control'
 import olms from 'ol-mapbox-style'
 import { Style as MbStyle } from 'mapbox-gl'
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 import { fromLonLat, toLonLat } from 'ol/proj'
-import { Source } from 'ol/source'
 
 import { LayerId, LayerConf } from '#/types/map'
 import { layerConfs } from './Layers'
@@ -112,12 +112,6 @@ export const MapProvider = ({ children }: Props) => {
 
         return canvas
       },
-      source: new Source({
-        attributions: [
-          '<a href="https://www.maptiler.com/copyright/" target="_blank">© MapTiler</a>',
-          '<a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>',
-        ],
-      }),
     })
 
     const options = {
