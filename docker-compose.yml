@@ -4,7 +4,7 @@ services:
   app:
     container_name: climate-map-app
     build: .
-    env_file: ./.env.local
+    env_file: ./.env
     ports:
       - '${DEV_PORT}:3000'
     volumes:
