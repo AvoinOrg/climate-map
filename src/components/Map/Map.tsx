@@ -58,10 +58,6 @@ export const MapProvider = ({ children }: Props) => {
   const [popupKey, setPopupKey] = useState<any>(null)
   const [popupElement, setPopupElement] = useState<React.ReactNode | null>(null)
 
-  const attribution = new Attribution({
-    collapsible: false,
-  })
-
   useEffect(() => {
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
 
@@ -112,6 +108,10 @@ export const MapProvider = ({ children }: Props) => {
 
         return canvas
       },
+    })
+
+    const attribution = new Attribution({
+      collapsible: false,
     })
 
     const options = {
