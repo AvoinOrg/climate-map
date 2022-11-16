@@ -15,7 +15,7 @@ import Marker from "../../../marker.svg";
 const marker = new Image(50, 50);
 marker.src = Marker;
 
-const URL_PREFIX = `${process.env.API_URL}/user/data?file=`;
+const URL_PREFIX = `${process.env.NEXT_PUBLIC_API_URL}/user/data?file=`;
 
 const addValioCarbonGrassFields = (token: string) => {
   addSource("valio-carbon-grass-fields", {

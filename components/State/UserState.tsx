@@ -10,7 +10,7 @@ import { VerificationStatus } from '#/utils/types'
 //     valio: '75e3e7c68bffb0efc8f893345bfe161f77175b8f9ce31840db93ace7fa46f3db',
 // }
 
-const apiUrl = process.env.API_URL
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
 const defaultUserLayers = { vipu: false }
 const defaultPrivateLayers = { 'valio-carbon-grass-fields': false }

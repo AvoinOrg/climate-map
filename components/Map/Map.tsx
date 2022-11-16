@@ -63,7 +63,7 @@ export const MapProvider = ({ children }: Props) => {
   })
 
   useEffect(() => {
-    mapboxgl.accessToken = process.env.MAPBOX_ACCESS_TOKEN
+    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
 
     const mbMap = new mapboxgl.Map({
       // style: 'mapbox://styles/mapbox/satellite-v9',
