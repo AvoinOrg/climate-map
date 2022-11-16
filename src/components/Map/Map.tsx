@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import 'ol/ol.css'
 import React, { createContext, useState, useRef, useEffect } from 'react'
@@ -14,7 +14,7 @@ import { Style as MbStyle } from 'mapbox-gl'
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 import { fromLonLat, toLonLat } from 'ol/proj'
-import Source from 'ol/source/Source'
+import { Source } from 'ol/source'
 
 import { LayerId, LayerConf } from '#/types/map'
 import { layerConfs } from './Layers'
