@@ -1,10 +1,12 @@
+'use client'
+
 import React, { useContext, useEffect, useState } from 'react'
 import { Theme } from '@mui/material'
 import createStyles from '@mui/styles/createStyles'
 import makeStyles from '@mui/styles/makeStyles'
 
-import { AOAccordionLink } from 'Components/Sidebar/Accordion'
-import { UserStateContext } from 'Components/State/UserState'
+import { AOAccordionLink } from '#/components/Sidebar/Accordion'
+import { UserStateContext } from '#/components/State/UserState'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

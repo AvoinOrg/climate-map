@@ -5,7 +5,7 @@ import { genericPopupHandler, createPopup } from "../../map";
 
 import { addDataset, removeDataset } from "./common";
 
-const URL_PREFIX = `${process.env.API_URL}/user/data?file=`;
+const URL_PREFIX = `${process.env.NEXT_PUBLIC_API_URL}/user/data?file=`;
 
 const addVipu = (token: string) => {
   addSource("vipu-fields", {

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Route, Routes } from 'react-router-dom'
 
-import { CarbonMap, MainMenu } from 'Components/Sidebar'
+import { CarbonMap, MainMenu } from '#/components/Sidebar'
 
 const AppRoutes = () => {
   return (

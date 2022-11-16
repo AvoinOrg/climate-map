@@ -1,6 +1,6 @@
 import { Style as MbStyle, AnyLayer, RasterSource } from 'mapbox-gl'
 
-import { LayerId, LayerConf } from 'Types/map'
+import { LayerId, LayerConf } from '#/types/map'
 
 const id: LayerId = 'zonation'
 

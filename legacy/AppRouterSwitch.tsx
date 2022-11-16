@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from 'react'
 import { BrowserRouter as Router, Route, Switch, useParams } from 'react-router-dom'
 
-import { Sidebar } from 'Components/Sidebar'
-import { NavBar } from 'Components/NavBar'
-import { GroupOrientation } from 'Components/Map'
+import { Sidebar } from '#/components/Sidebar'
+import { NavBar } from '#/components/NavBar'
+import { GroupOrientation } from '#/components/Map'
 // import { URLLayerSyncContainer } from './URLLayerSyncContainer'
 // import ForestArvometsa from "Components/Sidebar/ForestArvometsa";
 // import Omaihka from "Components/Sidebar/Omaihka";
 // import FaoImages2021 from "Components/Sidebar/FaoImages2021";
 // import KaribaForestCoverChanges from "Components/Sidebar/KaribaForestCoverChanges";
 // import FFD from "Components/Sidebar/FFD";
-import { MainMenu } from 'Components/Sidebar'
-import { OverlayMessages } from 'Components/OverlayMessages'
+import { MainMenu } from '#/components/Sidebar'
+import { OverlayMessages } from '#/components/OverlayMessages'
 // import Ekofolio from "Components/Sidebar/Ekofolio";
-import { UserModal } from 'Components/Profile'
-import { LoadingModal } from 'Components/Loading'
-import { UserStateContext } from 'Components/State'
-import { UiStateContext } from 'Components/State'
+import { UserModal } from '#/components/Profile'
+import { LoadingModal } from '#/components/Loading'
+import { UserStateContext } from '#/components/State'
+import { UiStateContext } from '#/components/State'
 // import ValioCarbonGrassFields from "Components/Sidebar/ValioCarbonGrassFields";
 
 const VerificationRouter = (props) => {

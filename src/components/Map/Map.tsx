@@ -1,3 +1,5 @@
+'use client';
+
 import 'ol/ol.css'
 import React, { createContext, useState, useRef, useEffect } from 'react'
 import Box from '@mui/material/Box'
@@ -14,10 +16,10 @@ import mapboxgl from 'mapbox-gl'
 import { fromLonLat, toLonLat } from 'ol/proj'
 import Source from 'ol/source/Source'
 
-import { LayerId, LayerConf } from 'Types/map'
+import { LayerId, LayerConf } from '#/types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
-// import { defaultVectorStyleFunction, WebGLLayer } from 'Utils/mapUtils'
+// import { defaultVectorStyleFunction, WebGLLayer } from '#/utils/mapUtils'
 
 interface Props {
   children?: React.ReactNode
@@ -61,7 +63,7 @@ export const MapProvider = ({ children }: Props) => {
   })
 
   useEffect(() => {
-    mapboxgl.accessToken = process.env.MAPBOX_ACCESS_TOKEN
+    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
 
     const mbMap = new mapboxgl.Map({
       // style: 'mapbox://styles/mapbox/satellite-v9',

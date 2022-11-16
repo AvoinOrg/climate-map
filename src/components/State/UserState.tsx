@@ -1,19 +1,21 @@
-import React, { useEffect, useState } from 'react'
+'use client'
+
+import React, { createContext, useEffect, useState } from 'react'
 import axios, { AxiosRequestConfig } from 'axios'
 
-import { MapContext } from 'Components/Map'
+import { MapContext } from '#/components/Map'
 import { UiStateContext } from './UiState'
-import { VerificationStatus } from 'Utils/types'
+import { VerificationStatus } from '#/types/state'
 // const claimHashes = {
 //     valio: '75e3e7c68bffb0efc8f893345bfe161f77175b8f9ce31840db93ace7fa46f3db',
 // }
 
-const apiUrl = process.env.API_URL
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
 const defaultUserLayers = { vipu: false }
 const defaultPrivateLayers = { 'valio-carbon-grass-fields': false }
 
-export const UserStateContext = React.createContext({})
+export const UserStateContext = createContext({})
 
 export const UserStateProvider = (props) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false)

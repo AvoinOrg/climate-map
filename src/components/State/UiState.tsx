@@ -1,4 +1,6 @@
-import React, { useState, useRef } from 'react'
+'use client'
+
+import React, { createContext, useState, useRef } from 'react'
 import { observable } from 'micro-observables'
 import { useObservable } from 'micro-observables'
 import { Theme } from '@mui/material/styles'
@@ -7,7 +9,7 @@ import makeStyles from '@mui/styles/makeStyles'
 import { Snackbar } from '@mui/material'
 import MuiAlert from '@mui/material/Alert'
 
-import { ProfileState, ModalState } from 'Utils/types'
+import { ProfileState, ModalState } from '#/types'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -40,7 +42,7 @@ const Notification = (props) => {
   )
 }
 
-export const UiStateContext = React.createContext({})
+export const UiStateContext = createContext({})
 
 export const UiStateProvider = (props) => {
   const classes = useStyles({})

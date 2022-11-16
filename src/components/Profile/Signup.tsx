@@ -10,7 +10,7 @@ import SignupForm from './SignupForm'
 import IntegrationForm from './IntegrationForm'
 import VerificationForm from './VerificationForm'
 import Finish from './Finish'
-import { UserStateContext, UiStateContext } from 'Components/State'
+import { UserStateContext, UiStateContext } from '#/components/State'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

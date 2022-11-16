@@ -6,8 +6,8 @@ import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
 import { ListItem } from '@mui/material'
 
-import { Accordion } from 'Components/Sidebar/Accordion'
-import { UserStateContext, UiStateContext } from 'Components/State'
+import { Accordion } from '#/components/Sidebar/Accordion'
+import { UserStateContext, UiStateContext } from '#/components/State'
 import drawerItems, { privateDrawerItems } from './drawerItems'
 
 const drawerWidth = 340

@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import { Theme } from '@mui/material/styles'
 import createStyles from '@mui/styles/createStyles'
@@ -5,7 +7,7 @@ import makeStyles from '@mui/styles/makeStyles'
 import IconButton from '@mui/material/IconButton'
 import Close from '@mui/icons-material/Close'
 
-import { UiStateContext } from 'Components/State'
+import { UiStateContext } from '#/components/State'
 import Login from './Login'
 import Signup from './Signup'
 import Profile from './Profile'

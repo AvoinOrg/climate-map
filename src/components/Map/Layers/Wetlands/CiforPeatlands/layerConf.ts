@@ -1,6 +1,6 @@
 import { Style as MbStyle } from 'mapbox-gl'
 
-import { LayerId, LayerConf } from 'Types/map'
+import { LayerId, LayerConf } from '#/types/map'
 
 const id: LayerId = 'cifor_peatdepth'
 

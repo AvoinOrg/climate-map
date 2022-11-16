@@ -14,7 +14,7 @@ import RemoveIcon from '@mui/icons-material/Remove'
 
 import GpsFixedIcon from '@mui/icons-material/GpsFixed'
 
-import { MapContext } from 'Components/Map'
+import { MapContext } from '#/components/Map'
 import { Button } from '@mui/material'
 
 const useStyles = makeStyles((theme: Theme) =>

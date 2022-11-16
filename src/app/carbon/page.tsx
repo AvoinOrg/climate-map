@@ -1,10 +1,12 @@
+'use client'
+
 import React, { useContext, useState } from 'react'
 import axios from 'axios'
 import { Button, Box } from '@mui/material'
 import shp from 'shpjs'
 
 // import { useFileUploadMutation } from 'Queries/carbon'
-import { MapContext } from 'Components/Map'
+import { MapContext } from '#/components/Map'
 
 const CarbonMap = () => {
   const [uploadFile, setUploadFile] = useState(null)

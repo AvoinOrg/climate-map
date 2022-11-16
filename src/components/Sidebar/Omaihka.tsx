@@ -2,7 +2,7 @@ import { Container, Paper } from '@mui/material'
 import React from 'react'
 import { useObservable } from 'micro-observables'
 
-import { MapContext } from 'Components/Map'
+import { MapContext } from '#/components/Map'
 import { assert, pp } from 'src/map/utils'
 import { getGeoJsonGeometryBounds } from 'src/map/utils'
 

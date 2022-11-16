@@ -1,7 +1,7 @@
 import { Style as MbStyle, Expression } from 'mapbox-gl'
 
-import { LayerId, LayerConf } from 'Types/map'
-import { fillOpacity } from 'Utils/mapUtils'
+import { LayerId, LayerConf } from '#/types/map'
+import { fillOpacity } from '#/utils/mapUtils'
 
 const id: LayerId = 'metsaan_ete_basic'
 

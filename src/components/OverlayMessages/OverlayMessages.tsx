@@ -1,6 +1,6 @@
 import React from 'react'
 import { observable, useObservable } from 'micro-observables'
-import { MapContext } from 'Components/Map'
+import { MapContext } from '#/components/Map'
 
 type Message = { message: string; layer: string }
 const nullMessage: Message = { message: null, layer: null }

@@ -12,7 +12,6 @@ import { GitRevisionPlugin } from 'git-revision-webpack-plugin'
 import { CleanWebpackPlugin } from 'clean-webpack-plugin'
 import ESLintPlugin from 'eslint-webpack-plugin'
 import Dotenv from 'dotenv-webpack'
-import { PartyModeSharp } from '@material-ui/icons'
 
 const buildReport = process.env.BUILD_REPORT === 'true'
 

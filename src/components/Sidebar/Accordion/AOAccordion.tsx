@@ -2,10 +2,10 @@ import { Checkbox, Accordion, AccordionDetails, AccordionSummary, Theme, Typogra
 import FormControlLabel from '@mui/material/FormControlLabel'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import React from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 
-import { MapContext } from 'Components/Map'
-import { LayerId } from 'Types/map'
+import { MapContext } from '#/components/Map'
+import { LayerId } from '#/types/map'
 
 const styles = {
   heading: {
@@ -53,7 +53,7 @@ export const AOAccordion = ({ layerId, label, content, panelProps }: AOAccordion
 export const AOAccordionLink = ({ href, label }: any) => {
   return (
     <Accordion expanded={false}>
-      <Link to={href} className="neutral-link">
+      <Link href={href} className="neutral-link">
         <AccordionSummary
           style={{ marginLeft: 31 }}
           sx={styles.content}
@@ -116,7 +116,7 @@ export const LayerToggleControl = ({ layerId, label }: LayerToggleControlProps) 
 export const AOAccordionHeader = ({ href, label }: any) => {
   return (
     <Accordion expanded={false}>
-      <Link to={href} className="neutral-link">
+      <Link href={href} className="neutral-link">
         <AccordionSummary sx={styles.content} expandIcon={<ExpandMoreIcon style={{ transform: 'rotate(90deg' }} />}>
           <Typography sx={styles.heading}>{label}</Typography>
         </AccordionSummary>

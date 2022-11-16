@@ -8,13 +8,14 @@ import makeStyles from '@mui/styles/makeStyles'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
+import Image from 'next/image'
 
-import Logo from 'Assets/logo.svg'
+import Logo from '#/assets/logo.svg'
 import { NavBarSearch } from './NavBarSearch'
 import ProfileMenu from './ProfileMenu'
 import ActionButtons from './ActionButtons'
-import { UserStateContext, UiStateContext } from 'Components/State'
+import { UserStateContext, UiStateContext } from '#/components/State'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -125,8 +126,8 @@ export const NavBar = () => {
           {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
         </IconButton>
 
-        <Link to="/" className="neutral-link">
-          <img className={classes.logo} src={Logo} alt="Logo" />
+        <Link href="/" className="neutral-link">
+          <Image className={classes.logo} src={Logo} alt="Logo" />
         </Link>
 
         <div className={classes.helpWrapper}>

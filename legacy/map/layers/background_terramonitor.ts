@@ -7,7 +7,7 @@ addLayer({
     'source': {
         'type': 'raster',
         'tiles': [
-            `https://tm2.terramonitor.com/${process.env.TERRAMONITOR_KEY}/rgb/{z}/{x}/{y}.png`,
+            `https://tm2.terramonitor.com/${process.env.NEXT_PUBLIC_TERRAMONITOR_KEY}/rgb/{z}/{x}/{y}.png`,
         ],
         'tileSize': 256,
         // "maxzoom": 16, // After zoom level 16 the images (used to) get blurrier

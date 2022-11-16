@@ -5,7 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Button } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
-import { UserStateContext } from 'Components/State'
+import { UserStateContext } from '#/components/State'
 import { NextButton } from "./Signup";
 
 const useStyles = makeStyles((theme: Theme) =>

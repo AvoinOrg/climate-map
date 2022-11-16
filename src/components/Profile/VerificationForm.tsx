@@ -6,7 +6,7 @@ import { CircularProgress } from '@mui/material'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import Check from '@mui/icons-material/Check'
 
-import { UserStateContext } from 'Components/State'
+import { UserStateContext } from '#/components/State'
 import { NextButton } from './Signup'
 
 const useStyles = makeStyles((theme: Theme) =>
