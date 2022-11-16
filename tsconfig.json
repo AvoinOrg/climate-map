@@ -1,7 +1,7 @@
 {
   "allowSyntheticDefaults": true,
   "include": [
-    "app/**/*/.ts*",
+    "src/app/**/*/.ts*",
     "style/**/*.ts*",
     "components/**/*.ts",
     ".next/types/**/*.ts",
