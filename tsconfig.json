@@ -1,11 +1,13 @@
 {
   "allowSyntheticDefaults": true,
   "include": [
-    "./src/**/*",
-    "style",
-    "components",
-    ".next/types/**/*.ts"
-, "utils"  ],
+    "app/**/*/.ts*",
+    "style/**/*.ts*",
+    "components/**/*.ts",
+    ".next/types/**/*.ts",
+    "utils/**/*.ts",
+    "types/**/*.ts"
+  ],
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
@@ -19,17 +21,11 @@
     "noUnusedParameters": true,
     "outDir": "build/",
     "paths": {
-      "#/*": [
-        "./*"
-      ]
+      "#/*": ["./*"]
     },
     //    "strict": true,
     "target": "ESNext",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "skipLibCheck": true,
     "strict": false,
     "forceConsistentCasingInFileNames": true,
@@ -43,7 +39,5 @@
       }
     ]
   },
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }
