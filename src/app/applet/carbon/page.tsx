@@ -9,7 +9,7 @@ import shp from 'shpjs'
 import { MapContext } from '#/components/Map'
 
 const CarbonMap = () => {
-  const [uploadFile, setUploadFile] = useState(null)
+  const [uploadFile, setUploadFile] = useState<string | Blob>('')
   const [res, setRes] = useState(null)
   const { addJSONLayer }: any = useContext(MapContext)
 
@@ -34,6 +34,7 @@ const CarbonMap = () => {
     reader.readAsArrayBuffer(f)
 
     reader.onloadend = async () => {
+      //@ts-ignore
       const json = await shp(reader.result)
       addJSONLayer('userCarbonJson', '1', json, 'EPSG:3857')
     }
