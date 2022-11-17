@@ -4,8 +4,8 @@ import SnowCoverLossContent from './SnowCoverLossContent/SnowCoverLossContent'
 import WetlandsContent from './WetlandsContent/WetlandsContent'
 import BiodiversityContent from './BiodiversityContent/BiodiversityContent'
 import ForestContent from './ForestContent/ForestContent'
-import UserContent from './UserContent/UserContent'
-import PrivateContent from './PrivateContent/PrivateContent'
+// import UserContent from './UserContent/UserContent'
+// import PrivateContent from './PrivateContent/PrivateContent'
 
 import Accordion from './Accordion'
 import AccordionButton from './AccordionButton'
@@ -18,8 +18,8 @@ export {
   WetlandsContent,
   BiodiversityContent,
   ForestContent,
-  PrivateContent,
-  UserContent,
+  // PrivateContent,
+  // UserContent,
   Accordion,
   AccordionButton,
   AOAccordion,
