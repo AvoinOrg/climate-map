@@ -1,30 +1,21 @@
 import React from 'react'
-import createStyles from '@mui/styles/createStyles'
-import makeStyles from '@mui/styles/makeStyles'
+import { Box } from '@mui/material'
 import { AOAccordionLink, AOAccordion } from '#/components/Sidebar/Accordion'
 
-const useStyles = makeStyles(() =>
-  createStyles({
-    root: {
-      width: '100%',
-    },
-    legendBox: {
-      backgroundColor: (props: any) => props.color,
-      border: '1px solid black',
-      width: '1rem',
-      height: '1rem',
-      padding: 5,
-      margin: '0 5px -2px 0',
-      display: 'inline-block',
-    },
-  })
-)
-
-const LegendBox = (props) => {
-  const classes = useStyles({ color: props.color })
+const LegendBox = (props: any) => {
   return (
     <span>
-      <span className={classes.legendBox}></span>
+      <Box
+        sx={{
+          backgroundColor: (props: any) => props.color,
+          border: '1px solid black',
+          width: '1rem',
+          height: '1rem',
+          padding: 5,
+          margin: '0 5px -2px 0',
+          display: 'inline-block',
+        }}
+      ></Box>
       {props.title}
     </span>
   )
@@ -89,15 +80,14 @@ const ForestCoverageContent = () => (
 )
 
 const ForestContent = () => {
-  const classes = useStyles({})
   return (
-    <div className={classes.root}>
+    <Box sx={{ width: '100%' }}>
       <AOAccordionLink href="/layers/fi-forest" label={"Finland's Forests"} />
       <AOAccordion layerId={'hansen'} label={'Global forest coverage'} content={<ForestCoverageContent />} />
       <AOAccordion layerId={'fi_mature_forests'} label={'Mature Forests'} content={<MatureForestContent />} />
       <AOAccordion layerId={'mangrove_forests'} label={'Mangrove forests'} content={<MangroveForestContent />} />
       <AOAccordion layerId={'gfw_tree_plantations'} label={'Tree plantations'} content={<TropicalForestContent />} />
-    </div>
+    </Box>
   )
 }
 
