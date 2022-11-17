@@ -5,7 +5,7 @@ import {
   BuildingsContent,
   SnowCoverLossContent,
   AirQualityContent,
-  PrivateContent,
+  // PrivateContent,
 } from './Accordion'
 
 export interface ContentEntity {
@@ -71,9 +71,9 @@ const drawerItems = [
 
 export default drawerItems
 
-export const privateDrawerItems = [
-  {
-    title: 'Private data',
-    content: PrivateContent,
-  },
-]
+// export const privateDrawerItems = [
+//   {
+//     title: 'Private data',
+//     content: PrivateContent,
+//   },
+// ]
