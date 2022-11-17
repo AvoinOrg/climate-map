@@ -18,7 +18,7 @@
     "baseUrl": ".",
     "outDir": "build/",
     "paths": {
-      "#/*": ["./src/*"]
+      "#/*": ["src/*"]
     },
     //    "strict": true,
     "plugins": [
@@ -27,6 +27,6 @@
       }
     ]
   },
-  "include": ["src/**/*/.ts", "src/**/*/.tsx", ".next/types/**/*.ts"],
+  "include": ["src", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
 }
