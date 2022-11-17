@@ -3,27 +3,13 @@
 import React, { createContext, useState, useRef } from 'react'
 import { observable } from 'micro-observables'
 import { useObservable } from 'micro-observables'
-import { Theme } from '@mui/material/styles'
-import createStyles from '@mui/styles/createStyles'
-import makeStyles from '@mui/styles/makeStyles'
+import { Box } from '@mui/material'
 import { Snackbar } from '@mui/material'
 import MuiAlert from '@mui/material/Alert'
 
-import { ProfileState, ModalState } from '#/types'
+import { ProfileState, ModalState } from '#/types/state'
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      width: '100%',
-      zIndex: 3000,
-      '& > * + *': {
-        marginTop: theme.spacing(2),
-      },
-    },
-  })
-)
-
-const Notification = (props) => {
+const Notification = (props: any) => {
   const [open, setOpen] = useState(true)
 
   const handleClose = (event?: React.SyntheticEvent, reason?: string) => {
@@ -44,9 +30,7 @@ const Notification = (props) => {
 
 export const UiStateContext = createContext({})
 
-export const UiStateProvider = (props) => {
-  const classes = useStyles({})
-
+export const UiStateProvider = (props: any) => {
   // for use in non-react components
   const isSidebarOpen = useObservable(isOpenObservable)
 
@@ -55,13 +39,13 @@ export const UiStateProvider = (props) => {
   const [modalState, setModalState] = useState<ModalState>('none')
   // const [profileMessage, setProfileMessage] = useState(null);
   const [signupFunnelStep, setSignupFunnelStep] = useState(0)
-  const [notifications, setNotifications] = useState({})
+  const [notifications, setNotifications] = useState<any>({})
 
   const notificationsRef = useRef(notifications)
   notificationsRef.current = notifications
 
-  const notify = (message, severity, duration = 6000) => {
-    const newNotification = {}
+  const notify = (message: any, severity: any, duration = 6000) => {
+    const newNotification: any = {}
     const index = new Date().getTime()
 
     newNotification[index] = {
@@ -77,9 +61,9 @@ export const UiStateProvider = (props) => {
     })
   }
 
-  const setNotificationTimeout = (index, timeout) => {
+  const setNotificationTimeout = (index: number, timeout: number) => {
     setTimeout(async () => {
-      const newNotifications = { ...notificationsRef.current }
+      const newNotifications: any = { ...notificationsRef.current }
       delete newNotifications[index]
       setNotifications(newNotifications)
     }, timeout)
@@ -122,7 +106,15 @@ export const UiStateProvider = (props) => {
   return (
     <UiStateContext.Provider value={values}>
       {props.children}
-      <div className={classes.root}>
+      <Box
+        sx={(theme) => ({
+          width: '100%',
+          zIndex: 3000,
+          '& > * + *': {
+            marginTop: theme.spacing(2),
+          },
+        }}
+      >
         {Object.keys(notifications).map((key) => {
           return (
             <Notification
@@ -133,7 +125,7 @@ export const UiStateProvider = (props) => {
             />
           )
         })}
-      </div>
+      </Box>
     </UiStateContext.Provider>
   )
 }
