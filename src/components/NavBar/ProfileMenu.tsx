@@ -1,65 +1,19 @@
 import React from 'react'
-import Menu from '@mui/material/Menu'
-import withStyles from '@mui/styles/withStyles'
+import { Menu } from '@mui/material'
 import MenuItem from '@mui/material/MenuItem'
 import IconButton from '@mui/material/IconButton'
-import { Theme } from '@mui/material/styles'
-import createStyles from '@mui/styles/createStyles'
-import makeStyles from '@mui/styles/makeStyles'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 
-import { UserStateContext, UiStateContext } from '#/components/State'
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    iconContainer: {
-      margin: `0 ${theme.spacing(2)} 0 0`,
-    },
-    icon: {
-      fontSize: '2rem',
-    },
-    buttonContainer: {
-      display: 'flex',
-    },
-    button: {
-      height: 40,
-      display: 'inline',
-      width: 85,
-      margin: '0 0 0 10px',
-      fontSize: 12,
-    },
-  })
-)
-
-const StyledMenu = withStyles({
-  paper: {
-    width: 200,
-  },
-})((props: any) => (
-  <Menu
-    getContentAnchorEl={null}
-    keepMounted
-    anchorOrigin={{
-      vertical: 'bottom',
-      horizontal: 'right',
-    }}
-    transformOrigin={{
-      vertical: -15,
-      horizontal: 'center',
-    }}
-    marginThreshold={0}
-    {...props}
-  />
-))
+// import { UserStateContext, UiStateContext } from '#/components/State'
+import { UiStateContext } from '#/components/State'
 
 const ProfileMenu = () => {
-  const classes = useStyles({})
-  const { logout }: any = React.useContext(UserStateContext)
+  // const { logout }: any = React.useContext(UserStateContext)
   const { setModalState }: any = React.useContext(UiStateContext)
 
   const [menuAnchorEl, setMenuAnchorEl] = React.useState(null)
 
-  const handleMenuClick = (event) => {
+  const handleMenuClick = (event: any) => {
     if (menuAnchorEl) {
       handleMenuClose()
     } else {
@@ -74,13 +28,13 @@ const ProfileMenu = () => {
   const handleLogOut = () => {
     handleMenuClose()
     setModalState('none')
-    logout()
+    // logout()
   }
 
   return (
     <>
       <IconButton
-        className={classes.iconContainer}
+        sx={(theme) => ({ margin: `0 ${theme.spacing(2)} 0 0` })}
         aria-label="display more actions"
         aria-controls="actions-menu"
         aria-haspopup="true"
@@ -88,19 +42,33 @@ const ProfileMenu = () => {
         color="inherit"
         size="large"
       >
-        <AccountCircleIcon className={classes.icon} />
+        <AccountCircleIcon
+          sx={{
+            fontSize: '2rem',
+          }}
+        />
       </IconButton>
-      <StyledMenu
+      <Menu
+        sx={{ paper: { width: 200 } }}
+        keepMounted
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: -15,
+          horizontal: 'center',
+        }}
+        marginThreshold={0}
         id="actions-menu"
         anchorEl={menuAnchorEl}
-        keepMounted
         open={Boolean(menuAnchorEl)}
         onClose={handleMenuClose}
       >
         <MenuItem id="btn-logout" onClick={handleLogOut}>
           Log out
         </MenuItem>
-      </StyledMenu>
+      </Menu>
     </>
   )
 }
