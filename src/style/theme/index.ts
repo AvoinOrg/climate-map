@@ -1,5 +1,5 @@
 import { createTheme } from '@mui/material/styles'
-import { StyleRules } from '@mui/styles'
+import { TypographyOptions } from '@mui/material/styles/createTypography'
 import { Roboto } from '@next/font/google'
 
 export const roboto = Roboto({
@@ -33,90 +33,48 @@ const zIndex = {
   tooltip: 1500,
 }
 
-const fontFamily = {
+const fonts = {
   0: roboto.style.fontFamily,
   // 1: 'raleway',
 }
 
-const typography: StyleRules = {
-  headline: {
+const typography: TypographyOptions = {
+  h1: {
     color: 'rgba(0, 0, 0, 0.87)',
-    fontFamily: fontFamily[0],
+    fontFamily: fonts[0],
     lineHeight: '1.35417em',
     fontSize: '1.5rem',
-    fontWeight: 400,
-  },
-  display2: {
-    marginLeft: '-.02em',
-    color: 'rgba(0, 0, 0, 0.54)',
-    fontFamily: fontFamily[0],
-    lineHeight: '1.13333em',
-    fontSize: '2.8125rem',
-    fontWeight: 400,
-  },
-  display3: {
-    marginLeft: '-.02em',
-    color: 'rgba(0, 0, 0, 0.54)',
-    fontFamily: fontFamily[0],
-    letterSpacing: '-.02em',
-    lineHeight: '1.30357em',
-    fontSize: '3.5rem',
-    fontWeight: 400,
-  },
-  display4: {
-    marginLeft: '-.04em',
-    color: 'rgba(0, 0, 0, 0.54)',
-    fontFamily: fontFamily[0],
-    letterSpacing: '-.04em',
-    lineHeight: '1.14286em',
-    fontSize: '7rem',
-    fontWeight: 300,
-  },
-  display1: {
-    color: 'rgba(0, 0, 0, 0.54)',
-    fontFamily: fontFamily[0],
-    lineHeight: '1.20588em',
-    fontSize: '2.125rem',
     fontWeight: 400,
   },
   button: {
     textTransform: 'none',
     color: 'rgba(0, 0, 0, 0.87)',
-    fontFamily: fontFamily[0],
+    fontFamily: fonts[0],
     fontSize: '1rem',
     fontWeight: 500,
   },
   caption: {
     color: 'rgba(0, 0, 0, 0.54)',
-    fontFamily: fontFamily[0],
+    fontFamily: fonts[0],
     lineHeight: '1.375em',
     fontSize: '0.75rem',
     fontWeight: 400,
   },
-  title: {
+  h2: {
     color: 'rgba(0, 0, 0, 0.87)',
-    fontFamily: fontFamily[0],
+    fontFamily: fonts[0],
     lineHeight: '1.16667em',
     fontSize: '1.3125rem',
     fontWeight: 500,
   },
-  subheading: {
+  h3: {
     color: 'rgba(0, 0, 0, 0.87)',
-    fontFamily: fontFamily[0],
+    fontFamily: fonts[0],
     lineHeight: '1.5em',
     fontSize: '1rem',
     fontWeight: 400,
   },
-  light: {
-    fontWeight: 300,
-  },
-  regular: {
-    fontWeight: 400,
-  },
-  medium: {
-    fontWeight: 500,
-  },
-  fontFamily,
+  fontFamily: fonts[0],
 }
 
 export default createTheme({ palette, typography, zIndex })
