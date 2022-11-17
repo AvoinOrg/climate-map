@@ -1,84 +1,31 @@
 'use client'
 
 import React, { useContext } from 'react'
-import { Theme } from '@mui/material/styles'
-import makeStyles from '@mui/styles/makeStyles'
-import createStyles from '@mui/styles/createStyles'
 import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
 import { ListItem } from '@mui/material'
 
 import { Accordion } from '#/components/Sidebar/Accordion'
-import { UserStateContext, UiStateContext } from '#/components/State'
-import drawerItems, { privateDrawerItems } from './drawerItems'
+// import { UserStateContext, UiStateContext } from '#/components/State'
+import { UiStateContext } from '#/components/State'
+// import drawerItems, { privateDrawerItems } from './drawerItems'
+import drawerItems from '#/components/Sidebar/drawerItems'
 
 const drawerWidth = 340
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    title: {
-      paddingLeft: 16,
-    },
-    menuButton: {
-      position: 'absolute',
-      marginRight: theme.spacing(2),
-    },
-    hide: {
-      display: 'none',
-    },
-    navlink: {
-      color: 'black',
-      textDecoration: 'none',
-    },
-    logo: {
-      maxWidth: 200,
-      float: 'left',
-      marginLeft: -12,
-      marginBottom: -24,
-    },
-    search: {
-      padding: 0,
-    },
-    dropdownList: {
-      marginTop: 80,
-    },
-    drawer: {
-      width: drawerWidth,
-      flexShrink: 0,
-    },
-    drawerPaper: {
-      width: drawerWidth,
-    },
-    drawerItem: {
-      marginBottom: theme.spacing(4),
-      height: 47,
-    },
-    content: {
-      flexGrow: 1,
-      padding: theme.spacing(3),
-    },
-    toolbar: theme.mixins.toolbar,
-    listItem: {
-      fontFamily: theme.typography.fontFamily[0],
-    },
-  })
-)
-
 export const MainMenu = () => {
-  const classes = useStyles({})
-
-  const { isLoggedIn }: any = useContext(UserStateContext)
+  // const { isLoggedIn }: any = useContext(UserStateContext)
 
   return (
-    <List className={classes.dropdownList}>
-      {isLoggedIn &&
+    <List sx={{ marginTop: 80 }}>
+      {/* {isLoggedIn &&
         privateDrawerItems.map((item, i) => (
-          <ListItem key={item.title} className={classes.listItem}>
+          <ListItem key={item.title} sx={{fontFamily: theme.typography.fontFamily[0]}}>
             <Accordion drawerItem={true} item={item} />
           </ListItem>
-        ))}
+        ))} */}
       {drawerItems.map((item, i) => (
-        <ListItem key={item.title} className={classes.listItem}>
+        <ListItem key={item.title} sx={{ typography: 'body1' }}>
           <Accordion drawerItem={true} item={item} />
         </ListItem>
       ))}
@@ -86,13 +33,20 @@ export const MainMenu = () => {
   )
 }
 
-export const Sidebar = ({ children }) => {
-  const classes = useStyles({})
+export const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const { isSidebarOpen }: any = useContext(UiStateContext)
 
   return (
-    <div className={'left-drawer'}>
-      <Drawer className={classes.drawer} variant="persistent" anchor="left" open={isSidebarOpen}>
+    <div>
+      <Drawer
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+        }}
+        variant="persistent"
+        anchor="left"
+        open={isSidebarOpen}
+      >
         {children}
       </Drawer>
     </div>
