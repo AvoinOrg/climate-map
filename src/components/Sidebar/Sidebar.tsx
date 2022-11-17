@@ -26,7 +26,7 @@ export const MainMenu = () => {
         ))} */}
       {drawerItems.map((item, i) => (
         <ListItem key={item.title} sx={{ typography: 'body1' }}>
-          <Accordion drawerItem={true} item={item} />
+          <Accordion isDrawerItem={true} item={item} />
         </ListItem>
       ))}
     </List>
