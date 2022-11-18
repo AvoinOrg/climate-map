@@ -26,7 +26,7 @@ export const NavBar = () => {
   }
 
   return (
-    <AppBar position="fixed" color="primary" sx={(theme) => ({ zIndex: theme.zIndex.appBar })}>
+    <AppBar position="fixed" color="inherit" sx={(theme) => ({ zIndex: theme.zIndex.appBar })}>
       <Toolbar sx={{ padding: 0, height: 64 }}>
         <IconButton
           onClick={toggleSidebar}
@@ -41,7 +41,9 @@ export const NavBar = () => {
         </IconButton>
 
         <Link href="/" className="neutral-link">
-          <StyledImage src={'/img/logo.svg'} alt="Logo" />
+          <ImageWrapper>
+            <Image src={'/img/logo.svg'} alt="Logo" width={160} height={100}/>
+          </ImageWrapper>
         </Link>
 
         <Box sx={(theme) => ({ position: 'relative', marginRight: theme.spacing(2), marginLeft: 0, width: '100%' })}>
@@ -61,7 +63,6 @@ export const NavBar = () => {
   )
 }
 
-const StyledImage = styled(Image)({
-  width: 160,
+const ImageWrapper = styled('div')({
   padding: '8px 0 0 0',
 })
