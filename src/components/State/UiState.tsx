@@ -56,7 +56,7 @@ export const UiStateProvider = (props: any) => {
 
     setNotificationTimeout(index, duration + 1000)
 
-    setNotifications((notifications) => {
+    setNotifications((notifications: any) => {
       return { ...notifications, ...newNotification }
     })
   }
@@ -113,7 +113,7 @@ export const UiStateProvider = (props: any) => {
           '& > * + *': {
             marginTop: theme.spacing(2),
           },
-        }}
+        })}
       >
         {Object.keys(notifications).map((key) => {
           return (
