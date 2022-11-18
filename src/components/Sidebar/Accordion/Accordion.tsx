@@ -9,9 +9,9 @@ interface Props {
   isDrawerItem?: boolean
 }
 
-const DrawerAccordion = ({ item, isDrawerItem }: Props) => {
+const Accordion = ({ item, isDrawerItem }: Props) => {
   return (
-    <MuiAccordion sx={isDrawerItem ? { marginBottom: 8, width: drawerWidth - 46, typography: 'body1' } : {}}>
+    <MuiAccordion sx={isDrawerItem ? { marginBottom: "8px", width: drawerWidth - 46, typography: 'body1' } : {}}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         {item?.title && (
           <Typography
@@ -38,4 +38,4 @@ const Content = (props: any) => {
   return <ContentComponent checked={checked} item={item.content} />
 }
 
-export default DrawerAccordion
+export default Accordion

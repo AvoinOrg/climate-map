@@ -17,7 +17,7 @@ export const MainMenu = () => {
   // const { isLoggedIn }: any = useContext(UserStateContext)
 
   return (
-    <List sx={{ marginTop: 80 }}>
+    <List sx={{ marginTop: "90px" }}>
       {/* {isLoggedIn &&
         privateDrawerItems.map((item, i) => (
           <ListItem key={item.title} sx={{fontFamily: theme.typography.fontFamily[0]}}>
@@ -25,7 +25,7 @@ export const MainMenu = () => {
           </ListItem>
         ))} */}
       {drawerItems.map((item, i) => (
-        <ListItem key={item.title} sx={{ typography: 'body1' }}>
+        <ListItem key={item.title} sx={{ typography: 'body1'}}>
           <Accordion isDrawerItem={true} item={item} />
         </ListItem>
       ))}
