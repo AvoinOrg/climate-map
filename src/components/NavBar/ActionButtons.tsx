@@ -31,6 +31,7 @@ const ActionButtons = () => {
         onClick={handleSignupClick}
         variant={modalState === 'signup' ? 'contained' : 'outlined'}
         disableElevation
+        disabled={true}
       >
         Sign up
       </ActionButton>
@@ -39,6 +40,7 @@ const ActionButtons = () => {
         onClick={handleLoginClick}
         variant={modalState === 'login' ? 'contained' : 'outlined'}
         disableElevation
+        disabled={true}
       >
         Log in
       </ActionButton>
