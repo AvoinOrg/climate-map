@@ -15,7 +15,7 @@ export const setOverlayMessage = (condition: boolean, message: Message) => {
 export const OverlayMessages: React.FC = () => {
   const { activeLayerGroups } = React.useContext(MapContext)
   const { message, layer } = useObservable(overlayMessage.readOnly())
-  const isActive = activeLayerGroups.filter((x) => x.name === layer).length > 0
+  const isActive = activeLayerGroups.filter((x: any) => x.name === layer).length > 0
 
   if (!isActive) return null
 

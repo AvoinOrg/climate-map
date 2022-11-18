@@ -1,15 +1,6 @@
 import React from 'react'
-import createStyles from '@mui/styles/createStyles'
-import makeStyles from '@mui/styles/makeStyles'
+import { Box } from '@mui/material'
 import { AOAccordion } from '../AOAccordion'
-
-const useStyles = makeStyles(() =>
-  createStyles({
-    root: {
-      width: '100%',
-    },
-  })
-)
 
 const FiZonationContent = () => (
   <div>
@@ -27,14 +18,13 @@ const FiZonationContent = () => (
 )
 
 const BiodiversityContent = () => {
-  const classes = useStyles({})
   return (
-    <div className={classes.root}>
+    <Box sx={{ width: '100%' }}>
       <AOAccordion layerId={'metsaan_ete_basic'} label={'Potential METSO areas'} content={null} />
       <AOAccordion layerId={'metsaan_ete_important'} label={'Especially Important Habitats'} content={null} />
       <AOAccordion layerId={'zonation'} label={'Areas important to biodiversity'} content={<FiZonationContent />} />
       <AOAccordion layerId={'natura2000'} label={'Natura 2000'} content={null} />
-    </div>
+    </Box>
   )
 }
 

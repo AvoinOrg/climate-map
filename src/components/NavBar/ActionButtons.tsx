@@ -2,9 +2,7 @@
 
 import React from 'react'
 import Button from '@mui/material/Button'
-import { styled } from '@mui/material/styles'
-import { Box } from '@mui/material'
-
+import { Box, styled } from '@mui/material'
 import { UiStateContext } from '../State'
 
 const ActionButtons = () => {
@@ -28,32 +26,32 @@ const ActionButtons = () => {
 
   return (
     <Box sx={{ display: 'flex', overflow: 'visible' }}>
-      <StyledButton
+      <ActionButton
         color="secondary"
         onClick={handleSignupClick}
         variant={modalState === 'signup' ? 'contained' : 'outlined'}
         disableElevation
       >
         Sign up
-      </StyledButton>
-      <StyledButton
+      </ActionButton>
+      <ActionButton
         color="secondary"
         onClick={handleLoginClick}
         variant={modalState === 'login' ? 'contained' : 'outlined'}
         disableElevation
       >
         Log in
-      </StyledButton>
+      </ActionButton>
     </Box>
   )
 }
 
-const StyledButton = styled(Button)(({ theme }) => ({
+const ActionButton = styled(Button)({
   height: 40,
   display: 'inline',
   width: 90,
   margin: '0 0 0 10px',
   fontSize: '0.9rem',
-}))
+})
 
 export default ActionButtons

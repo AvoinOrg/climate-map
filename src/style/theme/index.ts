@@ -35,10 +35,16 @@ const zIndex = {
 
 const fonts = {
   0: roboto.style.fontFamily,
-  // 1: 'raleway',
+  1: 'raleway',
 }
 
 const typography: TypographyOptions = {
+  body1: {
+    fontFamily: fonts[0],
+  },
+  body2: {
+    fontFamily: fonts[1],
+  },
   h1: {
     color: 'rgba(0, 0, 0, 0.87)',
     fontFamily: fonts[0],

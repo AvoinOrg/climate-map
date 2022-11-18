@@ -4,49 +4,34 @@ import React from 'react'
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
 import IconButton from '@mui/material/IconButton'
-import { styled } from '@mui/material/styles'
+import { Box, styled } from '@mui/material'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
-import { Box } from '@mui/material'
 import Link from 'next/link'
 import Image from 'next/image'
 
 import { NavBarSearch } from './NavBarSearch'
-import ProfileMenu from './ProfileMenu'
+// import ProfileMenu from './ProfileMenu'
 import ActionButtons from './ActionButtons'
-import { UserStateContext, UiStateContext } from '#/components/State'
+// import { UserStateContext, UiStateContext } from '#/components/State'
+import { UiStateContext } from '#/components/State'
 
 export const NavBar = () => {
   const { isSidebarOpen, setIsSidebarOpen, isSidebarDisabled }: any = React.useContext(UiStateContext)
-  const { isLoggedIn }: any = React.useContext(UserStateContext)
+  // const { isLoggedIn }: any = React.useContext(UserStateContext)
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen)
   }
 
   return (
-    <AppBar
-      position="fixed"
-      color="primary"
-      sx={{
-        zIndex: 'zIndex.appBar',
-      }}
-    >
-      <Toolbar
-        sx={{
-          padding: 0,
-          height: 64,
-        }}
-      >
+    <AppBar position="fixed" color="primary" sx={(theme) => ({ zIndex: theme.zIndex.appBar })}>
+      <Toolbar sx={{ padding: 0, height: 64 }}>
         <IconButton
           onClick={toggleSidebar}
           edge="start"
-          sx={{
-            marginRight: 4,
-            marginLeft: 2,
-            padding: '0 5px 0 5px',
-          }}
+          sx={(theme) => ({ marginRight: theme.spacing(4), marginLeft: theme.spacing(2), padding: '0 5px 0 5px' })}
           color="inherit"
           aria-label="open drawer"
           disabled={isSidebarDisabled}
@@ -59,14 +44,7 @@ export const NavBar = () => {
           <StyledImage src={'/img/logo.svg'} alt="Logo" />
         </Link>
 
-        <Box
-          sx={{
-            position: 'relative',
-            marginRight: 2,
-            marginLeft: 0,
-            width: '100%',
-          }}
-        >
+        <Box sx={(theme) => ({ position: 'relative', marginRight: theme.spacing(2), marginLeft: 0, width: '100%' })}>
           <a href="https://about.map.avoin.org">
             <IconButton sx={{ padding: 0, margin: '0 0 0 10px' }} color="inherit" size="large">
               <HelpOutlineIcon />
@@ -76,13 +54,14 @@ export const NavBar = () => {
 
         <NavBarSearch />
 
-        <div>{isLoggedIn ? <ProfileMenu /> : <ActionButtons />}</div>
+        {/* <Box sx={{ margin: `0 17px 0 12px` }}>{isLoggedIn ? <ProfileMenu /> : <ActionButtons />}</Box> */}
+        <Box sx={{ margin: `0 17px 0 12px` }}>{<ActionButtons />}</Box>
       </Toolbar>
     </AppBar>
   )
 }
 
-const StyledImage = styled(Image)(({ theme }) => ({
+const StyledImage = styled(Image)({
   width: 160,
   padding: '8px 0 0 0',
-}))
+})

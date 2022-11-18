@@ -9,8 +9,10 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { Sidebar } from '#/components/Sidebar'
 import { NavBar } from '#/components/NavBar'
 import { OverlayMessages } from '#/components/OverlayMessages'
-import { UserModal } from '#/components/Profile'
-import { UiStateProvider, UserStateProvider } from '#/components/State'
+// import { UserModal } from '#/components/Profile'
+// import { UiStateProvider, UserStateProvider } from '#/components/State'
+import { UiStateProvider } from '#/components/State'
+
 import { MapProvider, GroupOrientation } from '#/components/Map'
 import RootStyleRegistry from './emotion'
 
@@ -27,15 +29,15 @@ const RootLayout = ({
         <RootStyleRegistry>
           <UiStateProvider>
             <MapProvider>
-              <UserStateProvider>
-                <CssBaseline>
-                  <GroupOrientation />
-                  <NavBar />
-                  <OverlayMessages />
-                  <Sidebar>{children}</Sidebar>
-                  <UserModal />
-                </CssBaseline>
-              </UserStateProvider>
+              {/* <UserStateProvider> */}
+              <CssBaseline>
+                <GroupOrientation />
+                <NavBar />
+                <OverlayMessages />
+                <Sidebar>{children}</Sidebar>
+                {/* <UserModal /> */}
+              </CssBaseline>
+              {/* </UserStateProvider> */}
             </MapProvider>
           </UiStateProvider>
         </RootStyleRegistry>
