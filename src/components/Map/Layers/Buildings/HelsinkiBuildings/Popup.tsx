@@ -45,8 +45,15 @@ const Popup = ({ features }: Props) => {
     // Helsinki-Testbed Variables
     const kktark = String(p.c_kayttark)          
     var docctilav = p.i_raktilav     
-    var tecdate_st = p.c_valmpvm.toString().substr(0, 4) 
-    var tecdate = Number(tecdate_st) 
+    
+    // check / convert undefined values
+    console.log(p.c_valmpvm)
+    if (typeof p.c_valmpvm === "undefined") {
+      var tecdate = 0
+    } else {      
+      var tecdate_st = p.c_valmpvm.toString().substr(0, 4) 
+      var tecdate = Number(tecdate_st) 
+    }
              
     if (p.osoite != null) {
       tableValues['Address'] = <address>{p.osoite}</address>
@@ -94,7 +101,7 @@ const Popup = ({ features }: Props) => {
       } else {
         tecons = 0;
       }
-      tableValues['Estimated Annual Energy Consumption [kWh/m3,a]'] = <address id="color_energy">{tecons.toFixed(2)}</address>
+      tableValues['Estimated Annual Energy Consumption [kWh/m3,a]'] = <address id="color_energy">{Math.round(tecons/1000)*1000}</address>
     }
     
     // Oil
@@ -120,7 +127,7 @@ const Popup = ({ features }: Props) => {
       } else {
         tecons = 0;
       }
-      tableValues['Estimated Annual Energy Consumption [kWh/m3,a]'] = <address id="color_energy">{tecons.toFixed(2)}</address>
+      tableValues['Estimated Annual Energy Consumption [kWh/m3,a]'] = <address id="color_energy">{Math.round(tecons/1000)*1000}</address>
     }
 
     // Direct_Heating
@@ -146,7 +153,7 @@ const Popup = ({ features }: Props) => {
       } else {
         tecons = 0;
       }
-      tableValues['Estimated Annual Energy Consumption [kWh/m3,a]'] = <address id="color_energy">{tecons.toFixed(2)}</address>
+      tableValues['Estimated Annual Energy Consumption [kWh/m3,a]'] = <address id="color_energy">{Math.round(tecons/1000)*1000}</address>
     }
 
     // Geothermal
@@ -172,7 +179,7 @@ const Popup = ({ features }: Props) => {
       } else {
         tecons = 0;
       }
-      tableValues['Estimated Annual Energy Consumption [kWh/m3,a]'] = <address id="color_energy">{tecons.toFixed(2)}</address>
+      tableValues['Estimated Annual Energy Consumption [kWh/m3,a]'] = <address id="color_energy">{Math.round(tecons/1000)*1000}</address>
     }
 
     if (p.hakija != null || p.hakija_osoite != null || p.hakija_postinumero != null) {
