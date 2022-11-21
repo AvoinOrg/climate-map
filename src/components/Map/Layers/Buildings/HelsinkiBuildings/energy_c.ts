@@ -1,4 +1,14 @@
-// function
+// Set_Variables
+var tecons
+
+function convert_to_float(a) {
+  // of string to float
+  var floatValue = +(a);   
+  // Return float value
+  return floatValue;
+}
+
+// function & class
 
 function Consuption_E(tecdate, docctilav, hmode) {  
     if (tecdate <= 1975) {
@@ -22,7 +32,7 @@ function Consuption_E(tecdate, docctilav, hmode) {
     } else {
       tecons = 0;
     } 
-    return tecons.toFixed(2)
+    return Math.round(tecons/1000)*1000
   }
   
   // console.log(energyData[0][2])
