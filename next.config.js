@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // If set to true (default) openlayers will render blank.
+  // Will probably be fixed later, either by swcMinify or Openlayers
+  swcMinify: false,
   experimental: {
     appDir: true,
   },
