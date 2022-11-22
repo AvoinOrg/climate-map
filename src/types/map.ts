@@ -23,6 +23,7 @@ export type LayerId =
   | 'fi_mature_forests'
   | 'mangrove_forests'
   | 'gfw_tree_plantations'
+  | 'fi_arvometsa'
 
 export type LayerConf = {
   id: LayerId
