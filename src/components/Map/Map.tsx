@@ -1,5 +1,11 @@
 'use client'
 
+// This is the main Map component, exported as a context.
+// Uses Openlayers with Mapbox GL added as a layer. This is due to the low performance of
+// Openlayers as WebGL renderer, while Mapbox GL lacks a lot of features that Openlayers has.
+// TODO: Look into Maplibre GL, which is a fork of Mapbox GL that is more open source friendly.
+// See: https://github.com/geoblocks/ol-maplibre-layer
+
 import 'ol/ol.css'
 import React, { createContext, useState, useRef, useEffect } from 'react'
 import Box from '@mui/material/Box'
@@ -51,7 +57,7 @@ export const MapProvider = ({ children }: Props) => {
   const [activeLayerGroups, setActiveLayerGroups] = useState<any[]>([])
   const [layerGroups, setLayerGroups] = useState<any>({})
 
-  const popupRef = useRef<HTMLDivElement>(null)
+  const popupRef = useRef<HTMLDivElement | undefined>(undefined)
   const [popups, setPopups] = useState<any>({})
   const [popupOverlay, setPopupOverlay] = useState<any>(null)
   const [popupOnClose, setPopupOnClose] = useState<any>(null)
@@ -59,7 +65,8 @@ export const MapProvider = ({ children }: Props) => {
   const [popupElement, setPopupElement] = useState<React.ReactNode | null>(null)
 
   useEffect(() => {
-    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
+    // Mapbox does not render without a valid access token
+    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN as string
 
     const mbMap = new mapboxgl.Map({
       // style: 'mapbox://styles/mapbox/satellite-v9',
@@ -91,19 +98,20 @@ export const MapProvider = ({ children }: Props) => {
         // adjust view parameters in mapbox
         const rotation = viewState.rotation
         mbMap.jumpTo({
-          center: toLonLat(viewState.center),
           zoom: viewState.zoom - 1,
           bearing: (-rotation * 180) / Math.PI,
-          animate: false,
         })
 
         // cancel the scheduled update & trigger synchronous redraw
         // see https://github.com/mapbox/mapbox-gl-js/issues/7893#issue-408992184
         // NOTE: THIS MIGHT BREAK IF UPDATING THE MAPBOX VERSION
+        //@ts-ignore
         if (mbMap._frame) {
+          //@ts-ignore
           mbMap._frame.cancel()
+          //@ts-ignore
           mbMap._frame = null
-        }
+        } //@ts-ignore
         mbMap._render()
 
         return canvas
@@ -161,9 +169,9 @@ export const MapProvider = ({ children }: Props) => {
       const overlay = new Overlay({
         element: popupRef.current,
         autoPan: true,
-        autoPanAnimation: {
-          duration: 250,
-        },
+        // autoPanAnimation: {
+        //   duration: 250,
+        // },
       })
 
       const onclick = () => {
