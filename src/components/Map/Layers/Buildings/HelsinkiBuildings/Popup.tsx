@@ -126,7 +126,13 @@ const Popup = ({ features }: Props) => {
       } else {
         heatings = 0
         tecons = 0
-      }       
+      }
+      var emisfactordh = heatings * emisfactorp
+      emisfactordh = Math.round(emisfactordh*10) / 10
+      tecons = Math.round(tecons/1000)*1000                 
+      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{tecons}</address>
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>       
+      tableValues['Emission factor [kgCO2/kWh]'] = <address>{emisfactordh}</address>          
     }    
      // Oil
     if (kktark == "032" || kktark == "039" && p.c_poltaine == 2 || p.c_poltaine == 3 && p.c_valmpvm !=null) {
@@ -162,7 +168,13 @@ const Popup = ({ features }: Props) => {
       } else {
         heatings = 0
         tecons = 0;
-      }       
+      } 
+      var emisfactordh = heatings * emisfactorp
+      emisfactordh = Math.round(emisfactordh*10) / 10
+      tecons = Math.round(tecons/1000)*1000                 
+      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{tecons}</address>
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>       
+      tableValues['Emission factor [kgCO2/kWh]'] = <address>{emisfactordh}</address>         
     }
     // Direct_Heating
     if (kktark == "032" || kktark == "039" && p.c_poltaine == 4 && p.c_valmpvm !=null) {         
@@ -198,7 +210,13 @@ const Popup = ({ features }: Props) => {
       } else {
         heatings = 0
         tecons = 0;
-      }      
+      }
+      var emisfactordh = heatings * emisfactorp
+      emisfactordh = Math.round(emisfactordh*10) / 10
+      tecons = Math.round(tecons/1000)*1000                 
+      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{tecons}</address>
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>       
+      tableValues['Emission factor [kgCO2/kWh]'] = <address>{emisfactordh}</address>       
     }
     // Air-to-water heat pumpu, Ground source heat pump
     if (kktark == "032" || kktark == "039" && p.c_poltaine == 9 && p.c_valmpvm !=null) {         
@@ -234,17 +252,15 @@ const Popup = ({ features }: Props) => {
       } else {
         heatings = 0
         tecons = 0;
-      }     
-    }
-    
-    var emisfactordh = heatings * emisfactorp
-    emisfactordh = Math.round(emisfactordh*10) / 10
-    tecons = Math.round(tecons/1000)*1000                 
-    tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{tecons}</address>
-    tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>       
-    tableValues['Emission factor [kgCO2/kWh]'] = <address>{emisfactordh}</address> 
-
-    
+      } 
+      var emisfactordh = heatings * emisfactorp
+      emisfactordh = Math.round(emisfactordh*10) / 10
+      tecons = Math.round(tecons/1000)*1000                 
+      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{tecons}</address>
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>       
+      tableValues['Emission factor [kgCO2/kWh]'] = <address>{emisfactordh}</address>     
+    }   
+   
     if (p.hakija != null || p.hakija_osoite != null || p.hakija_postinumero != null) {
       tableValues['Demolition requested by'] = (
         <address>
