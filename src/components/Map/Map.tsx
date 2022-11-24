@@ -69,10 +69,13 @@ export const MapProvider = ({ children }: Props) => {
     // Mapbox does not render without a valid access token
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN as string
 
+    const center = [15, 62] as [number, number]
+
     const mbMap = new mapboxgl.Map({
       // style: 'mapbox://styles/mapbox/satellite-v9',
       attributionControl: false,
       boxZoom: false,
+      center: center,
       container: 'map',
       doubleClickZoom: false,
       dragPan: false,
@@ -99,6 +102,7 @@ export const MapProvider = ({ children }: Props) => {
         // adjust view parameters in mapbox
         const rotation = viewState.rotation
         mbMap.jumpTo({
+          center: toLonLat(viewState.center) as [number, number],
           zoom: viewState.zoom - 1,
           bearing: (-rotation * 180) / Math.PI,
         })
@@ -126,7 +130,7 @@ export const MapProvider = ({ children }: Props) => {
     const options = {
       renderer: 'webgl',
       target: 'map',
-      view: new View({ zoom: 5, center: fromLonLat([15, 62]) }),
+      view: new View({ zoom: 5, center: fromLonLat(center) }),
       layers: [
         new TileLayer({
           source: new OSM(),
