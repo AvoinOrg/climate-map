@@ -7,7 +7,7 @@
 // See: https://github.com/geoblocks/ol-maplibre-layer
 
 import 'ol/ol.css'
-import React, { createContext, useState, useRef, useEffect } from 'react'
+import React, { createContext, useState, useRef, useEffect, useCallback } from 'react'
 import Box from '@mui/material/Box'
 import { Map, View } from 'ol'
 import { unByKey } from 'ol/Observable'
@@ -56,6 +56,7 @@ export const MapProvider = ({ children }: Props) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [activeLayerGroups, setActiveLayerGroups] = useState<any[]>([])
   const [layerGroups, setLayerGroups] = useState<any>({})
+  const [functionQueue, setFunctionQueue] = useState<any[]>([])
 
   const popupRef = useRef<HTMLDivElement | undefined>(undefined)
   const [popups, setPopups] = useState<any>({})
@@ -243,6 +244,17 @@ export const MapProvider = ({ children }: Props) => {
     }
   }, [activeLayerGroups, map, isLoaded, popups])
 
+  useEffect(() => {
+    // Run queued function once map has loaded
+    if (isLoaded && functionQueue.length > 0) {
+      setFunctionQueue([])
+      functionQueue.forEach((call) => {
+        // @ts-ignore
+        values[call.func](...call.args)
+      })
+    }
+  }, [isLoaded])
+
   const createPopup = (coords: any, popupElement: React.ReactNode) => {
     popupOverlay.setPosition(coords)
     setPopupElement(popupElement)
@@ -403,6 +415,13 @@ export const MapProvider = ({ children }: Props) => {
   }
 
   const toggleLayerGroup = async (layerId: LayerId) => {
+    // If map is not initialized, add function to queue
+    if (!isLoaded) {
+      const functionQueueCopy = [...functionQueue, { func: 'toggleLayerGroup', args: [layerId] }]
+      setFunctionQueue(functionQueueCopy)
+      return
+    }
+
     if (activeLayerGroups.includes(layerId)) {
       const activeLayerGroupsCopy = [...activeLayerGroups]
       activeLayerGroupsCopy.splice(activeLayerGroupsCopy.indexOf(layerId), 1)
@@ -416,6 +435,7 @@ export const MapProvider = ({ children }: Props) => {
         const activeLayerGroupsCopy = [...activeLayerGroups, layerId]
         setActiveLayerGroups(activeLayerGroupsCopy)
       } else {
+        // Initialize layer if it doesn't exist
         const layerConf = layerConfs.find((el: LayerConf) => {
           return el.id === layerId
         })
