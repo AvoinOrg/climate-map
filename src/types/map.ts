@@ -23,10 +23,11 @@ export type LayerId =
   | 'fi_mature_forests'
   | 'mangrove_forests'
   | 'gfw_tree_plantations'
-  | 'fi_arvometsa'
+  | 'fi_forests'
 
 export type LayerConf = {
   id: LayerId
   style: () => Promise<MbStyle>
   popup?: (props: { features: Feature[] }) => ReactNode
+  useGL?: boolean
 }

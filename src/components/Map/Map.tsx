@@ -364,6 +364,16 @@ export const MapProvider = ({ children }: Props) => {
     })
   }
 
+  const addGLStyle = (id: LayerId, style: any, popupFunc?: any, isVisible: boolean = true) => {
+    for (const sourceKey in style.sources) {
+      mbMap.addSource(sourceKey, style.sources[sourceKey])
+    }
+
+    for (const layer of style.layers) {
+      mbMap.addLayer(layer)
+    }
+  }
+
   const addJSONLayer = (id: string, groupId: string, json: any, projection: string) => {
     // const vectorSource = new VectorSource({
     //   features: new GeoJSON().readFeatures(json, {
@@ -445,7 +455,11 @@ export const MapProvider = ({ children }: Props) => {
         })
         if (layerConf) {
           const style = await layerConf.style()
-          addMbStyle(layerId, style, layerConf.popup)
+          if (layerConf.useGL) {
+            addGLStyle(layerId, style, layerConf.popup)
+          } else {
+            addMbStyle(layerId, style, layerConf.popup)
+          }
         } else {
           console.error('No layer config found for id: ' + layerId)
         }
