@@ -9,7 +9,7 @@ import { MapContext } from '#/components/Map'
 const CarbonMap = () => {
 
   useEffect(() => {
-    toggleLayerGroup("fi_arvometsa")
+    toggleLayerGroup("fi_forests")
   }, [])
 
   const { activeLayerGroups, toggleLayerGroup } = React.useContext(MapContext)
