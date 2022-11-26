@@ -7,6 +7,7 @@
 // See: https://github.com/geoblocks/ol-maplibre-layer
 
 import 'ol/ol.css'
+import _ from 'lodash'
 import React, { createContext, useState, useRef, useEffect, useCallback } from 'react'
 import Box from '@mui/material/Box'
 import { Map, View } from 'ol'
@@ -25,7 +26,7 @@ import { fromLonLat, toLonLat } from 'ol/proj'
 import { LayerId, LayerConf } from '#/types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
-// import { defaultVectorStyleFunction, WebGLLayer } from '#/utils/mapUtils'
+import { getColorExpressionArrForValues } from '#/utils/mapUtils'
 
 interface Props {
   children?: React.ReactNode
@@ -396,6 +397,7 @@ export const MapProvider = ({ children }: Props) => {
   }
 
   const addJSONLayer = (id: string, groupId: string, json: any, projection: string) => {
+    const featureColorField = 'kt'
     // const vectorSource = new VectorSource({
     //   features: new GeoJSON().readFeatures(json, {
     //     featureProjection: projection,
@@ -409,6 +411,16 @@ export const MapProvider = ({ children }: Props) => {
 
     // map.addLayer(vectorLayer)
 
+    // const ktVals = ['uga', 'buga']
+
+    // for (const i in ktVals) {
+    //   const ktVal = ktVals[i]
+
+    // }
+
+    const uniqueVals = _.uniq(_.map(json.features, 'properties.' + featureColorField))
+    const colorArr = getColorExpressionArrForValues(uniqueVals)
+
     mbMap.addSource('carbon-shapes', {
       type: 'geojson',
       // Use a URL for the value for the `data` property.
@@ -419,7 +431,7 @@ export const MapProvider = ({ children }: Props) => {
       type: 'line',
       source: 'carbon-shapes',
       paint: {
-        'line-opacity': 0.5,
+        'line-opacity': 0.9,
       },
     })
 
@@ -429,9 +441,28 @@ export const MapProvider = ({ children }: Props) => {
       source: 'carbon-shapes', // reference the data source
       layout: {},
       paint: {
-        'fill-color': '#0080ff', // blue color fill
-        'fill-opacity': 0.1,
+        'fill-color': ['match', ['get', featureColorField], ...colorArr, 'white'],
+        'fill-opacity': 0.7,
       },
+    })
+
+    mbMap.addLayer({
+      id: `carbon-shapes-sym`,
+      source: 'carbon-shapes',
+      type: 'symbol',
+      layout: {
+        'symbol-placement': 'point',
+        'text-size': 20,
+        'text-font': ['Open Sans Regular'],
+        'text-field': ['case', ['has', 'kt'], ['get', 'kt'], ''],
+      },
+      paint: {
+        'text-color': '#999',
+        'text-halo-blur': 1,
+        'text-halo-color': 'rgb(242,243,240)',
+        'text-halo-width': 2,
+      },
+      minzoom: 12,
     })
 
     //   let layerGroup: any = {}
