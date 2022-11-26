@@ -134,3 +134,14 @@ export const stringToColor = (str: string) => {
 
   return colour
 }
+
+export const getColorExpressionArrForValues = (values: any[]) => {
+  let colorArr: string[] = []
+
+  values.forEach((value) => {
+    colorArr.push(value)
+    colorArr.push(stringToColor(value))
+  })
+
+  return colorArr
+}
