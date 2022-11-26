@@ -71,6 +71,26 @@ export const MapProvider = ({ children }: Props) => {
 
     const center = [15, 62] as [number, number]
 
+    const emptyStyle: MbStyle = {
+      version: 8,
+      name: 'Empty',
+      metadata: {
+        'mapbox:autocomposite': true,
+        'mapbox:type': 'template',
+      },
+      glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
+      sources: {},
+      layers: [
+        {
+          id: 'background',
+          type: 'background',
+          paint: {
+            'background-color': 'rgba(0,0,0,0)',
+          },
+        },
+      ],
+    }
+
     const mbMap = new mapboxgl.Map({
       // style: 'mapbox://styles/mapbox/satellite-v9',
       attributionControl: false,
@@ -85,6 +105,7 @@ export const MapProvider = ({ children }: Props) => {
       pitchWithRotate: false,
       scrollZoom: false,
       touchZoomRotate: false,
+      style: emptyStyle,
     })
 
     const mbLayer = new Layer({
