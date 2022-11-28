@@ -3,14 +3,33 @@ import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow } from '@mui/material'
 import _ from 'lodash'
 
+// Variables
+var heatings
+var tecons 
+
 // convert to float
-export function convert_to_float(a) {
+function convert_to_float(a) {
   // of string to float
   var floatValue = +(a);   
   // Return float value
   return floatValue;
 }
 
+// Emission factors [kgCO2/kWh]
+var empdp = [0.255,0.195,0.104,0.104,0.104]
+// empdp[0]
+
+// Emission factor function [kgCO2/kWh]
+function emissionFactor(tecc, empdpn) {  
+  var emisfactord = Math.round((tecc * empdpn)/1000)*1000   
+  return emisfactord;
+}
+// round the tecons value
+function Tecons(tecc) {
+  tecons = Math.round(tecc/1000)*1000
+  return tecons
+}
+// Estimated annual energy consumption [kWh/m3,a]
 var consuptiontext = '{ "consuption" : [' +
  '{"year":"1975", "Oil":"70.917", "dis_heating":"66.272", "direct_heating":"62.625", "awhpump":"45.955", "ghpump":"35.928"},' +  
  '{"year":"1976", "Oil":"64.053", "dis_heating": "59.901", "direct_heating":"56.309", "awhpump":"41.838", "ghpump":"32.857"},' +   
@@ -91,11 +110,7 @@ const Popup = ({ features }: Props) => {
       tableValues['Heating system'] = <address>{bhsys}</address>
     }
     // district heating 
-    if (kktark == "032" || kktark == "039" && p.c_poltaine == 1 && p.c_valmpvm !=null) { 
-      // District heating Emission factors 0.195
-      var emisfactorpdp = 0.195
-      var heatings
-      var tecons              
+    if (kktark == "032" || kktark == "039" && p.c_poltaine == 1 && p.c_valmpvm !=null) {                     
       if (tecdate <= 1975) {
         heatings = eobj.consuption[0].dis_heating
         tecons = docctilav * convert_to_float(heatings)            
@@ -126,17 +141,13 @@ const Popup = ({ features }: Props) => {
       } else {
         heatings = 0
         tecons = 0
-      }      
-      var emisfactord = Math.round(heatings * emisfactorpdp*10) / 10
-      tecons = Math.round(tecons/1000)*1000
+      }
       tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>                 
-      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{tecons}</address>             
-      tableValues['Emission factor [kgCO2/kWh]'] = <address>{emisfactord}</address>          
+      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{Tecons(tecons)}</address>             
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/kWh]'] = <address>{emissionFactor(tecons, empdp[1])}</address>          
     }    
      // Oil
-    if (kktark == "032" || kktark == "039" && p.c_poltaine == 2 || p.c_poltaine == 3 && p.c_valmpvm !=null) {
-      // Oil Emission factors 0.255
-      var emisfactorpo = 0.255          
+    if (kktark == "032" || kktark == "039" && p.c_poltaine == 2 || p.c_poltaine == 3 && p.c_valmpvm !=null) {              
       if (tecdate <= 1975) {
         heatings = eobj.consuption[0].Oil
         tecons = docctilav * convert_to_float(heatings)            
@@ -168,16 +179,12 @@ const Popup = ({ features }: Props) => {
         heatings = 0
         tecons = 0
       }      
-      var emisfactoro = Math.round(heatings * emisfactorpo*10) / 10
-      tecons = Math.round(tecons/1000)*1000
-      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>                  
-      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{tecons}</address>            
-      tableValues['Emission factor [kgCO2/kWh]'] = <address>{emisfactoro}</address>         
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>                 
+      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{Tecons(tecons)}</address>             
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/kWh]'] = <address>{emissionFactor(tecons, empdp[0])}</address>          
     }
     // Direct_Heating
-    if (kktark == "032" || kktark == "039" && p.c_poltaine == 4 && p.c_valmpvm !=null) {         
-      // Direct_Heating factors 0.104
-      var emisfactordh = 0.104          
+    if (kktark == "032" || kktark == "039" && p.c_poltaine == 4 && p.c_valmpvm !=null) {
       if (tecdate <= 1975) {
         heatings = eobj.consuption[0].direct_heating
         tecons = docctilav * convert_to_float(heatings)            
@@ -209,16 +216,12 @@ const Popup = ({ features }: Props) => {
         heatings = 0
         tecons = 0
       }      
-      emisfactordh = Math.round(heatings * emisfactordh*10) / 10
-      tecons = Math.round(tecons/1000)*1000
-      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>                  
-      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{tecons}</address>            
-      tableValues['Emission factor [kgCO2/kWh]'] = <address>{emisfactordh}</address>       
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>                 
+      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{Tecons(tecons)}</address>             
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/kWh]'] = <address>{emissionFactor(tecons, empdp[2])}</address>        
     }
     // Air-to-water heat pumpu, Ground source heat pump
-    if (kktark == "032" || kktark == "039" && p.c_poltaine == 9 && p.c_valmpvm !=null) {         
-      // Air-to-water heat pumpu, Ground source heat pump 0.104
-      var emisfactoraw = 0.104          
+    if (kktark == "032" || kktark == "039" && p.c_poltaine == 9 && p.c_valmpvm !=null) {
       if (tecdate <= 1975) {
         heatings = eobj.consuption[0].ghpump
         tecons = docctilav * convert_to_float(heatings)            
@@ -249,18 +252,15 @@ const Popup = ({ features }: Props) => {
       } else {
         heatings = 0
         tecons = 0
-      }      
-      var emisfactora = Math.round(heatings * emisfactoraw*10) / 10
-      tecons = Math.round(tecons/1000)*1000
-      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>                  
-      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{tecons}</address>            
-      tableValues['Emission factor [kgCO2/kWh]'] = <address>{emisfactora}</address>
+      }
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>                 
+      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{Tecons(tecons)}</address>             
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/kWh]'] = <address>{emissionFactor(tecons, empdp[3])}</address>  
       /*tableValues['Energy consumption reduction potential by switching to GSHP: MWh/a'] = <address>{'GSHP = Ground source heat pum'}</address>
       tableValues['CO2-emission reduction potential by switching to GSHP: tCO2/a'] = <address>{''}</address>
       tableValues['Energy consumption reduction potential by switching to AWHP: MWh/a'] = <address>{'AWHP = Air-to-water heat pump'}</address>
       tableValues['CO2-emission reduction potential by switching to AWHP: tCO2/a'] = <address>{''}</address>*/									  
-    }   
-   
+    }
     if (p.hakija != null || p.hakija_osoite != null || p.hakija_postinumero != null) {
       tableValues['Demolition requested by'] = (
         <address>
@@ -268,7 +268,6 @@ const Popup = ({ features }: Props) => {
         </address>
       )
     }
-
     if (p.lupa_voimassa_asti != null) {
       tableValues['Demolition permit valid until'] = p.lupa_voimassa_asti
     }
