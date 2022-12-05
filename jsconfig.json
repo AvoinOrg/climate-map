@@ -9,6 +9,8 @@
       "State/*": ["src/state/*"],
       "Types/*": ["src/types/*"],
       "Assets/*": ["src/assets/*"],
+      "Style/*": ["src/style/*"],
+      "Queries/*": ["src/queries/*"],
       "Root/*": ["src/*"]
     }
   },

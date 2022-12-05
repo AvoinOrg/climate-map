@@ -1,8 +1,8 @@
 import { Style as MbStyle } from 'mapbox-gl'
 import _ from 'lodash'
 
-import { fillOpacity, roundToSignificantDigits } from 'Utils/mapUtils'
-import { LayerId, LayerConf } from 'Types/map'
+import { fillOpacity, roundToSignificantDigits } from '#/utils/mapUtils'
+import { LayerId, LayerConf } from '#/types/map'
 import Popup from './Popup'
 
 const id: LayerId = 'helsinki_buildings'
@@ -93,7 +93,7 @@ const getStyle = async (): Promise<MbStyle> => {
         'source-layer': 'default',
         type: 'fill',
         paint: {
-          'fill-color': 'red',
+          'fill-color': 'black',
           'fill-opacity': fillOpacity,
         },
         BEFORE: 'FILL',

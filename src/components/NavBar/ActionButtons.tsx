@@ -1,28 +1,11 @@
+'use client'
+
 import React from 'react'
 import Button from '@mui/material/Button'
-import { Theme } from '@mui/material/styles'
-import createStyles from '@mui/styles/createStyles'
-import makeStyles from '@mui/styles/makeStyles'
+import { Box, styled } from '@mui/material'
 import { UiStateContext } from '../State'
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    buttonContainer: {
-      display: 'flex',
-      overflow: 'visible',
-    },
-    button: {
-      height: 40,
-      display: 'inline',
-      width: 90,
-      margin: '0 0 0 10px',
-      fontSize: '0.9rem',
-    },
-  })
-)
-
 const ActionButtons = () => {
-  const classes = useStyles({})
   const { modalState, setModalState }: any = React.useContext(UiStateContext)
 
   const handleLoginClick = () => {
@@ -42,26 +25,35 @@ const ActionButtons = () => {
   }
 
   return (
-    <div className={classes.buttonContainer}>
-      <Button
+    <Box sx={{ display: 'flex', overflow: 'visible' }}>
+      <ActionButton
         color="secondary"
-        className={classes.button}
         onClick={handleSignupClick}
         variant={modalState === 'signup' ? 'contained' : 'outlined'}
         disableElevation
+        disabled={true}
       >
         Sign up
-      </Button>
-      <Button
+      </ActionButton>
+      <ActionButton
         color="secondary"
-        className={classes.button}
         onClick={handleLoginClick}
         variant={modalState === 'login' ? 'contained' : 'outlined'}
         disableElevation
+        disabled={true}
       >
         Log in
-      </Button>
-    </div>
+      </ActionButton>
+    </Box>
   )
 }
+
+const ActionButton = styled(Button)({
+  height: 40,
+  display: 'inline',
+  width: 90,
+  margin: '0 0 0 10px',
+  fontSize: '0.9rem',
+})
+
 export default ActionButtons

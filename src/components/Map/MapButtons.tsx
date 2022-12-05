@@ -1,67 +1,56 @@
+'use client'
+
 import React, { useContext } from 'react'
-import { useTheme, Theme } from '@mui/material/styles'
-
-import makeStyles from '@mui/styles/makeStyles'
-import createStyles from '@mui/styles/createStyles'
-
+import { styled } from '@mui/material/styles'
 import ButtonGroup from '@mui/material/ButtonGroup'
-
 import SatelliteIcon from '@mui/icons-material/Satellite'
-
 import ExploreIcon from '@mui/icons-material/Explore'
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
-
 import GpsFixedIcon from '@mui/icons-material/GpsFixed'
 
-import { MapContext } from 'Components/Map'
+import { MapContext } from '#/components/Map'
 import { Button } from '@mui/material'
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    iconGroup: {
-      position: 'absolute',
-      top: theme.spacing(12),
-      right: theme.spacing(2),
-      zIndex: theme.zIndex.mobileStepper /* force this to be on top of the map */,
-    },
-    btn: {
-      color: '#333333',
-      backgroundColor: 'white',
-      '&:hover': {
-        backgroundColor: '#eeeeee',
-      },
-    },
-    divider: {
-      marginTop: theme.spacing(1),
-      marginBottom: theme.spacing(1),
-    },
-  })
-)
 export const GroupOrientation = () => {
-  const theme = useTheme()
-  const classes = useStyles(theme)
-  const { mapToggleTerrain, mapResetNorth, mapZoomIn, mapZoomOut, mapRelocate } = React.useContext(MapContext)
+  const { mapToggleTerrain, mapResetNorth, mapZoomIn, mapZoomOut, mapRelocate } = useContext(MapContext)
 
   return (
-    <div className={classes.iconGroup}>
+    <IconGroup>
       <ButtonGroup orientation="vertical">
-        <Button onClick={mapToggleTerrain} size="small" className={classes.btn}>
+        <StyledButton onClick={mapToggleTerrain} size="small">
           <SatelliteIcon fontSize="small" />
-        </Button>
-        <Button onClick={mapResetNorth} size="small" className={classes.btn}>
+        </StyledButton>
+        <StyledButton onClick={mapResetNorth} size="small">
           <ExploreIcon fontSize="small" />
-        </Button>
-        <Button onClick={mapZoomIn} size="small" className={classes.btn}>
+        </StyledButton>
+        <StyledButton onClick={mapZoomIn} size="small">
           <AddIcon fontSize="small" />
-        </Button>
-        <Button onClick={mapZoomOut} size="small" className={classes.btn}>
+        </StyledButton>
+        <StyledButton onClick={mapZoomOut} size="small">
           <RemoveIcon fontSize="small" />
-        </Button>
-        <Button onClick={mapRelocate} size="small" className={classes.btn}>
+        </StyledButton>
+        <StyledButton onClick={mapRelocate} size="small">
           <GpsFixedIcon fontSize="small" />
-        </Button>
+        </StyledButton>
       </ButtonGroup>
-    </div>
+    </IconGroup>
   )
 }
+
+// TODO: theme styling
+const StyledButton = styled(Button)(({ theme }) => ({
+  color: '#333333',
+  backgroundColor: 'white',
+  '&:hover': {
+    backgroundColor: '#eeeeee',
+  },
+}))
+
+// TODO: theme styling
+const IconGroup = styled('div')(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(12),
+  right: theme.spacing(2),
+  zIndex: theme.zIndex.mobileStepper /* force this to be on top of the map */,
+}))

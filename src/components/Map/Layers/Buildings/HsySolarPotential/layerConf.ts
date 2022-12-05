@@ -1,8 +1,8 @@
 import { Style as MbStyle } from 'mapbox-gl'
 import _ from 'lodash'
 
-import { fillOpacity, roundToSignificantDigits } from 'Utils/mapUtils'
-import { LayerId, LayerConf } from 'Types/map'
+import { fillOpacity, roundToSignificantDigits } from '#/utils/mapUtils'
+import { LayerId, LayerConf } from '#/types/map'
 
 const id: LayerId = 'hsy_solarpotential'
 

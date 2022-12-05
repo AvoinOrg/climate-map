@@ -1,21 +1,32 @@
+'use client'
+
+// This is the main Map component, exported as a context.
+// Uses Openlayers with Mapbox GL added as a layer. This is due to the low performance of
+// Openlayers as WebGL renderer, while Mapbox GL lacks a lot of features that Openlayers has.
+// TODO: Look into Maplibre GL, which is a fork of Mapbox GL that is more open source friendly.
+// See: https://github.com/geoblocks/ol-maplibre-layer
+
 import 'ol/ol.css'
-import React, { createContext, useState, useRef, useEffect } from 'react'
+import _ from 'lodash'
+import React, { createContext, useState, useRef, useEffect, useCallback } from 'react'
 import Box from '@mui/material/Box'
-import { fromLonLat } from 'ol/proj'
 import { Map, View } from 'ol'
 import { unByKey } from 'ol/Observable'
-import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
+import { Layer, Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import Overlay from 'ol/Overlay'
-import { OSM, Vector as VectorSource } from 'ol/source'
+import OSM from 'ol/source/OSM'
+import VectorSource from 'ol/source/Vector'
 import { Attribution, ScaleLine, defaults as defaultControls } from 'ol/control'
 import olms from 'ol-mapbox-style'
 import { Style as MbStyle } from 'mapbox-gl'
-import { Style } from 'ol/style'
-import { sanitize } from 'dompurify'
+// import GeoJSON from 'ol/format/GeoJSON'
+import mapboxgl from 'mapbox-gl'
+import { fromLonLat, toLonLat } from 'ol/proj'
 
-import { LayerId, LayerConf } from 'Types/map'
+import { LayerId, LayerConf } from '#/types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
+import { getColorExpressionArrForValues } from '#/utils/mapUtils'
 
 interface Props {
   children?: React.ReactNode
@@ -42,25 +53,106 @@ export const MapContext = createContext<IMapContext>({ isLoaded: false })
 export const MapProvider = ({ children }: Props) => {
   const mapRef = useRef()
   const [map, setMap] = useState<Map>(null)
+  const [mbMap, setMbMap] = useState<mapboxgl.Map>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [activeLayerGroups, setActiveLayerGroups] = useState<any[]>([])
   const [layerGroups, setLayerGroups] = useState<any>({})
+  const [functionQueue, setFunctionQueue] = useState<any[]>([])
 
-  const popupRef = useRef<HTMLDivElement>(null)
+  const popupRef = useRef<HTMLDivElement | undefined>(undefined)
   const [popups, setPopups] = useState<any>({})
   const [popupOverlay, setPopupOverlay] = useState<any>(null)
   const [popupOnClose, setPopupOnClose] = useState<any>(null)
   const [popupKey, setPopupKey] = useState<any>(null)
   const [popupElement, setPopupElement] = useState<React.ReactNode | null>(null)
 
-  const attribution = new Attribution({
-    collapsible: false,
-  })
-
   useEffect(() => {
+    // Mapbox does not render without a valid access token
+    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN as string
+
+    const center = [15, 62] as [number, number]
+
+    const emptyStyle: MbStyle = {
+      version: 8,
+      name: 'Empty',
+      metadata: {
+        'mapbox:autocomposite': true,
+        'mapbox:type': 'template',
+      },
+      glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
+      sources: {},
+      layers: [
+        {
+          id: 'background',
+          type: 'background',
+          paint: {
+            'background-color': 'rgba(0,0,0,0)',
+          },
+        },
+      ],
+    }
+
+    const mbMap = new mapboxgl.Map({
+      // style: 'mapbox://styles/mapbox/satellite-v9',
+      attributionControl: false,
+      boxZoom: false,
+      center: center,
+      container: 'map',
+      doubleClickZoom: false,
+      dragPan: false,
+      dragRotate: false,
+      interactive: false,
+      keyboard: false,
+      pitchWithRotate: false,
+      scrollZoom: false,
+      touchZoomRotate: false,
+      style: emptyStyle,
+    })
+
+    const mbLayer = new Layer({
+      render: function (frameState) {
+        const canvas: any = mbMap.getCanvas()
+        const viewState = frameState.viewState
+
+        const visible = mbLayer.getVisible()
+        canvas.style.display = visible ? 'block' : 'none'
+        canvas.style.position = 'absolute'
+
+        const opacity = mbLayer.getOpacity()
+        canvas.style.opacity = opacity
+
+        // adjust view parameters in mapbox
+        const rotation = viewState.rotation
+        mbMap.jumpTo({
+          center: toLonLat(viewState.center) as [number, number],
+          zoom: viewState.zoom - 1,
+          bearing: (-rotation * 180) / Math.PI,
+        })
+
+        // cancel the scheduled update & trigger synchronous redraw
+        // see https://github.com/mapbox/mapbox-gl-js/issues/7893#issue-408992184
+        // NOTE: THIS MIGHT BREAK IF UPDATING THE MAPBOX VERSION
+        //@ts-ignore
+        if (mbMap._frame) {
+          //@ts-ignore
+          mbMap._frame.cancel()
+          //@ts-ignore
+          mbMap._frame = null
+        } //@ts-ignore
+        mbMap._render()
+
+        return canvas
+      },
+    })
+
+    const attribution = new Attribution({
+      collapsible: false,
+    })
+
     const options = {
-      rendered: 'webgl',
-      view: new View({ zoom: 5, center: fromLonLat([15, 62]) }),
+      renderer: 'webgl',
+      target: 'map',
+      view: new View({ zoom: 5, center: fromLonLat(center) }),
       layers: [
         new TileLayer({
           source: new OSM(),
@@ -70,6 +162,7 @@ export const MapProvider = ({ children }: Props) => {
             attributions: '© Powered by <a href="https://www.netlify.com/" target="_blank">Netlify</a>',
           }),
         }),
+        mbLayer,
       ],
       controls: defaultControls({ attribution: false }).extend([attribution, new ScaleLine()]),
     }
@@ -79,6 +172,8 @@ export const MapProvider = ({ children }: Props) => {
     mapObject.setTarget(mapRef.current)
 
     setMap(mapObject)
+    setMbMap(mbMap)
+
     return () => mapObject.setTarget(undefined)
   }, [])
 
@@ -101,9 +196,9 @@ export const MapProvider = ({ children }: Props) => {
       const overlay = new Overlay({
         element: popupRef.current,
         autoPan: true,
-        autoPanAnimation: {
-          duration: 250,
-        },
+        // autoPanAnimation: {
+        //   duration: 250,
+        // },
       })
 
       const onclick = () => {
@@ -174,6 +269,17 @@ export const MapProvider = ({ children }: Props) => {
       setPopupKey(newpopupKey)
     }
   }, [activeLayerGroups, map, isLoaded, popups])
+
+  useEffect(() => {
+    // Run queued function once map has loaded
+    if (isLoaded && functionQueue.length > 0) {
+      setFunctionQueue([])
+      functionQueue.forEach((call) => {
+        // @ts-ignore
+        values[call.func](...call.args)
+      })
+    }
+  }, [isLoaded])
 
   const createPopup = (coords: any, popupElement: React.ReactNode) => {
     popupOverlay.setPosition(coords)
@@ -279,7 +385,109 @@ export const MapProvider = ({ children }: Props) => {
       // })
     })
   }
+
+  const addGLStyle = (id: LayerId, style: any, popupFunc?: any, isVisible: boolean = true) => {
+    for (const sourceKey in style.sources) {
+      mbMap.addSource(sourceKey, style.sources[sourceKey])
+    }
+
+    for (const layer of style.layers) {
+      mbMap.addLayer(layer)
+    }
+  }
+
+  const addJSONLayer = (id: string, groupId: string, json: any, projection: string) => {
+    const featureColorField = 'kt'
+    // const vectorSource = new VectorSource({
+    //   features: new GeoJSON().readFeatures(json, {
+    //     featureProjection: projection,
+    //   }),
+    // })
+
+    // const vectorLayer = new VectorLayer({
+    //   source: vectorSource,
+    //   // style: defaultVectorStyleFunction,
+    // })
+
+    // map.addLayer(vectorLayer)
+
+    // const ktVals = ['uga', 'buga']
+
+    // for (const i in ktVals) {
+    //   const ktVal = ktVals[i]
+
+    // }
+
+    const uniqueVals = _.uniq(_.map(json.features, 'properties.' + featureColorField))
+    const colorArr = getColorExpressionArrForValues(uniqueVals)
+
+    mbMap.addSource('carbon-shapes', {
+      type: 'geojson',
+      // Use a URL for the value for the `data` property.
+      data: json,
+    })
+    mbMap.addLayer({
+      id: 'carbon-shapes-outline',
+      type: 'line',
+      source: 'carbon-shapes',
+      paint: {
+        'line-opacity': 0.9,
+      },
+    })
+
+    mbMap.addLayer({
+      id: 'carbon-shapes-fill',
+      type: 'fill',
+      source: 'carbon-shapes', // reference the data source
+      layout: {},
+      paint: {
+        'fill-color': ['match', ['get', featureColorField], ...colorArr, 'white'],
+        'fill-opacity': 0.7,
+      },
+    })
+
+    mbMap.addLayer({
+      id: `carbon-shapes-sym`,
+      source: 'carbon-shapes',
+      type: 'symbol',
+      layout: {
+        'symbol-placement': 'point',
+        'text-size': 20,
+        'text-font': ['Open Sans Regular'],
+        'text-field': ['case', ['has', 'kt'], ['get', 'kt'], ''],
+      },
+      paint: {
+        'text-color': '#999',
+        'text-halo-blur': 1,
+        'text-halo-color': 'rgb(242,243,240)',
+        'text-halo-width': 2,
+      },
+      minzoom: 12,
+    })
+
+    //   let layerGroup: any = {}
+
+    //   if (layerGroups[groupId]) {
+    //     layerGroup = layerGroups[groupId]
+    //   }
+
+    //   layerGroup[id] = vectorLayer
+
+    //   const layerGroupsCopy = { ...layerGroups, [groupId]: vectorLayer }
+    //   setLayerGroups(layerGroupsCopy)
+
+    //   const activeLayerGroupsCopy = [...activeLayerGroups, groupId]
+    //   setActiveLayerGroups(activeLayerGroupsCopy)
+  }
+
   const toggleLayerGroup = async (layerId: LayerId) => {
+    // If map is not initialized, add function to queue
+    if (!isLoaded) {
+      const functionQueueCopy = [...functionQueue, { func: 'toggleLayerGroup', args: [layerId] }]
+      setFunctionQueue(functionQueueCopy)
+      return
+    }
+
     if (activeLayerGroups.includes(layerId)) {
       const activeLayerGroupsCopy = [...activeLayerGroups]
       activeLayerGroupsCopy.splice(activeLayerGroupsCopy.indexOf(layerId), 1)
@@ -293,12 +501,17 @@ export const MapProvider = ({ children }: Props) => {
         const activeLayerGroupsCopy = [...activeLayerGroups, layerId]
         setActiveLayerGroups(activeLayerGroupsCopy)
       } else {
+        // Initialize layer if it doesn't exist
         const layerConf = layerConfs.find((el: LayerConf) => {
           return el.id === layerId
         })
         if (layerConf) {
           const style = await layerConf.style()
-          addMbStyle(layerId, style, layerConf.popup)
+          if (layerConf.useGL) {
+            addGLStyle(layerId, style, layerConf.popup)
+          } else {
+            addMbStyle(layerId, style, layerConf.popup)
+          }
         } else {
           console.error('No layer config found for id: ' + layerId)
         }
@@ -341,6 +554,7 @@ export const MapProvider = ({ children }: Props) => {
     mapZoomOut,
     enableGroup,
     toggleLayerGroup,
+    addJSONLayer,
 
     setFilter,
     AddMapEventHandler,

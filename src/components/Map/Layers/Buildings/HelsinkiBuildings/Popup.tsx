@@ -2,11 +2,12 @@ import React from 'react'
 import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow } from '@mui/material'
 import _ from 'lodash'
-
 // Variables
 var heatings
-var tecons 
-
+var tecons
+var teconss
+var emisfactord 
+var emisfactords 
 // convert to float
 function convert_to_float(a) {
   // of string to float
@@ -14,20 +15,22 @@ function convert_to_float(a) {
   // Return float value
   return floatValue;
 }
-
 // Emission factors [kgCO2/kWh]
 var empdp = [0.255,0.195,0.104,0.104,0.104]
 // empdp[0]
-
-// Emission factor function [kgCO2/kWh]
-function emissionFactor(tecc, empdpn) {  
-  var emisfactord = Math.round((tecc * empdpn)/1000)*1000   
-  return emisfactord;
-}
 // round the tecons value
 function Tecons(tecc) {
   tecons = Math.round(tecc/1000)*1000
-  return tecons
+  teconss = tecons.toString().slice(0, -3);
+  teconss = `${teconss} 000`
+  return teconss
+}
+// Emission factor function [kgCO2/kWh]
+function emissionFactor(tecc, empdpn) {  
+  emisfactord = Math.round((tecc * empdpn)/1000)*1000    
+  emisfactords = emisfactord.toString().slice(0, -3);  
+  emisfactords = `${emisfactords} 000`
+  return emisfactords;
 }
 // Estimated annual energy consumption [kWh/m3,a]
 var consuptiontext = '{ "consuption" : [' +
@@ -41,7 +44,7 @@ var consuptiontext = '{ "consuption" : [' +
  '{"year":"2012", "Oil":"37.074", "dis_heating":"34.92", "direct_heating":"33.122", "awhpump":"26.018", "ghpump":"21.708"},' +  
  '{"year":"2018", "Oil":"34.911", "dis_heating":"32.903", "direct_heating":"31.101", "awhpump":"24.632", "ghpump":"20.722"} ]}'
 ;
- 
+
 // convert data into JSON object
 var eobj = JSON.parse(consuptiontext.toString())
 
@@ -141,9 +144,9 @@ const Popup = ({ features }: Props) => {
       } else {
         heatings = 0
         tecons = 0
-      }
-      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>                 
-      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{Tecons(tecons)}</address>             
+      }                     
+      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{Tecons(tecons)}</address> 
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>             
       tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/kWh]'] = <address>{emissionFactor(tecons, empdp[1])}</address>          
     }    
      // Oil
@@ -178,13 +181,13 @@ const Popup = ({ features }: Props) => {
       } else {
         heatings = 0
         tecons = 0
-      }      
-      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>                 
-      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{Tecons(tecons)}</address>             
+      }              
+      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{Tecons(tecons)}</address>
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>              
       tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/kWh]'] = <address>{emissionFactor(tecons, empdp[0])}</address>          
     }
     // Direct_Heating
-    if (kktark == "032" || kktark == "039" && p.c_poltaine == 4 && p.c_valmpvm !=null) {
+    if (kktark == "032" || kktark == "039" && p.c_poltaine == 4 && p.c_valmpvm !=null) {      
       if (tecdate <= 1975) {
         heatings = eobj.consuption[0].direct_heating
         tecons = docctilav * convert_to_float(heatings)            
@@ -215,10 +218,10 @@ const Popup = ({ features }: Props) => {
       } else {
         heatings = 0
         tecons = 0
-      }      
-      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>                 
-      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{Tecons(tecons)}</address>             
-      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/kWh]'] = <address>{emissionFactor(tecons, empdp[2])}</address>        
+      }       
+      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{Tecons(tecons)}</address>
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>              
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/kWh]'] = <address>{emissionFactor(tecons, empdp[2])}</address>           
     }
     // Air-to-water heat pumpu, Ground source heat pump
     if (kktark == "032" || kktark == "039" && p.c_poltaine == 9 && p.c_valmpvm !=null) {
@@ -252,9 +255,9 @@ const Popup = ({ features }: Props) => {
       } else {
         heatings = 0
         tecons = 0
-      }
-      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>                 
-      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{Tecons(tecons)}</address>             
+      }                      
+      tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = <address>{Tecons(tecons)}</address>
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>              
       tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/kWh]'] = <address>{emissionFactor(tecons, empdp[3])}</address>  
       /*tableValues['Energy consumption reduction potential by switching to GSHP: MWh/a'] = <address>{'GSHP = Ground source heat pum'}</address>
       tableValues['CO2-emission reduction potential by switching to GSHP: tCO2/a'] = <address>{''}</address>
@@ -296,7 +299,7 @@ const Popup = ({ features }: Props) => {
       <TableBody>
         <TableRow>
           <TableCell>Building ID:</TableCell>
-          <TableCell>{buildingIdString}</TableCell>
+          <TableCell>{buildingIdString.slice(0,10)}</TableCell>
         </TableRow>
         {Object.keys(tableValues).map((key: string) => {
           return (

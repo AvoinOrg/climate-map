@@ -1,6 +1,8 @@
+'use client'
+
 import { observable, useObservable } from 'micro-observables'
 import React, { useRef, useEffect } from 'react'
-import { MapContext } from 'Components/Map'
+import { MapContext } from '#/components/Map'
 
 const DEFAULT_PLACEHOLDER = 'Look up location'
 

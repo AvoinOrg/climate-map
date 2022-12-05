@@ -17,6 +17,7 @@ import hansen from './Forests/Hansen'
 import finlandMatureForests from './Forests/FinlandMatureForests'
 import mangroveForests from './Forests/MangroveForests'
 import treePlantations from './Forests/TreePlantations'
+import finlandForests from './Forests/FinlandForests'
 
 export const layerConfs = [
   buildingEnergyCertificates,
@@ -35,4 +36,5 @@ export const layerConfs = [
   finlandMatureForests,
   mangroveForests,
   treePlantations,
+  finlandForests
 ]
