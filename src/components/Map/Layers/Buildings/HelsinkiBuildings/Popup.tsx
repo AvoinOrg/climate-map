@@ -2,21 +2,28 @@ import React from 'react'
 import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow } from '@mui/material'
 import _ from 'lodash'
+
+import {
+  buildingHelBhsysClass
+} from './constants'
+
 // Variables
-var heatings
-var tecons
-var teconss
-var emisfactord 
-var emisfactords 
+let heatings
+let tecons
+let teconss
+let tecdate
+let tecdate_st
+let emisfactord 
+let emisfactords 
 // convert to float
 function convert_to_float(a) {
   // of string to float
-  var floatValue = +(a);   
+  let floatValue = +(a);   
   // Return float value
   return floatValue;
 }
 // Emission factors [kgCO2/kWh]
-var empdp = [0.255,0.195,0.104,0.104,0.104]
+const empdp = [0.255,0.195,0.104,0.104,0.104]
 // empdp[0]
 // round the tecons value
 function Tecons(tecc) {
@@ -33,7 +40,7 @@ function emissionFactor(tecc, empdpn) {
   return emisfactords;
 }
 // Estimated annual energy consumption [kWh/m3,a]
-var consuptiontext = '{ "consuption" : [' +
+const consuptiontext = '{ "consuption" : [' +
  '{"year":"1975", "Oil":"70.917", "dis_heating":"66.272", "direct_heating":"62.625", "awhpump":"45.955", "ghpump":"35.928"},' +  
  '{"year":"1976", "Oil":"64.053", "dis_heating": "59.901", "direct_heating":"56.309", "awhpump":"41.838", "ghpump":"32.857"},' +   
  '{"year":"1978", "Oil":"55.573", "dis_heating":"52.022", "direct_heating":"48.554", "awhpump":"36.507", "ghpump":"28.958"},' +
@@ -46,7 +53,7 @@ var consuptiontext = '{ "consuption" : [' +
 ;
 
 // convert data into JSON object
-var eobj = JSON.parse(consuptiontext.toString())
+let eobj = JSON.parse(consuptiontext.toString())
 
 interface Props {
   features: Feature[]
@@ -63,54 +70,34 @@ const Popup = ({ features }: Props) => {
 
     // Helsinki-Testbed Variables
     const kktark = String(p.c_kayttark)          
-    var docctilav = p.i_raktilav     
+    let docctilav = p.i_raktilav     
     
     // check / convert undefined values
     if (typeof p.c_valmpvm === "undefined") {
-      var tecdate = 0
+      tecdate = 0
     } else {      
-      var tecdate_st = p.c_valmpvm.toString().substr(0, 4) 
-      var tecdate = Number(tecdate_st) 
+      tecdate_st = p.c_valmpvm.toString().substr(0, 4) 
+      tecdate = Number(tecdate_st) 
     } 
     // Building type: Apartment building
     if (kktark == "032" || kktark == "039") {
       tableValues['Building type:'] = <address>{'Apartment building'}</address>
     }
     if (p.c_valmpvm != null) {
-      var doccdate = p.c_valmpvm.toString().substr(0, 4)         
+      let doccdate = p.c_valmpvm.toString().substr(0, 4)         
       tableValues['Construction year:'] = <address>{doccdate}</address>
     }
     if (p.i_raktilav != null) {
       tableValues['Heated floor area: m2'] = <address>{p.i_kokala}</address>
-      var docctilav = p.i_raktilav
+      let docctilav = p.i_raktilav
     } 
     if (p.i_raktilav != null) {
       tableValues['Heated volume: m3'] = <address>{p.i_raktilav}</address>
-      var docctilav = p.i_raktilav
+      let docctilav = p.i_raktilav
     }
     // The house's heat source
-    if (kktark == "032" || kktark == "039" && p.c_poltaine != null) {
-      var bhsys = p.c_poltaine
-      switch (bhsys) {
-        case '1': 
-        bhsys = 'District heating';
-        break;
-        case '2': 
-        bhsys = 'Light fuel oil';
-        break;
-        case '3': 
-        bhsys = 'Heavy fuel oil';
-        break;
-        case '4': 
-        bhsys = 'Direct electric heating';
-        break;       
-        case '9': 
-        bhsys = 'Air-to-water heat pumpu, Ground source heat pump etc';
-        break;
-        default: 
-        bhsys = "Other";
-      }
-      tableValues['Heating system'] = <address>{bhsys}</address>
+    if (kktark == "032" || kktark == "039" && p.c_poltaine != null) {      
+      tableValues['Heating system'] = <address>{buildingHelBhsysClass[p.c_poltaine] || ''}</address>
     }
     // district heating 
     if (kktark == "032" || kktark == "039" && p.c_poltaine == 1 && p.c_valmpvm !=null) {                     
