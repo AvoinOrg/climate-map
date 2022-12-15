@@ -15,7 +15,7 @@ let emisfactord
 let emisfactords
 const nulls = '000'
 // convert to float
-function convert_to_float(a: string) {
+const convert_to_float = (a: string) => {
   // of string to float
   let floatValue = +a
   // Return float value
@@ -24,13 +24,13 @@ function convert_to_float(a: string) {
 // Emission factors [kgCO2/kWh]
 const empdp = [0.255, 0.195, 0.104, 0.104, 0.104]
 // round the tecons value
-function Tecons(tecc: number) {
+const Tecons = (tecc: number) => {
   tecons = Math.round(tecc / 1000) * 1000
   teconss = tecons.toString().slice(0, -3)
   return teconss
 }
 // Emission factor function [kgCO2/kWh]
-function emissionFactor(tecc: number, empdpn: number) {
+const emissionFactor = (tecc: number, empdpn: number) => {
   emisfactord = Math.round((tecc * empdpn) / 1000) * 1000
   emisfactords = emisfactord.toString().slice(0, -3)
   return emisfactords
