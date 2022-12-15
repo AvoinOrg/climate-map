@@ -93,7 +93,7 @@ const getStyle = async (): Promise<MbStyle> => {
         'source-layer': 'default',
         type: 'fill',
         paint: {
-          'fill-color': 'red',
+          'fill-color': 'black',
           'fill-opacity': fillOpacity,
         },
         BEFORE: 'FILL',
