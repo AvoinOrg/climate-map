@@ -3,7 +3,7 @@ import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow } from '@mui/material'
 import _ from 'lodash'
 
-import { buildingHelBhsysClass } from './constants'
+import { buildingHelBhsysClass, energyConsumption } from './constants'
 
 // Variables
 let heatings
@@ -15,7 +15,7 @@ let emisfactord
 let emisfactords
 const nulls = '000'
 // convert to float
-const convert_to_float = (a: string) => {
+const convertToFloat = (a: string) => {
   // of string to float
   let floatValue = +a
   // Return float value
@@ -35,20 +35,6 @@ const emissionFactor = (tecc: number, empdpn: number) => {
   emisfactords = emisfactord.toString().slice(0, -3)
   return emisfactords
 }
-// Estimated annual energy consumption [kWh/m3,a]
-const consuptiontext =
-  '{ "consuption" : [' +
-  '{"year":"1975", "Oil":"70.917", "dis_heating":"66.272", "direct_heating":"62.625", "awhpump":"45.955", "ghpump":"35.928"},' +
-  '{"year":"1976", "Oil":"64.053", "dis_heating": "59.901", "direct_heating":"56.309", "awhpump":"41.838", "ghpump":"32.857"},' +
-  '{"year":"1978", "Oil":"55.573", "dis_heating":"52.022", "direct_heating":"48.554", "awhpump":"36.507", "ghpump":"28.958"},' +
-  '{"year":"1985", "Oil":"53.097", "dis_heating":"49.738", "direct_heating":"46.352", "awhpump":"35.047", "ghpump":"27.861"},' +
-  '{"year":"2003", "Oil":"48.289", "dis_heating":"45.339", "direct_heating":"43.156", "awhpump":"32.839", "ghpump":"26.574"},' +
-  '{"year":"2008", "Oil":"47.917", "dis_heating":"44.999", "direct_heating":"42.832", "awhpump":"32.612", "ghpump":"26.411"},' +
-  '{"year":"2010", "Oil":"40.39", "dis_heating":"38.03", "direct_heating":"36.216", "awhpump":"28.204", "ghpump":"23.408"},' +
-  '{"year":"2012", "Oil":"37.074", "dis_heating":"34.92", "direct_heating":"33.122", "awhpump":"26.018", "ghpump":"21.708"},' +
-  '{"year":"2018", "Oil":"34.911", "dis_heating":"32.903", "direct_heating":"31.101", "awhpump":"24.632", "ghpump":"20.722"} ]}'
-// convert data into JSON object
-let eobj = JSON.parse(consuptiontext.toString())
 
 interface Props {
   features: Feature[]
@@ -97,32 +83,32 @@ const Popup = ({ features }: Props) => {
     // district heating
     if (kktark == '032' || (kktark == '039' && p.c_poltaine == 1 && p.c_valmpvm != null)) {
       if (tecdate <= 1975) {
-        heatings = eobj.consuption[0].dis_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[0].dis_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 1977 || tecdate >= 1976) {
-        heatings = eobj.consuption[1].dis_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[1].dis_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 1984 || tecdate >= 1978) {
-        heatings = eobj.consuption[2].dis_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[2].dis_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2002 || tecdate >= 1985) {
-        heatings = eobj.consuption[3].dis_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[3].dis_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2007 || tecdate >= 2003) {
-        heatings = eobj.consuption[4].dis_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[4].dis_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2009 || tecdate >= 2008) {
-        heatings = eobj.consuption[5].dis_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[5].dis_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2011 || tecdate >= 2010) {
-        heatings = eobj.consuption[6].dis_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[6].dis_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2017 || tecdate >= 2012) {
-        heatings = eobj.consuption[7].dis_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[7].dis_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate >= 2018) {
-        heatings = eobj.consuption[8].dis_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[8].dis_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else {
         heatings = 0
         tecons = 0
@@ -138,32 +124,32 @@ const Popup = ({ features }: Props) => {
     // Oil
     if (kktark == '032' || (kktark == '039' && p.c_poltaine == 2) || (p.c_poltaine == 3 && p.c_valmpvm != null)) {
       if (tecdate <= 1975) {
-        heatings = eobj.consuption[0].Oil
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[0].Oil
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 1977 || tecdate >= 1976) {
-        heatings = eobj.consuption[1].Oil
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[1].Oil
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 1984 || tecdate >= 1978) {
-        heatings = eobj.consuption[2].Oil
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[2].Oil
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2002 || tecdate >= 1985) {
-        heatings = eobj.consuption[3].Oil
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[3].Oil
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2007 || tecdate >= 2003) {
-        heatings = eobj.consuption[4].Oil
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[4].Oil
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2009 || tecdate >= 2008) {
-        heatings = eobj.consuption[5].Oil
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[5].Oil
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2011 || tecdate >= 2010) {
-        heatings = eobj.consuption[6].Oil
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[6].Oil
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2017 || tecdate >= 2012) {
-        heatings = eobj.consuption[7].Oil
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[7].Oil
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate >= 2018) {
-        heatings = eobj.consuption[8].Oil
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[8].Oil
+        tecons = docctilav * convertToFloat(heatings)
       } else {
         heatings = 0
         tecons = 0
@@ -179,32 +165,32 @@ const Popup = ({ features }: Props) => {
     // Direct_Heating
     if (kktark == '032' || (kktark == '039' && p.c_poltaine == 4 && p.c_valmpvm != null)) {
       if (tecdate <= 1975) {
-        heatings = eobj.consuption[0].direct_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[0].direct_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 1977 || tecdate >= 1976) {
-        heatings = eobj.consuption[1].direct_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[1].direct_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 1984 || tecdate >= 1978) {
-        heatings = eobj.consuption[2].direct_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[2].direct_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2002 || tecdate >= 1985) {
-        heatings = eobj.consuption[3].direct_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[3].direct_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2007 || tecdate >= 2003) {
-        heatings = eobj.consuption[4].direct_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[4].direct_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2009 || tecdate >= 2008) {
-        heatings = eobj.consuption[5].direct_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[5].direct_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2011 || tecdate >= 2010) {
-        heatings = eobj.consuption[6].direct_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[6].direct_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2017 || tecdate >= 2012) {
-        heatings = eobj.consuption[7].direct_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[7].direct_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate >= 2018) {
-        heatings = eobj.consuption[8].direct_heating
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[8].direct_heating
+        tecons = docctilav * convertToFloat(heatings)
       } else {
         heatings = 0
         tecons = 0
@@ -220,32 +206,32 @@ const Popup = ({ features }: Props) => {
     // Air-to-water heat pumpu, Ground source heat pump
     if (kktark == '032' || (kktark == '039' && p.c_poltaine == 9 && p.c_valmpvm != null)) {
       if (tecdate <= 1975) {
-        heatings = eobj.consuption[0].ghpump
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[0].ghpump
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 1977 || tecdate >= 1976) {
-        heatings = eobj.consuption[1].ghpump
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[1].ghpump
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 1984 || tecdate >= 1978) {
-        heatings = eobj.consuption[2].ghpump
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[2].ghpump
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2002 || tecdate >= 1985) {
-        heatings = eobj.consuption[3].ghpump
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[3].ghpump
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2007 || tecdate >= 2003) {
-        heatings = eobj.consuption[4].ghpump
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[4].ghpump
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2009 || tecdate >= 2008) {
-        heatings = eobj.consuption[5].ghpump
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[5].ghpump
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2011 || tecdate >= 2010) {
-        heatings = eobj.consuption[6].ghpump
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[6].ghpump
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate <= 2017 || tecdate >= 2012) {
-        heatings = eobj.consuption[7].ghpump
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[7].ghpump
+        tecons = docctilav * convertToFloat(heatings)
       } else if (tecdate >= 2018) {
-        heatings = eobj.consuption[8].ghpump
-        tecons = docctilav * convert_to_float(heatings)
+        heatings = energyConsumption.consumption[8].ghpump
+        tecons = docctilav * convertToFloat(heatings)
       } else {
         heatings = 0
         tecons = 0
