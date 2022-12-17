@@ -16,5 +16,5 @@
   status = 200
 
 [[plugins]]
-  package = "plugin-nextjs@appdir"
+  package = "@netlify/plugin-nextjs"
 
