@@ -119,13 +119,17 @@ yarn-error.log*
 # Local Netlify folder
 .netlify
 
-.yarn
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
 /temp
 
 .env
-
-.pnp.*
 
 out
 
