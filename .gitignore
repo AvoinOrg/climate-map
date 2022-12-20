@@ -132,4 +132,5 @@ yarn-error.log*
 .env
 
 out
+.next
 
