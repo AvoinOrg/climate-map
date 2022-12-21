@@ -34,32 +34,33 @@ interface Props {
 
 interface IMapContext {
   isLoaded: boolean
-  map?: Map
-  mapToggleTerrain?: () => void
-  mapResetNorth?: () => void
-  getGeocoder?: () => any
-  mapRelocate?: () => void
-  mapZoomIn?: () => void
-  mapZoomOut?: () => void
-  toggleLayerGroup?: (layer: string) => void
-  activeLayerGroups?: string[]
-  layerGroups?: {}
-  registerGroup?: (layerGroup: any) => void
+  map: Map | null
+  mapToggleTerrain: () => void | null
+  mapResetNorth: () => void | null
+  getGeocoder: () => any | null
+  mapRelocate: () => void | null
+  mapZoomIn: () => void | null
+  mapZoomOut: () => void | null
+  toggleLayerGroup: (layer: LayerId) => Promise<void> | null
+  activeLayerGroups: string[] | null
+  layerGroups: {} | null
+  registerGroup?: (layerGroup: any) => void | null
+  addJSONLayer?: (id: string, groupId: string, json: any, projection: string) => void | null
   // addMbStyle?: (style: any) => void
 }
 
-export const MapContext = createContext<IMapContext>({ isLoaded: false })
+export const MapContext = createContext({ isLoaded: false } as IMapContext)
 
 export const MapProvider = ({ children }: Props) => {
-  const mapRef = useRef()
-  const [map, setMap] = useState<Map>(null)
-  const [mbMap, setMbMap] = useState<mapboxgl.Map>(null)
+  const mapRef = useRef<HTMLDivElement>()
+  const [map, setMap] = useState<Map | null>(null)
+  const [mbMap, setMbMap] = useState<mapboxgl.Map | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [activeLayerGroups, setActiveLayerGroups] = useState<any[]>([])
   const [layerGroups, setLayerGroups] = useState<any>({})
   const [functionQueue, setFunctionQueue] = useState<any[]>([])
 
-  const popupRef = useRef<HTMLDivElement | undefined>(undefined)
+  const popupRef = useRef<HTMLDivElement>(null)
   const [popups, setPopups] = useState<any>({})
   const [popupOverlay, setPopupOverlay] = useState<any>(null)
   const [popupOnClose, setPopupOnClose] = useState<any>(null)
@@ -194,7 +195,7 @@ export const MapProvider = ({ children }: Props) => {
       // const closer = document.getElementById('popup-closer') as HTMLElement
 
       const overlay = new Overlay({
-        element: popupRef.current,
+        element: popupRef.current as HTMLElement,
         autoPan: true,
         // autoPanAnimation: {
         //   duration: 250,
@@ -221,7 +222,7 @@ export const MapProvider = ({ children }: Props) => {
       const newPopupFunc = (evt: any) => {
         let featureObjs: any[] = []
 
-        map.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
+        map?.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
           featureObjs.push({ feature, layer })
         })
 
@@ -264,7 +265,7 @@ export const MapProvider = ({ children }: Props) => {
         }
       }
 
-      const newpopupKey = map.on('singleclick', newPopupFunc)
+      const newpopupKey = map?.on('singleclick', newPopupFunc)
 
       setPopupKey(newpopupKey)
     }
@@ -348,6 +349,7 @@ export const MapProvider = ({ children }: Props) => {
     const layerGroup: any = {}
 
     // After addings the layers using style, find them and add them to the layerGroup
+    //@ts-ignore
     olms(map, style).then((map) => {
       map
         .getLayers()
@@ -388,11 +390,11 @@ export const MapProvider = ({ children }: Props) => {
 
   const addGLStyle = (id: LayerId, style: any, popupFunc?: any, isVisible: boolean = true) => {
     for (const sourceKey in style.sources) {
-      mbMap.addSource(sourceKey, style.sources[sourceKey])
+      mbMap?.addSource(sourceKey, style.sources[sourceKey])
     }
 
     for (const layer of style.layers) {
-      mbMap.addLayer(layer)
+      mbMap?.addLayer(layer)
     }
   }
 
@@ -421,12 +423,12 @@ export const MapProvider = ({ children }: Props) => {
     const uniqueVals = _.uniq(_.map(json.features, 'properties.' + featureColorField))
     const colorArr = getColorExpressionArrForValues(uniqueVals)
 
-    mbMap.addSource('carbon-shapes', {
+    mbMap?.addSource('carbon-shapes', {
       type: 'geojson',
       // Use a URL for the value for the `data` property.
       data: json,
     })
-    mbMap.addLayer({
+    mbMap?.addLayer({
       id: 'carbon-shapes-outline',
       type: 'line',
       source: 'carbon-shapes',
@@ -435,7 +437,7 @@ export const MapProvider = ({ children }: Props) => {
       },
     })
 
-    mbMap.addLayer({
+    mbMap?.addLayer({
       id: 'carbon-shapes-fill',
       type: 'fill',
       source: 'carbon-shapes', // reference the data source
@@ -446,7 +448,7 @@ export const MapProvider = ({ children }: Props) => {
       },
     })
 
-    mbMap.addLayer({
+    mbMap?.addLayer({
       id: `carbon-shapes-sym`,
       source: 'carbon-shapes',
       type: 'symbol',
@@ -520,54 +522,55 @@ export const MapProvider = ({ children }: Props) => {
   }
 
   // implement at some point
-  const setFilter = () => {}
-  const AddMapEventHandler = () => {}
-  const isSourceReady = () => {}
-  const removeMapEventHandler = () => {}
-  const enablePersonalDataset = () => {}
-  const disablePersonalDataset = () => {}
+  // const setFilter = () => {}
+  // const AddMapEventHandler = () => {}
+  // const isSourceReady = () => {}
+  // const removeMapEventHandler = () => {}
+  // const enablePersonalDataset = () => {}
+  // const disablePersonalDataset = () => {}
 
   // used in ForestArvometsa.tsx. Not all of these are needed
-  const fitBounds = () => {}
-  const genericPopupHandler = () => {}
-  const querySourceFeatures = () => {}
-  const setLayoutProperty = () => {}
-  const setPaintProperty = () => {}
+  // const fitBounds = () => {}
+  // const genericPopupHandler = () => {}
+  // const querySourceFeatures = () => {}
+  // const setLayoutProperty = () => {}
+  // const setPaintProperty = () => {}
 
   // use REDUX for these?
-  const enableGroup = () => {}
-  const disableGroup = () => {}
-  const eetGroupState = () => {}
-  const toggleGroup = () => {}
-  const enableOnlyOneGroup = () => {}
-  const isGroupEnable = () => {}
+  // const enableGroup = () => {}
+  // const disableGroup = () => {}
+  // const eetGroupState = () => {}
+  // const toggleGroup = () => {}
+  // const enableOnlyOneGroup = () => {}
+  // const isGroupEnable = () => {}
 
-  const values = {
-    map,
+  const values: IMapContext = {
     isLoaded,
+    map,
     activeLayerGroups,
+    layerGroups,
     mapToggleTerrain,
     mapResetNorth,
     getGeocoder,
     mapRelocate,
     mapZoomIn,
     mapZoomOut,
-    enableGroup,
     toggleLayerGroup,
     addJSONLayer,
 
-    setFilter,
-    AddMapEventHandler,
-    isSourceReady,
-    removeMapEventHandler,
-    enablePersonalDataset,
-    disablePersonalDataset,
+    // enableGroup,
+    // setFilter,
+    // AddMapEventHandler,
+    // isSourceReady,
+    // removeMapEventHandler,
+    // enablePersonalDataset,
+    // disablePersonalDataset,
 
-    fitBounds,
-    genericPopupHandler,
-    querySourceFeatures,
-    setLayoutProperty,
-    setPaintProperty,
+    // fitBounds,
+    // genericPopupHandler,
+    // querySourceFeatures,
+    // setLayoutProperty,
+    // setPaintProperty,
   }
 
   return (
