@@ -42,6 +42,8 @@ interface IMapContext {
   mapZoomIn: () => void | null
   mapZoomOut: () => void | null
   toggleLayerGroup: (layer: LayerId) => Promise<void> | null
+  enableLayerGroup: (layer: LayerId) => Promise<void> | null
+  disableLayerGroup: (layer: LayerId) => Promise<void> | null
   activeLayerGroups: string[] | null
   layerGroups: {} | null
   registerGroup?: (layerGroup: any) => void | null
@@ -482,42 +484,57 @@ export const MapProvider = ({ children }: Props) => {
     //   setActiveLayerGroups(activeLayerGroupsCopy)
   }
 
-  const toggleLayerGroup = async (layerId: LayerId) => {
+  const mapLoadCheck = (layerId: LayerId) => {
     // If map is not initialized, add function to queue
     if (!isLoaded) {
-      const functionQueueCopy = [...functionQueue, { func: 'toggleLayerGroup', args: [layerId] }]
+      const functionQueueCopy = [...functionQueue, { func: 'enableLayerGroup', args: [layerId] }]
       setFunctionQueue(functionQueueCopy)
-      return
+      return false
     }
+    return true
+  }
 
-    if (activeLayerGroups.includes(layerId)) {
-      const activeLayerGroupsCopy = [...activeLayerGroups]
-      activeLayerGroupsCopy.splice(activeLayerGroupsCopy.indexOf(layerId), 1)
+  const enableLayerGroup = async (layerId: LayerId) => {
+    if (layerGroups[layerId]) {
+      setGroupVisibility(layerId, true)
 
+      const activeLayerGroupsCopy = [...activeLayerGroups, layerId]
       setActiveLayerGroups(activeLayerGroupsCopy)
-      setGroupVisibility(layerId, false)
     } else {
-      if (layerGroups[layerId]) {
-        setGroupVisibility(layerId, true)
-
-        const activeLayerGroupsCopy = [...activeLayerGroups, layerId]
-        setActiveLayerGroups(activeLayerGroupsCopy)
-      } else {
-        // Initialize layer if it doesn't exist
-        const layerConf = layerConfs.find((el: LayerConf) => {
-          return el.id === layerId
-        })
-        if (layerConf) {
-          const style = await layerConf.style()
-          if (layerConf.useGL) {
-            addGLStyle(layerId, style, layerConf.popup)
-          } else {
-            addMbStyle(layerId, style, layerConf.popup)
-          }
-        } else {
-          console.error('No layer config found for id: ' + layerId)
-        }
+      if (!mapLoadCheck) {
+        return
       }
+
+      // Initialize layer if it doesn't exist
+      const layerConf = layerConfs.find((el: LayerConf) => {
+        return el.id === layerId
+      })
+      if (layerConf) {
+        const style = await layerConf.style()
+        if (layerConf.useGL) {
+          addGLStyle(layerId, style, layerConf.popup)
+        } else {
+          addMbStyle(layerId, style, layerConf.popup)
+        }
+      } else {
+        console.error('No layer config found for id: ' + layerId)
+      }
+    }
+  }
+
+  const disableLayerGroup = async (layerId: LayerId) => {
+    const activeLayerGroupsCopy = [...activeLayerGroups]
+    activeLayerGroupsCopy.splice(activeLayerGroupsCopy.indexOf(layerId), 1)
+
+    setActiveLayerGroups(activeLayerGroupsCopy)
+    setGroupVisibility(layerId, false)
+  }
+
+  const toggleLayerGroup = async (layerId: LayerId) => {
+    if (activeLayerGroups.includes(layerId)) {
+      disableLayerGroup(layerId)
+    } else {
+      enableLayerGroup(layerId)
     }
   }
 
@@ -556,6 +573,8 @@ export const MapProvider = ({ children }: Props) => {
     mapZoomIn,
     mapZoomOut,
     toggleLayerGroup,
+    enableLayerGroup,
+    disableLayerGroup,
     addJSONLayer,
 
     // enableGroup,
