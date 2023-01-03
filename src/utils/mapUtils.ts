@@ -145,3 +145,7 @@ export const getColorExpressionArrForValues = (values: any[]) => {
 
   return colorArr
 }
+
+export const assert = (expr: any, message: any) => {
+  if (!expr) throw new Error(`Assertion error: ${message}`)
+}
