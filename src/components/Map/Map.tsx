@@ -41,8 +41,8 @@ interface IMapContext {
   mapRelocate: () => void | null
   mapZoomIn: () => void | null
   mapZoomOut: () => void | null
-  toggleLayerGroup: (layer: LayerId) => Promise<void> | null
-  enableLayerGroup: (layer: LayerId) => Promise<void> | null
+  toggleLayerGroup: (layer: LayerId, layerConf?: LayerConf) => Promise<void> | null
+  enableLayerGroup: (layer: LayerId, layerConf?: LayerConf) => Promise<void> | null
   disableLayerGroup: (layer: LayerId) => Promise<void> | null
   activeLayerGroups: string[] | null
   layerGroups: {} | null
@@ -494,7 +494,7 @@ export const MapProvider = ({ children }: Props) => {
     return true
   }
 
-  const enableLayerGroup = async (layerId: LayerId) => {
+  const enableLayerGroup = async (layerId: LayerId, layerConf?: LayerConf) => {
     if (layerGroups[layerId]) {
       setGroupVisibility(layerId, true)
 
@@ -506,15 +506,20 @@ export const MapProvider = ({ children }: Props) => {
       }
 
       // Initialize layer if it doesn't exist
-      const layerConf = layerConfs.find((el: LayerConf) => {
-        return el.id === layerId
-      })
-      if (layerConf) {
-        const style = await layerConf.style()
-        if (layerConf.useGL) {
-          addGLStyle(layerId, style, layerConf.popup)
+      let conf = layerConf
+
+      if (!conf) {
+        conf = layerConfs.find((el: LayerConf) => {
+          return el.id === layerId
+        })
+      }
+
+      if (conf) {
+        const style = await conf.style()
+        if (conf.useGL) {
+          addGLStyle(layerId, style, conf.popup)
         } else {
-          addMbStyle(layerId, style, layerConf.popup)
+          addMbStyle(layerId, style, conf.popup)
         }
       } else {
         console.error('No layer config found for id: ' + layerId)
@@ -530,11 +535,11 @@ export const MapProvider = ({ children }: Props) => {
     setGroupVisibility(layerId, false)
   }
 
-  const toggleLayerGroup = async (layerId: LayerId) => {
+  const toggleLayerGroup = async (layerId: LayerId, layerConf?: LayerConf) => {
     if (activeLayerGroups.includes(layerId)) {
       disableLayerGroup(layerId)
     } else {
-      enableLayerGroup(layerId)
+      enableLayerGroup(layerId, layerConf)
     }
   }
 
