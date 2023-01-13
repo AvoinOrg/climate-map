@@ -516,7 +516,7 @@ export const MapProvider = ({ children }: Props) => {
 
       if (conf) {
         const style = await conf.style()
-        if (conf.useGL) {
+        if (conf.useMb) {
           addGLStyle(layerId, style, conf.popup)
         } else {
           addMbStyle(layerId, style, conf.popup)
