@@ -345,7 +345,14 @@ export const MapProvider = ({ children }: Props) => {
     }
   }
 
-  const addMbStyle = (id: LayerId, style: MbStyle, popupFunc?: any, isVisible: boolean = true) => {
+  const getLayerType = (layerName: string) => {
+    const suffix = layerName.split('-').slice(-1)[0]
+    if (layerTypes.includes(suffix)) {
+      return suffix as LayerType
+    }
+
+    throw new Error('Invalid layer type: "' + suffix + '" for layer: ' + layerName + '"')
+  }
     const sourceKeys = Object.keys(style.sources)
 
     const layerGroup: any = {}

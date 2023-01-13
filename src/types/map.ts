@@ -48,3 +48,8 @@ export type LayerConf = {
   selectable?: boolean
   multiSelectable?: boolean
 }
+
+// For checking if layer name adheres to LayerType, in runtime
+export const layerTypes: readonly string[] = ['fill', 'highlighted', 'outline']
+
+export type LayerType = typeof layerTypes[number]
