@@ -3,7 +3,22 @@ import { ReactNode } from 'react'
 import Feature from 'ol/Feature'
 // interface mapFunctions {}
 
+export type Popup = (props: { features: Feature[] }) => ReactNode
+
 export type SourceType = 'geojson' | 'vector' | 'raster' | 'image' | 'video' | 'canvas'
+
+export type LayerOpt = {
+  id: string
+  source: string
+  selectable: boolean
+  multiSelectable: boolean
+  popup: Popup | null
+  useMb: boolean
+}
+
+export type LayerOpts = {
+  [key: string]: LayerOpt
+}
 
 export type LayerId =
   | 'building_energy_certs'
@@ -28,6 +43,6 @@ export type LayerId =
 export type LayerConf = {
   id: LayerId
   style: () => Promise<MbStyle>
-  popup?: (props: { features: Feature[] }) => ReactNode
-  useGL?: boolean
+  popup?: Popup
+  useMb?: boolean
 }
