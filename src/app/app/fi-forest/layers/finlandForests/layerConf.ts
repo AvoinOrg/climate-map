@@ -78,6 +78,13 @@ const getStyle = async (): Promise<MbStyle> => {
   }
 }
 
-const layerConf: LayerConf = { id: id, style: getStyle, popup: Popup, useMb: true }
+const layerConf: LayerConf = {
+  id: id,
+  style: getStyle,
+  popup: Popup,
+  useMb: true,
+  selectable: true,
+  multiSelectable: true,
+}
 
 export default layerConf

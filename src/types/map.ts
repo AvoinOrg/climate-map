@@ -45,4 +45,6 @@ export type LayerConf = {
   style: () => Promise<MbStyle>
   popup?: Popup
   useMb?: boolean
+  selectable?: boolean
+  multiSelectable?: boolean
 }
