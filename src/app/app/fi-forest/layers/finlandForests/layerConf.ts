@@ -1,7 +1,7 @@
-import { Style as MbStyle, Expression } from 'mapbox-gl'
+import { Expression } from 'mapbox-gl'
 
 import { fillOpacity } from '#/utils/mapUtils'
-import { LayerId, LayerConf } from '#/types/map'
+import { LayerId, LayerConf, ExtendedMbStyle } from '#/types/map'
 import { layerOptions } from '#/app/app/fi-forest/constants'
 import { fiForestsAreaCO2FillColor, fiForestsCumulativeCO2eValueExpr } from '#/app/app/fi-forest/utils'
 import Popup from './Popup'
@@ -10,7 +10,7 @@ const SERVER_URL = process.env.NEXT_PUBLIC_GEOSERVER_URL
 
 const id: LayerId = 'fi_forests'
 
-const getStyle = async (): Promise<MbStyle> => {
+const getStyle = async (): Promise<ExtendedMbStyle> => {
   const sources: any = {}
   let layers: any = []
 
@@ -39,10 +39,12 @@ const getStyle = async (): Promise<MbStyle> => {
         },
         minzoom: options.minzoom,
         maxzoom: options.maxzoom,
+        selectable: true,
+        multiSelectable: true,
         BEFORE: 'FILL',
       },
       {
-        id: `${layerId}-boundary`,
+        id: `${layerId}-outline`,
         source: layerId,
         'source-layer': options.serverId,
         type: 'line',
@@ -83,8 +85,6 @@ const layerConf: LayerConf = {
   style: getStyle,
   popup: Popup,
   useMb: true,
-  selectable: true,
-  multiSelectable: true,
 }
 
 export default layerConf
