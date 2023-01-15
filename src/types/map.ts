@@ -1,4 +1,4 @@
-import { Style as MbStyle } from 'mapbox-gl'
+import { Style as MbStyle, AnyLayer } from 'mapbox-gl'
 import { ReactNode } from 'react'
 import Feature from 'ol/Feature'
 // interface mapFunctions {}
@@ -10,9 +10,11 @@ export type SourceType = 'geojson' | 'vector' | 'raster' | 'image' | 'video' | '
 export type LayerOpt = {
   id: string
   source: string
+  name: string
+  layerType: LayerType
   selectable: boolean
   multiSelectable: boolean
-  popup: Popup | null
+  popup: Popup | false
   useMb: boolean
 }
 
@@ -40,11 +42,14 @@ export type LayerId =
   | 'gfw_tree_plantations'
   | 'fi_forests'
 
+export type ExtendedAnyLayer = AnyLayer & {
+  source: string
+  selectable?: boolean // whether a feature can be highlighted
+  multiSelectable?: boolean // whether multiple features can be highlighted
+}
+
 export type ExtendedMbStyle = MbStyle & {
-  layers: MbStyle['layers'] & {
-    selectable?: boolean // whether a feature can be highlighted
-    multiSelectable?: boolean // whether multiple features can be highlighted
-  }
+  layers: ExtendedAnyLayer[]
 }
 
 export type LayerConf = {
@@ -57,4 +62,4 @@ export type LayerConf = {
 // For checking if layer name adheres to LayerType, in runtime
 export const layerTypes: readonly string[] = ['fill', 'highlighted', 'outline']
 
-export type LayerType = typeof layerTypes[number]
+export type LayerType = typeof layerTypes[number] | 'invalid'
