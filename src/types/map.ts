@@ -40,13 +40,18 @@ export type LayerId =
   | 'gfw_tree_plantations'
   | 'fi_forests'
 
+export type ExtendedMbStyle = MbStyle & {
+  layers: MbStyle['layers'] & {
+    selectable?: boolean // whether a feature can be highlighted
+    multiSelectable?: boolean // whether multiple features can be highlighted
+  }
+}
+
 export type LayerConf = {
   id: LayerId
-  style: () => Promise<MbStyle>
+  style: () => Promise<ExtendedMbStyle>
   popup?: Popup
   useMb?: boolean
-  selectable?: boolean
-  multiSelectable?: boolean
 }
 
 // For checking if layer name adheres to LayerType, in runtime
