@@ -48,6 +48,7 @@ interface IMapContext {
   layerGroups: {} | null
   registerGroup?: (layerGroup: any) => void | null
   addJSONLayer?: (id: string, groupId: string, json: any, projection: string) => void | null
+  selectedFeatures: MapboxGeoJSONFeature[]
   // addMbStyle?: (style: any) => void
 }
 
@@ -710,6 +711,7 @@ export const MapProvider = ({ children }: Props) => {
     enableLayerGroup,
     disableLayerGroup,
     addJSONLayer,
+    selectedFeatures,
 
     // enableGroup,
     // setFilter,
