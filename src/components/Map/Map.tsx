@@ -23,7 +23,7 @@ import { Style as MbStyle } from 'mapbox-gl'
 import mapboxgl from 'mapbox-gl'
 import { fromLonLat, toLonLat } from 'ol/proj'
 
-import { LayerId, LayerConf } from '#/types/map'
+import { LayerId, LayerConf, LayerOpt, LayerOpts, layerTypes, LayerType, ExtendedMbStyle } from '#/types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
 import { getColorExpressionArrForValues } from '#/utils/mapUtils'
