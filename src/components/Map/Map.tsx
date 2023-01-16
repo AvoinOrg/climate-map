@@ -10,7 +10,7 @@ import 'ol/ol.css'
 import _ from 'lodash'
 import React, { createContext, useState, useRef, useEffect, useCallback } from 'react'
 import Box from '@mui/material/Box'
-import { Map, View } from 'ol'
+import * as proj from 'ol/proj'
 import { unByKey } from 'ol/Observable'
 import { Layer, Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import Overlay from 'ol/Overlay'
@@ -160,7 +160,7 @@ export const MapProvider = ({ children }: Props) => {
     const options = {
       renderer: 'webgl',
       target: 'map',
-      view: new View({ zoom: 5, center: fromLonLat(center) }),
+      view: new View({ zoom: 5, center: proj.fromLonLat(center) }),
       layers: [
         new TileLayer({
           source: new OSM(),
