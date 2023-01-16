@@ -415,14 +415,89 @@ export const MapProvider = ({ children }: Props) => {
     })
   }
 
-  const addGLStyle = (id: LayerId, style: any, popupFunc?: any, isVisible: boolean = true) => {
+  const addMbStyleToMb = async (id: LayerId, layerConf: LayerConf, isVisible: boolean = true) => {
+    const style = await layerConf.style()
+
     for (const sourceKey in style.sources) {
       mbMap?.addSource(sourceKey, style.sources[sourceKey])
     }
 
+    const layerOptionsCopy = { ...layerOptions }
+    const layerGroup: any = {}
+
     for (const layer of style.layers) {
+      const layerOpt: LayerOpt = {
+        id: layer.id,
+        source: layer.source,
+        name: getLayerName(layer.id),
+        layerType: getLayerType(layer.id),
+        selectable: layer.selectable || false,
+        multiSelectable: layer.multiSelectable || false,
+        popup: layerConf.popup || false,
+        useMb: true,
+      }
+
+      if (layerOpt.layerType === 'fill') {
+        if (layer.selectable) {
+          if (!style.layers.find((l: any) => l.id === layerOpt.name + '-highlighted')) {
+            console.error(
+              "Layer '" + layerOpt.name + "' is selectable but missing the corresponding highlighted layer."
+            )
+          }
+        }
+      }
+
+
+      layerOptionsCopy[layerOpt.id] = layerOpt
+      layerGroup[layer.id] = layer
+
       mbMap?.addLayer(layer)
+
+      if (isVisible) {
+        mbMap?.setLayoutProperty(layer.id, 'visibility', 'visible')
+      } else {
+        mbMap?.setLayoutProperty(layer.id, 'visibility', 'none')
+      }
     }
+
+    if (isVisible) {
+      const activeLayerGroupIdsCopy = [...activeLayerGroupIds, id]
+      setActiveLayerGroupIds(activeLayerGroupIdsCopy)
+    }
+
+    setLayerOptions(layerOptionsCopy)
+
+    const layerGroupsCopy = { ...layerGroups, [id]: layerGroup }
+    setLayerGroups(layerGroupsCopy)
+
+    // if (layerConf.popup) {
+    //   mbMap?.on('click', (e: MapLayerMouseEvent) => {
+    //     // Set `bbox` as 5px reactangle area around clicked point.
+    //     // Find features intersecting the bounding box.
+    //     // @ts-ignore
+    //     const point = mbMap.project(e.lngLat)
+    //     const selectedFeatures = mbMap.queryRenderedFeatures(point, {
+    //       layers: [
+    //         'fi_forests_country-fill',
+    //         'fi_forests_region-fill',
+    //         'fi_forests_municipality-fill',
+    //         'fi_forests_estate-fill',
+    //         'fi_forests_parcel-fill',
+    //       ],
+    //     })
+    //     console.log(selectedFeatures)
+    //     const ids = selectedFeatures.map((feature: any) => feature.properties.id)
+    //     // Set a filter matching selected features by FIPS codes
+    //     // to activate the 'counties-highlighted' layer.
+    //     // mbMap.setFilter('counties-highlighted', ['in', 'FIPS', ...fips])
+    //   })
+    //   mbMap?.on('mouseenter', function () {
+    //     mbMap.getCanvas().style.cursor = 'pointer'
+    //   })
+    //   mbMap?.on('mouseleave', function () {
+    //     mbMap.getCanvas().style.cursor = ''
+    //   })
+    // }
   }
 
   const addJSONLayer = (id: string, groupId: string, json: any, projection: string) => {
@@ -542,7 +617,7 @@ export const MapProvider = ({ children }: Props) => {
       if (conf) {
         const style = await conf.style()
         if (conf.useMb) {
-          addGLStyle(layerId, style, conf.popup)
+          addMbStyleToMb(layerId, conf)
         } else {
           addMbStyle(layerId, style, conf.popup)
         }
