@@ -645,7 +645,6 @@ export const MapProvider = ({ children }: Props) => {
       }
 
       if (conf) {
-        const style = await conf.style()
         if (conf.useMb) {
           addMbStyleToMb(layerId, conf)
         } else {
