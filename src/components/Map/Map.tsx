@@ -133,7 +133,7 @@ export const MapProvider = ({ children }: Props) => {
         // adjust view parameters in mapbox
         const rotation = viewState.rotation
         mbMap.jumpTo({
-          center: toLonLat(viewState.center) as [number, number],
+          center: proj.toLonLat(viewState.center) as [number, number],
           zoom: viewState.zoom - 1,
           bearing: (-rotation * 180) / Math.PI,
         })
