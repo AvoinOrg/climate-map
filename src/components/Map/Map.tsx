@@ -237,7 +237,10 @@ export const MapProvider = ({ children }: Props) => {
             lngLat: point as mapboxgl.LngLatLike,
           })
         }
+<<<<<<< HEAD
 
+=======
+>>>>>>> b87810298fabe58ede4609670d6d9b220651a95e
         let featureObjs: any[] = []
 
         map?.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
