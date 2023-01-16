@@ -227,7 +227,17 @@ export const MapProvider = ({ children }: Props) => {
       // remove the old callback and create a new one each time state is updated
       unByKey(popupKey)
 
-      const newPopupFunc = (evt: any) => {
+      const newPopupFunc = (evt: MapBrowserEvent<any>) => {
+        let point = map?.getCoordinateFromPixel(evt.pixel)
+
+        if (point != undefined) {
+          point = proj.toLonLat(point)
+          console.log(point)
+          mbMap?.fire('click', {
+            lngLat: point as mapboxgl.LngLatLike,
+          })
+        }
+
         let featureObjs: any[] = []
 
         map?.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
