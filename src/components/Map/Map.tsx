@@ -622,7 +622,7 @@ export const MapProvider = ({ children }: Props) => {
         if (conf.useMb) {
           addMbStyleToMb(layerId, conf)
         } else {
-          addMbStyle(layerId, style, conf.popup)
+          addMbStyle(layerId, conf)
         }
       } else {
         console.error('No layer config found for id: ' + layerId)
