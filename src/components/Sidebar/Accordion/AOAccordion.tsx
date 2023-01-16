@@ -24,7 +24,7 @@ interface AOAccordionProps {
 }
 
 export const AOAccordion = ({ layerId, label, content, panelProps }: AOAccordionProps) => {
-  const { activeLayerGroups, toggleLayerGroup } = React.useContext(MapContext)
+  const { activeLayerGroupIds, toggleLayerGroup } = React.useContext(MapContext)
   // const groupEnabled = layerGroups.filter((x) => x.name === groupName).length > 0
 
   return (
@@ -40,7 +40,7 @@ export const AOAccordion = ({ layerId, label, content, panelProps }: AOAccordion
           onFocus={(event) => event.stopPropagation()}
           control={<Checkbox />}
           label={label}
-          checked={activeLayerGroups.includes(layerId)}
+          checked={activeLayerGroupIds.includes(layerId)}
         />
         {/* <Typography className={classes.heading}>{label}</Typography> */}
       </AccordionSummary>
@@ -89,10 +89,10 @@ interface LayerToggleControlProps {
 
 // USE REDUX HERE, HHMM
 export const LayerToggleControl = ({ layerId, label }: LayerToggleControlProps) => {
-  const { activeLayerGroups, toggleLayerGroup } = React.useContext(MapContext)
+  const { activeLayerGroupIds, toggleLayerGroup } = React.useContext(MapContext)
 
   // React.useEffect(() => {
-  //   if ([isLayerEnabled && activeLayerGroups.includes(layerName)]) {
+  //   if ([isLayerEnabled && activeLayerGroupIds.includes(layerName)]) {
   //     toggleLayerGroup(layerName, layerStyle)
   //   }
   // }, [])
@@ -108,7 +108,7 @@ export const LayerToggleControl = ({ layerId, label }: LayerToggleControlProps) 
       onFocus={(event) => event.stopPropagation()}
       control={<Checkbox />}
       label={label}
-      checked={activeLayerGroups.includes(layerId)}
+      checked={activeLayerGroupIds.includes(layerId)}
     />
   )
 }

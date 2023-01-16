@@ -6,7 +6,7 @@ import { MapContext } from '#/components/Map'
 
 const DEFAULT_PLACEHOLDER = 'Look up location'
 
-type Placeholder = { placeholder: string; layer: string }
+type Placeholder = { placeholder: string | null; layer: string | null }
 const nullPlaceholder: Placeholder = { placeholder: null, layer: null }
 
 const searchPlaceholder = observable<Placeholder>(nullPlaceholder)
@@ -14,9 +14,9 @@ const searchPlaceholder = observable<Placeholder>(nullPlaceholder)
 export const setSearchPlaceholder = (x: Placeholder) => searchPlaceholder.set(x)
 
 export const NavBarSearch: React.FC = () => {
-  const { map, getGeocoder, activeLayerGroups } = React.useContext(MapContext)
+  const { map, getGeocoder, activeLayerGroupIds } = React.useContext(MapContext)
   const { placeholder, layer } = useObservable(searchPlaceholder.readOnly())
-  const isActive = activeLayerGroups.filter((x) => x.name === layer).length > 0
+  const isActive = activeLayerGroupIds.filter((x) => x === layer).length > 0
 
   const geocoderSearchRef = useRef(null)
   useEffect(() => {
