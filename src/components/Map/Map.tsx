@@ -72,8 +72,8 @@ export const MapProvider = ({ children }: Props) => {
   const [popupKey, setPopupKey] = useState<any>(null)
   const [popupElement, setPopupElement] = useState<React.ReactNode | null>(null)
 
-  const [mbSelectionFunction, setMbSelectionFunction] = useState<any>(null)
   const [selectedFeatures, setSelectedFeatures] = useState<MapboxGeoJSONFeature[]>([])
+  const [newlySelectedFeatures, setNewlySelectedFeatures] = useState<MapboxGeoJSONFeature[]>([])
 
   useEffect(() => {
     // Mapbox does not render without a valid access token
@@ -117,6 +117,19 @@ export const MapProvider = ({ children }: Props) => {
       touchZoomRotate: false,
       style: emptyStyle,
     })
+
+    const mbSelectionFunction = (e: MapLayerMouseEvent) => {
+      // Set `bbox` as 5px reactangle area around clicked point.
+      // Find features intersecting the bounding box.
+      // @ts-ignore
+      const point = mbMap.project(e.lngLat)
+
+      const features = mbMap.queryRenderedFeatures(point)
+
+      setNewlySelectedFeatures(features)
+    }
+
+    mbMap.on('click', mbSelectionFunction)
 
     const mbLayer = new Layer({
       render: function (frameState) {
@@ -289,76 +302,53 @@ export const MapProvider = ({ children }: Props) => {
     }
   }, [activeLayerGroupIds, map, isLoaded, popups])
 
-  const filterSelectedFeatures = (
-    layerOptions: LayerOpts,
-    selectedFeatures: MapboxGeoJSONFeature[],
-    newlySelectedFeatures: MapboxGeoJSONFeature[]
-  ) => {
-    let selectedFeaturesCopy = [...selectedFeatures]
-
-    for (const feature of newlySelectedFeatures) {
-      const layerId = feature.layer.id
-
-      // if the feature is already selected, unselect
-      if (selectedFeatures.find((f) => f.id === feature.id)) {
-        selectedFeaturesCopy = selectedFeaturesCopy.filter((f) => f.id !== feature.id)
-        continue
-      }
-
-      // if the layer is not multi-selectable, unselect all other features from that layer
-      if (!layerOptions[layerId].multiSelectable) {
-        selectedFeaturesCopy = selectedFeaturesCopy.filter((f) => f.layer.id !== feature.layer.id)
-      }
-
-      selectedFeaturesCopy.push(feature)
-    }
-
-    return selectedFeaturesCopy
-  }
-
-  // set highlighting function for mapbox layers
   useEffect(() => {
-    if (isLoaded && mbMap) {
-      console.log('dickimuna')
-      if (mbSelectionFunction != null) {
-        mbMap.off('click', mbSelectionFunction)
-      }
+    const filterSelectedFeatures = (
+      layerOptions: LayerOpts,
+      selectedFeatures: MapboxGeoJSONFeature[],
+      newlySelectedFeatures: MapboxGeoJSONFeature[]
+    ) => {
+      let selectedFeaturesCopy = [...selectedFeatures]
 
-      const newMbSelectionFunction = (e: MapLayerMouseEvent) => {
-        // Set `bbox` as 5px reactangle area around clicked point.
-        // Find features intersecting the bounding box.
-        // @ts-ignore
-        const point = mbMap.project(e.lngLat)
-
-        const selectableLayers = Object.keys(
-          _.pickBy(layerOptions, (value, _key) => {
-            return value.selectable
-          })
-        )
-
-        const newlySelectedFeatures = mbMap.queryRenderedFeatures(point, {
-          layers: selectableLayers,
+      const selectableLayers = Object.keys(
+        _.pickBy(layerOptions, (value, _key) => {
+          return value.selectable
         })
+      )
 
-        // Set a filter matching selected features by FIPS codes
-        // to activate the 'counties-highlighted' layer.
-        const selectedFeaturesCopy = filterSelectedFeatures(layerOptions, selectedFeatures, newlySelectedFeatures)
-        setSelectedFeatures(selectedFeaturesCopy)
-        console.log('ass')
-        console.log(selectedFeaturesCopy)
+      // remove features from unselectable layers
+      selectedFeaturesCopy = selectedFeaturesCopy.filter((f) => selectableLayers.includes(f.layer.id))
+
+      for (const feature of newlySelectedFeatures) {
+        const layerId = feature.layer.id
+
+        // if the feature is already selected, unselect
+        if (selectedFeatures.find((f) => f.id === feature.id)) {
+          selectedFeaturesCopy = selectedFeaturesCopy.filter((f) => f.id !== feature.id)
+          continue
+        }
+
+        // if the layer is not multi-selectable, unselect all other features from that layer
+        if (!layerOptions[layerId].multiSelectable) {
+          selectedFeaturesCopy = selectedFeaturesCopy.filter((f) => f.layer.id !== feature.layer.id)
+        }
+
+        selectedFeaturesCopy.push(feature)
       }
 
-      console.log(newMbSelectionFunction)
-      mbMap.on('click', newMbSelectionFunction)
-      //setMbSelectionFunction(newMbSelectionFunction)
+      return selectedFeaturesCopy
     }
-    // mbMap?.on('mouseenter', function () {
-    //   mbMap.getCanvas().style.cursor = 'pointer'
-    // })
-    // mbMap?.on('mouseleave', function () {
-    //   mbMap.getCanvas().style.cursor = ''
-    // })
-  }, [layerOptions, isLoaded, mbMap])
+
+    if (newlySelectedFeatures.length > 0) {
+      setNewlySelectedFeatures([])
+
+      // Set a filter matching selected features by FIPS codes
+      // to activate the 'counties-highlighted' layer.
+      const selectedFeaturesCopy = filterSelectedFeatures(layerOptions, selectedFeatures, newlySelectedFeatures)
+      console.log(selectedFeaturesCopy)
+      setSelectedFeatures(selectedFeaturesCopy)
+    }
+  }, [newlySelectedFeatures, selectedFeatures, layerOptions])
 
   useEffect(() => {
     // Run queued function once map has loaded
