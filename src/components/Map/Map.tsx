@@ -371,6 +371,9 @@ export const MapProvider = ({ children }: Props) => {
 
     return layerId
   }
+
+  const addMbStyle = async (id: LayerId, layerConf: LayerConf, isVisible: boolean = true) => {
+    const style = await layerConf.style()
     const sourceKeys = Object.keys(style.sources)
 
     const layerGroup: any = {}
@@ -403,8 +406,8 @@ export const MapProvider = ({ children }: Props) => {
         }
       }
 
-      if (popupFunc) {
-        const popupsCopy = { ...popups, [id]: popupFunc }
+      if (layerConf.popup) {
+        const popupsCopy = { ...popups, [id]: layerConf.popup }
         setPopups(popupsCopy)
       }
       // applyStyle(olLayer, { version: style.version, sources: style.sources, layers }, sourceKey).then((data) => {
