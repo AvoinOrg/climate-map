@@ -378,8 +378,8 @@ export const MapProvider = ({ children }: Props) => {
       setLayerGroups(layerGroupsCopy)
 
       if (isVisible) {
-        const activeLayerGroupsCopy = [...activeLayerGroups, id]
-        setActiveLayerGroups(activeLayerGroupsCopy)
+        const activeLayerGroupIdsCopy = [...activeLayerGroupIds, id]
+        setActiveLayerGroupIds(activeLayerGroupIdsCopy)
       } else {
         for (const layer in layerGroup) {
           layerGroup[layer].setVisible(false)
@@ -536,15 +536,15 @@ export const MapProvider = ({ children }: Props) => {
   }
 
   const disableLayerGroup = async (layerId: LayerId) => {
-    const activeLayerGroupsCopy = [...activeLayerGroups]
-    activeLayerGroupsCopy.splice(activeLayerGroupsCopy.indexOf(layerId), 1)
+    const activeLayerGroupIdsCopy = [...activeLayerGroupIds]
+    activeLayerGroupIdsCopy.splice(activeLayerGroupIdsCopy.indexOf(layerId), 1)
 
-    setActiveLayerGroups(activeLayerGroupsCopy)
+    setActiveLayerGroupIds(activeLayerGroupIdsCopy)
     setGroupVisibility(layerId, false)
   }
 
   const toggleLayerGroup = async (layerId: LayerId, layerConf?: LayerConf) => {
-    if (activeLayerGroups.includes(layerId)) {
+    if (activeLayerGroupIds.includes(layerId)) {
       disableLayerGroup(layerId)
     } else {
       enableLayerGroup(layerId, layerConf)
