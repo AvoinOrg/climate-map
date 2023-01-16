@@ -610,8 +610,8 @@ export const MapProvider = ({ children }: Props) => {
     //   const layerGroupsCopy = { ...layerGroups, [groupId]: vectorLayer }
     //   setLayerGroups(layerGroupsCopy)
 
-    //   const activeLayerGroupsCopy = [...activeLayerGroups, groupId]
-    //   setActiveLayerGroups(activeLayerGroupsCopy)
+    //   const activeLayerGroupIdsCopy = [...activeLayerGroupIds, groupId]
+    //   setActiveLayerGroupIds(activeLayerGroupIdsCopy)
   }
 
   const mapLoadCheck = (layerId: LayerId, layerConf?: LayerConf) => {
