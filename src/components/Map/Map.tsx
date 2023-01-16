@@ -287,7 +287,78 @@ export const MapProvider = ({ children }: Props) => {
 
       setPopupKey(newpopupKey)
     }
-  }, [activeLayerGroups, map, isLoaded, popups])
+  }, [activeLayerGroupIds, map, isLoaded, popups])
+
+  const filterSelectedFeatures = (
+    layerOptions: LayerOpts,
+    selectedFeatures: MapboxGeoJSONFeature[],
+    newlySelectedFeatures: MapboxGeoJSONFeature[]
+  ) => {
+    let selectedFeaturesCopy = [...selectedFeatures]
+
+    for (const feature of newlySelectedFeatures) {
+      const layerId = feature.layer.id
+
+      // if the feature is already selected, unselect
+      if (selectedFeatures.find((f) => f.id === feature.id)) {
+        selectedFeaturesCopy = selectedFeaturesCopy.filter((f) => f.id !== feature.id)
+        continue
+      }
+
+      // if the layer is not multi-selectable, unselect all other features from that layer
+      if (!layerOptions[layerId].multiSelectable) {
+        selectedFeaturesCopy = selectedFeaturesCopy.filter((f) => f.layer.id !== feature.layer.id)
+      }
+
+      selectedFeaturesCopy.push(feature)
+    }
+
+    return selectedFeaturesCopy
+  }
+
+  // set highlighting function for mapbox layers
+  useEffect(() => {
+    if (isLoaded && mbMap) {
+      console.log("dickimuna")
+      if (mbSelectionFunction != null) {
+        mbMap.off('click', mbSelectionFunction)
+      }
+
+      const newMbSelectionFunction = (e: MapLayerMouseEvent) => {
+        // Set `bbox` as 5px reactangle area around clicked point.
+        // Find features intersecting the bounding box.
+        // @ts-ignore
+        const point = mbMap.project(e.lngLat)
+
+        const selectableLayers = Object.keys(
+          _.pickBy(layerOptions, (value, _key) => {
+            return value.selectable
+          })
+        )
+
+        const newlySelectedFeatures = mbMap.queryRenderedFeatures(point, {
+          layers: selectableLayers,
+        })
+
+        // Set a filter matching selected features by FIPS codes
+        // to activate the 'counties-highlighted' layer.
+        const selectedFeaturesCopy = filterSelectedFeatures(layerOptions, selectedFeatures, newlySelectedFeatures)
+        setSelectedFeatures(selectedFeaturesCopy)
+        console.log('ass')
+        console.log(selectedFeaturesCopy)
+      }
+
+      console.log(newMbSelectionFunction)
+      mbMap.on('click', newMbSelectionFunction)
+      //setMbSelectionFunction(newMbSelectionFunction)
+    }
+    // mbMap?.on('mouseenter', function () {
+    //   mbMap.getCanvas().style.cursor = 'pointer'
+    // })
+    // mbMap?.on('mouseleave', function () {
+    //   mbMap.getCanvas().style.cursor = ''
+    // })
+  }, [layerOptions, isLoaded, mbMap])
 
   useEffect(() => {
     // Run queued function once map has loaded
