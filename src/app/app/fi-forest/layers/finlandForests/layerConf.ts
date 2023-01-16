@@ -24,6 +24,7 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
       maxzoom: options.maxzoom,
       bounds: [19, 59, 32, 71], // Finland
       attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
+      promoteId: 'id',
     }
 
     layers = [
