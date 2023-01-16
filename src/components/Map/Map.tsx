@@ -492,10 +492,10 @@ export const MapProvider = ({ children }: Props) => {
     //   setActiveLayerGroups(activeLayerGroupsCopy)
   }
 
-  const mapLoadCheck = (layerId: LayerId) => {
+  const mapLoadCheck = (layerId: LayerId, layerConf?: LayerConf) => {
     // If map is not initialized, add function to queue
     if (!isLoaded) {
-      const functionQueueCopy = [...functionQueue, { func: 'enableLayerGroup', args: [layerId] }]
+      const functionQueueCopy = [...functionQueue, { func: 'enableLayerGroup', args: [layerId, layerConf] }]
       setFunctionQueue(functionQueueCopy)
       return false
     }
@@ -509,7 +509,7 @@ export const MapProvider = ({ children }: Props) => {
       const activeLayerGroupIdsCopy = [...activeLayerGroupIds, layerId]
       setActiveLayerGroupIds(activeLayerGroupIdsCopy)
     } else {
-      if (!mapLoadCheck) {
+      if (!mapLoadCheck(layerId, layerConf)) {
         return
       }
 
