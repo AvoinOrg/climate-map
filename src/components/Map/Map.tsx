@@ -71,6 +71,9 @@ export const MapProvider = ({ children }: Props) => {
   const [popupKey, setPopupKey] = useState<any>(null)
   const [popupElement, setPopupElement] = useState<React.ReactNode | null>(null)
 
+  const [mbSelectionFunction, setMbSelectionFunction] = useState<any>(null)
+  const [selectedFeatures, setSelectedFeatures] = useState<MapboxGeoJSONFeature[]>([])
+
   useEffect(() => {
     // Mapbox does not render without a valid access token
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN as string
