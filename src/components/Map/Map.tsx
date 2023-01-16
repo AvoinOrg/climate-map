@@ -44,7 +44,7 @@ interface IMapContext {
   toggleLayerGroup: (layer: LayerId, layerConf?: LayerConf) => Promise<void> | null
   enableLayerGroup: (layer: LayerId, layerConf?: LayerConf) => Promise<void> | null
   disableLayerGroup: (layer: LayerId) => Promise<void> | null
-  activeLayerGroups: string[] | null
+  activeLayerGroupIds: string[]
   layerGroups: {} | null
   registerGroup?: (layerGroup: any) => void | null
   addJSONLayer?: (id: string, groupId: string, json: any, projection: string) => void | null
@@ -58,7 +58,7 @@ export const MapProvider = ({ children }: Props) => {
   const [map, setMap] = useState<Map | null>(null)
   const [mbMap, setMbMap] = useState<mapboxgl.Map | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
-  const [activeLayerGroups, setActiveLayerGroups] = useState<any[]>([])
+  const [activeLayerGroupIds, setActiveLayerGroupIds] = useState<string[]>([])
   const [layerGroups, setLayerGroups] = useState<any>({})
   const [functionQueue, setFunctionQueue] = useState<any[]>([])
 
@@ -505,8 +505,8 @@ export const MapProvider = ({ children }: Props) => {
     if (layerGroups[layerId]) {
       setGroupVisibility(layerId, true)
 
-      const activeLayerGroupsCopy = [...activeLayerGroups, layerId]
-      setActiveLayerGroups(activeLayerGroupsCopy)
+      const activeLayerGroupIdsCopy = [...activeLayerGroupIds, layerId]
+      setActiveLayerGroupIds(activeLayerGroupIdsCopy)
     } else {
       if (!mapLoadCheck) {
         return
@@ -576,7 +576,7 @@ export const MapProvider = ({ children }: Props) => {
   const values: IMapContext = {
     isLoaded,
     map,
-    activeLayerGroups,
+    activeLayerGroupIds,
     layerGroups,
     mapToggleTerrain,
     mapResetNorth,
