@@ -283,7 +283,7 @@ export const MapProvider = ({ children }: Props) => {
         values[call.func](...call.args)
       })
     }
-  }, [isLoaded])
+  }, [isLoaded, functionQueue])
 
   const createPopup = (coords: any, popupElement: React.ReactNode) => {
     popupOverlay.setPosition(coords)
