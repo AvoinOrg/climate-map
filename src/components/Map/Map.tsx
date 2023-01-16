@@ -308,8 +308,6 @@ export const MapProvider = ({ children }: Props) => {
       selectedFeatures: MapboxGeoJSONFeature[],
       newlySelectedFeatures: MapboxGeoJSONFeature[]
     ) => {
-      let selectedFeaturesCopy = [...selectedFeatures]
-
       const selectableLayers = Object.keys(
         _.pickBy(layerOptions, (value, _key) => {
           return value.selectable
@@ -317,10 +315,10 @@ export const MapProvider = ({ children }: Props) => {
       )
 
       // remove features from unselectable layers
-      selectedFeaturesCopy = selectedFeaturesCopy.filter((f) => selectableLayers.includes(f.layer.id))
+      let newlySelectedFeaturesCopy = newlySelectedFeatures.filter((f) => selectableLayers.includes(f.layer.id))
 
       // remove reatures without an id and log an error
-      selectedFeaturesCopy = selectedFeaturesCopy.filter((f) => {
+      newlySelectedFeaturesCopy = newlySelectedFeaturesCopy.filter((f) => {
         if (f.id == null) {
           console.error(
             'Feature without id on layer "',
@@ -332,11 +330,13 @@ export const MapProvider = ({ children }: Props) => {
         return true
       })
 
-      for (const feature of newlySelectedFeatures) {
+      let selectedFeaturesCopy = [...selectedFeatures]
+
+      for (const feature of newlySelectedFeaturesCopy) {
         const layerId = feature.layer.id
 
         // if the feature is already selected, unselect
-        if (selectedFeatures.find((f) => f.id === feature.id)) {
+        if (selectedFeaturesCopy.find((f) => f.id === feature.id)) {
           selectedFeaturesCopy = selectedFeaturesCopy.filter((f) => f.id !== feature.id)
           continue
         }
@@ -358,10 +358,32 @@ export const MapProvider = ({ children }: Props) => {
       // Set a filter matching selected features by FIPS codes
       // to activate the 'counties-highlighted' layer.
       const selectedFeaturesCopy = filterSelectedFeatures(layerOptions, selectedFeatures, newlySelectedFeatures)
-      console.log(selectedFeaturesCopy)
+
+      let selectedLayerIds: string[] = []
+      selectedFeaturesCopy.map((feature) => {
+        selectedLayerIds.push(feature.layer.id)
+      })
+
+      // add layer ids from the previous selection
+      selectedFeatures.map((feature) => {
+        selectedLayerIds.push(feature.layer.id)
+      })
+
+      selectedLayerIds = _.uniq(selectedLayerIds)
+
+      for (const id of selectedLayerIds) {
+        const featureIds = selectedFeaturesCopy
+          .filter((f) => f.layer.id === id)
+          .map((feature) => {
+            return feature.id
+          })
+
+        mbMap?.setFilter(getLayerName(id) + '-highlighted', ['in', 'id', ...featureIds])
+      }
+
       setSelectedFeatures(selectedFeaturesCopy)
     }
-  }, [newlySelectedFeatures, selectedFeatures, layerOptions])
+  }, [newlySelectedFeatures, selectedFeatures, layerOptions, activeLayerGroupIds, layerGroups])
 
   useEffect(() => {
     // Run queued function once map has loaded
@@ -395,8 +417,6 @@ export const MapProvider = ({ children }: Props) => {
   //       return
   //     }
 
-  //     console.log('checked')
-  //     console.log(selectedFeatures)
   //     // ADD FILTERING FUNCTION HERE
   //   }
   // }, [isLoaded, selectedFeatures, activeLayerGroupIds, layerGroups])
