@@ -285,6 +285,33 @@ export const MapProvider = ({ children }: Props) => {
     }
   }, [isLoaded, functionQueue])
 
+  // useEffect(() => {
+  //   if (isLoaded) {
+  //     let activeLayerIds: string[] = []
+
+  //     for (const layerGroupId of activeLayerGroupIds) {
+  //       const layerGroupLayers = layerGroups[layerGroupId]
+
+  //       activeLayerIds = [...activeLayerIds, ...Object.keys(layerGroupLayers)]
+  //     }
+
+  //     let selectedFeaturesCopy = [...selectedFeatures]
+
+  //     selectedFeaturesCopy = selectedFeaturesCopy.filter((feature) => {
+  //       return activeLayerIds.includes(feature.layer.id)
+  //     })
+
+  //     if (selectedFeaturesCopy.length !== selectedFeatures.length) {
+  //       setSelectedFeatures(selectedFeaturesCopy)
+  //       return
+  //     }
+
+  //     console.log('checked')
+  //     console.log(selectedFeatures)
+  //     // ADD FILTERING FUNCTION HERE
+  //   }
+  // }, [isLoaded, selectedFeatures, activeLayerGroupIds, layerGroups])
+
   const createPopup = (coords: any, popupElement: React.ReactNode) => {
     popupOverlay.setPosition(coords)
     setPopupElement(popupElement)
