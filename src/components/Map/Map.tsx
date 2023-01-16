@@ -109,7 +109,7 @@ export const MapProvider = ({ children }: Props) => {
       doubleClickZoom: false,
       dragPan: false,
       dragRotate: false,
-      interactive: false,
+      interactive: true,
       keyboard: false,
       pitchWithRotate: false,
       scrollZoom: false,
