@@ -319,6 +319,19 @@ export const MapProvider = ({ children }: Props) => {
       // remove features from unselectable layers
       selectedFeaturesCopy = selectedFeaturesCopy.filter((f) => selectableLayers.includes(f.layer.id))
 
+      // remove reatures without an id and log an error
+      selectedFeaturesCopy = selectedFeaturesCopy.filter((f) => {
+        if (f.id == null) {
+          console.error(
+            'Feature without id on layer "',
+            f.layer.id,
+            '". Check that the source style has either "generateId" or "promoteId" set.'
+          )
+          return false
+        }
+        return true
+      })
+
       for (const feature of newlySelectedFeatures) {
         const layerId = feature.layer.id
 
