@@ -66,7 +66,7 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
           'fill-color': '#6e599f',
           'fill-opacity': 0.4,
         },
-        filter: ['in', options.serverId],
+        filter: ['in', 'id', ''],
         BEFORE: 'OUTLINE',
         minzoom: options.minzoom,
         maxzoom: options.maxzoom,
