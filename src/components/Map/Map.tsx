@@ -60,6 +60,7 @@ export const MapProvider = ({ children }: Props) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [activeLayerGroupIds, setActiveLayerGroupIds] = useState<string[]>([])
   const [layerGroups, setLayerGroups] = useState<any>({})
+  const [layerOptions, setLayerOptions] = useState<LayerOpts>({})
   const [functionQueue, setFunctionQueue] = useState<any[]>([])
 
   const popupRef = useRef<HTMLDivElement>(null)
