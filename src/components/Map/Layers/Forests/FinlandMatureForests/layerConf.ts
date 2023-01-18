@@ -1,6 +1,6 @@
-import { Style as MbStyle, Expression } from 'mapbox-gl'
+import { Expression } from 'mapbox-gl'
 
-import { LayerId, LayerConf } from '#/types/map'
+import { LayerId, LayerConf, ExtendedMbStyle } from '#/types/map'
 import { metsaanFiTreeSpecies } from './constants'
 import Popup from './Popup'
 
@@ -16,12 +16,12 @@ const fillRegenerationFelling: Expression = [
 const treeSpeciesText = (speciesId: any) => [
   'match',
   speciesId,
-  ...Object.entries(metsaanFiTreeSpecies).reduce((x, y) => [...x, +y[0], y[1]], []),
+  ...Object.entries(metsaanFiTreeSpecies).reduce((x: any, y) => [...x, +y[0], y[1]], []),
   'Unknown',
 ]
 
-const getStyle = async (): Promise<MbStyle> => {
-  const sourceNames = ['metsaan-stand', 'metsaan-stand-mature']
+const getStyle = async (): Promise<ExtendedMbStyle> => {
+  const sourceNames = ['metsaan_stand', 'metsaan_stand_mature']
 
   return {
     version: 8,
@@ -56,7 +56,6 @@ const getStyle = async (): Promise<MbStyle> => {
           'fill-color': fillRegenerationFelling,
           // 'fill-opacity': fillOpacity, // Set by fill-color rgba
         },
-        BEFORE: 'FILL',
       },
       {
         id: sourceNames[1] + '-raster',
@@ -64,7 +63,6 @@ const getStyle = async (): Promise<MbStyle> => {
         type: 'raster',
         minzoom: 0,
         maxzoom: 12,
-        BEFORE: 'FILL',
       },
       {
         id: sourceNames[0] + '-sym',
@@ -89,7 +87,6 @@ const getStyle = async (): Promise<MbStyle> => {
             ' cm',
           ],
         },
-        BEFORE: 'LABEL',
       },
     ],
   }
