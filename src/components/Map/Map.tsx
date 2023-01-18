@@ -475,7 +475,11 @@ export const MapProvider = ({ children }: Props) => {
     const layerGroup = layerGroups[layerId]
 
     for (const layer in layerGroup) {
-      layerGroup[layer].setVisible(isVisible)
+      if (layerOptions[layer].useMb) {
+        mbMap?.setLayoutProperty(layer, 'visibility', isVisible ? 'visible' : 'none')
+      } else {
+        layerGroup[layer].setVisible(isVisible)
+      }
     }
   }
 
