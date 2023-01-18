@@ -245,7 +245,7 @@ export const MapProvider = ({ children }: Props) => {
 
         if (point != undefined) {
           point = proj.toLonLat(point)
-          console.log(point)
+
           mbMap?.fire('click', {
             lngLat: point as mapboxgl.LngLatLike,
           })
