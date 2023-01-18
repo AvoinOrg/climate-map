@@ -65,7 +65,7 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         maxzoom: 12,
       },
       {
-        id: sourceNames[0] + '-sym',
+        id: sourceNames[0] + '-symbol',
         source: sourceNames[0],
         'source-layer': 'stand',
         type: 'symbol',
