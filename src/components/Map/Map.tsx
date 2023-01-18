@@ -24,7 +24,7 @@ import { LngLat, MapLayerMouseEvent, PointLike, Style as MbStyle, MapboxGeoJSONF
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 
-import { LayerId, LayerConf, LayerOpt, LayerOpts, layerTypes, LayerType, ExtendedMbStyle } from '#/types/map'
+import { LayerId, LayerConf, LayerOpt, LayerOpts, layerTypes, LayerType, ExtendedAnyLayer } from '#/types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
 import { getColorExpressionArrForValues } from '#/utils/mapUtils'
@@ -505,11 +505,24 @@ export const MapProvider = ({ children }: Props) => {
     return layerId
   }
 
+  const assertValidHighlightingConf = (layerOpt: LayerOpt, layers: ExtendedAnyLayer[]) => {
+    if (layerOpt.layerType === 'fill') {
+      if (layerOpt.selectable) {
+        if (!layers.find((l: any) => l.id === layerOpt.name + '-highlighted')) {
+          console.error("Layer '" + layerOpt.name + "' is selectable but missing the corresponding highlighted layer.")
+        }
+      }
+    }
+  }
+
   const addMbStyle = async (id: LayerId, layerConf: LayerConf, isVisible: boolean = true) => {
     const style = await layerConf.style()
+    const layers: ExtendedAnyLayer[] = style.layers
     const sourceKeys = Object.keys(style.sources)
 
     const layerGroup: any = {}
+
+    const newLayerOptions: LayerOpts = {}
 
     // After addings the layers using style, find them and add them to the layerGroup
     //@ts-ignore
@@ -522,13 +535,36 @@ export const MapProvider = ({ children }: Props) => {
           const layerKeys = layer.get('mapbox-layers')
 
           if (sourceKeys.includes(sourceKey) && layerKeys != null && layerKeys.length > 0) {
-            layer.set('group', id)
-            layerGroup[layerKeys[0]] = layer
+            const conf: ExtendedAnyLayer | undefined = layers.find((l: any) => l.id === layerKeys[0])
+
+            if (conf) {
+              const layerOpt: LayerOpt = {
+                id: layerKeys[0],
+                source: sourceKey,
+                name: getLayerName(layerKeys[0]),
+                layerType: getLayerType(layerKeys[0]),
+                selectable: conf.selectable || false,
+                multiSelectable: conf.multiSelectable || false,
+                popup: layerConf.popup || false,
+                useMb: false,
+              }
+
+              assertValidHighlightingConf(layerOpt, layers)
+
+              layer.set('group', id)
+              layerGroup[layerKeys[0]] = layer
+              newLayerOptions[layerKeys[0]] = layerOpt
+            } else {
+              console.error('Could not find layer configuration for layer: ' + layerKeys[0])
+            }
           }
         })
 
       const layerGroupsCopy = { ...layerGroups, [id]: layerGroup }
       setLayerGroups(layerGroupsCopy)
+
+      const layerOptionsCopy = { ...layerOptions, ...newLayerOptions }
+      setLayerOptions(layerOptionsCopy)
 
       if (isVisible) {
         const activeLayerGroupIdsCopy = [...activeLayerGroupIds, id]
@@ -582,6 +618,8 @@ export const MapProvider = ({ children }: Props) => {
           }
         }
       }
+
+      assertValidHighlightingConf(layerOpt, style.layers)
 
       layerOptionsCopy[layerOpt.id] = layerOpt
       layerGroup[layer.id] = layer
