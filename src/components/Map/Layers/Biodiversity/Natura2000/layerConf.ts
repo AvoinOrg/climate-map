@@ -5,12 +5,12 @@ import { LayerId, LayerConf } from '#/types/map'
 const id: LayerId = 'natura2000'
 
 const natura2000Mappings = {
-  'natura2000-sac': { layer: 'NaturaSAC_alueet', color: 'cyan' },
-  'natura2000-sac-lines': { layer: 'NaturaSAC_viivat', color: 'gray' },
-  'natura2000-sci': { layer: 'NaturaSCI_alueet', color: 'purple' },
-  'natura2000-spa': { layer: 'NaturaSPA_alueet', color: 'magenta' },
-  'natura2000-impl-ma': { layer: 'NaturaTotTapa_ma', color: '#ca9f74' },
-  'natura2000-impl-r': { layer: 'NaturaTotTapa_r', color: 'brown' },
+  natura2000_sac: { layer: 'NaturaSAC_alueet', color: 'cyan' },
+  natura2000_sac_lines: { layer: 'NaturaSAC_viivat', color: 'gray' },
+  natura2000_sci: { layer: 'NaturaSCI_alueet', color: 'purple' },
+  natura2000_spa: { layer: 'NaturaSPA_alueet', color: 'magenta' },
+  natura2000_impl_ma: { layer: 'NaturaTotTapa_ma', color: '#ca9f74' },
+  natura2000_impl_r: { layer: 'NaturaTotTapa_r', color: 'brown' },
 }
 
 const getNaturaLayers = () => {
@@ -18,7 +18,7 @@ const getNaturaLayers = () => {
 
   Object.entries(natura2000Mappings).forEach(([baseName, x]) => {
     layers.push({
-      id: baseName,
+      id: baseName + '-fill',
       source: id,
       'source-layer': x.layer,
       type: 'fill',
@@ -26,11 +26,10 @@ const getNaturaLayers = () => {
         'fill-color': x.color,
         'fill-opacity': 0.45,
       },
-      BEFORE: 'FILL',
     })
 
     layers.push({
-      id: `${baseName}-sym`,
+      id: `${baseName}-symbol`,
       source: id,
       'source-layer': x.layer,
       type: 'symbol',
@@ -53,7 +52,6 @@ const getNaturaLayers = () => {
         'text-halo-color': 'rgb(242,243,240)',
         'text-halo-width': 2,
       },
-      BEFORE: 'LABEL',
     })
   })
 
