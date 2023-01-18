@@ -7,7 +7,7 @@ const id: LayerId = 'hansen'
 const URL_PREFIX = `https://server.avoin.org/data/map/hansen/`
 
 const getStyle = async (): Promise<MbStyle> => {
-  const sourceNames = ['hansen-treecover', 'hansen-gainloss']
+  const sourceNames = ['hansen_treecover', 'hansen_gainloss']
 
   return {
     version: 8,
@@ -37,7 +37,6 @@ const getStyle = async (): Promise<MbStyle> => {
         paint: {
           'raster-opacity': 1,
         },
-        BEFORE: 'FILL',
       },
       {
         id: sourceNames[1] + '-raster',
@@ -47,7 +46,6 @@ const getStyle = async (): Promise<MbStyle> => {
         paint: {
           'raster-opacity': 1,
         },
-        BEFORE: 'FILL',
       },
     ],
   }
