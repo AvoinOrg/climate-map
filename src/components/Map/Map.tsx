@@ -396,30 +396,27 @@ export const MapProvider = ({ children }: Props) => {
     }
   }, [isLoaded, functionQueue])
 
-  // useEffect(() => {
-  //   if (isLoaded) {
-  //     let activeLayerIds: string[] = []
+  useEffect(() => {
+    if (isLoaded) {
+      let activeLayerIds: string[] = []
 
-  //     for (const layerGroupId of activeLayerGroupIds) {
-  //       const layerGroupLayers = layerGroups[layerGroupId]
+      for (const layerGroupId of activeLayerGroupIds) {
+        const layerGroupLayers = layerGroups[layerGroupId]
 
-  //       activeLayerIds = [...activeLayerIds, ...Object.keys(layerGroupLayers)]
-  //     }
+        activeLayerIds = [...activeLayerIds, ...Object.keys(layerGroupLayers)]
+      }
 
-  //     let selectedFeaturesCopy = [...selectedFeatures]
+      let selectedFeaturesCopy = [...selectedFeatures]
 
-  //     selectedFeaturesCopy = selectedFeaturesCopy.filter((feature) => {
-  //       return activeLayerIds.includes(feature.layer.id)
-  //     })
+      selectedFeaturesCopy = selectedFeaturesCopy.filter((feature) => {
+        return activeLayerIds.includes(feature.layer.id)
+      })
 
-  //     if (selectedFeaturesCopy.length !== selectedFeatures.length) {
-  //       setSelectedFeatures(selectedFeaturesCopy)
-  //       return
-  //     }
-
-  //     // ADD FILTERING FUNCTION HERE
-  //   }
-  // }, [isLoaded, selectedFeatures, activeLayerGroupIds, layerGroups])
+      if (selectedFeaturesCopy.length !== selectedFeatures.length) {
+        setSelectedFeatures(selectedFeaturesCopy)
+      }
+    }
+  }, [isLoaded, selectedFeatures, activeLayerGroupIds, layerGroups])
 
   const createPopup = (coords: any, popupElement: React.ReactNode) => {
     popupOverlay.setPosition(coords)
