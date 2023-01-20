@@ -1,4 +1,4 @@
-import { ILayerOptions } from '#/app/app/fi-forest/types'
+import { ILayerOptions, ForestryMethod } from '#/app/app/fi-forest/types'
 
 export const layerOptions: ILayerOptions = {
   fi_forests_country: { minzoom: 0, maxzoom: 5, serverId: 'country' },
@@ -9,14 +9,6 @@ export const layerOptions: ILayerOptions = {
 }
 
 export const colorboxStepsNeg = ['#FFEC42', '#FDF259', '#FCF670', '#F0F596']
-
-export const datasetClasses = [
-  'arvometsa_eihakata',
-  'arvometsa_jatkuva',
-  'arvometsa_alaharvennus',
-  'arvometsa_ylaharvennus',
-  'arvometsa_maxhakkuu',
-]
 
 export const baseAttrs = `
   cbf1 cbf2 cbf3 cbf4 cbf5
@@ -67,9 +59,8 @@ export const CO2_TONS_PER_PERSON = 7.0 // EU-27 in 2018
 
 export const nC_to_CO2 = 44 / 12
 
-export const TRADITIONAL_FORESTRY_METHOD_KEY = 'arvometsa_alaharvennus'
-export const TRADITIONAL_FORESTRY_METHOD = 2 // Thin from below – clearfell
+// export const TRADITIONAL_FORESTRY_METHOD_KEY = 'tasaikainen'
+export const TRADITIONAL_FORESTRY_METHOD = ForestryMethod["tasaikainen"]
+export const FILL_COLOR_FORESTRY_METHOD = ForestryMethod["vapaa"]
 
 export const carbonStockAttrPrefixes = ['bio', 'maa']
-
-export const BEST_METHOD_FOR_EACH = -1
