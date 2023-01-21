@@ -35,38 +35,48 @@ export const fiForestsAreaCO2FillColor: (expr: Expression) => Expression = (expr
   ...stepsToLinear(-5, 0, colorboxStepsNeg).concat([0.01, 'hsla(159, 100%, 50%, 1)', 15, 'hsla(159, 100%, 25%, 1)']),
 ]
 
-export const fiForestsSumMethodAttrs: (method: number | Expression, attrPrefix: string) => Expression = (
-  method,
-  attrPrefix
-) => [
-  'let',
-  'p',
-  ['concat', 'm', method, '_'],
-  [
-    '*',
-    1 / 50,
+export const fiForestsSumMethodAttrs: (
+  method: number | Expression,
+  attrPrefix: string,
+  attrSuffix: string
+) => Expression = (method, attrPrefix, attrSuffix) => {
+  const expr: Expression = [
+    'let',
+    'p',
+    ['concat', 'f', method, '_'],
     [
-      '+',
-      ['get', ['concat', ['var', 'p'], `${attrPrefix}1`]],
-      ['get', ['concat', ['var', 'p'], `${attrPrefix}2`]],
-      ['get', ['concat', ['var', 'p'], `${attrPrefix}3`]],
-      ['get', ['concat', ['var', 'p'], `${attrPrefix}4`]],
-      ['get', ['concat', ['var', 'p'], `${attrPrefix}5`]],
+      '*',
+      1 / 50,
+      [
+        '+',
+        ['to-number', ['get', ['concat', ['var', 'p'], `${attrPrefix}1${attrSuffix}`]]],
+        ['to-number', ['get', ['concat', ['var', 'p'], `${attrPrefix}2${attrSuffix}`]]],
+        ['to-number', ['get', ['concat', ['var', 'p'], `${attrPrefix}3${attrSuffix}`]]],
+        ['to-number', ['get', ['concat', ['var', 'p'], `${attrPrefix}4${attrSuffix}`]]],
+        ['to-number', ['get', ['concat', ['var', 'p'], `${attrPrefix}5${attrSuffix}`]]],
+      ],
     ],
-  ],
-]
+  ]
+  console.log(expr)
+  return expr
+}
 
-export const fiForestsBestMethodCumulativeSumCbt = fiForestsSumMethodAttrs(['get', 'best_method'], 'cbt')
+export const fiForestsBestMethodCumulativeSumCbt = fiForestsSumMethodAttrs(
+  FILL_COLOR_FORESTRY_METHOD,
+  'cbt',
+  '_area_mult_sum'
+)
 
 export const fiForestsCumulativeCO2eValueExpr = fiForestsBestMethodCumulativeSumCbt
 
-export const arvometsaBestMethodVsOther: (method: number | Expression, attrPrefix: string) => Expression = (
-  method,
-  attrPrefix
-) => [
+export const arvometsaBestMethodVsOther: (
+  method: number | Expression,
+  attrPrefix: string,
+  attrSuffix: string
+) => Expression = (method, attrPrefix, attrSuffix) => [
   '-',
-  fiForestsSumMethodAttrs(method, attrPrefix),
-  fiForestsSumMethodAttrs(TRADITIONAL_FORESTRY_METHOD, attrPrefix),
+  fiForestsSumMethodAttrs(method, attrPrefix, attrSuffix),
+  fiForestsSumMethodAttrs(TRADITIONAL_FORESTRY_METHOD, attrPrefix, attrSuffix),
 ]
 
 export const updateMapDetails = ({ dataset, carbonBalanceDifferenceFlag }: any) => {
