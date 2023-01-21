@@ -2,19 +2,18 @@ import _ from 'lodash'
 import { Expression } from 'mapbox-gl'
 
 import {
-  datasetClasses,
   baseAttrs,
   omittedConstantAttrs,
   harvestedWoodAttrs,
   CO2_TONS_PER_PERSON,
   nC_to_CO2,
-  TRADITIONAL_FORESTRY_METHOD_KEY,
   TRADITIONAL_FORESTRY_METHOD,
+  FILL_COLOR_FORESTRY_METHOD,
   carbonStockAttrPrefixes,
-  BEST_METHOD_FOR_EACH,
   colorboxStepsNeg,
   layerOptions,
 } from './constants'
+import { assert } from '#/utils/mapUtils'
 
 export const stepsToLinear = (min: number, max: number, steps: string[]) => {
   const step = (max - min) / (steps.length - 1)
@@ -80,10 +79,9 @@ export const arvometsaBestMethodVsOther: (
 ]
 
 export const updateMapDetails = ({ dataset, carbonBalanceDifferenceFlag }: any) => {
-  const co2eValueExpr =
-    dataset === BEST_METHOD_FOR_EACH ? fiForestsBestMethodCumulativeSumCbt : fiForestsSumMethodAttrs(dataset, 'cbt')
+  const co2eValueExpr = fiForestsSumMethodAttrs(dataset, 'cbt', '_area_mult_sum')
 
-  const arvometsaRelativeCO2eValueExpr = arvometsaBestMethodVsOther(dataset, 'cbt')
+  const arvometsaRelativeCO2eValueExpr = arvometsaBestMethodVsOther(dataset, 'cbt', '_area_mult_sum')
 
   const fillColor = carbonBalanceDifferenceFlag
     ? fiForestsAreaCO2FillColor(arvometsaRelativeCO2eValueExpr)
