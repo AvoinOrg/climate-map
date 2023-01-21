@@ -380,6 +380,7 @@ export const MapProvider = ({ children }: Props) => {
 
         mbMap?.setFilter(getLayerName(id) + '-highlighted', ['in', 'id', ...featureIds])
       }
+      console.log(selectedFeaturesCopy)
 
       setSelectedFeatures(selectedFeaturesCopy)
     }
