@@ -31,12 +31,12 @@ import Link from 'next/link'
 // } from '../../Map/map'
 
 import { onChangeCheckbox, updateMapDetails } from './utils'
-
+import { ForestryMethod } from './types'
 import { assert } from '#/utils/mapUtils'
 // import { setOverlayMessage } from '../../OverlayMessages/OverlayMessages'
 // import * as SelectedFeatureState from './ArvometsaSelectedLayer'
 import { HeaderTable, SimpleTable } from './components/FinlandForestsTable'
-import { datasetClasses, CO2_TONS_PER_PERSON, TRADITIONAL_FORESTRY_METHOD_KEY } from './constants'
+import { CO2_TONS_PER_PERSON, TRADITIONAL_FORESTRY_METHOD } from './constants'
 
 import { setIsSidebarOpen } from '#/components/State/UiState'
 // import { setSearchPlaceholder } from '../../NavBar/NavBarSearch'
@@ -45,7 +45,6 @@ import { finlandForests } from './layers'
 
 // import arvometsaLogo from './assets/arvometsa_logo.png'
 
-const BEST_METHOD_FOR_EACH = -1
 const LAYER_TITLE = `Finland's forests`
 
 // for (const sourceName of Object.keys(layerOptions)) {
@@ -102,7 +101,7 @@ const FinlandForests = () => {
 
   const [reportPanelOpen, setReportPanelOpen] = useState(true)
 
-  const [scenario, setScenario] = useState('arvometsa_alaharvennus')
+  const [scenario, setScenario] = useState<ForestryMethod>(ForestryMethod['jatkuva'])
   const [perHectareFlag, setPerHectareFlag] = useState(true)
   const [cumulativeFlag, setCumulativeFlag] = useState(true)
   const [carbonBalanceDifferenceFlag, setCarbonBalanceDifferenceFlag] = useState(true)
@@ -117,19 +116,17 @@ const FinlandForests = () => {
 
   // i.e. which projection/scenario is in use:
   // NB: an unknown scenarioName is also valid; dataset==-1 -> compare against the best option
-  const dataset = datasetClasses.indexOf(scenario)
 
   // TODO: enable selected features
   // const { layer, feature, bounds } = useObservable(SelectedFeatureState.selectedFeatures)
   // const selectedFeatures = useObservable(SelectedFeatureState.selectedFeatures)
   // const hasFeature = selectedFeatures.length > 0
 
-  // Eliminate confusing options (all zeroes)
-  if (scenario === TRADITIONAL_FORESTRY_METHOD_KEY && carbonBalanceDifferenceFlag) setCarbonBalanceDifferenceFlag(false)
-
   useEffect(() => {
-    updateMapDetails({ dataset, carbonBalanceDifferenceFlag })
-  }, [dataset, carbonBalanceDifferenceFlag])
+    // Eliminate confusing options (all zeroes)
+    if (scenario === TRADITIONAL_FORESTRY_METHOD && carbonBalanceDifferenceFlag) setCarbonBalanceDifferenceFlag(false)
+    updateMapDetails({ scenario, carbonBalanceDifferenceFlag })
+  }, [scenario, carbonBalanceDifferenceFlag])
 
   // TODO: enable overlay message and search placeholder
   // useEffect(() => {
@@ -341,7 +338,7 @@ const FinlandForests = () => {
               label="Show carbon balance improvement potential compared to the prevalent forestry practice"
               checked={carbonBalanceDifferenceFlag}
               onChange={onChangeCheckbox(setCarbonBalanceDifferenceFlag)}
-              disabled={scenario === TRADITIONAL_FORESTRY_METHOD_KEY}
+              disabled={scenario === TRADITIONAL_FORESTRY_METHOD}
             />
           </Paper>
           <br />
