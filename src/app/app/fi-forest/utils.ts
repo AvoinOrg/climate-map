@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import { Expression } from 'mapbox-gl'
+import { GeoJsonProperties } from 'geojson'
 
 import {
   baseAttrs,
@@ -13,6 +14,7 @@ import {
   colorboxStepsNeg,
   layerOptions,
 } from './constants'
+import { ForestryMethod } from './types'
 import { assert } from '#/utils/mapUtils'
 
 export const stepsToLinear = (min: number, max: number, steps: string[]) => {
@@ -216,25 +218,32 @@ export const getDatasetAttributes = ({ dataset, cumulativeFlag, totals }: any) =
   return dsAttrValues
 }
 
-const getTotals = ({ dataset, perHectareFlag, allFeatureProps }) => {
-  const totals = { area: 0, st_area: 0 }
+export const getTotals = (
+  forestryMethod: ForestryMethod,
+  perHectareFlag: boolean,
+  allFeatureProps: GeoJsonProperties[]
+) => {
+  const totals: any = { area: 0, st_area: 0 }
   const totalBaseAttrs = (harvestedWoodAttrs.join(' ') + ' ' + baseAttrs).split(/\s+/)
-  for (const dsNum of [dataset, TRADITIONAL_FORESTRY_METHOD]) {
+  for (const dsNum of [forestryMethod, TRADITIONAL_FORESTRY_METHOD]) {
     for (const attr of totalBaseAttrs) {
-      totals[`m${dsNum}_${attr}`] = 0
+      totals[`f${dsNum}_${attr}`] = 0
     }
   }
   const areaProportionalAttrs = Object.keys(totals).filter((x) => x !== 'area' && x !== 'st_area')
 
-  const reMatchAttr = /m-?\d_(.*)/
-
-  const seenIds = {}
-
+  // const reMatchAttr = /m-?\d_(.*)/
+  
+  const seenIds: any = {}
+  
   // In principle, multiple features' data can be aggregated here.
   // In practice, we just use one at the moment.
   for (const p of allFeatureProps) {
+    if (!p) {
+      continue
+    }
     // Degenerate cases:
-    if (p.m0_cbt1 === null || p.m0_cbt1 === undefined) {
+    if (p.f1_cbt1_area_mult != null) {
       continue
     }
     if (!p.area) {
@@ -251,16 +260,17 @@ const getTotals = ({ dataset, perHectareFlag, allFeatureProps }) => {
     totals.area += p.area
     totals.st_area += p.st_area || p.area
 
-    if (dataset === BEST_METHOD_FOR_EACH) {
-      for (const a of areaProportionalAttrs) {
-        const attr = `m${p.best_method}_${reMatchAttr.exec(a)[1]}`
-        if (!(attr in p) && !(attr in omittedConstantAttrs)) {
-          console.error('Invalid attr:', attr, 'orig:', a, 'props:', p)
-        }
-        totals[a] += p[attr] * p.area
-      }
-      continue
-    }
+    // TODO: check if this is still needed
+    // if (ForestryMethod === BEST_METHOD_FOR_EACH) {
+    //   for (const a of areaProportionalAttrs) {
+    //     const attr = `m${p.best_method}_${reMatchAttr.exec(a)[1]}`
+    //     if (!(attr in p) && !(attr in omittedConstantAttrs)) {
+    //       console.error('Invalid attr:', attr, 'orig:', a, 'props:', p)
+    //     }
+    //     totals[a] += p[attr] * p.area
+    //   }
+    //   continue
+    // }
 
     for (const a of areaProportionalAttrs) {
       if (a in p) {
