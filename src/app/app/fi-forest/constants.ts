@@ -39,8 +39,8 @@ export const omittedConstantAttrs = {
 }
 
 export const harvestedWoodAttrs = [
-  [1, 2, 3, 4, 5].map((x) => `k${x}_tuk_area_mult`).join(' '),
-  [1, 2, 3, 4, 5].map((x) => `k${x}_kui_area_mult`).join(' '),
+  [1, 2, 3, 4, 5].map((x) => `k${x}_tuk`).join(' '),
+  [1, 2, 3, 4, 5].map((x) => `k${x}_kui`).join(' '),
 ]
 
 export const CO2_TONS_PER_PERSON = 7.0 // EU-27 in 2018
