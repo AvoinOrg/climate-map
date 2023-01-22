@@ -50,6 +50,7 @@ interface IMapContext {
   registerGroup?: (layerGroup: any) => void | null
   addJSONLayer?: (id: string, groupId: string, json: any, projection: string) => void | null
   selectedFeatures: MapboxGeoJSONFeature[]
+  useFilteredSelectedFeatures: (filterLayers: string[]) => MapboxGeoJSONFeature[]
   // addMbStyle?: (style: any) => void
 }
 
@@ -819,6 +820,23 @@ export const MapProvider = ({ children }: Props) => {
     }
   }
 
+  const useFilteredSelectedFeatures = (filterLayers: string[]) => {
+    const [filteredFeatures, setFilteredFeatures] = useState<MapboxGeoJSONFeature[]>([])
+
+    useEffect(() => {
+      const newFilteredFeatures = selectedFeatures.filter((f: MapboxGeoJSONFeature) => {
+        if (filterLayers.includes(f.layer.id)) {
+          return true
+        }
+        return false
+      })
+
+      setFilteredFeatures(newFilteredFeatures)
+    }, [selectedFeatures])
+
+    return filteredFeatures
+  }
+
   // implement at some point
   // const setFilter = () => {}
   // const AddMapEventHandler = () => {}
@@ -858,6 +876,7 @@ export const MapProvider = ({ children }: Props) => {
     disableLayerGroup,
     addJSONLayer,
     selectedFeatures,
+    useFilteredSelectedFeatures,
 
     // enableGroup,
     // setFilter,
