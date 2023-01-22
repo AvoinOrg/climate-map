@@ -26,33 +26,21 @@ export const baseAttrs = `
   `.trim()
 
 export const omittedConstantAttrs = {
-  m0_kasittely_0_kuitu: true,
-  m0_kasittely_1_kuitu: true,
-  m0_kasittely_2_kuitu: true,
-  m0_kasittely_3_kuitu: true,
-  m0_kasittely_4_kuitu: true,
-  m0_kasittely_0_tukki: true,
-  m0_kasittely_1_tukki: true,
-  m0_kasittely_2_tukki: true,
-  m0_kasittely_3_tukki: true,
-  m0_kasittely_4_tukki: true,
-  m4_kasittely_1: true,
-  m4_kasittely_2: true,
-  m4_kasittely_3: true,
-  m4_kasittely_4: true,
-  m4_kasittely_1_kuitu: true,
-  m4_kasittely_2_kuitu: true,
-  m4_kasittely_3_kuitu: true,
-  m4_kasittely_4_kuitu: true,
-  m4_kasittely_1_tukki: true,
-  m4_kasittely_2_tukki: true,
-  m4_kasittely_3_tukki: true,
-  m4_kasittely_4_tukki: true,
+  f1_k1_kui_area_mult: true,
+  f1_k2_kui_area_mult: true,
+  f1_k3_kui_area_mult: true,
+  f1_k4_kui_area_mult: true,
+  f1_k5_kui_area_mult: true,
+  f1_k1_tuk_area_mult: true,
+  f1_k2_tuk_area_mult: true,
+  f1_k3_tuk_area_mult: true,
+  f1_k4_tuk_area_mult: true,
+  f1_k5_tuk_area_mult: true,
 }
 
 export const harvestedWoodAttrs = [
-  [0, 1, 2, 3, 4].map((x) => `kasittely_${x}_tukki`).join(' '),
-  [0, 1, 2, 3, 4].map((x) => `kasittely_${x}_kuitu`).join(' '),
+  [1, 2, 3, 4, 5].map((x) => `k${x}_tuk_area_mult`).join(' '),
+  [1, 2, 3, 4, 5].map((x) => `k${x}_kui_area_mult`).join(' '),
 ]
 
 export const CO2_TONS_PER_PERSON = 7.0 // EU-27 in 2018
@@ -60,7 +48,7 @@ export const CO2_TONS_PER_PERSON = 7.0 // EU-27 in 2018
 export const nC_to_CO2 = 44 / 12
 
 // export const TRADITIONAL_FORESTRY_METHOD_KEY = 'tasaikainen'
-export const TRADITIONAL_FORESTRY_METHOD = ForestryMethod["tasaikainen"]
-export const FILL_COLOR_FORESTRY_METHOD = ForestryMethod["vapaa"]
+export const TRADITIONAL_FORESTRY_METHOD = ForestryMethod['tasaikainen']
+export const FILL_COLOR_FORESTRY_METHOD = ForestryMethod['vapaa']
 
 export const carbonStockAttrPrefixes = ['bio', 'maa']
