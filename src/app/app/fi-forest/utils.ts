@@ -227,15 +227,15 @@ export const getTotals = (
   const totalBaseAttrs = (harvestedWoodAttrs.join(' ') + ' ' + baseAttrs).split(/\s+/)
   for (const dsNum of [forestryMethod, TRADITIONAL_FORESTRY_METHOD]) {
     for (const attr of totalBaseAttrs) {
-      totals[`f${dsNum}_${attr}`] = 0
+      totals[`f${dsNum}_${attr}_area_mult_sum`] = 0
     }
   }
-  const areaProportionalAttrs = Object.keys(totals).filter((x) => x !== 'area' && x !== 'st_area')
+  const areaProportionalAttrs = Object.keys(totals).filter((x) => x !== 'area')
 
   // const reMatchAttr = /m-?\d_(.*)/
-  
+
   const seenIds: any = {}
-  
+
   // In principle, multiple features' data can be aggregated here.
   // In practice, we just use one at the moment.
   for (const p of allFeatureProps) {
@@ -281,7 +281,7 @@ export const getTotals = (
 
   if (perHectareFlag) {
     for (const a in totals) {
-      if (a !== 'area' && a !== 'st_area') {
+      if (a !== 'area') {
         totals[a] /= totals.area
       }
     }
