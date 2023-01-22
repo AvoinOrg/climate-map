@@ -48,15 +48,14 @@ export const fiForestsSumMethodAttrs: (
       1 / 50,
       [
         '+',
-        ['to-number', ['get', ['concat', ['var', 'p'], `${attrPrefix}1${attrSuffix}`]]],
-        ['to-number', ['get', ['concat', ['var', 'p'], `${attrPrefix}2${attrSuffix}`]]],
-        ['to-number', ['get', ['concat', ['var', 'p'], `${attrPrefix}3${attrSuffix}`]]],
-        ['to-number', ['get', ['concat', ['var', 'p'], `${attrPrefix}4${attrSuffix}`]]],
-        ['to-number', ['get', ['concat', ['var', 'p'], `${attrPrefix}5${attrSuffix}`]]],
+        ['get', ['concat', ['var', 'p'], `${attrPrefix}1${attrSuffix}`]],
+        ['get', ['concat', ['var', 'p'], `${attrPrefix}2${attrSuffix}`]],
+        ['get', ['concat', ['var', 'p'], `${attrPrefix}3${attrSuffix}`]],
+        ['get', ['concat', ['var', 'p'], `${attrPrefix}4${attrSuffix}`]],
+        ['get', ['concat', ['var', 'p'], `${attrPrefix}5${attrSuffix}`]],
       ],
     ],
   ]
-  console.log(expr)
   return expr
 }
 
