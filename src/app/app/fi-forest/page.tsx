@@ -30,13 +30,13 @@ import Link from 'next/link'
 //   setPaintProperty,
 // } from '../../Map/map'
 
-import { onChangeCheckbox, updateMapDetails } from './utils'
+import { onChangeCheckbox, updateMapDetails, getTotals } from './utils'
 import { ForestryMethod } from './types'
 import { assert } from '#/utils/mapUtils'
 // import { setOverlayMessage } from '../../OverlayMessages/OverlayMessages'
 // import * as SelectedFeatureState from './ArvometsaSelectedLayer'
 import { HeaderTable, SimpleTable } from './components/FinlandForestsTable'
-import { CO2_TONS_PER_PERSON, TRADITIONAL_FORESTRY_METHOD } from './constants'
+import { CO2_TONS_PER_PERSON, TRADITIONAL_FORESTRY_METHOD, layerOptions } from './constants'
 
 import { setIsSidebarOpen } from '#/components/State/UiState'
 // import { setSearchPlaceholder } from '../../NavBar/NavBarSearch'
@@ -93,11 +93,17 @@ const LAYER_TITLE = `Finland's forests`
 // }
 
 const FinlandForests = () => {
-  const { activeLayerGroupIds, enableLayerGroup } = useContext(MapContext)
+  const { enableLayerGroup, selectedFeatures, useFilteredSelectedFeatures } = useContext(MapContext)
+
+  const filteredFeatures = useFilteredSelectedFeatures(Object.keys(layerOptions).map((x) => `${x}-fill`))
 
   useEffect(() => {
     enableLayerGroup('fi_forests', finlandForests)
   }, [])
+
+  useEffect(() => {
+    console.log(filteredFeatures)
+  }, [filteredFeatures])
 
   const [reportPanelOpen, setReportPanelOpen] = useState(true)
 
@@ -119,8 +125,8 @@ const FinlandForests = () => {
 
   // TODO: enable selected features
   // const { layer, feature, bounds } = useObservable(SelectedFeatureState.selectedFeatures)
-  // const selectedFeatures = useObservable(SelectedFeatureState.selectedFeatures)
   // const hasFeature = selectedFeatures.length > 0
+  const hasFeature = false
 
   useEffect(() => {
     // Eliminate confusing options (all zeroes)
@@ -141,8 +147,8 @@ const FinlandForests = () => {
   // }, [hasFeature])
 
   // TODO: Enable charts and values down below
-  // const allFeatureProps = selectedFeatures.map((x) => x.feature.properties)
-  // const totals = getTotals({ dataset, perHectareFlag, allFeatureProps })
+  const allFeatureProps = filteredFeatures.map((x) => x.properties)
+  const totals = getTotals(scenario, perHectareFlag, allFeatureProps)
 
   // const attrValues = getDatasetAttributes({ dataset, cumulativeFlag, totals })
   // if (carbonBalanceDifferenceFlag) {
@@ -230,8 +236,6 @@ const FinlandForests = () => {
   //   }
   // }
 
-  // TODOD: enable show report button
-  const hasFeature = false // placeholder: remove later
   const showReport = reportPanelOpen && hasFeature
 
   const tableTitle = (
@@ -243,7 +247,7 @@ const FinlandForests = () => {
 
   return (
     <div className={showReport ? 'grid-parent' : 'grid-parent grid-parent-report-closed'}>
-      <Paper className="grid-col1" elevation={5}>
+      <Paper className="grid-col1" elevation={5} style={{ width: '400px' }}>
         <Container>
           {/* TODO: enable headerTable */}
           {/* <HeaderTable title={tableTitle} rows={headerRows} onFitLayerBounds={onFitLayerBounds} /> */}
