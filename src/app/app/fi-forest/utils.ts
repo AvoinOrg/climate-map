@@ -166,10 +166,10 @@ export const getUnit = (prefix: string, cumulative: boolean) => {
   }
 }
 
-export const getDatasetAttributes = ({ dataset, cumulativeFlag, totals }: any) => {
+export const getDatasetAttributes = (forestryMethod: ForestryMethod, cumulativeFlag: boolean, totals: any) => {
   const attrGroups = baseAttrs.split('\n').concat(harvestedWoodAttrs)
 
-  const dsAttrValues = {
+  const dsAttrValues: any = {
     cbf: [],
     cbt: [],
     bio: [],
@@ -183,11 +183,13 @@ export const getDatasetAttributes = ({ dataset, cumulativeFlag, totals }: any) =
 
   for (const attrGroup of attrGroups) {
     const prefix =
-      attrGroup.indexOf('kasittely') !== -1 ? attrGroup.trim().split(/[_ ]/)[2] : attrGroup.trim().slice(0, 3)
+      attrGroup.indexOf('_tuk') !== -1 || attrGroup.indexOf('_kui') !== -1
+        ? attrGroup.trim().split(/[_ ]/)[1]
+        : attrGroup.trim().slice(0, 3)
     const attrs = attrGroup
       .trim()
       .split(/ /)
-      .map((attr) => `m${dataset}_${attr}`)
+      .map((attr) => `f${forestryMethod}_${attr}_area_mult_sum`)
 
     if (prefix === 'npv') continue // Cannot accumulate NPV values
 
@@ -205,15 +207,15 @@ export const getDatasetAttributes = ({ dataset, cumulativeFlag, totals }: any) =
   // Soil carbon content is the absolute amount of carbon in the soil, so it's not cumulative or per decade.
   // Here, we make it one of those:
   if (cumulativeFlag) {
-    dsAttrValues.soilCB = dsAttrValues.maa.slice(1).map((v, _) => v - dsAttrValues.maa[0])
+    dsAttrValues.soilCB = dsAttrValues.maa.slice(1).map((v: any, _i: number) => v - dsAttrValues.maa[0])
   } else {
-    dsAttrValues.soilCB = dsAttrValues.maa.slice(1).map((v, i) => v - dsAttrValues.maa[i])
+    dsAttrValues.soilCB = dsAttrValues.maa.slice(1).map((v: any, i: number) => v - dsAttrValues.maa[i])
   }
   // tons carbon -> tons CO₂e approx TODO: verify
-  dsAttrValues.soilCB = dsAttrValues.soilCB.map((x) => x * nC_to_CO2)
+  dsAttrValues.soilCB = dsAttrValues.soilCB.map((x: any) => x * nC_to_CO2)
 
-  dsAttrValues.productsCB = dsAttrValues.cbt.map((cbtValue, i) => cbtValue - dsAttrValues.cbf[i])
-  dsAttrValues.treeCB = dsAttrValues.cbf.map((cbfValue, i) => cbfValue - dsAttrValues.soilCB[i])
+  dsAttrValues.productsCB = dsAttrValues.cbt.map((cbtValue: any, i: number) => cbtValue - dsAttrValues.cbf[i])
+  dsAttrValues.treeCB = dsAttrValues.cbf.map((cbfValue: any, i: number) => cbfValue - dsAttrValues.soilCB[i])
 
   return dsAttrValues
 }
