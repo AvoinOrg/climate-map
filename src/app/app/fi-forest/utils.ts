@@ -353,7 +353,12 @@ export const getChartProps = ({ prefix, cumulativeFlag, perHectareFlag, attrValu
   return { chartOptions, chartUpdateFunction }
 }
 
-export const getNpvText = ({ carbonBalanceDifferenceFlag, perHectareFlag, totals, dataset }) => {
+export const getNpvText = (
+  _carbonBalanceDifferenceFlag: boolean,
+  perHectareFlag: boolean,
+  totals: any,
+  forestryMethod: ForestryMethod
+) => {
   // The comparison is too confusing IMO. Disabled for now.
   // const npvComparison = (
   //   carbonBalanceDifferenceFlag
@@ -361,8 +366,8 @@ export const getNpvText = ({ carbonBalanceDifferenceFlag, perHectareFlag, totals
   //     : 0
   // )
   const npvComparison = 0
-  const npvValue = dataset === 0 ? null : totals[`m${dataset}_npv3`] - npvComparison
-  return npvValue === 0 || npvValue ? `${pp(npvValue)} €${perHectareFlag ? ' per ha' : ''}` : '-'
+  const npvValue = forestryMethod === 1 ? null : totals[`f${forestryMethod}_npv3_area_mult_sum`] - npvComparison
+  return npvValue === 0 || npvValue ? `${_.round(npvValue)} €${perHectareFlag ? ' per ha' : ''}` : '-'
 }
 
 export const getChartTitleSingleLayer = (selectedFeatureLayer: string, featureProps: any[], multiple: boolean) => {
