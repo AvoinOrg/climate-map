@@ -292,7 +292,7 @@ export const getTotals = (
   return totals
 }
 
-export const getChartProps = ({ prefix, cumulativeFlag, perHectareFlag, attrValues }) => {
+export const getChartProps = (prefix: string, cumulativeFlag: boolean, perHectareFlag: boolean, attrValues: any) => {
   // carbon stock is not counted cumulatively.
   const isCarbonStock = carbonStockAttrPrefixes.indexOf(prefix) !== -1
   const cumulative = cumulativeFlag && !isCarbonStock
@@ -303,7 +303,7 @@ export const getChartProps = ({ prefix, cumulativeFlag, perHectareFlag, attrValu
   const datasets = getChartDatasets(prefix, attrValues)
 
   // I.e. the decades
-  const prefixLabels = {
+  const prefixLabels: any = {
     cbf: ['10', '20', '30', '40', '50'],
     cbt: ['10', '20', '30', '40', '50'],
     bio: ['0', '10', '20', '30', '40', '50'],
@@ -311,17 +311,32 @@ export const getChartProps = ({ prefix, cumulativeFlag, perHectareFlag, attrValu
   }
 
   const labelCallback = function (tooltipItem: Chart.ChartTooltipItem, data: Chart.ChartData) {
-    const label = data.datasets[tooltipItem.datasetIndex].label
-    const v = pp(+tooltipItem.yLabel, 2)
-    return `${label}: ${v} ${unit}`
+    if (data && data.datasets && data.datasets && tooltipItem.datasetIndex != null && tooltipItem.yLabel != null) {
+      const label = data.datasets[tooltipItem.datasetIndex].label
+      const v = _.round(+tooltipItem.yLabel, 2)
+      return `${label}: ${v} ${unit}`
+    }
+    console.error('Invalid label for chartProp. toolTipItem:', tooltipItem, 'data:', data)
+    return ''
   }
 
-  const chartUpdateFunction = (chart) => {
-    chart.data.datasets.forEach((ds: Chart.ChartDataSets, i: number) => {
-      ds.data = datasets[i].data
-    })
-    chart.options.tooltips.callbacks.label = labelCallback
-    chart.update()
+  const chartUpdateFunction = (chart: Chart) => {
+    if (
+      datasets &&
+      datasets.length > 0 &&
+      chart.data &&
+      chart.data.datasets &&
+      chart.options.tooltips &&
+      chart.options.tooltips.callbacks
+    ) {
+      chart.data.datasets.forEach((ds: Chart.ChartDataSets, i: number) => {
+        ds.data = datasets[i].data
+      })
+      chart.options.tooltips.callbacks.label = labelCallback
+      chart.update()
+    } else {
+      console.error('Error in chartUpdateFunction. datasets:', datasets, 'chart:', chart)
+    }
   }
 
   const options = {
@@ -336,7 +351,7 @@ export const getChartProps = ({ prefix, cumulativeFlag, perHectareFlag, attrValu
         ticks: {
           maxTicksLimit: 8,
           beginAtZero: true,
-          callback: (value, _index, _values) => value.toLocaleString(),
+          callback: (value: any, _index: any, _values: any) => value.toLocaleString(),
         },
       },
     },
