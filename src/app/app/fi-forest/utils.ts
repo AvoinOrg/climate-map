@@ -14,7 +14,7 @@ import {
   colorboxStepsNeg,
   layerOptions,
 } from './constants'
-import { ForestryMethod } from './types'
+import { ForestryMethod, LayerLevel } from './types'
 import { assert } from '#/utils/mapUtils'
 
 export const stepsToLinear = (min: number, max: number, steps: string[]) => {
@@ -367,17 +367,17 @@ export const getNpvText = ({ carbonBalanceDifferenceFlag, perHectareFlag, totals
 
 export const getChartTitleSingleLayer = (selectedFeatureLayer: string, featureProps: any[], multiple: boolean) => {
   assert(selectedFeatureLayer, 'selectedFeatureLayer must be set')
-  if (selectedFeatureLayer === 'arvometsa-fill') {
+  if (selectedFeatureLayer === LayerLevel.Parcel + '-fill') {
     const name = featureProps.map((p) => p.standid).join(', ')
     if (multiple) return `Multiple forest parcels selected: standids = ${name}`
     return `Forest parcel (standid: ${name})`
-  } else if (selectedFeatureLayer === 'arvometsa-property-fill') {
-    const name = featureProps.map((p) => p.tpteksti).join(', ')
+  } else if (selectedFeatureLayer === LayerLevel.Estate + '-fill') {
+    const name = featureProps.map((p) => p.estate_id_text).join(', ')
     if (multiple) return `Multiple properties selected: ${name}`
     return `Property with forest (${name})`
   } else {
-    assert(_.every(featureProps.map((p) => p.name_fi)), `Expected name_fi: ${selectedFeatureLayer}`)
-    const name = featureProps.map((p) => p.name_fi || p.name_sv).join(', ')
+    assert(_.every(featureProps.map((p) => p.namefin)), `Expected namefin: ${selectedFeatureLayer}`)
+    const name = featureProps.map((p) => p.namefin || p.nameswe).join(', ')
     if (multiple) return `Multiple administrative areas selected: ${name}`
     return name
   }
