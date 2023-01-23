@@ -1,13 +1,12 @@
-import { Style as MbStyle } from 'mapbox-gl'
 import _ from 'lodash'
 
-import { fillOpacity, roundToSignificantDigits } from '#/utils/mapUtils'
-import { LayerId, LayerConf } from '#/types/map'
+import { fillOpacity, roundToSignificantDigitsExpr } from '#/utils/mapUtils'
+import { LayerId, LayerConf, ExtendedMbStyle } from '#/types/map'
 import Popup from './Popup'
 
 const id: LayerId = 'helsinki_buildings'
 
-const getStyle = async (): Promise<MbStyle> => {
+const getStyle = async (): Promise<ExtendedMbStyle> => {
   const sourceNames = ['helsinki_buildings', 'helsinki_puretut']
 
   return {
@@ -45,7 +44,6 @@ const getStyle = async (): Promise<MbStyle> => {
           'fill-color': 'cyan',
           'fill-opacity': fillOpacity,
         },
-        BEFORE: 'FILL',
       },
       {
         id: sourceNames[0] + '-outline',
@@ -56,7 +54,6 @@ const getStyle = async (): Promise<MbStyle> => {
         paint: {
           'line-opacity': 0.75,
         },
-        BEFORE: 'OUTLINE',
       },
       {
         id: sourceNames[0] + '-co2',
@@ -78,14 +75,13 @@ const getStyle = async (): Promise<MbStyle> => {
               ['/', ['*', 15, ['to-number', ['get', 'i_raktilav'], 0]], 1000],
               [
                 'concat',
-                roundToSignificantDigits(2, ['var', 'co2']), // kg -> tons
+                roundToSignificantDigitsExpr(2, ['var', 'co2']), // kg -> tons
                 ' t CO2e/y',
               ],
             ],
             '',
           ],
         },
-        BEFORE: 'LABEL',
       },
       {
         id: sourceNames[1] + '-fill',
@@ -96,7 +92,6 @@ const getStyle = async (): Promise<MbStyle> => {
           'fill-color': 'black',
           'fill-opacity': fillOpacity,
         },
-        BEFORE: 'FILL',
       },
       {
         id: sourceNames[1] + '-outline',
@@ -107,7 +102,6 @@ const getStyle = async (): Promise<MbStyle> => {
         paint: {
           'line-opacity': 0.75,
         },
-        BEFORE: 'OUTLINE',
       },
       {
         id: sourceNames[1] + '-sym',
@@ -122,7 +116,6 @@ const getStyle = async (): Promise<MbStyle> => {
           'text-size': 20,
           'text-field': '',
         },
-        BEFORE: 'LABEL',
       },
     ],
   }
