@@ -15,7 +15,7 @@ import {
   layerOptions,
 } from './constants'
 import { ForestryMethod, LayerLevel } from './types'
-import { assert } from '#/utils/mapUtils'
+import { assert, roundToSignificantDigitsExpr } from '#/utils/mapUtils'
 
 export const stepsToLinear = (min: number, max: number, steps: string[]) => {
   const step = (max - min) / (steps.length - 1)
@@ -69,13 +69,26 @@ export const fiForestsBestMethodCumulativeSumCbt = fiForestsSumMethodAttrs(
 
 export const fiForestsCumulativeCO2eValueExpr = fiForestsBestMethodCumulativeSumCbt
 
-export const arvometsaBestMethodVsOther: (
-  method: number | Expression,
+export const fiForestsTextfieldExpression: (co2eValueExpr: Expression) => Expression = (co2eValueExpr) => [
+  'case',
+  ['has', 'f1_cbt1_area_mult_sum'],
+  [
+    'concat',
+    roundToSignificantDigitsExpr(3, ['get', 'area']) as Expression,
+    ' ha\n',
+    roundToSignificantDigitsExpr(2, co2eValueExpr) as Expression,
+    ' t CO2e/y/ha',
+  ],
+  '',
+]
+
+export const fiForestsBestMethodVsOther = (
+  forestryMethod: ForestryMethod | Expression,
   attrPrefix: string,
-  attrSuffix: string
-) => Expression = (method, attrPrefix, attrSuffix) => [
+  attrSuffix = 'area_mult_sum'
+): Expression => [
   '-',
-  fiForestsSumMethodAttrs(method, attrPrefix, attrSuffix),
+  fiForestsSumMethodAttrs(forestryMethod, attrPrefix, attrSuffix),
   fiForestsSumMethodAttrs(TRADITIONAL_FORESTRY_METHOD, attrPrefix, attrSuffix),
 ]
 
