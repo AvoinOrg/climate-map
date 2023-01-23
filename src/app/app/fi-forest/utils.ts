@@ -92,21 +92,21 @@ export const fiForestsBestMethodVsOther = (
   fiForestsSumMethodAttrs(TRADITIONAL_FORESTRY_METHOD, attrPrefix, attrSuffix),
 ]
 
-export const updateMapDetails = ({ dataset, carbonBalanceDifferenceFlag }: any) => {
-  const co2eValueExpr = fiForestsSumMethodAttrs(dataset, 'cbt', '_area_mult_sum')
+export const updateMapDetails = (forestryMethod: ForestryMethod, carbonBalanceDifferenceFlag: boolean) => {
+  const co2eValueExpr = fiForestsSumMethodAttrs(forestryMethod, 'cbt')
 
-  const arvometsaRelativeCO2eValueExpr = arvometsaBestMethodVsOther(dataset, 'cbt', '_area_mult_sum')
+  const fiForestsRelativeCO2eValueExpr = fiForestsBestMethodVsOther(forestryMethod, 'cbt')
 
   const fillColor = carbonBalanceDifferenceFlag
-    ? fiForestsAreaCO2FillColor(arvometsaRelativeCO2eValueExpr)
+    ? fiForestsAreaCO2FillColor(fiForestsRelativeCO2eValueExpr)
     : fiForestsAreaCO2FillColor(co2eValueExpr)
 
   // TODO: Add execWithMapLoaded function
   // execWithMapLoaded(() => {
   //   for (const type of Object.keys(layerOptions)) {
-  //     setPaintProperty(`${type}-fill`, 'fill-color', fillColor)
+  //     mbSetPaintProperty(`${type}-fill`, 'fill-color', fillColor)
   //   }
-  //   setLayoutProperty('arvometsa-sym', 'text-field', fiForestsTextfieldExpression(co2eValueExpr))
+  //   mbSetLayoutProperty('arvometsa-sym', 'text-field', fiForestsTextfieldExpression(co2eValueExpr))
   // })
 }
 
