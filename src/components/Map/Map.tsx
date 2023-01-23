@@ -51,6 +51,9 @@ interface IMapContext {
   addJSONLayer?: (id: string, groupId: string, json: any, projection: string) => void | null
   selectedFeatures: MapboxGeoJSONFeature[]
   useFilteredSelectedFeatures: (filterLayers: string[]) => MapboxGeoJSONFeature[]
+  setLayoutProperty: (layerId: string, property: string, value: any) => void | null
+  setPaintProperty: (layerId: string, property: string, value: any) => void | null
+  setFilter: (layerId: string, filter: any) => void | null
   // addMbStyle?: (style: any) => void
 }
 
@@ -838,6 +841,25 @@ export const MapProvider = ({ children }: Props) => {
     return filteredFeatures
   }
 
+  const setLayoutProperty = (layer: string, name: string, value: any) => {
+    if (isLoaded) {
+      addToFunctionQueue('setLayoutProperty', [layer, name, value])
+    }
+    mbMap?.setLayoutProperty(layer, name, value)
+  }
+  const setPaintProperty = (layer: string, name: string, value: any) => {
+    if (isLoaded) {
+      addToFunctionQueue('setPaintProperty', [layer, name, value])
+    }
+    mbMap?.setPaintProperty(layer, name, value)
+  }
+  const setFilter = (layer: string, filter: any[]) => {
+    if (isLoaded) {
+      addToFunctionQueue('setFilter', [layer, filter])
+    }
+    mbMap?.setFilter(layer, filter)
+  }
+
   // implement at some point
   // const setFilter = () => {}
   // const AddMapEventHandler = () => {}
@@ -850,8 +872,6 @@ export const MapProvider = ({ children }: Props) => {
   // const fitBounds = () => {}
   // const genericPopupHandler = () => {}
   // const querySourceFeatures = () => {}
-  // const setLayoutProperty = () => {}
-  // const setPaintProperty = () => {}
 
   // use REDUX for these?
   // const enableGroup = () => {}
@@ -878,6 +898,9 @@ export const MapProvider = ({ children }: Props) => {
     addJSONLayer,
     selectedFeatures,
     useFilteredSelectedFeatures,
+    setLayoutProperty,
+    setPaintProperty,
+    setFilter,
 
     // enableGroup,
     // setFilter,
