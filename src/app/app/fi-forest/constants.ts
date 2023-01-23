@@ -16,13 +16,6 @@ export const baseAttrs = `
   bio0 bio1 bio2 bio3 bio4 bio5
   maa0 maa1 maa2 maa3 maa4 maa5
   npv2 npv3 npv4
-  lho0 lho1 lho2 lho3 lho4 lho5
-  mus0 mus1 mus2 mus3 mus4 mus5
-  puo0 puo1 puo2 puo3 puo4 puo5
-  tat0 tat1 tat2 tat3 tat4 tat5
-  rou0 rou1 rou2 rou3 rou4 rou5
-  sha0 sha1 sha2 sha3 sha4 sha5
-  mai0 mai1 mai2 mai3 mai4 mai5
   `.trim()
 
 export const omittedConstantAttrs = {
