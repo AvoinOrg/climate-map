@@ -4,15 +4,12 @@ import { GeoJsonProperties } from 'geojson'
 
 import {
   baseAttrs,
-  omittedConstantAttrs,
   harvestedWoodAttrs,
-  CO2_TONS_PER_PERSON,
   nC_to_CO2,
   TRADITIONAL_FORESTRY_METHOD,
   FILL_COLOR_FORESTRY_METHOD,
   carbonStockAttrPrefixes,
   colorboxStepsNeg,
-  layerOptions,
 } from './constants'
 import { ForestryMethod, LayerLevel } from './types'
 import { assert, roundToSignificantDigitsExpr } from '#/utils/mapUtils'
