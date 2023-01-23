@@ -1,12 +1,11 @@
-import { Style as MbStyle } from 'mapbox-gl'
 import _ from 'lodash'
 
-import { fillOpacity, roundToSignificantDigits } from '#/utils/mapUtils'
-import { LayerId, LayerConf } from '#/types/map'
+import { fillOpacity, roundToSignificantDigitsExpr } from '#/utils/mapUtils'
+import { LayerId, LayerConf, ExtendedMbStyle } from '#/types/map'
 
 const id: LayerId = 'hsy_solarpotential'
 
-const getStyle = async (): Promise<MbStyle> => {
+const getStyle = async (): Promise<ExtendedMbStyle> => {
   return {
     version: 8,
     name: id,
@@ -31,7 +30,6 @@ const getStyle = async (): Promise<MbStyle> => {
           // areaCO2eFillColor(['*', 1e-3, ['get', 'CO2']]), // The variable CO2 is not documented at all!
           'fill-opacity': fillOpacity,
         },
-        BEFORE: 'FILL',
       },
       {
         id: id + '-outline',
@@ -43,7 +41,6 @@ const getStyle = async (): Promise<MbStyle> => {
         paint: {
           'line-opacity': 0.5,
         },
-        BEFORE: 'OUTLINE',
       },
       {
         id: id + '-sym',
@@ -65,10 +62,10 @@ const getStyle = async (): Promise<MbStyle> => {
               ['<', 0, ['get', 'ELEC']],
               [
                 'concat',
-                // roundToSignificantDigits(2, ['*', 1e-3, ["get", "CO2"]]), // TODO: Get documentation for this!
+                // roundToSignificantDigitsExpr(2, ['*', 1e-3, ["get", "CO2"]]), // TODO: Get documentation for this!
                 // "t CO2e/y",
                 // "\nElectricity generation: ",
-                roundToSignificantDigits(2, ['*', 1e-3, ['get', 'ELEC']]),
+                roundToSignificantDigitsExpr(2, ['*', 1e-3, ['get', 'ELEC']]),
                 ' MWh/year',
               ],
               '',
@@ -76,7 +73,6 @@ const getStyle = async (): Promise<MbStyle> => {
             '',
           ],
         },
-        BEFORE: 'LABEL',
       },
     ],
   }
