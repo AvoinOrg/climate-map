@@ -391,8 +391,13 @@ export const MapProvider = ({ children }: Props) => {
     if (isLoaded && functionQueue.length > 0) {
       setFunctionQueue([])
       functionQueue.forEach((call) => {
-        // @ts-ignore
-        values[call.func](...call.args)
+        try {
+          // @ts-ignore
+          values[call.func](...call.args)
+        } catch (e) {
+          console.error("Couldn't run queued map function", call.func, call.args)
+          console.error(e)
+        }
       })
     }
   }, [isLoaded, functionQueue])
@@ -762,14 +767,10 @@ export const MapProvider = ({ children }: Props) => {
     //   setActiveLayerGroupIds(activeLayerGroupIdsCopy)
   }
 
-  const mapLoadCheck = (layerId: LayerId, layerConf?: LayerConf) => {
-    // If map is not initialized, add function to queue
-    if (!isLoaded) {
-      const functionQueueCopy = [...functionQueue, { func: 'enableLayerGroup', args: [layerId, layerConf] }]
-      setFunctionQueue(functionQueueCopy)
-      return false
-    }
-    return true
+  // ensures that latest state is used in the callback
+  const addToFunctionQueue = (funcName: string, args: any[]) => {
+    const functionQueueCopy = [...functionQueue, { func: funcName, args: args }]
+    setFunctionQueue(functionQueueCopy)
   }
 
   const enableLayerGroup = async (layerId: LayerId, layerConf?: LayerConf) => {
@@ -779,8 +780,8 @@ export const MapProvider = ({ children }: Props) => {
       const activeLayerGroupIdsCopy = [...activeLayerGroupIds, layerId]
       setActiveLayerGroupIds(activeLayerGroupIdsCopy)
     } else {
-      if (!mapLoadCheck(layerId, layerConf)) {
-        return
+      if (!isLoaded) {
+        addToFunctionQueue('enableLayerGroup', [layerId, layerConf])
       }
 
       // Initialize layer if it doesn't exist
