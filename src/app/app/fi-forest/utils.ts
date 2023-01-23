@@ -36,15 +36,15 @@ export const fiForestsAreaCO2FillColor: (expr: Expression) => Expression = (expr
   ...stepsToLinear(-5, 0, colorboxStepsNeg).concat([0.01, 'hsla(159, 100%, 50%, 1)', 15, 'hsla(159, 100%, 25%, 1)']),
 ]
 
-export const fiForestsSumMethodAttrs: (
-  method: number | Expression,
+export const fiForestsSumMethodAttrs = (
+  forestryMethod: ForestryMethod | Expression,
   attrPrefix: string,
-  attrSuffix: string
-) => Expression = (method, attrPrefix, attrSuffix) => {
+  attrSuffix = 'area_mult_sum'
+) => {
   const expr: Expression = [
     'let',
     'p',
-    ['concat', 'f', method, '_'],
+    ['concat', 'f', forestryMethod, '_'],
     [
       '*',
       1 / 50,
@@ -61,11 +61,7 @@ export const fiForestsSumMethodAttrs: (
   return expr
 }
 
-export const fiForestsBestMethodCumulativeSumCbt = fiForestsSumMethodAttrs(
-  FILL_COLOR_FORESTRY_METHOD,
-  'cbt',
-  '_area_mult_sum'
-)
+export const fiForestsBestMethodCumulativeSumCbt = fiForestsSumMethodAttrs(FILL_COLOR_FORESTRY_METHOD, 'cbt')
 
 export const fiForestsCumulativeCO2eValueExpr = fiForestsBestMethodCumulativeSumCbt
 
