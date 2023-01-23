@@ -149,3 +149,20 @@ export const getColorExpressionArrForValues = (values: any[]) => {
 export const assert = (expr: any, message: any) => {
   if (!expr) throw new Error(`Assertion error: ${message}`)
 }
+
+// NB: By using the '/' operator instead of '*', we get rid of float bugs like 1.2000000000004.
+export const roundToSignificantDigitsPosExpr = (n: number, expr: Expression) => [
+  // Multiply back by true scale
+  '/',
+  // Round to two significant digits:
+  ['round', ['/', expr, ['^', 10, ['+', -n + 1, ['floor', ['log10', expr]]]]]],
+  ['^', 10, ['-', n - 1, ['floor', ['log10', expr]]]],
+]
+export const roundToSignificantDigitsExpr = (n: number, expr: Expression) => [
+  'case',
+  ['==', 0, expr],
+  0,
+  ['>', 0, expr],
+  ['*', -1, roundToSignificantDigitsPosExpr(n, ['*', -1, expr])],
+  roundToSignificantDigitsPosExpr(n, expr),
+]
