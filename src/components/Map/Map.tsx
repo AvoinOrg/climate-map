@@ -24,10 +24,20 @@ import { LngLat, MapLayerMouseEvent, PointLike, Style as MbStyle, MapboxGeoJSONF
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 
-import { LayerId, LayerConf, LayerOpt, LayerOpts, layerTypes, LayerType, ExtendedAnyLayer } from '#/common/types/map'
+import {
+  LayerId,
+  LayerConf,
+  LayerOpt,
+  LayerOpts,
+  layerTypes,
+  LayerType,
+  ExtendedAnyLayer,
+  OverlayMessage,
+} from '#/common/types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
 import { getColorExpressionArrForValues } from '#/common/utils/mapUtils'
+import { OverlayMessages } from './OverlayMessages'
 
 interface Props {
   children?: React.ReactNode
@@ -53,6 +63,7 @@ interface IMapContext {
   setLayoutProperty: (layerId: string, property: string, value: any) => void | null
   setPaintProperty: (layerId: string, property: string, value: any) => void | null
   setFilter: (layerId: string, filter: any) => void | null
+  setOverlayMessage: (message: OverlayMessage, condition: boolean) => void | null
   // addMbStyle?: (style: any) => void
 }
 
@@ -77,6 +88,7 @@ export const MapProvider = ({ children }: Props) => {
 
   const [selectedFeatures, setSelectedFeatures] = useState<MapboxGeoJSONFeature[]>([])
   const [newlySelectedFeatures, setNewlySelectedFeatures] = useState<MapboxGeoJSONFeature[]>([])
+  const [overlayMessage, _setOverlayMessage] = useState<OverlayMessage | null>(null)
 
   useEffect(() => {
     // Mapbox does not render without a valid access token
@@ -846,6 +858,10 @@ export const MapProvider = ({ children }: Props) => {
     mbMap?.setFilter(layer, filter)
   }
 
+  const setOverlayMessage = (message: OverlayMessage, condition: boolean) => {
+    _setOverlayMessage(condition ? message : null)
+  }
+
   // implement at some point
   // const setFilter = () => {}
   // const AddMapEventHandler = () => {}
@@ -886,6 +902,7 @@ export const MapProvider = ({ children }: Props) => {
     setLayoutProperty,
     setPaintProperty,
     setFilter,
+    setOverlayMessage,
 
     // enableGroup,
     // setFilter,
@@ -920,6 +937,7 @@ export const MapProvider = ({ children }: Props) => {
       <MapPopup onClose={popupOnClose} ref={popupRef}>
         {popupElement}
       </MapPopup>
+      <OverlayMessages message={overlayMessage}></OverlayMessages>
       {children}
     </MapContext.Provider>
   )

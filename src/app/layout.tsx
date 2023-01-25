@@ -10,7 +10,6 @@ import { ThemeProvider } from '@mui/material/styles'
 import theme from '#/common/style/theme'
 import { Sidebar } from '#/components/Sidebar'
 import { NavBar } from '#/components/NavBar'
-import { OverlayMessages } from '#/components/OverlayMessages'
 // import { UserModal } from '#/components/Profile'
 // import { UiStateProvider, UserStateProvider } from '#/components/State'
 import { UiStateProvider } from '#/components/State'
@@ -34,7 +33,6 @@ const RootLayout = ({
               <CssBaseline>
                 <GroupOrientation />
                 <NavBar />
-                <OverlayMessages />
                 <Sidebar>{children}</Sidebar>
                 {/* <UserModal /> */}
               </CssBaseline>
