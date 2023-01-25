@@ -4,7 +4,7 @@ import { Box } from '@mui/system'
 import { MapContext } from '#/components/Map'
 import { OverlayMessage } from '#/common/types/map'
 
-export const OverlayMessages = (message: OverlayMessage | null) => {
+export const OverlayMessages = ({ message }: { message: OverlayMessage | null }) => {
   const { activeLayerGroupIds } = React.useContext(MapContext)
 
   let isActive = false
@@ -13,7 +13,7 @@ export const OverlayMessages = (message: OverlayMessage | null) => {
     // If the the message has no layerGroupId specified, it is always active.
     if (message.layerGroupId == null) {
       isActive = true
-    } else if (activeLayerGroupIds.filter((x: any) => x === message.layer).length > 0) {
+    } else if (activeLayerGroupIds.filter((x: any) => x === message.layerGroupId).length > 0) {
       isActive = true
     }
   }
