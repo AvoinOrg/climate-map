@@ -50,7 +50,6 @@ interface IMapContext {
   registerGroup?: (layerGroup: any) => void | null
   addJSONLayer?: (id: string, groupId: string, json: any, projection: string) => void | null
   selectedFeatures: MapboxGeoJSONFeature[]
-  useFilteredSelectedFeatures: (filterLayers: string[]) => MapboxGeoJSONFeature[]
   setLayoutProperty: (layerId: string, property: string, value: any) => void | null
   setPaintProperty: (layerId: string, property: string, value: any) => void | null
   setFilter: (layerId: string, filter: any) => void | null
@@ -825,23 +824,6 @@ export const MapProvider = ({ children }: Props) => {
     }
   }
 
-  const useFilteredSelectedFeatures = (filterLayers: string[]) => {
-    const [filteredFeatures, setFilteredFeatures] = useState<MapboxGeoJSONFeature[]>([])
-
-    useEffect(() => {
-      const newFilteredFeatures = selectedFeatures.filter((f: MapboxGeoJSONFeature) => {
-        if (filterLayers.includes(f.layer.id)) {
-          return true
-        }
-        return false
-      })
-
-      setFilteredFeatures(newFilteredFeatures)
-    }, [selectedFeatures])
-
-    return filteredFeatures
-  }
-
   const setLayoutProperty = (layer: string, name: string, value: any) => {
     if (isLoaded) {
       addToFunctionQueue('setLayoutProperty', [layer, name, value])
@@ -901,7 +883,6 @@ export const MapProvider = ({ children }: Props) => {
     disableLayerGroup,
     addJSONLayer,
     selectedFeatures,
-    useFilteredSelectedFeatures,
     setLayoutProperty,
     setPaintProperty,
     setFilter,

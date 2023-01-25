@@ -43,6 +43,7 @@ import { setIsSidebarOpen } from '#/components/State/UiState'
 // import { setSearchPlaceholder } from '../../NavBar/NavBarSearch'
 import { MapContext } from '#/components/Map'
 import { finlandForests } from './layers'
+import { useFilteredSelectedFeatures } from '#/common/hooks/useFilteredSelectedFeatures'
 
 // import arvometsaLogo from './assets/arvometsa_logo.png'
 
@@ -94,7 +95,7 @@ const LAYER_TITLE = `Finland's forests`
 // }
 
 const FinlandForests = () => {
-  const { enableLayerGroup, useFilteredSelectedFeatures } = useContext(MapContext)
+  const { enableLayerGroup } = useContext(MapContext)
   const updateMapDetails = useUpdateMapDetails()
   const [hasFeature, setHasFeature] = useState(false)
   const filteredFeatures = useFilteredSelectedFeatures(Object.keys(layerOptions).map((x) => `${x}-fill`))
