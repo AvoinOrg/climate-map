@@ -785,6 +785,7 @@ export const MapProvider = ({ children }: Props) => {
     } else {
       if (!isLoaded) {
         addToFunctionQueue('enableLayerGroup', [layerId, layerConf])
+        return
       }
 
       // Initialize layer if it doesn't exist
@@ -844,18 +845,21 @@ export const MapProvider = ({ children }: Props) => {
   const setLayoutProperty = (layer: string, name: string, value: any) => {
     if (isLoaded) {
       addToFunctionQueue('setLayoutProperty', [layer, name, value])
+      return
     }
     mbMap?.setLayoutProperty(layer, name, value)
   }
   const setPaintProperty = (layer: string, name: string, value: any) => {
     if (isLoaded) {
       addToFunctionQueue('setPaintProperty', [layer, name, value])
+      return
     }
     mbMap?.setPaintProperty(layer, name, value)
   }
   const setFilter = (layer: string, filter: any[]) => {
     if (isLoaded) {
       addToFunctionQueue('setFilter', [layer, filter])
+      return
     }
     mbMap?.setFilter(layer, filter)
   }
