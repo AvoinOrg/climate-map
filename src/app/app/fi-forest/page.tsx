@@ -94,8 +94,9 @@ const LAYER_TITLE = `Finland's forests`
 // }
 
 const FinlandForests = () => {
-  const { enableLayerGroup, useFilteredSelectedFeatures, setLayoutProperty, setPaintProperty } = useContext(MapContext)
+  const { enableLayerGroup, useFilteredSelectedFeatures } = useContext(MapContext)
   const updateMapDetails = useUpdateMapDetails()
+  const [hasFeature, setHasFeature] = useState(false)
   const filteredFeatures = useFilteredSelectedFeatures(Object.keys(layerOptions).map((x) => `${x}-fill`))
 
   useEffect(() => {
@@ -103,6 +104,8 @@ const FinlandForests = () => {
   }, [])
 
   useEffect(() => {
+    const newHasFeature = filteredFeatures.length > 0
+    setHasFeature(newHasFeature)
     console.log(filteredFeatures)
   }, [filteredFeatures])
 
@@ -127,7 +130,6 @@ const FinlandForests = () => {
   // TODO: enable selected features
   // const { layer, feature, bounds } = useObservable(SelectedFeatureState.selectedFeatures)
   // const hasFeature = selectedFeatures.length > 0
-  const hasFeature = false
 
   useEffect(() => {
     // Eliminate confusing options (all zeroes)
