@@ -1,11 +1,11 @@
 import { StringValueOf } from '#/types/general'
 
 export enum LayerLevel {
-  Parcel = 'fi_forest_parcel',
-  Estate = 'fi_forest_estate',
-  Municipality = 'fi_forest_municipality',
-  Region = 'fi_forest_region',
-  Country = 'fi_forest_country',
+  Parcel = 'fi_forests_parcel',
+  Estate = 'fi_forests_estate',
+  Municipality = 'fi_forests_municipality',
+  Region = 'fi_forests_region',
+  Country = 'fi_forests_country',
 }
 
 export type LayerLevelStrings = StringValueOf<LayerLevel>
