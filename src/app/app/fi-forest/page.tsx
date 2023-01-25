@@ -30,7 +30,8 @@ import Link from 'next/link'
 //   setPaintProperty,
 // } from '../../Map/map'
 
-import { onChangeCheckbox, updateMapDetails, getTotals } from './utils'
+import { onChangeCheckbox, getTotals } from './utils'
+import { useUpdateMapDetails } from './hooks/useUpdateMapDetails'
 import { ForestryMethod } from './types'
 import { assert } from '#/utils/mapUtils'
 // import { setOverlayMessage } from '../../OverlayMessages/OverlayMessages'
@@ -93,8 +94,8 @@ const LAYER_TITLE = `Finland's forests`
 // }
 
 const FinlandForests = () => {
-  const { enableLayerGroup, selectedFeatures, useFilteredSelectedFeatures } = useContext(MapContext)
-
+  const { enableLayerGroup, useFilteredSelectedFeatures, setLayoutProperty, setPaintProperty } = useContext(MapContext)
+  const updateMapDetails = useUpdateMapDetails()
   const filteredFeatures = useFilteredSelectedFeatures(Object.keys(layerOptions).map((x) => `${x}-fill`))
 
   useEffect(() => {
@@ -131,7 +132,7 @@ const FinlandForests = () => {
   useEffect(() => {
     // Eliminate confusing options (all zeroes)
     if (scenario === TRADITIONAL_FORESTRY_METHOD && carbonBalanceDifferenceFlag) setCarbonBalanceDifferenceFlag(false)
-    updateMapDetails({ scenario, carbonBalanceDifferenceFlag })
+    updateMapDetails(scenario, carbonBalanceDifferenceFlag)
   }, [scenario, carbonBalanceDifferenceFlag])
 
   // TODO: enable overlay message and search placeholder

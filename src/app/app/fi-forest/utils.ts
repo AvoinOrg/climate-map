@@ -85,24 +85,6 @@ export const fiForestsBestMethodVsOther = (
   fiForestsSumMethodAttrs(TRADITIONAL_FORESTRY_METHOD, attrPrefix, attrSuffix),
 ]
 
-export const updateMapDetails = (forestryMethod: ForestryMethod, carbonBalanceDifferenceFlag: boolean) => {
-  const co2eValueExpr = fiForestsSumMethodAttrs(forestryMethod, 'cbt')
-
-  const fiForestsRelativeCO2eValueExpr = fiForestsBestMethodVsOther(forestryMethod, 'cbt')
-
-  const fillColor = carbonBalanceDifferenceFlag
-    ? fiForestsAreaCO2FillColor(fiForestsRelativeCO2eValueExpr)
-    : fiForestsAreaCO2FillColor(co2eValueExpr)
-
-  // TODO: Add execWithMapLoaded function
-  // execWithMapLoaded(() => {
-  //   for (const type of Object.keys(layerOptions)) {
-  //     mbSetPaintProperty(`${type}-fill`, 'fill-color', fillColor)
-  //   }
-  //   mbSetLayoutProperty('arvometsa-sym', 'text-field', fiForestsTextfieldExpression(co2eValueExpr))
-  // })
-}
-
 export const getChartDatasets = (prefix: string, attrValues: any) => {
   switch (prefix) {
     case 'cbt':
