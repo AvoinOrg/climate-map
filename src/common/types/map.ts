@@ -63,3 +63,5 @@ export type LayerConf = {
 export const layerTypes: readonly string[] = ['fill', 'highlighted', 'outline', 'symbol', 'raster']
 
 export type LayerType = typeof layerTypes[number] | 'invalid'
+
+export type OverlayMessage = { message: string | null; layerGroupId: LayerId }
