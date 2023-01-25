@@ -1,7 +1,7 @@
 import { Expression } from 'mapbox-gl'
 
-import { fillOpacity } from '#/utils/mapUtils'
-import { LayerId, LayerConf, ExtendedMbStyle } from '#/types/map'
+import { fillOpacity } from '#/common/utils/mapUtils'
+import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import { layerOptions } from '#/app/app/fi-forest/constants'
 import { fiForestsAreaCO2FillColor, fiForestsCumulativeCO2eValueExpr } from '#/app/app/fi-forest/utils'
 import Popup from './Popup'

@@ -5,7 +5,7 @@ import React from 'react'
 import Link from 'next/link'
 
 import { MapContext } from '#/components/Map'
-import { LayerId } from '#/types/map'
+import { LayerId } from '#/common/types/map'
 
 const styles = {
   heading: {

@@ -1,6 +1,6 @@
 import { Style as MbStyle, AnyLayer } from 'mapbox-gl'
 
-import { LayerId, LayerConf } from '#/types/map'
+import { LayerId, LayerConf } from '#/common/types/map'
 
 const id: LayerId = 'natura2000'
 

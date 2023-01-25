@@ -1,6 +1,6 @@
 import { Expression } from 'mapbox-gl'
 
-import { LayerId, LayerConf, ExtendedMbStyle } from '#/types/map'
+import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import { metsaanFiTreeSpecies } from './constants'
 import Popup from './Popup'
 

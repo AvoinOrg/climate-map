@@ -1,8 +1,8 @@
 import { Style as MbStyle } from 'mapbox-gl'
 import _ from 'lodash'
 
-import { fillOpacity } from '#/utils/mapUtils'
-import { LayerId, LayerConf } from '#/types/map'
+import { fillOpacity } from '#/common/utils/mapUtils'
+import { LayerId, LayerConf } from '#/common/types/map'
 import Popup from './Popup'
 
 const id: LayerId = 'fi_buildings'

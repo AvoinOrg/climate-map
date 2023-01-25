@@ -1,7 +1,7 @@
 import _ from 'lodash'
 
-import { fillOpacity, roundToSignificantDigitsExpr } from '#/utils/mapUtils'
-import { LayerId, LayerConf, ExtendedMbStyle } from '#/types/map'
+import { fillOpacity, roundToSignificantDigitsExpr } from '#/common/utils/mapUtils'
+import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import Popup from './Popup'
 
 const id: LayerId = 'helsinki_buildings'

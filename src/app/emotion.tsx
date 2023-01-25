@@ -7,7 +7,7 @@ import { useServerInsertedHTML } from 'next/navigation'
 import { useState } from 'react'
 import { ThemeProvider } from '@mui/material/styles'
 
-import theme from '#/style/theme'
+import theme from '#/common/style/theme'
 
 const RootStyleRegistry = ({ children }: { children: JSX.Element }) => {
   const [cache] = useState(() => {

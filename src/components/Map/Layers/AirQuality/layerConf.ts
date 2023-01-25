@@ -2,7 +2,7 @@
 
 import { Style as MbStyle } from 'mapbox-gl'
 
-import { LayerId, LayerConf } from '#/types/map'
+import { LayerId, LayerConf } from '#/common/types/map'
 
 const id: LayerId = 'no2'
 

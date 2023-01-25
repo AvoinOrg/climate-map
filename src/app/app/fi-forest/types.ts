@@ -1,4 +1,4 @@
-import { StringValueOf } from '#/types/general'
+import { StringValueOf } from '#/common/types/general'
 
 export enum LayerLevel {
   Parcel = 'fi_forests_parcel',

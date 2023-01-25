@@ -34,7 +34,7 @@ import {
   setLayoutProperty,
   setPaintProperty,
 } from '../../map/map'
-import { assert, execWithMapLoaded, getGeoJsonGeometryBounds } from '#/utils/mapUtils'
+import { assert, execWithMapLoaded, getGeoJsonGeometryBounds } from '#/common/utils/mapUtils'
 import { setOverlayMessage } from '../../OverlayMessages/OverlayMessages'
 import * as SelectedFeatureState from './ArvometsaSelectedLayer'
 import { HeaderTable, SimpleTable } from '../ForestArvometsaTable'

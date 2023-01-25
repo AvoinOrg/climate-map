@@ -24,10 +24,10 @@ import { LngLat, MapLayerMouseEvent, PointLike, Style as MbStyle, MapboxGeoJSONF
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 
-import { LayerId, LayerConf, LayerOpt, LayerOpts, layerTypes, LayerType, ExtendedAnyLayer } from '#/types/map'
+import { LayerId, LayerConf, LayerOpt, LayerOpts, layerTypes, LayerType, ExtendedAnyLayer } from '#/common/types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
-import { getColorExpressionArrForValues } from '#/utils/mapUtils'
+import { getColorExpressionArrForValues } from '#/common/utils/mapUtils'
 
 interface Props {
   children?: React.ReactNode
