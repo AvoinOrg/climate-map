@@ -1,7 +1,7 @@
 'use client'
 
-import '#/style/index.css'
-import '#/style/mapbox.css'
+import '#/common/style/index.css'
+import '#/common/style/mapbox.css'
 
 import React from 'react'
 import CssBaseline from '@mui/material/CssBaseline'
