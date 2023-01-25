@@ -36,7 +36,7 @@ export const fiForestsAreaCO2FillColor: (expr: Expression) => Expression = (expr
 export const fiForestsSumMethodAttrs = (
   forestryMethod: ForestryMethod | Expression,
   attrPrefix: string,
-  attrSuffix = 'area_mult_sum'
+  attrSuffix = '_area_mult_sum'
 ) => {
   const expr: Expression = [
     'let',
