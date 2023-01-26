@@ -63,7 +63,7 @@ interface IMapContext {
   setLayoutProperty: (layerId: string, property: string, value: any) => void | null
   setPaintProperty: (layerId: string, property: string, value: any) => void | null
   setFilter: (layerId: string, filter: any) => void | null
-  setOverlayMessage: (message: OverlayMessage, condition: boolean) => void | null
+  setOverlayMessage: (condition: boolean, nmessage: OverlayMessage) => void | null
   // addMbStyle?: (style: any) => void
 }
 
@@ -858,7 +858,7 @@ export const MapProvider = ({ children }: Props) => {
     mbMap?.setFilter(layer, filter)
   }
 
-  const setOverlayMessage = (message: OverlayMessage, condition: boolean) => {
+  const setOverlayMessage = (condition: boolean, message: OverlayMessage) => {
     _setOverlayMessage(condition ? message : null)
   }
 
