@@ -1,11 +1,11 @@
 import { ILayerOptions, ForestryMethod, LayerLevel } from '#/app/app/fi-forest/types'
 
 export const layerOptions: ILayerOptions = {
-  [LayerLevel.Country]: { minzoom: 0, maxzoom: 5, serverId: 'country' },
-  [LayerLevel.Region]: { minzoom: 5, maxzoom: 7, serverId: 'region' },
-  [LayerLevel.Municipality]: { minzoom: 7, maxzoom: 12, serverId: 'municipality' },
-  [LayerLevel.Estate]: { minzoom: 12, maxzoom: 14, serverId: 'estate' },
-  [LayerLevel.Parcel]: { minzoom: 14, maxzoom: 16, serverId: 'parcel' },
+  [LayerLevel.Country]: { minzoom: 0, maxzoom: 5, serverId: 'country', layerMinzoom: 0, layerMaxzoom: 5 },
+  [LayerLevel.Region]: { minzoom: 5, maxzoom: 7, serverId: 'region', layerMinzoom: 5, layerMaxzoom: 7 },
+  [LayerLevel.Municipality]: { minzoom: 7, maxzoom: 12, serverId: 'municipality', layerMinzoom: 7, layerMaxzoom: 12 },
+  [LayerLevel.Estate]: { minzoom: 12, maxzoom: 14, serverId: 'estate', layerMinzoom: 12, layerMaxzoom: 14 },
+  [LayerLevel.Parcel]: { minzoom: 14, maxzoom: 16, serverId: 'parcel', layerMinzoom: 14, layerMaxzoom: undefined },
 } as const
 
 export const colorboxStepsNeg = ['#FFEC42', '#FDF259', '#FCF670', '#F0F596']

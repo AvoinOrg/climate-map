@@ -14,6 +14,8 @@ export interface ILayerOption {
   minzoom: number
   maxzoom?: number
   serverId: string
+  layerMinzoom?: number | null
+  layerMaxzoom?: number | null
 }
 
 export type ILayerOptions = {
