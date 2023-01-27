@@ -95,7 +95,7 @@ const LAYER_TITLE = `Finland's forests`
 // }
 
 const FinlandForests = () => {
-  const { enableLayerGroup } = useContext(MapContext)
+  const { enableLayerGroup, setOverlayMessage } = useContext(MapContext)
   const updateMapDetails = useUpdateMapDetails()
   const [hasFeature, setHasFeature] = useState(false)
   const filteredFeatures = useFilteredSelectedFeatures(Object.keys(layerOptions).map((x) => `${x}-fill`))
@@ -139,16 +139,16 @@ const FinlandForests = () => {
   }, [scenario, carbonBalanceDifferenceFlag])
 
   // TODO: enable overlay message and search placeholder
-  // useEffect(() => {
-  //   setOverlayMessage(!hasFeature, {
-  //     layer: LAYER_ID,
-  //     message: 'Zoom in and click a forest area for carbon report',
-  //   })
-  //   setSearchPlaceholder({
-  //     layer: LAYER_ID,
-  //     placeholder: 'Look up by property ID',
-  //   })
-  // }, [hasFeature])
+  useEffect(() => {
+    setOverlayMessage(!hasFeature, {
+      layerGroupId: 'fi_forests',
+      message: 'Zoom in and click a forest area for carbon report',
+    })
+    // setSearchPlaceholder({
+    //   layer: LAYER_ID,
+    //   placeholder: 'Look up by property ID',
+    // })
+  }, [hasFeature])
 
   // TODO: Enable charts and values down below
   const allFeatureProps = filteredFeatures.map((x) => x.properties)
