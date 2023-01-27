@@ -2,6 +2,7 @@
 
 import React, { useContext, useState, useEffect } from 'react'
 import {
+  Box,
   Button,
   Checkbox,
   Container,
@@ -18,6 +19,7 @@ import { useObservable } from 'micro-observables'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import _ from 'lodash'
 import Link from 'next/link'
+import { Link as MuiLink } from '@mui/material'
 
 // import * as Analytics from 'src/map/analytics'
 
@@ -45,6 +47,7 @@ import { setIsSidebarOpen } from '#/components/State/UiState'
 import { MapContext } from '#/components/Map'
 import { finlandForests } from './layers'
 import { useFilteredSelectedFeatures } from '#/common/hooks/useFilteredSelectedFeatures'
+import theme from '#/common/style/theme'
 
 // import arvometsaLogo from './assets/arvometsa_logo.png'
 
@@ -231,13 +234,6 @@ const FinlandForests = () => {
 
   const showReport = reportPanelOpen && hasFeature
 
-  const tableTitle = (
-    <Link href="/" className="neutral-link" style={{ display: 'flex' }}>
-      <ExpandMoreIcon style={{ transform: 'rotate(90deg)' }} />
-      {LAYER_TITLE}
-    </Link>
-  )
-
   const onChangeCheckbox = (callback: React.Dispatch<React.SetStateAction<boolean>>) => {
     return (event: any) => {
       callback((event.target as HTMLInputElement).checked)
@@ -249,8 +245,40 @@ const FinlandForests = () => {
     }
   }
 
+  const tableTitle = (
+    <MuiLink href="/" sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }} component={Link}>
+      <ExpandMoreIcon style={{ transform: 'rotate(90deg)' }} />
+      {LAYER_TITLE}
+    </MuiLink>
+  )
+
   return (
-    <div className={showReport ? 'grid-parent' : 'grid-parent grid-parent-report-closed'}>
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: '0 100vw auto',
+        gridTemplateRows: '0px auto',
+        gridColumnGap: '0px',
+        gridRowGap: '0px',
+        height: '100vh',
+        marginTop: '64px',
+        ...(showReport
+          ? {
+              '@media (min-width: 400px)': {
+                gridTemplateColumns: '0 400px auto',
+              },
+              '@media (min-width: 800px)': {
+                gridTemplateColumns: '400px 400px auto',
+              },
+            }
+          : {
+              gridTemplateColumns: '100% 0 auto',
+              '@media (min-width: 400px)': {
+                gridTemplateColumns: '400px 0 auto',
+              },
+            }),
+      }}
+    >
       <Paper className="grid-col1" elevation={5} style={{ width: '400px' }}>
         <Container>
           {/* TODO: enable headerTable */}
@@ -325,7 +353,7 @@ const FinlandForests = () => {
         </Container>
       </Paper>
 
-      <Paper className="grid-col2" elevation={2} hidden={!showReport}>
+      <Paper sx={{ gridArea: '2 / 2 / 3 / 3', paddingBottom: '20px' }} elevation={2} hidden={!showReport}>
         <Container>
           <Paper>
             <FormControlLabel
@@ -380,7 +408,7 @@ const FinlandForests = () => {
           </Button>
         </Container>
       </Paper>
-    </div>
+    </Box>
   )
 }
 
