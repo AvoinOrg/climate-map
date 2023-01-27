@@ -237,6 +237,17 @@ const FinlandForests = () => {
     </Link>
   )
 
+  const onChangeCheckbox = (callback: React.Dispatch<React.SetStateAction<boolean>>) => {
+    return (event: any) => {
+      callback((event.target as HTMLInputElement).checked)
+    }
+  }
+  const onChangeValue = (callback: React.Dispatch<React.SetStateAction<any>>) => {
+    return (event: any) => {
+      callback((event.target as HTMLInputElement).value)
+    }
+  }
+
   return (
     <div className={showReport ? 'grid-parent' : 'grid-parent grid-parent-report-closed'}>
       <Paper className="grid-col1" elevation={5} style={{ width: '400px' }}>

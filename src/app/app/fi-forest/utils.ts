@@ -400,14 +400,3 @@ export const getChartTitle = (selectedFeatureLayers: Layer[], featureProps: any[
 
   return getChartTitleSingleLayer(uniqueLayers[0], featureProps, selectedFeatureLayers.length > 1)
 }
-
-export const onChangeCheckbox = (callback: React.Dispatch<React.SetStateAction<boolean>>) => {
-  return (event: any) => {
-    callback((event.target as HTMLInputElement).checked)
-  }
-}
-export const onChangeValue = (callback: React.Dispatch<React.SetStateAction<any>>) => {
-  return (event: any) => {
-    callback((event.target as HTMLInputElement).value)
-  }
-}
