@@ -112,21 +112,21 @@ const FinlandForests = () => {
 
   const [reportPanelOpen, setReportPanelOpen] = useState(true)
 
-  const [scenario, setScenario] = useState<ForestryMethod>(ForestryMethod['jatkuva'])
+  const [forestryMethod, setForestryMethod] = useState<ForestryMethod>(ForestryMethod['jatkuva'])
   const [perHectareFlag, setPerHectareFlag] = useState(true)
   const [cumulativeFlag, setCumulativeFlag] = useState(true)
   const [carbonBalanceDifferenceFlag, setCarbonBalanceDifferenceFlag] = useState(true)
 
   // Analytics.setParams({
   //   reportPanelOpen,
-  //   scenario,
+  //   forestryMethod,
   //   perHectareFlag,
   //   cumulativeFlag,
   //   carbonBalanceDifferenceFlag,
   // })
 
-  // i.e. which projection/scenario is in use:
-  // NB: an unknown scenarioName is also valid; dataset==-1 -> compare against the best option
+  // i.e. which projection/method is in use:
+  // NB: an unknown methodName is also valid; dataset==-1 -> compare against the best option
 
   // TODO: enable selected features
   // const { layer, feature, bounds } = useObservable(SelectedFeatureState.selectedFeatures)
@@ -134,9 +134,9 @@ const FinlandForests = () => {
 
   useEffect(() => {
     // Eliminate confusing options (all zeroes)
-    if (scenario === TRADITIONAL_FORESTRY_METHOD && carbonBalanceDifferenceFlag) setCarbonBalanceDifferenceFlag(false)
-    updateMapDetails(scenario, carbonBalanceDifferenceFlag)
-  }, [scenario, carbonBalanceDifferenceFlag])
+    if (forestryMethod === TRADITIONAL_FORESTRY_METHOD && carbonBalanceDifferenceFlag) setCarbonBalanceDifferenceFlag(false)
+    updateMapDetails(forestryMethod, carbonBalanceDifferenceFlag)
+  }, [forestryMethod, carbonBalanceDifferenceFlag])
 
   // TODO: enable overlay message and search placeholder
   useEffect(() => {
@@ -153,9 +153,9 @@ const FinlandForests = () => {
   // TODO: Enable charts and values down below
   const allFeatureProps = filteredFeatures.map((x) => x.properties)
 
-  const totals = getTotals(scenario, perHectareFlag, allFeatureProps)
+  const totals = getTotals(forestryMethod, perHectareFlag, allFeatureProps)
 
-  const attrValues = getDatasetAttributes(scenario, cumulativeFlag, totals)
+  const attrValues = getDatasetAttributes(forestryMethod, cumulativeFlag, totals)
   if (carbonBalanceDifferenceFlag) {
     const traditional = getDatasetAttributes(TRADITIONAL_FORESTRY_METHOD, cumulativeFlag, totals)
     for (const attr in attrValues) {
@@ -166,7 +166,7 @@ const FinlandForests = () => {
   const selectedLayersOfFeatures = filteredFeatures.map((x) => x.layer)
 
   const title = getChartTitle(selectedLayersOfFeatures, allFeatureProps)
-  const npvText = getNpvText(carbonBalanceDifferenceFlag, perHectareFlag, totals, scenario)
+  const npvText = getNpvText(carbonBalanceDifferenceFlag, perHectareFlag, totals, forestryMethod)
 
   const cbt = getChartProps('cbt', cumulativeFlag, perHectareFlag, attrValues)
   const bio = getChartProps('bio', cumulativeFlag, perHectareFlag, attrValues)
@@ -174,7 +174,7 @@ const FinlandForests = () => {
 
   const getAverageCarbonBalanceFigure = (totals: any) => {
     const averageCarbonBalanceDecade =
-      totals[`f${scenario}_cbt1_area_mult_sum`] -
+      totals[`f${forestryMethod}_cbt1_area_mult_sum`] -
       (carbonBalanceDifferenceFlag ? totals[`f${TRADITIONAL_FORESTRY_METHOD}_cbt1_area_mult_sum`] : 0)
     // per decade -> per year
     return averageCarbonBalanceDecade / 10
@@ -186,7 +186,7 @@ const FinlandForests = () => {
     ? ''
     : `${averageCarbonBalance > 0 ? '+' : ''}${_.round(averageCarbonBalance, 2)} ${unit}`
 
-  const totalsOverall = getTotals(scenario, false, allFeatureProps)
+  const totalsOverall = getTotals(forestryMethod, false, allFeatureProps)
   const averageCarbonBalanceOverall = getAverageCarbonBalanceFigure(totalsOverall)
 
   const headerTitle = titleRenames[title] || title
@@ -282,16 +282,16 @@ const FinlandForests = () => {
           <h1>Forestry projections</h1>
           <Divider />
           <FormControl style={{ width: '100%' }}>
-            <InputLabel htmlFor="forestry-scenario">Forestry method</InputLabel>
+            <InputLabel htmlFor="forestry-method">Forestry method</InputLabel>
             <Select
               native
               inputProps={{
-                name: 'forestry-scenario',
-                id: 'forestry-scenario',
+                name: 'forestry-method',
+                id: 'forestry-method',
               }}
-              value={scenario}
+              value={forestryMethod}
               onChange={(event) => {
-                onChangeValue(setScenario)(event)
+                onChangeValue(setForestryMethod)(event)
                 setReportPanelOpen(true)
               }}
             >
@@ -344,7 +344,7 @@ const FinlandForests = () => {
               label="Show carbon balance improvement potential compared to the prevalent forestry practice"
               checked={carbonBalanceDifferenceFlag}
               onChange={onChangeCheckbox(setCarbonBalanceDifferenceFlag)}
-              disabled={scenario === TRADITIONAL_FORESTRY_METHOD}
+              disabled={forestryMethod === TRADITIONAL_FORESTRY_METHOD}
             />
           </Paper>
           <br />
