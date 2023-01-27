@@ -220,6 +220,7 @@ export const getTotals = (
       totals[`f${dsNum}_${attr}_area_mult_sum`] = 0
     }
   }
+
   const areaProportionalAttrs = Object.keys(totals).filter((x) => x !== 'area')
 
   // const reMatchAttr = /m-?\d_(.*)/
@@ -233,7 +234,7 @@ export const getTotals = (
       continue
     }
     // Degenerate cases:
-    if (p.f1_cbt1_area_mult != null) {
+    if (p.f1_cbt1_area_mult_sum != null) {
       continue
     }
     if (!p.area) {
