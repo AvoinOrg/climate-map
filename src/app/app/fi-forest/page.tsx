@@ -30,7 +30,7 @@ import Link from 'next/link'
 //   setPaintProperty,
 // } from '../../Map/map'
 
-import { onChangeCheckbox, getTotals, getDatasetAttributes, getChartTitle, getNpvText, getChartProps } from './utils'
+import { getTotals, getDatasetAttributes, getChartTitle, getNpvText, getChartProps } from './utils'
 import { useUpdateMapDetails } from './hooks/useUpdateMapDetails'
 import { ForestryMethod } from './types'
 import { assert } from '#/common/utils/mapUtils'
@@ -277,8 +277,7 @@ const FinlandForests = () => {
             carbon is being stored than released.
           </p>
           <p hidden={!hasFeature}>
-            {/* TODO: enable this */}
-            {/* Equals {_.round(averageCarbonBalanceOverall / CO2_TONS_PER_PERSON, 1)} times average 👤 CO2 emissions */}
+            Equals {_.round(averageCarbonBalanceOverall / CO2_TONS_PER_PERSON, 1)} times average 👤 CO2 emissions
           </p>
           <h1>Forestry projections</h1>
           <Divider />
@@ -291,10 +290,10 @@ const FinlandForests = () => {
                 id: 'forestry-scenario',
               }}
               value={scenario}
-              // onChange={(event) => {
-              //   onChangeValue(setScenario)(event)
-              //   setReportPanelOpen(true)
-              // }}
+              onChange={(event) => {
+                onChangeValue(setScenario)(event)
+                setReportPanelOpen(true)
+              }}
             >
               <option value="arvometsa_eihakata"> No cuttings </option>
               <option value="arvometsa_jatkuva"> Continuous cover forestry </option>
