@@ -30,7 +30,8 @@ import Link from 'next/link'
 //   setPaintProperty,
 // } from '../../Map/map'
 
-import { getTotals, getDatasetAttributes, getChartTitle, getNpvText, getChartProps, getCombinedBounds } from './utils'
+import { getTotals, getDatasetAttributes, getChartTitle, getNpvText, getChartProps } from './utils'
+import { getCombinedBounds } from '#/common/utils/mapUtils'
 import { useUpdateMapDetails } from './hooks/useUpdateMapDetails'
 import { ForestryMethod } from './types'
 import { assert } from '#/common/utils/mapUtils'
@@ -221,8 +222,7 @@ const FinlandForests = () => {
     { name: 'Net present value (3% discounting)', value: npvText },
   ]
 
-  // TODO: check what happens here?
-  const bounds = getCombinedBounds(filteredFeatures.map((x) => x.bbox))
+  const bounds = getCombinedBounds(filteredFeatures)
   const onFitLayerBounds = () => {
     if (bounds) {
       fitBounds(bounds, 0.4, 0.15)
@@ -269,8 +269,7 @@ const FinlandForests = () => {
             />
           </Paper>
           <br />
-          {/* TODO: enable rows */}
-          {/* <SimpleTable rows={tableRows} />  */}
+          <SimpleTable rows={tableRows} />
           {/* area stats */}
           <p>* Assuming even-age forestry</p>
           <p>
