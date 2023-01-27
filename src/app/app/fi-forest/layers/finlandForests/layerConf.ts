@@ -38,8 +38,8 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
           'fill-color': fiForestsAreaCO2FillColor(fiForestsCumulativeCO2eValueExpr),
           'fill-opacity': layerId === 'parcel' ? 1 : fillOpacity,
         },
-        minzoom: options.minzoom,
-        maxzoom: options.maxzoom,
+        ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
+        ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
         selectable: true,
         multiSelectable: true,
         BEFORE: 'FILL',
@@ -52,8 +52,8 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         paint: {
           'line-opacity': 0.5,
         },
-        minzoom: options.minzoom,
-        maxzoom: options.maxzoom,
+        ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
+        ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
         BEFORE: 'OUTLINE',
       },
       {
@@ -68,8 +68,8 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         },
         filter: ['in', 'id', ''],
         BEFORE: 'OUTLINE',
-        minzoom: options.minzoom,
-        maxzoom: options.maxzoom,
+        ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
+        ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
       },
     ]
   }
