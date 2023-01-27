@@ -400,9 +400,3 @@ export const getChartTitle = (selectedFeatureLayers: Layer[], featureProps: any[
 
   return getChartTitleSingleLayer(uniqueLayers[0], featureProps, selectedFeatureLayers.length > 1)
 }
-
-export const getCombinedBounds = (xs: any[]) =>
-  xs.reduce(
-    ([a1, b1, c1, d1], [a2, b2, c2, d2]) => [Math.min(a1, a2), Math.min(b1, b2), Math.max(c1, c2), Math.max(d1, d2)],
-    [999, 999, -999, -999] // fallback bounds
-  )

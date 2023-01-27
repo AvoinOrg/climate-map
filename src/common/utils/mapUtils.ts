@@ -1,4 +1,4 @@
-import { Expression } from 'mapbox-gl'
+import { Expression, MapboxGeoJSONFeature } from 'mapbox-gl'
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style'
 import Layer from 'ol/layer/Layer'
 import WebGLVectorLayerRenderer from 'ol/renderer/webgl/VectorLayer'
@@ -150,3 +150,15 @@ export const roundToSignificantDigitsExpr = (n: number, expr: Expression) => [
   ['*', -1, roundToSignificantDigitsPosExpr(n, ['*', -1, expr])],
   roundToSignificantDigitsPosExpr(n, expr),
 ]
+
+export const getCombinedBounds = (features: MapboxGeoJSONFeature[]) => {
+  const coords = features.map((f) => {
+    const g: any = f.geometry
+    return g.coordinates
+  })
+
+  return coords.reduce(
+    ([a1, b1, c1, d1], [a2, b2, c2, d2]) => [Math.min(a1, a2), Math.min(b1, b2), Math.max(c1, c2), Math.max(d1, d2)],
+    [999, 999, -999, -999] // fallback bounds
+  )
+}
