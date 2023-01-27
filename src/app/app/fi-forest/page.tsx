@@ -30,7 +30,7 @@ import Link from 'next/link'
 //   setPaintProperty,
 // } from '../../Map/map'
 
-import { getTotals, getDatasetAttributes, getChartTitle, getNpvText, getChartProps } from './utils'
+import { getTotals, getDatasetAttributes, getChartTitle, getNpvText, getChartProps, getCombinedBounds } from './utils'
 import { useUpdateMapDetails } from './hooks/useUpdateMapDetails'
 import { ForestryMethod } from './types'
 import { assert } from '#/common/utils/mapUtils'
@@ -95,7 +95,7 @@ const LAYER_TITLE = `Finland's forests`
 // }
 
 const FinlandForests = () => {
-  const { enableLayerGroup, setOverlayMessage } = useContext(MapContext)
+  const { enableLayerGroup, setOverlayMessage, fitBounds } = useContext(MapContext)
   const updateMapDetails = useUpdateMapDetails()
   const [hasFeature, setHasFeature] = useState(false)
   const filteredFeatures = useFilteredSelectedFeatures(Object.keys(layerOptions).map((x) => `${x}-fill`))
@@ -212,23 +212,22 @@ const FinlandForests = () => {
     },
   ]
 
-  // TODO: enable table
-  // const tableRows = [
-  //   { name: 'Forest area', value: `${_.round(totals.area, 3)} ha` },
-  //   // { name: 'Main tree species', value: 'Pine' },
-  //   // { name: 'Forest age', value: `${pp(123, 2)} years` },
-  //   // { name: 'Biomass volume', value: `${pp(123.45, 2)} m³/ha` },
-  //   { name: 'Average carbon balance*', value: averageCarbonBalanceText },
-  //   { name: 'Net present value (3% discounting)', value: npvText },
-  // ]
+  const tableRows = [
+    { name: 'Forest area', value: `${_.round(totals.area, 3)} ha` },
+    // { name: 'Main tree species', value: 'Pine' },
+    // { name: 'Forest age', value: `${pp(123, 2)} years` },
+    // { name: 'Biomass volume', value: `${pp(123.45, 2)} m³/ha` },
+    { name: 'Average carbon balance*', value: averageCarbonBalanceText },
+    { name: 'Net present value (3% discounting)', value: npvText },
+  ]
 
   // TODO: check what happens here?
-  // const bounds = getCombinedBounds(selectedFeatures.map((x) => x.bounds))
-  // const onFitLayerBounds = () => {
-  //   if (bounds) {
-  //     fitBounds(bounds, 0.4, 0.15)
-  //   }
-  // }
+  const bounds = getCombinedBounds(filteredFeatures.map((x) => x.bbox))
+  const onFitLayerBounds = () => {
+    if (bounds) {
+      fitBounds(bounds, 0.4, 0.15)
+    }
+  }
 
   const showReport = reportPanelOpen && hasFeature
 
@@ -255,7 +254,7 @@ const FinlandForests = () => {
       <Paper className="grid-col1" elevation={5} style={{ width: '400px' }}>
         <Container>
           {/* TODO: enable headerTable */}
-          {/* <HeaderTable title={tableTitle} rows={headerRows} onFitLayerBounds={onFitLayerBounds} /> */}
+          <HeaderTable title={tableTitle} rows={headerRows} onFitLayerBounds={onFitLayerBounds} />
           <br />
           <Paper>
             <FormControlLabel
