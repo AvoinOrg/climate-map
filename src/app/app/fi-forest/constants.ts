@@ -45,3 +45,12 @@ export const TRADITIONAL_FORESTRY_METHOD = ForestryMethod['tasaikainen']
 export const FILL_COLOR_FORESTRY_METHOD = ForestryMethod['vapaa']
 
 export const carbonStockAttrPrefixes = ['bio', 'maa']
+
+export const titleRenames: any = {
+  'Etelä-Suomen aluehallintovirasto': 'Etelä-Suomi',
+  'Itä-Suomen aluehallintovirasto': 'Itä-Suomi',
+  'Länsi- ja Sisä-Suomen aluehallintovirasto': 'Länsi-Suomi',
+  'Lapin aluehallintovirasto': 'Lappi',
+  'Lounais-Suomen aluehallintovirasto': 'Lounais-Suomi',
+  'Pohjois-Suomen aluehallintovirasto': 'Pohjois-Suomi',
+}
