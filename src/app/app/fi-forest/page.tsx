@@ -134,7 +134,9 @@ const FinlandForests = () => {
 
   useEffect(() => {
     // Eliminate confusing options (all zeroes)
-    if (forestryMethod === TRADITIONAL_FORESTRY_METHOD && carbonBalanceDifferenceFlag) setCarbonBalanceDifferenceFlag(false)
+    if (forestryMethod === TRADITIONAL_FORESTRY_METHOD && carbonBalanceDifferenceFlag) {
+      setCarbonBalanceDifferenceFlag(false)
+    }
     updateMapDetails(forestryMethod, carbonBalanceDifferenceFlag)
   }, [forestryMethod, carbonBalanceDifferenceFlag])
 
