@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { Expression } from 'mapbox-gl'
+import { Expression, Layer } from 'mapbox-gl'
 import { GeoJsonProperties } from 'geojson'
 
 import {
@@ -373,13 +373,13 @@ export const getNpvText = (
   return npvValue === 0 || npvValue ? `${_.round(npvValue)} €${perHectareFlag ? ' per ha' : ''}` : '-'
 }
 
-export const getChartTitleSingleLayer = (selectedFeatureLayer: string, featureProps: any[], multiple: boolean) => {
+export const getChartTitleSingleLayer = (selectedFeatureLayer: Layer, featureProps: any[], multiple: boolean) => {
   assert(selectedFeatureLayer, 'selectedFeatureLayer must be set')
-  if (selectedFeatureLayer === LayerLevel.Parcel + '-fill') {
+  if (selectedFeatureLayer.id === LayerLevel.Parcel + '-fill') {
     const name = featureProps.map((p) => p.standid).join(', ')
     if (multiple) return `Multiple forest parcels selected: standids = ${name}`
     return `Forest parcel (standid: ${name})`
-  } else if (selectedFeatureLayer === LayerLevel.Estate + '-fill') {
+  } else if (selectedFeatureLayer.id === LayerLevel.Estate + '-fill') {
     const name = featureProps.map((p) => p.estate_id_text).join(', ')
     if (multiple) return `Multiple properties selected: ${name}`
     return `Property with forest (${name})`
@@ -391,7 +391,7 @@ export const getChartTitleSingleLayer = (selectedFeatureLayer: string, featurePr
   }
 }
 
-export const getChartTitle = (selectedFeatureLayers: string[], featureProps: any[]) => {
+export const getChartTitle = (selectedFeatureLayers: Layer[], featureProps: any[]) => {
   if (featureProps.length === 0) return 'No area selected'
 
   assert(selectedFeatureLayers.length > 0, 'selectedFeatureLayer must be non-empty')
