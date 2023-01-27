@@ -30,14 +30,14 @@ import Link from 'next/link'
 //   setPaintProperty,
 // } from '../../Map/map'
 
-import { onChangeCheckbox, getTotals } from './utils'
+import { onChangeCheckbox, getTotals, getDatasetAttributes, getChartTitle, getNpvText, getChartProps } from './utils'
 import { useUpdateMapDetails } from './hooks/useUpdateMapDetails'
 import { ForestryMethod } from './types'
 import { assert } from '#/common/utils/mapUtils'
 // import { setOverlayMessage } from '../../OverlayMessages/OverlayMessages'
 // import * as SelectedFeatureState from './ArvometsaSelectedLayer'
 import { HeaderTable, SimpleTable } from './components/FinlandForestsTable'
-import { CO2_TONS_PER_PERSON, TRADITIONAL_FORESTRY_METHOD, layerOptions } from './constants'
+import { CO2_TONS_PER_PERSON, TRADITIONAL_FORESTRY_METHOD, layerOptions, titleRenames } from './constants'
 
 import { setIsSidebarOpen } from '#/components/State/UiState'
 // import { setSearchPlaceholder } from '../../NavBar/NavBarSearch'
@@ -152,75 +152,63 @@ const FinlandForests = () => {
 
   // TODO: Enable charts and values down below
   const allFeatureProps = filteredFeatures.map((x) => x.properties)
+
   const totals = getTotals(scenario, perHectareFlag, allFeatureProps)
 
-  // const attrValues = getDatasetAttributes({ dataset, cumulativeFlag, totals })
-  // if (carbonBalanceDifferenceFlag) {
-  //   const traditional = getDatasetAttributes({
-  //     dataset: ARVOMETSA_TRADITIONAL_FORESTRY_METHOD,
-  //     cumulativeFlag,
-  //     totals,
-  //   })
-  //   for (const attr in attrValues) {
-  //     attrValues[attr] = attrValues[attr].map((v: number, i: number) => v - traditional[attr][i])
-  //   }
-  // }
+  const attrValues = getDatasetAttributes(scenario, cumulativeFlag, totals)
+  if (carbonBalanceDifferenceFlag) {
+    const traditional = getDatasetAttributes(TRADITIONAL_FORESTRY_METHOD, cumulativeFlag, totals)
+    for (const attr in attrValues) {
+      attrValues[attr] = attrValues[attr].map((v: number, i: number) => v - traditional[attr][i])
+    }
+  }
 
-  // const selectedLayersOfFeatures = selectedFeatures.map((x) => x.layer)
-  // const title = getChartTitle(selectedLayersOfFeatures, allFeatureProps)
-  // const npvText = getNpvText({
-  //   carbonBalanceDifferenceFlag,
-  //   perHectareFlag,
-  //   totals,
-  //   dataset,
-  // })
+  const selectedLayersOfFeatures = filteredFeatures.map((x) => x.layer)
 
-  // const chartProps = { cumulativeFlag, perHectareFlag, attrValues }
-  // const cbt = getChartProps({ ...chartProps, prefix: 'cbt' })
-  // const bio = getChartProps({ ...chartProps, prefix: 'bio' })
-  // const wood = getChartProps({ ...chartProps, prefix: 'harvested-wood' })
+  const title = getChartTitle(selectedLayersOfFeatures, allFeatureProps)
+  const npvText = getNpvText(carbonBalanceDifferenceFlag, perHectareFlag, totals, scenario)
 
-  // const getAverageCarbonBalanceFigure = (totals) => {
-  //   const averageCarbonBalanceDecade =
-  //     totals[`m${dataset}_cbt1`] -
-  //     (carbonBalanceDifferenceFlag ? totals[`m${ARVOMETSA_TRADITIONAL_FORESTRY_METHOD}_cbt1`] : 0)
-  //   // per decade -> per year
-  //   return averageCarbonBalanceDecade / 10
-  // }
+  const cbt = getChartProps('cbt', cumulativeFlag, perHectareFlag, attrValues)
+  const bio = getChartProps('bio', cumulativeFlag, perHectareFlag, attrValues)
+  const wood = getChartProps('harvested-wood', cumulativeFlag, perHectareFlag, attrValues)
 
-  // const averageCarbonBalance = getAverageCarbonBalanceFigure(totals)
-  // const unit = perHectareFlag ? 'tons CO₂e/ha/y' : 'tons CO₂e/y'
-  // const averageCarbonBalanceText = isNaN(averageCarbonBalance)
-  //   ? ''
-  //   : `${averageCarbonBalance > 0 ? '+' : ''}${pp(averageCarbonBalance, 2)} ${unit}`
+  const getAverageCarbonBalanceFigure = (totals: any) => {
+    const averageCarbonBalanceDecade =
+      totals[`f${scenario}_cbt1_area_mult_sum`] -
+      (carbonBalanceDifferenceFlag ? totals[`f${TRADITIONAL_FORESTRY_METHOD}_cbt1_area_mult_sum`] : 0)
+    // per decade -> per year
+    return averageCarbonBalanceDecade / 10
+  }
 
-  // const totalsOverall = getTotals({
-  //   dataset,
-  //   perHectareFlag: false,
-  //   allFeatureProps,
-  // })
-  // const averageCarbonBalanceOverall = getAverageCarbonBalanceFigure(totalsOverall)
+  const averageCarbonBalance = getAverageCarbonBalanceFigure(totals)
+  const unit = perHectareFlag ? 'tons CO₂e/ha/y' : 'tons CO₂e/y'
+  const averageCarbonBalanceText = isNaN(averageCarbonBalance)
+    ? ''
+    : `${averageCarbonBalance > 0 ? '+' : ''}${_.round(averageCarbonBalance, 2)} ${unit}`
 
-  // const headerTitle = titleRenames[title] || title
-  // const headerOnClick = () => {
-  //   if (!hasFeature) setIsSidebarOpen(false)
-  // }
-  // const headerRows = [
-  //   {
-  //     name: (
-  //       <div onClick={headerOnClick} style={{ cursor: hasFeature ? 'initial' : 'pointer' }}>
-  //         {headerTitle}
-  //         {!hasFeature && (
-  //           <span>
-  //             <br />
-  //             <strong>click to show the map</strong>
-  //           </span>
-  //         )}
-  //       </div>
-  //     ),
-  //     value: `${_.round(1e-4 * totals.st_area, 3)} ha`,
-  //   },
-  // ]
+  const totalsOverall = getTotals(scenario, false, allFeatureProps)
+  const averageCarbonBalanceOverall = getAverageCarbonBalanceFigure(totalsOverall)
+
+  const headerTitle = titleRenames[title] || title
+  const headerOnClick = () => {
+    if (!hasFeature) setIsSidebarOpen(false)
+  }
+  const headerRows = [
+    {
+      name: (
+        <div onClick={headerOnClick} style={{ cursor: hasFeature ? 'initial' : 'pointer' }}>
+          {headerTitle}
+          {!hasFeature && (
+            <span>
+              <br />
+              <strong>click to show the map</strong>
+            </span>
+          )}
+        </div>
+      ),
+      value: `${_.round(1e-4 * totals.st_area, 3)} ha`,
+    },
+  ]
 
   // TODO: enable table
   // const tableRows = [
