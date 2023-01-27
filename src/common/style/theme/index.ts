@@ -1,9 +1,25 @@
 import { createTheme } from '@mui/material/styles'
 import { TypographyOptions } from '@mui/material/styles/createTypography'
-import { Roboto } from '@next/font/google'
+import { Roboto, Raleway } from '@next/font/google'
 
 export const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+  fallback: [
+    'BlinkMacSystemFont',
+    'Segoe UI',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+  ],
+})
+
+export const raleway = Raleway({
+  weight: ['500', '700'],
   subsets: ['latin'],
   display: 'swap',
   fallback: [
@@ -35,7 +51,7 @@ const zIndex = {
 
 const fonts = {
   0: roboto.style.fontFamily,
-  1: 'raleway',
+  1: raleway.style.fontFamily,
 }
 
 const typography: TypographyOptions = {
