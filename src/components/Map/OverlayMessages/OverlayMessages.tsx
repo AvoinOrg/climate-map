@@ -21,7 +21,19 @@ export const OverlayMessages = ({ message }: { message: OverlayMessage | null })
   if (!isActive) return null
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    <Box
+      sx={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        left: 0,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        pointerEvents: 'none',
+      }}
+    >
       <Box
         sx={{
           margin: 'auto',
@@ -30,7 +42,7 @@ export const OverlayMessages = ({ message }: { message: OverlayMessage | null })
           fontSize: '1.5rem',
           color: '#fff',
           backgroundColor: 'rgba(0, 0, 0, 0.3)',
-          zIndex: '1000',
+          zIndex: '2000',
         }}
       >
         {message && message.message}
