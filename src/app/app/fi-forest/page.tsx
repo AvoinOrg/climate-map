@@ -209,7 +209,7 @@ const FinlandForests = () => {
           )}
         </div>
       ),
-      value: `${_.round(1e-4 * totals.st_area, 3)} ha`,
+      value: `${_.round(1e-4 * totals.area, 3)} ha`,
     },
   ]
 
