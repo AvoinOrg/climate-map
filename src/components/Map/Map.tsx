@@ -64,6 +64,7 @@ interface IMapContext {
   setPaintProperty: (layerId: string, property: string, value: any) => void | null
   setFilter: (layerId: string, filter: any) => void | null
   setOverlayMessage: (condition: boolean, nmessage: OverlayMessage) => void | null
+  fitBounds: (bbox: number[], lonExtra: number, latExtra: number) => void | null
   // addMbStyle?: (style: any) => void
 }
 
@@ -862,6 +863,25 @@ export const MapProvider = ({ children }: Props) => {
     _setOverlayMessage(condition ? message : null)
   }
 
+  const fitBounds = (bbox: number[], lonExtra: number, latExtra: number) => {
+    if (!isLoaded) {
+      addToFunctionQueue('fitBounds', [bbox, lonExtra, latExtra])
+      return
+    }
+
+    const flyOptions = {}
+    const [lonMin, latMin, lonMax, latMax] = bbox
+    const lonDiff = lonMax - lonMin
+    const latDiff = latMax - latMin
+    mbMap?.fitBounds(
+      [
+        [lonMin - lonExtra * lonDiff, latMin - latExtra * latDiff],
+        [lonMax + lonExtra * lonDiff, latMax + latExtra * latDiff],
+      ],
+      flyOptions
+    )
+  }
+
   // implement at some point
   // const setFilter = () => {}
   // const AddMapEventHandler = () => {}
@@ -871,7 +891,6 @@ export const MapProvider = ({ children }: Props) => {
   // const disablePersonalDataset = () => {}
 
   // used in ForestArvometsa.tsx. Not all of these are needed
-  // const fitBounds = () => {}
   // const genericPopupHandler = () => {}
   // const querySourceFeatures = () => {}
 
@@ -903,6 +922,7 @@ export const MapProvider = ({ children }: Props) => {
     setPaintProperty,
     setFilter,
     setOverlayMessage,
+    fitBounds,
 
     // enableGroup,
     // setFilter,
@@ -912,7 +932,6 @@ export const MapProvider = ({ children }: Props) => {
     // enablePersonalDataset,
     // disablePersonalDataset,
 
-    // fitBounds,
     // genericPopupHandler,
     // querySourceFeatures,
     // setLayoutProperty,
