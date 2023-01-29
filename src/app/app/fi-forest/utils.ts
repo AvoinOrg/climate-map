@@ -288,7 +288,7 @@ export const getChartProps = (prefix: string, cumulativeFlag: boolean, perHectar
   const cumulative = cumulativeFlag && !isCarbonStock
 
   const unit = getUnitPerArea(prefix, cumulative, perHectareFlag)
-  const stacked = true
+  const stacked = false
 
   const datasets = getChartDatasets(prefix, attrValues)
 
@@ -350,7 +350,6 @@ export const getChartProps = (prefix: string, cumulativeFlag: boolean, perHectar
     },
   }
   const chartOptions = {
-    type: 'bar',
     data: { labels: prefixLabels[prefix], datasets },
     options,
   }
