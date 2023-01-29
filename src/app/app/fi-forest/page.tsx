@@ -31,7 +31,7 @@ import { useUpdateMapDetails } from './hooks/useUpdateMapDetails'
 import { getTotals, getDatasetAttributes, getChartTitle, getNpvText, getChartProps, getUnitPerArea } from './utils'
 import { finlandForests } from './layers'
 import { useFilteredSelectedFeatures } from '#/common/hooks/useFilteredSelectedFeatures'
-import { FinlandForestsChartComponent } from './components/FinlandForestsChartComponent'
+import { FinlandForestsChart } from './components/FinlandForestsChart'
 import { ForestryMethod } from './types'
 // import * as Analytics from 'src/map/analytics'
 
@@ -367,17 +367,17 @@ const FinlandForests = () => {
             CO<sub>2</sub>eq
           </abbr>{' '}
           carbon balance ({getUnitPerArea('cbt', cumulativeFlag, perHectareFlag)})
-          <FinlandForestsChartComponent {...cbt} />
+          <FinlandForestsChart {...cbt} />
           <br />
           Forest carbon stock
           <br />
           <small>
             in {getUnitPerArea('bio', cumulativeFlag, perHectareFlag)}; multiply by 3.67 to get CO<sub>2</sub>eq amounts
           </small>
-          <FinlandForestsChartComponent {...bio} />
+          <FinlandForestsChart {...bio} />
           <br />
           Harvested wood ({getUnitPerArea('harvested-wood', cumulativeFlag, perHectareFlag)})
-          <FinlandForestsChartComponent {...wood} />
+          <FinlandForestsChart {...wood} />
           <br />
           <Button
             variant="contained"
