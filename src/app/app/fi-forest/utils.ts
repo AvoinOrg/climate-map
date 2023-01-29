@@ -123,12 +123,12 @@ export const getChartDatasets = (prefix: string, attrValues: any) => {
         {
           label: 'Sawlog',
           backgroundColor: '#51c0c0',
-          data: attrValues.tukki,
+          data: attrValues.tuk,
         },
         {
           label: 'Pulpwood',
           backgroundColor: '#364858',
-          data: attrValues.kuitu,
+          data: attrValues.kui,
         },
       ]
     default:
@@ -162,8 +162,8 @@ export const getDatasetAttributes = (forestryMethod: ForestryMethod, cumulativeF
     cbt: [],
     bio: [],
     maa: [],
-    tukki: [],
-    kuitu: [],
+    tuk: [],
+    kui: [],
     productsCB: [],
     soilCB: [],
     treeCB: [],
