@@ -213,7 +213,7 @@ export const getTotals = (
   perHectareFlag: boolean,
   allFeatureProps: GeoJsonProperties[]
 ) => {
-  const totals: any = { area: 0, st_area: 0 }
+  const totals: any = { area: 0, f_area: 0 }
   const totalBaseAttrs = (harvestedWoodAttrs.join(' ') + ' ' + baseAttrs).split(/\s+/)
   for (const dsNum of [forestryMethod, TRADITIONAL_FORESTRY_METHOD]) {
     for (const attr of totalBaseAttrs) {
@@ -229,12 +229,13 @@ export const getTotals = (
 
   // In principle, multiple features' data can be aggregated here.
   // In practice, we just use one at the moment.
+
   for (const p of allFeatureProps) {
     if (!p) {
       continue
     }
     // Degenerate cases:
-    if (p.f1_cbt1_area_mult_sum != null) {
+    if (p.f1_cbt1_area_mult_sum == null) {
       continue
     }
     if (!p.area) {
@@ -242,14 +243,14 @@ export const getTotals = (
     } // hypothetical
 
     // Duplicates are possible, so we must only aggregate only once per ID:
-    const id = p.localid || p.standid
+    const id = p.id
     if (id in seenIds) {
       continue
     }
     seenIds[id] = true
 
     totals.area += p.area
-    totals.st_area += p.st_area || p.area
+    totals.f_area += p.f_area || p.area
 
     // TODO: check if this is still needed
     // if (ForestryMethod === BEST_METHOD_FOR_EACH) {
@@ -265,7 +266,7 @@ export const getTotals = (
 
     for (const a of areaProportionalAttrs) {
       if (a in p) {
-        totals[a] += p[a] * p.area
+        totals[a] += p[a]
       }
     }
   }
