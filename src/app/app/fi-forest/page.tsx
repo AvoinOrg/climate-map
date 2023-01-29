@@ -47,6 +47,7 @@ import { setIsSidebarOpen } from '#/components/State/UiState'
 import { MapContext } from '#/components/Map'
 import { finlandForests } from './layers'
 import { useFilteredSelectedFeatures } from '#/common/hooks/useFilteredSelectedFeatures'
+import { FinlandForestsChartComponent } from './components/FinlandForestsChartComponent'
 import theme from '#/common/style/theme'
 
 // import arvometsaLogo from './assets/arvometsa_logo.png'
@@ -379,19 +380,18 @@ const FinlandForests = () => {
           <abbr title="Carbon dioxide equivalent">
             CO<sub>2</sub>eq
           </abbr>{' '}
-          {/* TODO: Enable charts */}
-          {/* carbon balance ({getUnitPerArea('cbt', cumulativeFlag, perHectareFlag)})
-          <ChartComponent {...cbt} />
+          carbon balance ({getUnitPerArea('cbt', cumulativeFlag, perHectareFlag)})
+          <FinlandForestsChartComponent {...cbt} />
           <br />
           Forest carbon stock
           <br />
           <small>
             in {getUnitPerArea('bio', cumulativeFlag, perHectareFlag)}; multiply by 3.67 to get CO<sub>2</sub>eq amounts
           </small>
-          <ChartComponent {...bio} />
+          <FinlandForestsChartComponent {...bio} />
           <br />
           Harvested wood ({getUnitPerArea('harvested-wood', cumulativeFlag, perHectareFlag)})
-          <ChartComponent {...wood} /> */}
+          <FinlandForestsChartComponent {...wood} />
           <br />
           <Button
             variant="contained"
