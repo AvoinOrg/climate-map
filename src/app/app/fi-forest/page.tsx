@@ -13,42 +13,27 @@ import {
   Paper,
   Select,
 } from '@mui/material'
-import Chart from 'chart.js/auto'
-import { Expression } from 'mapbox-gl'
-import { useObservable } from 'micro-observables'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import _ from 'lodash'
 import Link from 'next/link'
 import { Link as MuiLink } from '@mui/material'
 
-// import * as Analytics from 'src/map/analytics'
-
-// import {
-//   fitBounds,
-//   genericPopupHandler,
-//   querySourceFeatures,
-//   setFilter,
-//   setLayoutProperty,
-//   setPaintProperty,
-// } from '../../Map/map'
-
-import { getTotals, getDatasetAttributes, getChartTitle, getNpvText, getChartProps } from './utils'
 import { getCombinedBounds } from '#/common/utils/mapUtils'
-import { useUpdateMapDetails } from './hooks/useUpdateMapDetails'
-import { ForestryMethod } from './types'
-import { assert } from '#/common/utils/mapUtils'
 // import { setOverlayMessage } from '../../OverlayMessages/OverlayMessages'
 // import * as SelectedFeatureState from './ArvometsaSelectedLayer'
 import { HeaderTable, SimpleTable } from './components/FinlandForestsTable'
 import { CO2_TONS_PER_PERSON, TRADITIONAL_FORESTRY_METHOD, layerOptions, titleRenames } from './constants'
-
 import { setIsSidebarOpen } from '#/components/State/UiState'
 // import { setSearchPlaceholder } from '../../NavBar/NavBarSearch'
 import { MapContext } from '#/components/Map'
+
+import { useUpdateMapDetails } from './hooks/useUpdateMapDetails'
+import { getTotals, getDatasetAttributes, getChartTitle, getNpvText, getChartProps, getUnitPerArea } from './utils'
 import { finlandForests } from './layers'
 import { useFilteredSelectedFeatures } from '#/common/hooks/useFilteredSelectedFeatures'
 import { FinlandForestsChartComponent } from './components/FinlandForestsChartComponent'
-import theme from '#/common/style/theme'
+import { ForestryMethod } from './types'
+// import * as Analytics from 'src/map/analytics'
 
 // import arvometsaLogo from './assets/arvometsa_logo.png'
 
@@ -163,6 +148,7 @@ const FinlandForests = () => {
   const totals = getTotals(forestryMethod, perHectareFlag, allFeatureProps)
 
   const attrValues = getDatasetAttributes(forestryMethod, cumulativeFlag, totals)
+
   if (carbonBalanceDifferenceFlag) {
     const traditional = getDatasetAttributes(TRADITIONAL_FORESTRY_METHOD, cumulativeFlag, totals)
     for (const attr in attrValues) {
