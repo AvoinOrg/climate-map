@@ -221,7 +221,7 @@ export const getTotals = (
     }
   }
 
-  const areaProportionalAttrs = Object.keys(totals).filter((x) => x !== 'area')
+  const areaProportionalAttrs = Object.keys(totals).filter((x) => !['area', 'f_area'].includes(x))
 
   // const reMatchAttr = /m-?\d_(.*)/
 
@@ -250,7 +250,11 @@ export const getTotals = (
     seenIds[id] = true
 
     totals.area += p.area
-    totals.f_area += p.f_area || p.area
+    if (p.f_area != null) {
+      totals.f_area += p.f_area
+    } else {
+      totals.f_area += p.area
+    }
 
     // TODO: check if this is still needed
     // if (ForestryMethod === BEST_METHOD_FOR_EACH) {
@@ -273,7 +277,7 @@ export const getTotals = (
 
   if (perHectareFlag) {
     for (const a in totals) {
-      if (a !== 'area') {
+      if (!['area', 'f_area'].includes(a)) {
         totals[a] /= totals.area
       }
     }

@@ -199,12 +199,12 @@ const FinlandForests = () => {
           )}
         </div>
       ),
-      value: `${_.round(1e-4 * totals.area, 3)} ha`,
+      value: `${_.round(totals.area, 3)} ha`,
     },
   ]
 
   const tableRows = [
-    { name: 'Forest area', value: `${_.round(totals.area, 3)} ha` },
+    { name: 'Forest area', value: `${_.round(totals.f_area, 3)} ha` },
     // { name: 'Main tree species', value: 'Pine' },
     // { name: 'Forest age', value: `${pp(123, 2)} years` },
     // { name: 'Biomass volume', value: `${pp(123.45, 2)} m³/ha` },
