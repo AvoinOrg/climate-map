@@ -2,6 +2,9 @@ import _ from 'lodash'
 import { Expression, Layer } from 'mapbox-gl'
 import { GeoJsonProperties } from 'geojson'
 
+import { roundToSignificantDigitsExpr } from '#/common/utils/mapUtils'
+import { assert, pp } from '#/common/utils/general'
+
 import {
   baseAttrs,
   harvestedWoodAttrs,
@@ -12,8 +15,6 @@ import {
   colorboxStepsNeg,
 } from './constants'
 import { ForestryMethod, LayerLevel } from './types'
-import { roundToSignificantDigitsExpr } from '#/common/utils/mapUtils'
-import { assert, pp } from '#/common/utils/general'
 
 export const stepsToLinear = (min: number, max: number, steps: string[]) => {
   const step = (max - min) / (steps.length - 1)
