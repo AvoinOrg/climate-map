@@ -311,11 +311,10 @@ const FinlandForests = () => {
                 setReportPanelOpen(true)
               }}
             >
-              <option value="arvometsa_eihakata"> No cuttings </option>
-              <option value="arvometsa_jatkuva"> Continuous cover forestry </option>
-              <option value="arvometsa_ylaharvennus"> Thin from above – extended rotation </option>
-              <option value="arvometsa_alaharvennus"> Thin from below – clearfell </option>
-              <option value="arvometsa_maxhakkuu"> Removal of tree cover </option>
+              <option value={1}> No cuttings </option>
+              <option value={2}> Continuous cover forestry </option>
+              <option value={3}> Thin from below – extended rotation </option>
+              <option value={4}> Unrestricted</option>
             </Select>
           </FormControl>
           <br />
