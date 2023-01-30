@@ -12,8 +12,8 @@ import {
   colorboxStepsNeg,
 } from './constants'
 import { ForestryMethod, LayerLevel } from './types'
-import { assert, roundToSignificantDigitsExpr } from '#/common/utils/mapUtils'
-import { pp } from '#/common/utils/general'
+import { roundToSignificantDigitsExpr } from '#/common/utils/mapUtils'
+import { assert, pp } from '#/common/utils/general'
 
 export const stepsToLinear = (min: number, max: number, steps: string[]) => {
   const step = (max - min) / (steps.length - 1)
