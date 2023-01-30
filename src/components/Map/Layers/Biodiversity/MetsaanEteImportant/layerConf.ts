@@ -2,7 +2,7 @@ import axios from 'axios'
 import { Style as MbStyle, Expression } from 'mapbox-gl'
 
 import { LayerId, LayerConf } from '#/common/types/map'
-import { fillOpacity } from '#/common/utils/mapUtils'
+import { fillOpacity } from '#/common/utils/map'
 
 const id: LayerId = 'metsaan_ete_important'
 

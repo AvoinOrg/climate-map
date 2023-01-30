@@ -18,7 +18,7 @@ import _ from 'lodash'
 import Link from 'next/link'
 import { Link as MuiLink } from '@mui/material'
 
-import { getCombinedBounds } from '#/common/utils/mapUtils'
+import { getCombinedBounds } from '#/common/utils/map'
 // import { setOverlayMessage } from '../../OverlayMessages/OverlayMessages'
 // import * as SelectedFeatureState from './ArvometsaSelectedLayer'
 import { HeaderTable, SimpleTable } from './components/FinlandForestsTable'

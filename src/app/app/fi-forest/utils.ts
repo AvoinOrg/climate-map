@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { Expression, Layer } from 'mapbox-gl'
 import { GeoJsonProperties } from 'geojson'
 
-import { roundToSignificantDigitsExpr } from '#/common/utils/mapUtils'
+import { roundToSignificantDigitsExpr } from '#/common/utils/map'
 import { assert, pp } from '#/common/utils/general'
 
 import {

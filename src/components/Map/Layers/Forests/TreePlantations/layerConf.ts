@@ -1,7 +1,7 @@
 import { Style as MbStyle } from 'mapbox-gl'
 
 import { LayerId, LayerConf } from '#/common/types/map'
-import { fillOpacity } from '#/common/utils/mapUtils'
+import { fillOpacity } from '#/common/utils/map'
 import Popup from './Popup'
 
 const id: LayerId = 'gfw_tree_plantations'

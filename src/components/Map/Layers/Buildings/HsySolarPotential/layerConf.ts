@@ -1,6 +1,6 @@
 import _ from 'lodash'
 
-import { fillOpacity, roundToSignificantDigitsExpr } from '#/common/utils/mapUtils'
+import { fillOpacity, roundToSignificantDigitsExpr } from '#/common/utils/map'
 import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 
 const id: LayerId = 'hsy_solarpotential'

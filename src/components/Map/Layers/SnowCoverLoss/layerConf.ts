@@ -1,6 +1,6 @@
 import { Style as MbStyle } from 'mapbox-gl'
 
-import { fillOpacity } from '#/common/utils/mapUtils'
+import { fillOpacity } from '#/common/utils/map'
 import { LayerId, LayerConf } from '#/common/types/map'
 
 const id: LayerId = 'snow_cover_loss'

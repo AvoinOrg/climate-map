@@ -36,7 +36,7 @@ import {
 } from '#/common/types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
-import { getColorExpressionArrForValues } from '#/common/utils/mapUtils'
+import { getColorExpressionArrForValues } from '#/common/utils/map'
 import { OverlayMessages } from './OverlayMessages'
 
 interface Props {
