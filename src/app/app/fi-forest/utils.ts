@@ -13,6 +13,7 @@ import {
 } from './constants'
 import { ForestryMethod, LayerLevel } from './types'
 import { assert, roundToSignificantDigitsExpr } from '#/common/utils/mapUtils'
+import { pp } from '#/common/utils/general'
 
 export const stepsToLinear = (min: number, max: number, steps: string[]) => {
   const step = (max - min) / (steps.length - 1)
@@ -307,7 +308,7 @@ export const getChartProps = (prefix: string, cumulativeFlag: boolean, perHectar
   const labelCallback = function (tooltipItem: Chart.ChartTooltipItem, data: Chart.ChartData) {
     if (data && data.datasets && data.datasets && tooltipItem.datasetIndex != null && tooltipItem.yLabel != null) {
       const label = data.datasets[tooltipItem.datasetIndex].label
-      const v = _.round(+tooltipItem.yLabel, 2)
+      const v = pp(+tooltipItem.yLabel, 2)
       return `${label}: ${v} ${unit}`
     }
     console.error('Invalid label for chartProp. toolTipItem:', tooltipItem, 'data:', data)
@@ -375,7 +376,7 @@ export const getNpvText = (
   // )
   const npvComparison = 0
   const npvValue = forestryMethod === 1 ? null : totals[`f${forestryMethod}_npv3_area_mult_sum`] - npvComparison
-  return npvValue === 0 || npvValue ? `${_.round(npvValue)} €${perHectareFlag ? ' per ha' : ''}` : '-'
+  return npvValue === 0 || npvValue ? `${pp(npvValue)} €${perHectareFlag ? ' per ha' : ''}` : '-'
 }
 
 export const getChartTitleSingleLayer = (selectedFeatureLayer: Layer, featureProps: any[], multiple: boolean) => {
