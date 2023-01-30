@@ -89,6 +89,7 @@ const FinlandForests = () => {
   const { enableLayerGroup, setOverlayMessage, fitBounds } = useContext(MapContext)
   const updateMapDetails = useUpdateMapDetails()
   const [hasFeature, setHasFeature] = useState(false)
+  const [options, setOptions] = useState<any>(null)
   const filteredFeatures = useFilteredSelectedFeatures(Object.keys(layerOptions).map((x) => `${x}-fill`))
 
   useEffect(() => {
@@ -98,7 +99,6 @@ const FinlandForests = () => {
   useEffect(() => {
     const newHasFeature = filteredFeatures.length > 0
     setHasFeature(newHasFeature)
-    console.log(filteredFeatures)
   }, [filteredFeatures])
 
   const [reportPanelOpen, setReportPanelOpen] = useState(true)
@@ -143,84 +143,72 @@ const FinlandForests = () => {
     // })
   }, [hasFeature])
 
-  // TODO: Enable charts and values down below
-  const allFeatureProps = filteredFeatures.map((x) => x.properties)
+  useEffect(() => {
+    const newOptions: any = {}
+    const allFeatureProps = filteredFeatures.map((x) => x.properties)
 
-  const totals = getTotals(forestryMethod, perHectareFlag, allFeatureProps)
+    newOptions.totals = getTotals(forestryMethod, perHectareFlag, allFeatureProps)
 
-  const attrValues = getDatasetAttributes(forestryMethod, cumulativeFlag, totals)
+    const attrValues = getDatasetAttributes(forestryMethod, cumulativeFlag, newOptions.totals)
 
-  if (carbonBalanceDifferenceFlag) {
-    const traditional = getDatasetAttributes(TRADITIONAL_FORESTRY_METHOD, cumulativeFlag, totals)
-    for (const attr in attrValues) {
-      attrValues[attr] = attrValues[attr].map((v: number, i: number) => v - traditional[attr][i])
+    if (carbonBalanceDifferenceFlag) {
+      const traditional = getDatasetAttributes(TRADITIONAL_FORESTRY_METHOD, cumulativeFlag, newOptions.totals)
+      for (const attr in attrValues) {
+        attrValues[attr] = attrValues[attr].map((v: number, i: number) => v - traditional[attr][i])
+      }
     }
-  }
 
-  const selectedLayersOfFeatures = filteredFeatures.map((x) => x.layer)
+    const selectedLayersOfFeatures = filteredFeatures.map((x) => x.layer)
 
-  const title = getChartTitle(selectedLayersOfFeatures, allFeatureProps)
-  const npvText = getNpvText(carbonBalanceDifferenceFlag, perHectareFlag, totals, forestryMethod)
+    const title = getChartTitle(selectedLayersOfFeatures, allFeatureProps)
+    newOptions.npvText = getNpvText(carbonBalanceDifferenceFlag, perHectareFlag, newOptions.totals, forestryMethod)
 
-  const cbt = getChartProps('cbt', cumulativeFlag, perHectareFlag, attrValues)
-  const bio = getChartProps('bio', cumulativeFlag, perHectareFlag, attrValues)
-  const wood = getChartProps('harvested-wood', cumulativeFlag, perHectareFlag, attrValues)
+    newOptions.cbt = getChartProps('cbt', cumulativeFlag, perHectareFlag, attrValues)
+    newOptions.bio = getChartProps('bio', cumulativeFlag, perHectareFlag, attrValues)
+    newOptions.wood = getChartProps('harvested-wood', cumulativeFlag, perHectareFlag, attrValues)
 
-  const getAverageCarbonBalanceFigure = (totals: any) => {
-    const averageCarbonBalanceDecade =
-      totals[`f${forestryMethod}_cbt1_area_mult_sum`] -
-      (carbonBalanceDifferenceFlag ? totals[`f${TRADITIONAL_FORESTRY_METHOD}_cbt1_area_mult_sum`] : 0)
-    // per decade -> per year
-    return averageCarbonBalanceDecade / 10
-  }
-
-  const averageCarbonBalance = getAverageCarbonBalanceFigure(totals)
-  const unit = perHectareFlag ? 'tons CO₂e/ha/y' : 'tons CO₂e/y'
-  const averageCarbonBalanceText = isNaN(averageCarbonBalance)
-    ? ''
-    : `${averageCarbonBalance > 0 ? '+' : ''}${pp(averageCarbonBalance, 2)} ${unit}`
-
-  const totalsOverall = getTotals(forestryMethod, false, allFeatureProps)
-  const averageCarbonBalanceOverall = getAverageCarbonBalanceFigure(totalsOverall)
-
-  const headerTitle = titleRenames[title] || title
-  const headerOnClick = () => {
-    if (!hasFeature) setIsSidebarOpen(false)
-  }
-  const headerRows = [
-    {
-      name: (
-        <div onClick={headerOnClick} style={{ cursor: hasFeature ? 'initial' : 'pointer' }}>
-          {headerTitle}
-          {!hasFeature && (
-            <span>
-              <br />
-              <strong>click to show the map</strong>
-            </span>
-          )}
-        </div>
-      ),
-      value: `${pp(totals.area, 3)} ha`,
-    },
-  ]
-
-  const tableRows = [
-    { name: 'Forest area', value: `${pp(totals.f_area, 3)} ha` },
-    // { name: 'Main tree species', value: 'Pine' },
-    // { name: 'Forest age', value: `${pp(123, 2)} years` },
-    // { name: 'Biomass volume', value: `${pp(123.45, 2)} m³/ha` },
-    { name: 'Average carbon balance*', value: averageCarbonBalanceText },
-    { name: 'Net present value (3% discounting)', value: npvText },
-  ]
-
-  const bounds = getCombinedBounds(filteredFeatures)
-  const onFitLayerBounds = () => {
-    if (bounds) {
-      fitBounds(bounds, 0.4, 0.15)
+    const getAverageCarbonBalanceFigure = (totals: any) => {
+      const averageCarbonBalanceDecade =
+        totals[`f${forestryMethod}_cbt1_area_mult_sum`] -
+        (carbonBalanceDifferenceFlag ? totals[`f${TRADITIONAL_FORESTRY_METHOD}_cbt1_area_mult_sum`] : 0)
+      // per decade -> per year
+      return averageCarbonBalanceDecade / 10
     }
-  }
 
-  const showReport = reportPanelOpen && hasFeature
+    const averageCarbonBalance = getAverageCarbonBalanceFigure(newOptions.totals)
+    const unit = perHectareFlag ? 'tons CO₂e/ha/y' : 'tons CO₂e/y'
+    newOptions.averageCarbonBalanceText = isNaN(averageCarbonBalance)
+      ? ''
+      : `${averageCarbonBalance > 0 ? '+' : ''}${pp(averageCarbonBalance, 2)} ${unit}`
+
+    const totalsOverall = getTotals(forestryMethod, false, allFeatureProps)
+    newOptions.averageCarbonBalanceOverall = getAverageCarbonBalanceFigure(totalsOverall)
+
+    newOptions.headerTitle = titleRenames[title] || title
+    const headerOnClick = () => {
+      if (!hasFeature) setIsSidebarOpen(false)
+    }
+    newOptions.headerRows = [
+      {
+        name: (
+          <div onClick={headerOnClick} style={{ cursor: hasFeature ? 'initial' : 'pointer' }}>
+            {newOptions.headerTitle}
+            {!hasFeature && (
+              <span>
+                <br />
+                <strong>click to show the map</strong>
+              </span>
+            )}
+          </div>
+        ),
+        value: `${pp(newOptions.totals.area, 3)} ha`,
+      },
+    ]
+    newOptions.bounds = getCombinedBounds(filteredFeatures)
+    newOptions.showReport = reportPanelOpen && hasFeature
+
+    setOptions(newOptions)
+  }, [filteredFeatures, reportPanelOpen, hasFeature])
 
   const onChangeCheckbox = (callback: React.Dispatch<React.SetStateAction<boolean>>) => {
     return (event: any) => {
@@ -233,168 +221,195 @@ const FinlandForests = () => {
     }
   }
 
-  const tableTitle = (
-    <MuiLink href="/" sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }} component={Link}>
-      <ExpandMoreIcon style={{ transform: 'rotate(90deg)' }} />
-      {LAYER_TITLE}
-    </MuiLink>
-  )
+  const onFitLayerBounds = () => {
+    if (options.bounds) {
+      fitBounds(options.bounds, 0.4, 0.15)
+    }
+  }
 
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: '0 100vw auto',
-        gridTemplateRows: '0px auto',
-        gridColumnGap: '0px',
-        gridRowGap: '0px',
-        height: '100vh',
-        marginTop: '64px',
-        ...(showReport
-          ? {
-              '@media (min-width: 400px)': {
-                gridTemplateColumns: '0 400px auto',
-              },
-              '@media (min-width: 800px)': {
-                gridTemplateColumns: '400px 400px auto',
-              },
-            }
-          : {
-              gridTemplateColumns: '100% 0 auto',
-              '@media (min-width: 400px)': {
-                gridTemplateColumns: '400px 0 auto',
-              },
-            }),
-      }}
-    >
-      <Paper className="grid-col1" elevation={5} style={{ width: '400px' }}>
-        <Container>
-          {/* TODO: enable headerTable */}
-          <HeaderTable title={tableTitle} rows={headerRows} onFitLayerBounds={onFitLayerBounds} />
-          <br />
-          <Paper>
-            <FormControlLabel
-              style={{ padding: '4px 10px' }}
-              control={<Checkbox />}
-              label="Show values per hectare"
-              checked={perHectareFlag}
-              onChange={(event) => {
-                onChangeCheckbox(setPerHectareFlag)(event)
-                setReportPanelOpen(true)
-              }}
-            />
+    <>
+      {options != null && (
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: '0 100vw auto',
+            gridTemplateRows: '0px auto',
+            gridColumnGap: '0px',
+            gridRowGap: '0px',
+            height: '100vh',
+            marginTop: '64px',
+            ...(options.showReport
+              ? {
+                  '@media (min-width: 400px)': {
+                    gridTemplateColumns: '0 400px auto',
+                  },
+                  '@media (min-width: 800px)': {
+                    gridTemplateColumns: '400px 400px auto',
+                  },
+                }
+              : {
+                  gridTemplateColumns: '100% 0 auto',
+                  '@media (min-width: 400px)': {
+                    gridTemplateColumns: '400px 0 auto',
+                  },
+                }),
+          }}
+        >
+          <Paper className="grid-col1" elevation={5} style={{ width: '400px' }}>
+            <Container>
+              {/* TODO: enable headerTable */}
+              <HeaderTable
+                title={
+                  <MuiLink href="/" sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }} component={Link}>
+                    <ExpandMoreIcon style={{ transform: 'rotate(90deg)' }} />
+                    {LAYER_TITLE}
+                  </MuiLink>
+                }
+                rows={options.headerRows}
+                onFitLayerBounds={onFitLayerBounds}
+              />
+              <br />
+              <Paper>
+                <FormControlLabel
+                  style={{ padding: '4px 10px' }}
+                  control={<Checkbox />}
+                  label="Show values per hectare"
+                  checked={perHectareFlag}
+                  onChange={(event) => {
+                    onChangeCheckbox(setPerHectareFlag)(event)
+                    setReportPanelOpen(true)
+                  }}
+                />
+              </Paper>
+              <br />
+              <SimpleTable
+                rows={[
+                  { name: 'Forest area', value: `${pp(options.totals.f_area, 3)} ha` },
+                  // { name: 'Main tree species', value: 'Pine' },
+                  // { name: 'Forest age', value: `${pp(123, 2)} years` },
+                  // { name: 'Biomass volume', value: `${pp(123.45, 2)} m³/ha` },
+                  { name: 'Average carbon balance*', value: options.averageCarbonBalanceText },
+                  { name: 'Net present value (3% discounting)', value: options.npvText },
+                ]}
+              />
+              {/* area stats */}
+              <p>* Assuming even-age forestry</p>
+              <p>
+                * Carbon balance means changes in soil, trees, and wood products. When the carbon balance is positive,
+                more carbon is being stored than released.
+              </p>
+              <p hidden={!hasFeature}>
+                Equals {pp(options.averageCarbonBalanceOverall / CO2_TONS_PER_PERSON, 1)} times average 👤 CO2 emissions
+              </p>
+              <h1>Forestry projections</h1>
+              <Divider />
+              <FormControl style={{ width: '100%' }}>
+                <InputLabel htmlFor="forestry-method">Forestry method</InputLabel>
+                <Select
+                  native
+                  inputProps={{
+                    name: 'forestry-method',
+                    id: 'forestry-method',
+                  }}
+                  value={forestryMethod}
+                  onChange={(event) => {
+                    onChangeValue(setForestryMethod)(event)
+                    setReportPanelOpen(true)
+                  }}
+                >
+                  <option value={1}> No cuttings </option>
+                  <option value={2}> Continuous cover forestry </option>
+                  <option value={3}> Thin from below – extended rotation </option>
+                  <option value={4}> Unrestricted</option>
+                </Select>
+              </FormControl>
+              <br />
+              <br />
+              <Button
+                variant="contained"
+                color="primary"
+                disabled={!hasFeature}
+                onClick={() => setReportPanelOpen(true)}
+              >
+                Open report
+              </Button>
+              <br />
+              <br />
+              <Link href="/">
+                <Button variant="contained" color="secondary">
+                  Go back
+                </Button>
+              </Link>
+              <p style={{ fontSize: '1.5em', textAlign: 'center' }}>
+                Scientific forest model by
+                <br />
+                <a href="https://arvometsa.fi">
+                  {/* TODO: fix logo */}
+                  {/* <img alt="Arvometsä" src={arvometsaLogo} style={{ height: '120px' }} /> */}
+                </a>
+              </p>
+            </Container>
           </Paper>
-          <br />
-          <SimpleTable rows={tableRows} />
-          {/* area stats */}
-          <p>* Assuming even-age forestry</p>
-          <p>
-            * Carbon balance means changes in soil, trees, and wood products. When the carbon balance is positive, more
-            carbon is being stored than released.
-          </p>
-          <p hidden={!hasFeature}>
-            Equals {pp(averageCarbonBalanceOverall / CO2_TONS_PER_PERSON, 1)} times average 👤 CO2 emissions
-          </p>
-          <h1>Forestry projections</h1>
-          <Divider />
-          <FormControl style={{ width: '100%' }}>
-            <InputLabel htmlFor="forestry-method">Forestry method</InputLabel>
-            <Select
-              native
-              inputProps={{
-                name: 'forestry-method',
-                id: 'forestry-method',
-              }}
-              value={forestryMethod}
-              onChange={(event) => {
-                onChangeValue(setForestryMethod)(event)
-                setReportPanelOpen(true)
-              }}
-            >
-              <option value={1}> No cuttings </option>
-              <option value={2}> Continuous cover forestry </option>
-              <option value={3}> Thin from below – extended rotation </option>
-              <option value={4}> Unrestricted</option>
-            </Select>
-          </FormControl>
-          <br />
-          <br />
-          <Button variant="contained" color="primary" disabled={!hasFeature} onClick={() => setReportPanelOpen(true)}>
-            Open report
-          </Button>
-          <br />
-          <br />
-          <Link href="/">
-            <Button variant="contained" color="secondary">
-              Go back
-            </Button>
-          </Link>
-          <p style={{ fontSize: '1.5em', textAlign: 'center' }}>
-            Scientific forest model by
-            <br />
-            <a href="https://arvometsa.fi">
-              {/* TODO: fix logo */}
-              {/* <img alt="Arvometsä" src={arvometsaLogo} style={{ height: '120px' }} /> */}
-            </a>
-          </p>
-        </Container>
-      </Paper>
 
-      <Paper sx={{ gridArea: '2 / 2 / 3 / 3', paddingBottom: '20px' }} elevation={2} hidden={!showReport}>
-        <Container>
-          <Paper>
-            <FormControlLabel
-              style={{ padding: '4px 10px' }}
-              control={<Checkbox />}
-              label="Show cumulative carbon balance"
-              checked={cumulativeFlag}
-              onChange={onChangeCheckbox(setCumulativeFlag)}
-            />
+          <Paper sx={{ gridArea: '2 / 2 / 3 / 3', paddingBottom: '20px' }} elevation={2} hidden={!options.showReport}>
+            <Container>
+              <Paper>
+                <FormControlLabel
+                  style={{ padding: '4px 10px' }}
+                  control={<Checkbox />}
+                  label="Show cumulative carbon balance"
+                  checked={cumulativeFlag}
+                  onChange={onChangeCheckbox(setCumulativeFlag)}
+                />
+              </Paper>
+              <br />
+              <Paper>
+                <FormControlLabel
+                  style={{ padding: '4px 10px' }}
+                  control={<Checkbox />}
+                  label="Show carbon balance improvement potential compared to the prevalent forestry practice"
+                  checked={carbonBalanceDifferenceFlag}
+                  onChange={onChangeCheckbox(setCarbonBalanceDifferenceFlag)}
+                  disabled={forestryMethod === TRADITIONAL_FORESTRY_METHOD}
+                />
+              </Paper>
+              <br />
+              <abbr title="Carbon dioxide equivalent">
+                CO<sub>2</sub>eq
+              </abbr>{' '}
+              carbon balance ({getUnitPerArea('cbt', cumulativeFlag, perHectareFlag)})
+              <FinlandForestsChart {...options.cbt} />
+              <br />
+              Forest carbon stock
+              <br />
+              <small>
+                in {getUnitPerArea('bio', cumulativeFlag, perHectareFlag)}; multiply by 3.67 to get CO<sub>2</sub>eq
+                amounts
+              </small>
+              <FinlandForestsChart {...options.bio} />
+              <br />
+              Harvested wood ({getUnitPerArea('harvested-wood', cumulativeFlag, perHectareFlag)})
+              <FinlandForestsChart {...options.wood} />
+              <br />
+              <Button
+                variant="contained"
+                color="primary"
+                // TODO: enable analytics
+                // onClick={() => Analytics.pageview('layers/fi-forest/methodology')}
+              >
+                Read about the methodology
+              </Button>
+              <br />
+              <br />
+              <Button variant="contained" color="secondary" onClick={() => setReportPanelOpen(false)}>
+                Close report
+              </Button>
+            </Container>
           </Paper>
-          <br />
-          <Paper>
-            <FormControlLabel
-              style={{ padding: '4px 10px' }}
-              control={<Checkbox />}
-              label="Show carbon balance improvement potential compared to the prevalent forestry practice"
-              checked={carbonBalanceDifferenceFlag}
-              onChange={onChangeCheckbox(setCarbonBalanceDifferenceFlag)}
-              disabled={forestryMethod === TRADITIONAL_FORESTRY_METHOD}
-            />
-          </Paper>
-          <br />
-          <abbr title="Carbon dioxide equivalent">
-            CO<sub>2</sub>eq
-          </abbr>{' '}
-          carbon balance ({getUnitPerArea('cbt', cumulativeFlag, perHectareFlag)})
-          <FinlandForestsChart {...cbt} />
-          <br />
-          Forest carbon stock
-          <br />
-          <small>
-            in {getUnitPerArea('bio', cumulativeFlag, perHectareFlag)}; multiply by 3.67 to get CO<sub>2</sub>eq amounts
-          </small>
-          <FinlandForestsChart {...bio} />
-          <br />
-          Harvested wood ({getUnitPerArea('harvested-wood', cumulativeFlag, perHectareFlag)})
-          <FinlandForestsChart {...wood} />
-          <br />
-          <Button
-            variant="contained"
-            color="primary"
-            // TODO: enable analytics
-            // onClick={() => Analytics.pageview('layers/fi-forest/methodology')}
-          >
-            Read about the methodology
-          </Button>
-          <br />
-          <br />
-          <Button variant="contained" color="secondary" onClick={() => setReportPanelOpen(false)}>
-            Close report
-          </Button>
-        </Container>
-      </Paper>
-    </Box>
+        </Box>
+      )}
+    </>
   )
 }
 
