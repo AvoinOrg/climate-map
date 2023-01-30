@@ -11,8 +11,8 @@ export const SimpleTable = ({ rows }: any) => {
       <Table>
         <TableHead>
           <TableRow>
-            <StyledTableCell align="right">Value</StyledTableCell>
             <StyledTableCell>Statistic</StyledTableCell>
+            <StyledTableCell align="right">Value</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
