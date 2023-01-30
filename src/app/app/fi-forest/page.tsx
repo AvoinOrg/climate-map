@@ -26,6 +26,7 @@ import { CO2_TONS_PER_PERSON, TRADITIONAL_FORESTRY_METHOD, layerOptions, titleRe
 import { setIsSidebarOpen } from '#/components/State/UiState'
 // import { setSearchPlaceholder } from '../../NavBar/NavBarSearch'
 import { MapContext } from '#/components/Map'
+import { pp } from '#/common/utils/general'
 
 import { useUpdateMapDetails } from './hooks/useUpdateMapDetails'
 import { getTotals, getDatasetAttributes, getChartTitle, getNpvText, getChartProps, getUnitPerArea } from './utils'
@@ -177,7 +178,7 @@ const FinlandForests = () => {
   const unit = perHectareFlag ? 'tons CO₂e/ha/y' : 'tons CO₂e/y'
   const averageCarbonBalanceText = isNaN(averageCarbonBalance)
     ? ''
-    : `${averageCarbonBalance > 0 ? '+' : ''}${_.round(averageCarbonBalance, 2)} ${unit}`
+    : `${averageCarbonBalance > 0 ? '+' : ''}${pp(averageCarbonBalance, 2)} ${unit}`
 
   const totalsOverall = getTotals(forestryMethod, false, allFeatureProps)
   const averageCarbonBalanceOverall = getAverageCarbonBalanceFigure(totalsOverall)
@@ -199,12 +200,12 @@ const FinlandForests = () => {
           )}
         </div>
       ),
-      value: `${_.round(totals.area, 3)} ha`,
+      value: `${pp(totals.area, 3)} ha`,
     },
   ]
 
   const tableRows = [
-    { name: 'Forest area', value: `${_.round(totals.f_area, 3)} ha` },
+    { name: 'Forest area', value: `${pp(totals.f_area, 3)} ha` },
     // { name: 'Main tree species', value: 'Pine' },
     // { name: 'Forest age', value: `${pp(123, 2)} years` },
     // { name: 'Biomass volume', value: `${pp(123.45, 2)} m³/ha` },
@@ -292,7 +293,7 @@ const FinlandForests = () => {
             carbon is being stored than released.
           </p>
           <p hidden={!hasFeature}>
-            Equals {_.round(averageCarbonBalanceOverall / CO2_TONS_PER_PERSON, 1)} times average 👤 CO2 emissions
+            Equals {pp(averageCarbonBalanceOverall / CO2_TONS_PER_PERSON, 1)} times average 👤 CO2 emissions
           </p>
           <h1>Forestry projections</h1>
           <Divider />
