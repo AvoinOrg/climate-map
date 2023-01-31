@@ -26,20 +26,22 @@ const RootLayout = ({
   return (
     <html lang="en">
       <body>
-        <ThemeProvider theme={theme}>
-          <UiStateProvider>
-            <MapProvider>
-              {/* <UserStateProvider> */}
-              <CssBaseline>
-                <GroupOrientation />
-                <NavBar />
-                <Sidebar>{children}</Sidebar>
-                {/* <UserModal /> */}
-              </CssBaseline>
-              {/* </UserStateProvider> */}
-            </MapProvider>
-          </UiStateProvider>
-        </ThemeProvider>
+        {/* <RootStyleRegistry> */}
+          <ThemeProvider theme={theme}>
+            <UiStateProvider>
+              <MapProvider>
+                {/* <UserStateProvider> */}
+                <CssBaseline>
+                  <GroupOrientation />
+                  <NavBar />
+                  <Sidebar>{children}</Sidebar>
+                  {/* <UserModal /> */}
+                </CssBaseline>
+                {/* </UserStateProvider> */}
+              </MapProvider>
+            </UiStateProvider>
+          </ThemeProvider>
+        {/* </RootStyleRegistry> */}
       </body>
     </html>
   )
