@@ -3,6 +3,7 @@ const nextConfig = {
   // If set to true (default) openlayers will render blank.
   // Will probably be fixed later, either by swcMinify or Openlayers
   swcMinify: false,
+  emotion: true,
   experimental: {
     appDir: true,
   },
