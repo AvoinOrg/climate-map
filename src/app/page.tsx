@@ -1,4 +1,6 @@
-import React from 'react'
+/** @jsxImportSource @emotion/react */
+'use client'
+
 import { MainMenu } from '#/components/Sidebar'
 
 const Page = () => {
