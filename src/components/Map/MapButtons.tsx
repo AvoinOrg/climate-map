@@ -13,7 +13,8 @@ import { MapContext } from '#/components/Map'
 import { Button } from '@mui/material'
 
 export const GroupOrientation = () => {
-  const { mapToggleTerrain, mapResetNorth, mapZoomIn, mapZoomOut, mapRelocate } = useContext(MapContext)
+  const { mapToggleTerrain, mapResetNorth, mapZoomIn, mapZoomOut, mapRelocate, setIsDrawPolygon } =
+    useContext(MapContext)
 
   return (
     <IconGroup>
@@ -31,6 +32,9 @@ export const GroupOrientation = () => {
           <RemoveIcon fontSize="small" />
         </StyledButton>
         <StyledButton onClick={mapRelocate} size="small">
+          <GpsFixedIcon fontSize="small" />
+        </StyledButton>
+        <StyledButton onClick={() => setIsDrawPolygon(true)} size="small">
           <GpsFixedIcon fontSize="small" />
         </StyledButton>
       </ButtonGroup>
