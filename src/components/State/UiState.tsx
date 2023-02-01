@@ -5,9 +5,9 @@ import { Box, SnackbarCloseReason } from '@mui/material'
 import { Snackbar } from '@mui/material'
 import MuiAlert from '@mui/material/Alert'
 
-import { ProfileState, ModalState } from '#/common/types/state'
+import { ProfileState, ModalState, NotificationMessage } from '#/common/types/state'
 
-const Notification = (props: any) => {
+const Notification = (props: NotificationMessage) => {
   const [open, setOpen] = useState(true)
 
   const handleClose = (_event?: Event | SyntheticEvent<any, Event>, reason?: SnackbarCloseReason) => {
@@ -26,7 +26,22 @@ const Notification = (props: any) => {
   )
 }
 
-export const UiStateContext = createContext({})
+interface IUIContext {
+  isSidebarOpen: boolean
+  setIsSidebarOpen: (value: boolean) => void
+  isSidebarDisabled: boolean
+  setIsSidebarDisabled: (value: boolean) => void
+  profileState: ProfileState
+  setProfileState: (value: ProfileState) => void
+  modalState: ModalState
+  setModalState: (value: ModalState) => void
+  signupFunnelStep: number
+  setSignupFunnelStep: (value: number) => void
+  notifications: NotificationMessage[]
+  notify: (message: NotificationMessage) => void
+}
+
+export const UiStateContext = createContext({} as IUIContext)
 
 export const UiStateProvider = (props: any) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
@@ -40,7 +55,7 @@ export const UiStateProvider = (props: any) => {
   const notificationsRef = useRef(notifications)
   notificationsRef.current = notifications
 
-  const notify = (message: any, severity: any, duration = 6000) => {
+  const notify = ({ message, severity, duration = 6000 }: NotificationMessage) => {
     const newNotification: any = {}
     const index = new Date().getTime()
 
@@ -82,7 +97,7 @@ export const UiStateProvider = (props: any) => {
     setIsSidebarDisabled(state !== 'none')
   }
 
-  const values = {
+  const values: IUIContext = {
     isSidebarOpen,
     setIsSidebarOpen,
     isSidebarDisabled,
