@@ -8,6 +8,6 @@ export type RouteState = 'none' | 'allowed' | 'verify' | 'fetching' | 'denied' |
 
 export type NotificationMessage = {
   message: string
-  severity?: 'success' | 'error' | 'info' | 'warning'
+  severity: 'success' | 'error' | 'info' | 'warning'
   duration?: number
 }
