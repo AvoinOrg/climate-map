@@ -11,7 +11,7 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import Link from 'next/link'
 import Image from 'next/image'
 
-import { NavBarSearch } from './NavBarSearch'
+// import { NavBarSearch } from './NavBarSearch'
 // import ProfileMenu from './ProfileMenu'
 import ActionButtons from './ActionButtons'
 // import { UserStateContext, UiStateContext } from '#/components/State'
@@ -54,7 +54,7 @@ export const NavBar = () => {
           </a>
         </Box>
 
-        <NavBarSearch />
+        {/* <NavBarSearch /> */}
 
         {/* <Box sx={{ margin: `0 17px 0 12px` }}>{isLoggedIn ? <ProfileMenu /> : <ActionButtons />}</Box> */}
         <Box sx={{ margin: `0 17px 0 12px` }}>{<ActionButtons />}</Box>
