@@ -615,58 +615,64 @@ export const MapProvider = ({ children }: Props) => {
   const addMbStyleToMb = async (id: LayerId, layerConf: LayerConf, isVisible: boolean = true) => {
     const style = await layerConf.style()
 
-    for (const sourceKey in style.sources) {
-      mbMap?.addSource(sourceKey, style.sources[sourceKey])
-    }
-
-    const layerOptionsCopy = { ...layerOptions }
-    const layerGroup: any = {}
-
-    for (const layer of style.layers) {
-      const layerOpt: LayerOpt = {
-        id: layer.id,
-        source: layer.source,
-        name: getLayerName(layer.id),
-        layerType: getLayerType(layer.id),
-        selectable: layer.selectable || false,
-        multiSelectable: layer.multiSelectable || false,
-        popup: layerConf.popup || false,
-        useMb: true,
+    try {
+      for (const sourceKey in style.sources) {
+        mbMap?.addSource(sourceKey, style.sources[sourceKey])
       }
 
-      if (layerOpt.layerType === 'fill') {
-        if (layer.selectable) {
-          if (!style.layers.find((l: any) => l.id === layerOpt.name + '-highlighted')) {
-            console.error(
-              "Layer '" + layerOpt.name + "' is selectable but missing the corresponding highlighted layer."
-            )
+      const layerOptionsCopy = { ...layerOptions }
+      const layerGroup: any = {}
+
+      for (const layer of style.layers) {
+        const layerOpt: LayerOpt = {
+          id: layer.id,
+          source: layer.source,
+          name: getLayerName(layer.id),
+          layerType: getLayerType(layer.id),
+          selectable: layer.selectable || false,
+          multiSelectable: layer.multiSelectable || false,
+          popup: layerConf.popup || false,
+          useMb: true,
+        }
+
+        if (layerOpt.layerType === 'fill') {
+          if (layer.selectable) {
+            if (!style.layers.find((l: any) => l.id === layerOpt.name + '-highlighted')) {
+              console.error(
+                "Layer '" + layerOpt.name + "' is selectable but missing the corresponding highlighted layer."
+              )
+            }
           }
+        }
+
+        assertValidHighlightingConf(layerOpt, style.layers)
+
+        layerOptionsCopy[layerOpt.id] = layerOpt
+        layerGroup[layer.id] = layer
+
+        mbMap?.addLayer(layer)
+
+        if (isVisible) {
+          mbMap?.setLayoutProperty(layer.id, 'visibility', 'visible')
+        } else {
+          mbMap?.setLayoutProperty(layer.id, 'visibility', 'none')
         }
       }
 
-      assertValidHighlightingConf(layerOpt, style.layers)
-
-      layerOptionsCopy[layerOpt.id] = layerOpt
-      layerGroup[layer.id] = layer
-
-      mbMap?.addLayer(layer)
-
       if (isVisible) {
-        mbMap?.setLayoutProperty(layer.id, 'visibility', 'visible')
-      } else {
-        mbMap?.setLayoutProperty(layer.id, 'visibility', 'none')
+        const activeLayerGroupIdsCopy = [...activeLayerGroupIds, id]
+        setActiveLayerGroupIds(activeLayerGroupIdsCopy)
+
+        setLayerOptions(layerOptionsCopy)
+
+        const layerGroupsCopy = { ...layerGroups, [id]: layerGroup }
+        setLayerGroups(layerGroupsCopy)
+      }
+    } catch (e: any) {
+      if (!e.message.includes('There is already a source')) {
+        console.error(e)
       }
     }
-
-    if (isVisible) {
-      const activeLayerGroupIdsCopy = [...activeLayerGroupIds, id]
-      setActiveLayerGroupIds(activeLayerGroupIdsCopy)
-    }
-
-    setLayerOptions(layerOptionsCopy)
-
-    const layerGroupsCopy = { ...layerGroups, [id]: layerGroup }
-    setLayerGroups(layerGroupsCopy)
 
     // if (layerConf.popup) {
     //   mbMap?.on('click', (e: MapLayerMouseEvent) => {
