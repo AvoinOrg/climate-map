@@ -31,9 +31,7 @@ const Notification = (props: any) => {
 export const UiStateContext = createContext({})
 
 export const UiStateProvider = (props: any) => {
-  // for use in non-react components
-  const isSidebarOpen = useObservable(isOpenObservable)
-
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isSidebarDisabled, setIsSidebarDisabled] = useState(false)
   const [profileState, setProfileState] = useState<ProfileState>('none')
   const [modalState, setModalState] = useState<ModalState>('none')
@@ -128,11 +126,4 @@ export const UiStateProvider = (props: any) => {
       </Box>
     </UiStateContext.Provider>
   )
-}
-
-const sidebarState = observable<boolean>(true)
-const isOpenObservable = sidebarState.readOnly()
-
-export const setIsSidebarOpen = (visible: boolean) => {
-  sidebarState.set(visible)
 }
