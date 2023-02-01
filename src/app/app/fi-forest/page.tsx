@@ -23,7 +23,7 @@ import { getCombinedBounds } from '#/common/utils/map'
 // import * as SelectedFeatureState from './ArvometsaSelectedLayer'
 import { HeaderTable, SimpleTable } from './components/FinlandForestsTable'
 import { CO2_TONS_PER_PERSON, TRADITIONAL_FORESTRY_METHOD, layerOptions, titleRenames } from './constants'
-import { setIsSidebarOpen } from '#/components/State/UiState'
+import { UiStateProvider } from '#/components/State/UiState'
 // import { setSearchPlaceholder } from '../../NavBar/NavBarSearch'
 import { MapContext } from '#/components/Map'
 import { pp } from '#/common/utils/general'
@@ -87,6 +87,7 @@ const LAYER_TITLE = `Finland's forests`
 
 const FinlandForests = () => {
   const { enableLayerGroup, setOverlayMessage, fitBounds } = useContext(MapContext)
+  const { setIsSidebarOpen } = useContext(UiStateProvider)
   const updateMapDetails = useUpdateMapDetails()
   const [hasFeature, setHasFeature] = useState(false)
   const [options, setOptions] = useState<any>(null)
