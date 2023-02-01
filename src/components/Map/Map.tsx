@@ -38,6 +38,7 @@ import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
 import { getColorExpressionArrForValues } from '#/common/utils/map'
 import { OverlayMessages } from './OverlayMessages'
+import MapboxDraw from '@mapbox/mapbox-gl-draw'
 
 interface Props {
   children?: React.ReactNode
@@ -65,6 +66,10 @@ interface IMapContext {
   setFilter: (layerId: string, filter: any) => void | null
   setOverlayMessage: (condition: boolean, nmessage: OverlayMessage) => void | null
   fitBounds: (bbox: number[], lonExtra: number, latExtra: number) => void | null
+  isDrawEnabled: boolean
+  setIsDrawEnabled: (enabled: boolean) => void
+  isDrawPolygon: () => void
+  setIsDrawPolygon: (enabled: boolean) => void
   // addMbStyle?: (style: any) => void
 }
 
@@ -79,6 +84,8 @@ export const MapProvider = ({ children }: Props) => {
   const [layerGroups, setLayerGroups] = useState<any>({})
   const [layerOptions, setLayerOptions] = useState<LayerOpts>({})
   const [functionQueue, setFunctionQueue] = useState<any[]>([])
+  const [draw, setDraw] = useState<MapboxDraw>()
+  const [isDrawEnabled, setIsDrawEnabled] = useState(false)
 
   const popupRef = useRef<HTMLDivElement>(null)
   const [popups, setPopups] = useState<any>({})
@@ -204,6 +211,22 @@ export const MapProvider = ({ children }: Props) => {
       ],
       controls: defaultControls({ attribution: false }).extend([attribution, new ScaleLine()]),
     }
+
+    const draw = new MapboxDraw({
+      displayControlsDefault: false,
+      // Select which mapbox-gl-draw control buttons to add to the map.
+      // controls: {
+      //   polygon: true,
+      //   trash: true,
+      // },
+      // Set mapbox-gl-draw to draw by default.
+      // The user does not have to click the polygon control button first.
+      defaultMode: 'draw_polygon',
+    })
+
+    mbMap.addControl(draw)
+    setDraw(draw)
+    setIsDrawEnabled(true)
 
     const mapObject = new Map(options)
 
@@ -888,6 +911,15 @@ export const MapProvider = ({ children }: Props) => {
     )
   }
 
+  const setIsDrawPolygon = (enabled: boolean) => {
+    if (!isLoaded) {
+      addToFunctionQueue('setIsDrawPolygon', [enabled])
+      return
+    }
+
+    console.log(draw?.getAll())
+  }
+
   // implement at some point
   // const setFilter = () => {}
   // const AddMapEventHandler = () => {}
@@ -929,6 +961,9 @@ export const MapProvider = ({ children }: Props) => {
     setFilter,
     setOverlayMessage,
     fitBounds,
+    isDrawEnabled,
+    setIsDrawEnabled,
+    setIsDrawPolygon,
 
     // enableGroup,
     // setFilter,
