@@ -1,18 +1,16 @@
 'use client'
 
-import React, { createContext, useState, useRef } from 'react'
-import { observable } from 'micro-observables'
-import { useObservable } from 'micro-observables'
-import { Box } from '@mui/material'
+import React, { createContext, useState, useRef, SyntheticEvent } from 'react'
+import { Box, SnackbarCloseReason } from '@mui/material'
 import { Snackbar } from '@mui/material'
 import MuiAlert from '@mui/material/Alert'
 
-import { ProfileState, ModalState } from '#/types/state'
+import { ProfileState, ModalState } from '#/common/types/state'
 
 const Notification = (props: any) => {
   const [open, setOpen] = useState(true)
 
-  const handleClose = (event?: React.SyntheticEvent, reason?: string) => {
+  const handleClose = (_event?: Event | SyntheticEvent<any, Event>, reason?: SnackbarCloseReason) => {
     if (reason === 'clickaway') {
       return
     }
