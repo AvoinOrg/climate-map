@@ -5,3 +5,9 @@ export type ProfileState = 'none' | 'data' | 'dataIntegrate' | 'verification' | 
 export type ModalState = 'none' | 'signup' | 'login' | 'profile'
 
 export type RouteState = 'none' | 'allowed' | 'verify' | 'fetching' | 'denied' | 'login'
+
+export type NotificationMessage = {
+  message: string
+  severity?: 'success' | 'error' | 'info' | 'warning'
+  duration?: number
+}
