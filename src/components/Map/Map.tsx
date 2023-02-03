@@ -272,7 +272,7 @@ export const MapProvider = ({ children }: Props) => {
 
       map.addOverlay(overlay)
     }
-  }, [map])
+  }, [isLoaded, map])
 
   useEffect(() => {
     if (isLoaded) {
