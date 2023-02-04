@@ -166,54 +166,17 @@ export const MapProvider = ({ children }: Props) => {
     mbMapRef.current = mbMap
 
     const mbSelectionFunction = (e: MapLayerMouseEvent) => {
-      console.log('clicky')
       // Set `bbox` as 5px reactangle area around clicked point.
       // Find features intersecting the bounding box.
       // @ts-ignore
-      const point = mbMap.project(e.lngLat)
+      const point = e.point
 
-      const features = mbMap.queryRenderedFeatures(point)
+      const features = newMbMap.queryRenderedFeatures(point)
 
       setNewlySelectedFeatures(features)
     }
 
-    mbMap.on('click', mbSelectionFunction)
-
-    const mbLayer = new Layer({
-      render: function (frameState) {
-        const canvas: any = mbMap.getCanvas()
-        const viewState = frameState.viewState
-
-        const visible = mbLayer.getVisible()
-        canvas.style.display = visible ? 'block' : 'none'
-        canvas.style.position = 'absolute'
-
-        const opacity = mbLayer.getOpacity()
-        canvas.style.opacity = opacity
-
-        // adjust view parameters in mapbox
-        const rotation = viewState.rotation
-        mbMap.jumpTo({
-          center: proj.toLonLat(viewState.center) as [number, number],
-          zoom: viewState.zoom - 1,
-          bearing: (-rotation * 180) / Math.PI,
-        })
-
-        // cancel the scheduled update & trigger synchronous redraw
-        // see https://github.com/mapbox/mapbox-gl-js/issues/7893#issue-408992184
-        // NOTE: THIS MIGHT BREAK IF UPDATING THE MAPBOX VERSION
-        //@ts-ignore
-        if (mbMap._frame) {
-          //@ts-ignore
-          mbMap._frame.cancel()
-          //@ts-ignore
-          mbMap._frame = null
-        } //@ts-ignore
-        mbMap._render()
-
-        return canvas
-      },
-    })
+    newMbMap.on('click', mbSelectionFunction)
 
     const attribution = new Attribution({
       collapsible: false,
@@ -291,9 +254,9 @@ export const MapProvider = ({ children }: Props) => {
         if (point != undefined) {
           point = proj.toLonLat(point)
 
-          mbMap?.fire('click', {
-            lngLat: point as mapboxgl.LngLatLike,
-          })
+          // mbMap?.fire('click', {
+          //   lngLat: point as mapboxgl.LngLatLike,
+          // })
         }
 
         let featureObjs: any[] = []
