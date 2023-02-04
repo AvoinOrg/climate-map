@@ -23,6 +23,7 @@ import olms, { getLayer } from 'ol-mapbox-style'
 import { LngLat, MapLayerMouseEvent, PointLike, Style as MbStyle, MapboxGeoJSONFeature } from 'mapbox-gl'
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
+import MapLibreLayer from '@geoblocks/ol-maplibre-layer'
 
 import {
   LayerId,
@@ -39,6 +40,7 @@ import { MapPopup } from './MapPopup'
 import { getColorExpressionArrForValues } from '#/common/utils/map'
 import { OverlayMessages } from './OverlayMessages'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 
 interface Props {
   children?: React.ReactNode
@@ -77,6 +79,7 @@ export const MapContext = createContext({ isLoaded: false } as IMapContext)
 
 export const MapProvider = ({ children }: Props) => {
   const mapRef = useRef<HTMLDivElement>()
+  const mbMapRef = useRef<mapboxgl.Map | null>()
   const [map, setMap] = useState<Map | null>(null)
   const [mbMap, setMbMap] = useState<mapboxgl.Map | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -100,6 +103,10 @@ export const MapProvider = ({ children }: Props) => {
 
   useEffect(() => {
     // Mapbox does not render without a valid access token
+    if (mbMapRef.current) {
+      return
+    }
+
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN as string
 
     const center = [15, 62] as [number, number]
@@ -141,7 +148,25 @@ export const MapProvider = ({ children }: Props) => {
       style: emptyStyle,
     })
 
+    // const mbMap = new mapboxgl.Map({
+    //   //@ts-ignore
+    //   container: 'map', // container id
+    //   style: 'mapbox://styles/mapbox/streets-v11',
+    //   center: [28, 65], // starting position [lng, lat]
+    //   zoom: 5, // starting zoom
+    //   attributionControl: false,
+    //   // transformRequest: (url) => {
+    //   //   return {
+    //   //     url: url,
+    //   //     headers: { "Accept-Encoding": "gzip" },
+    //   //   };
+    //   // },
+    // })
+
+    mbMapRef.current = mbMap
+
     const mbSelectionFunction = (e: MapLayerMouseEvent) => {
+      console.log('clicky')
       // Set `bbox` as 5px reactangle area around clicked point.
       // Find features intersecting the bounding box.
       // @ts-ignore
@@ -207,39 +232,20 @@ export const MapProvider = ({ children }: Props) => {
             attributions: '© Powered by <a href="https://www.netlify.com/" target="_blank">Netlify</a>',
           }),
         }),
-        mbLayer,
+        // mbLayer,
       ],
       controls: defaultControls({ attribution: false }).extend([attribution, new ScaleLine()]),
     }
-
-    const draw = new MapboxDraw({
-      displayControlsDefault: false,
-      // Select which mapbox-gl-draw control buttons to add to the map.
-      // controls: {
-      //   polygon: true,
-      //   trash: true,
-      // },
-      // Set mapbox-gl-draw to draw by default.
-      // The user does not have to click the polygon control button first.
-      defaultMode: 'draw_polygon',
-    })
-
-    mbMap.addControl(draw)
-    setDraw(draw)
-    setIsDrawEnabled(true)
-
     const mapObject = new Map(options)
-
-    mapObject.setTarget(mapRef.current)
-
     setMap(mapObject)
     setMbMap(mbMap)
 
-    return () => mapObject.setTarget(undefined)
+    // return () => mapObject.setTarget(undefined)
   }, [])
 
   useEffect(() => {
     if (isLoaded === false && map) {
+      map.setTarget(mapRef.current)
       setIsLoaded(true)
 
       // const popupContainer = document.createElement('div')
@@ -917,7 +923,43 @@ export const MapProvider = ({ children }: Props) => {
       return
     }
 
-    console.log(draw?.getAll())
+    const draw = new MapboxDraw({
+      displayControlsDefault: false,
+      // Select which mapbox-gl-draw control buttons to add to the map.
+      controls: {
+        polygon: true,
+        trash: true,
+      },
+      // Set mapbox-gl-draw to draw by default.
+      // The user does not have to click the polygon control button first.
+      defaultMode: 'draw_polygon',
+    })
+
+    map
+      ?.getLayers()
+      .getArray()
+      .forEach((layer) => map.removeLayer(layer))
+
+    const layer = new MapLibreLayer({
+      opacity: 0.7,
+      maplibreOptions: {
+        style: 'https://demotiles.maplibre.org/style.json',
+      },
+    })
+
+    // ...
+    map?.addLayer(layer)
+
+    map
+      ?.getLayers()
+      .getArray()
+      .filter((layer: any) => layer instanceof MapLibreLayer)
+      .forEach((layer: any) => layer.maplibreMap.addControl(draw, 'bottom-right'))
+
+    setDraw(draw)
+    setIsDrawEnabled(true)
+
+    console.log(draw?.changeMode('draw_polygon'))
   }
 
   // implement at some point
@@ -981,6 +1023,18 @@ export const MapProvider = ({ children }: Props) => {
 
   return (
     <MapContext.Provider value={values}>
+      {/* <Box
+        ref={mapRef}
+        id="map"
+        className="ol-map"
+        sx={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100vh',
+        }}
+      ></Box> */}
       <Box
         ref={mapRef}
         id="map"
@@ -992,6 +1046,10 @@ export const MapProvider = ({ children }: Props) => {
           width: '100vw',
           height: '100vh',
           '.ol-scale-line': { right: '8px', left: 'auto', bottom: '26px' },
+          // pointerEvents: 'none',
+          // '> *': {
+          //   pointerEvents: 'auto',
+          // },
         }}
       ></Box>
       <MapPopup onClose={popupOnClose} ref={popupRef}>
