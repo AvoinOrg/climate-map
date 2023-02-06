@@ -1034,7 +1034,7 @@ export const MapProvider = ({ children }: Props) => {
       return
     }
 
-    setMapLibraryMode('mapbox')
+    // setMapLibraryMode('mapbox')
 
     const draw = new MapboxDraw({
       displayControlsDefault: false,
@@ -1045,15 +1045,23 @@ export const MapProvider = ({ children }: Props) => {
       },
       // Set mapbox-gl-draw to draw by default.
       // The user does not have to click the polygon control button first.
-      defaultMode: 'draw_polygon',
+      // defaultMode: 'draw_polygon',
     })
+    const source = _.cloneDeep(mbMapRef.current?.getStyle().sources['carbon-shapes'])
 
+    mbMapRef.current?.removeLayer('carbon-shapes-outline')
+    mbMapRef.current?.removeLayer('carbon-shapes-fill')
+    mbMapRef.current?.removeLayer('carbon-shapes-sym')
+    mbMapRef.current?.removeSource('carbon-shapes')
+
+    // console.log(source.data.features)
     mbMapRef.current?.addControl(draw, 'bottom-right')
+
+    //@ts-ignore
+    draw.add(source.data)
 
     setDraw(draw)
     setIsDrawEnabled(true)
-
-    console.log(draw?.changeMode('draw_polygon'))
   }
 
   // implement at some point
