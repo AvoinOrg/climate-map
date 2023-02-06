@@ -78,10 +78,14 @@ interface IMapContext {
 
 export const MapContext = createContext({ isLoaded: false } as IMapContext)
 
+const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'hybrid'
+const DEFAULT_CENTER = [15, 62] as [number, number]
+const DEFAULT_ZOOM = 5
+
 export const MapProvider = ({ children }: Props) => {
   const mapRef = useRef<HTMLDivElement>()
-  const mountedRef = useRef(false)
-  const [mapLibraryMode, setMapLibraryMode] = useState<MapLibraryMode>('hybrid')
+  const mapLibraryRef = useRef<MapLibraryMode | null>(null)
+  const [mapLibraryMode, setMapLibraryMode] = useState<MapLibraryMode>(DEFAULT_MAP_LIBRARY_MODE)
   const [map, setMap] = useState<Map | null>(null)
   const [mbMap, setMbMap] = useState<mapboxgl.Map | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -286,11 +290,11 @@ export const MapProvider = ({ children }: Props) => {
         let newMbMap = initMbMap(viewSettings, false)
         setMbMap(newMbMap)
 
-        mountedRef.current = true
+        mapLibraryRef.current = 'mapbox'
 
         return () => {
           newMbMap.remove()
-          mountedRef.current = false
+          mapLibraryRef.current = null
         }
       }
       case 'hybrid': {
@@ -298,22 +302,43 @@ export const MapProvider = ({ children }: Props) => {
         setMap(newMap)
         setMbMap(newMbMap)
 
-        mountedRef.current = true
+        mapLibraryRef.current = 'hybrid'
 
         return () => {
           newMap.setTarget(undefined)
           newMbMap.remove()
-          mountedRef.current = false
+          mapLibraryRef.current = null
         }
       }
     }
   }
   useEffect(() => {
-    if (mountedRef.current) {
-      // return initMapMode(mapLibraryMode, { center, zoom })
+    let center = DEFAULT_CENTER
+    let zoom = DEFAULT_ZOOM
+
+    if (!mapLibraryRef.current) {
+      return initMapMode(mapLibraryMode, { center, zoom })
     } else {
-      const center = [15, 62] as [number, number]
-      const zoom = 5
+      if (mapLibraryRef.current === 'mapbox') {
+        const mbCenter = mbMap?.getCenter()
+        if (mbCenter != null) {
+          center = [mbCenter.lng, mbCenter.lat]
+        }
+
+        const mbZoom = mbMap?.getZoom()
+        if (mbZoom != null) {
+          zoom = mbZoom
+        }
+      } else {
+        const olCenter = map?.getView().getCenter()
+        if (olCenter != null) {
+          center = proj.toLonLat(olCenter) as [number, number]
+        }
+        const olZoom = map?.getView().getZoom()
+        if (olZoom != null) {
+          zoom = olZoom
+        }
+      }
 
       return initMapMode(mapLibraryMode, { center, zoom })
     }
