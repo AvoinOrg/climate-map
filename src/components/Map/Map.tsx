@@ -41,7 +41,6 @@ import { getColorExpressionArrForValues } from '#/common/utils/map'
 import { OverlayMessages } from './OverlayMessages'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
-
 interface Props {
   children?: React.ReactNode
 }
@@ -176,7 +175,7 @@ export const MapProvider = ({ children }: Props) => {
         style: style,
         center: viewSettings.center, // starting position [lng, lat]
         zoom: viewSettings.zoom, // starting zoom
-        attributionControl: false,
+        attributionControl: true,
         // transformRequest: (url) => {
         //   return {
         //     url: url,
@@ -1107,13 +1106,14 @@ export const MapProvider = ({ children }: Props) => {
       <Box
         ref={mapDivRef}
         id="map"
-        className={mapLibraryMode === 'hybrid' ? 'ol-map' : ''}
+        className={'ol-map'}
         sx={{
           position: 'absolute',
           top: 0,
           bottom: 0,
-          width: '100vw',
-          height: '100vh',
+          width: '100wh',
+          height: "calc(100vh + 3px)", // TODO: remove this hack
+          overflow: 'hidden',
           ...(mapLibraryMode === 'hybrid' && { '.ol-scale-line': { right: '8px', left: 'auto', bottom: '26px' } }),
           // pointerEvents: 'none',
           // '> *': {
