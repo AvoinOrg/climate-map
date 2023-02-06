@@ -80,7 +80,7 @@ export const MapContext = createContext({ isLoaded: false } as IMapContext)
 
 export const MapProvider = ({ children }: Props) => {
   const mapRef = useRef<HTMLDivElement>()
-  const mbMapRef = useRef<mapboxgl.Map | null>()
+  const mountedRef = useRef(false)
   const [mapLibraryMode, setMapLibraryMode] = useState<MapLibraryMode>('hybrid')
   const [map, setMap] = useState<Map | null>(null)
   const [mbMap, setMbMap] = useState<mapboxgl.Map | null>(null)
@@ -280,29 +280,44 @@ export const MapProvider = ({ children }: Props) => {
     return { newMap, newMbMap }
   }
 
-  useEffect(() => {
-    const center = [15, 62] as [number, number]
-    const zoom = 5
-
-    switch (mapLibraryMode) {
+  const initMapMode = (mode: MapLibraryMode, viewSettings: { center: [number, number]; zoom?: number }) => {
+    switch (mode) {
       case 'mapbox': {
-        let newMbMap = initMbMap({ center, zoom }, false)
+        let newMbMap = initMbMap(viewSettings, false)
         setMbMap(newMbMap)
+
+        mountedRef.current = true
+
         return () => {
           newMbMap.remove()
+          mountedRef.current = false
         }
       }
       case 'hybrid': {
-        let { newMap, newMbMap } = initHybridMap({ center, zoom })
+        let { newMap, newMbMap } = initHybridMap(viewSettings)
         setMap(newMap)
         setMbMap(newMbMap)
+
+        mountedRef.current = true
+
         return () => {
           newMap.setTarget(undefined)
           newMbMap.remove()
+          mountedRef.current = false
         }
       }
     }
-  }, [])
+  }
+  useEffect(() => {
+    if (mountedRef.current) {
+      // return initMapMode(mapLibraryMode, { center, zoom })
+    } else {
+      const center = [15, 62] as [number, number]
+      const zoom = 5
+
+      return initMapMode(mapLibraryMode, { center, zoom })
+    }
+  }, [mapLibraryMode])
 
   useEffect(() => {
     if (isLoaded === false && map) {
