@@ -62,6 +62,8 @@ export type LayerConf = {
 // For checking if layer name adheres to LayerType, in runtime
 export const layerTypes: readonly string[] = ['fill', 'highlighted', 'outline', 'symbol', 'raster']
 
-export type LayerType = typeof layerTypes[number] | 'invalid'
+export type LayerType = (typeof layerTypes)[number] | 'invalid'
 
 export type OverlayMessage = { message: string | null; layerGroupId: LayerId }
+
+export type MapLibraryMode = 'hybrid' | 'mapbox'

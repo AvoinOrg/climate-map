@@ -33,6 +33,7 @@ import {
   LayerType,
   ExtendedAnyLayer,
   OverlayMessage,
+  MapLibraryMode,
 } from '#/common/types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
