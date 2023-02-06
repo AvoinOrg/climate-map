@@ -87,6 +87,8 @@ export const MapProvider = ({ children }: Props) => {
   const mapLibraryRef = useRef<MapLibraryMode | null>(null)
   const [mapLibraryMode, setMapLibraryMode] = useState<MapLibraryMode>(DEFAULT_MAP_LIBRARY_MODE)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isMapReady, setIsMapReady] = useState(false)
+  const [isMbMapReady, setIsMbMapReady] = useState(false)
   const [activeLayerGroupIds, setActiveLayerGroupIds] = useState<string[]>([])
   const [layerGroups, setLayerGroups] = useState<any>({})
   const [layerOptions, setLayerOptions] = useState<LayerOpts>({})
@@ -209,6 +211,10 @@ export const MapProvider = ({ children }: Props) => {
 
     newMbMap.on('click', mbSelectionFunction)
 
+    newMbMap.on('load', () => {
+      setIsMbMapReady(true)
+    })
+
     return newMbMap
   }
 
@@ -280,9 +286,8 @@ export const MapProvider = ({ children }: Props) => {
     const newMap = new Map(options)
 
     newMap.once('rendercomplete', () => {
-      setIsLoaded(true)
+      setIsMapReady(true)
       newMap.setTarget(mapDivRef.current)
-      setIsLoaded(true)
 
       const overlay = new Overlay({
         element: popupRef.current as HTMLElement,
@@ -340,7 +345,9 @@ export const MapProvider = ({ children }: Props) => {
 
     if (!mapLibraryRef.current) {
       return initMapMode(mapLibraryMode, { center, zoom })
-    } else {
+    } else if (mapLibraryRef.current !== mapLibraryMode) {
+      setIsLoaded(false)
+
       if (mapLibraryRef.current === 'mapbox') {
         const mbCenter = mbMapRef.current?.getCenter()
         if (mbCenter != null) {
@@ -514,6 +521,24 @@ export const MapProvider = ({ children }: Props) => {
       setSelectedFeatures(selectedFeaturesCopy)
     }
   }, [newlySelectedFeatures, selectedFeatures, layerOptions, activeLayerGroupIds, layerGroups])
+
+  useEffect(() => {
+    // Run queued function once map has loaded
+    if (!isLoaded) {
+      switch (mapLibraryMode) {
+        case 'mapbox': {
+          if (isMbMapReady) {
+            setIsLoaded(true)
+          }
+        }
+        case 'hybrid': {
+          if (isMbMapReady && isMapReady) {
+            setIsLoaded(true)
+          }
+        }
+      }
+    }
+  }, [isLoaded, isMapReady, isMbMapReady, mapLibraryMode])
 
   useEffect(() => {
     // Run queued function once map has loaded
