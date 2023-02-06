@@ -48,7 +48,6 @@ interface Props {
 
 interface IMapContext {
   isLoaded: boolean
-  map: Map | null
   setMapLibraryMode: (mode: MapLibraryMode) => void
   mapToggleTerrain: () => void | null
   mapResetNorth: () => void | null
@@ -83,11 +82,11 @@ const DEFAULT_CENTER = [15, 62] as [number, number]
 const DEFAULT_ZOOM = 5
 
 export const MapProvider = ({ children }: Props) => {
-  const mapRef = useRef<HTMLDivElement>()
+  const mapDivRef = useRef<HTMLDivElement>()
+  const mapRef = useRef<Map | null>(null)
+  const mbMapRef = useRef<mapboxgl.Map | null>(null)
   const mapLibraryRef = useRef<MapLibraryMode | null>(null)
   const [mapLibraryMode, setMapLibraryMode] = useState<MapLibraryMode>(DEFAULT_MAP_LIBRARY_MODE)
-  const [map, setMap] = useState<Map | null>(null)
-  const [mbMap, setMbMap] = useState<mapboxgl.Map | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [activeLayerGroupIds, setActiveLayerGroupIds] = useState<string[]>([])
   const [layerGroups, setLayerGroups] = useState<any>({})
@@ -116,7 +115,7 @@ export const MapProvider = ({ children }: Props) => {
     if (isHybrid) {
       const emptyStyle: MbStyle = {
         version: 8,
-        name: 'Empty',
+        name: 'empty',
         metadata: {
           'mapbox:autocomposite': true,
           'mapbox:type': 'template',
@@ -187,15 +186,15 @@ export const MapProvider = ({ children }: Props) => {
       })
     }
 
-    if (mbMap && mbMap.getStyle()) {
-      const sources = mbMap.getStyle().sources
+    if (mbMapRef.current && mbMapRef.current.getStyle()) {
+      const sources = mbMapRef.current.getStyle().sources
       for (const key in sources) {
         newMbMap.addSource(key, sources[key])
       }
-      for (const layer of mbMap.getStyle().layers) {
+      for (const layer of mbMapRef.current.getStyle().layers) {
         newMbMap.addLayer(layer)
       }
-      mbMap.remove()
+      mbMapRef.current.remove()
     }
 
     const mbSelectionFunction = (e: MapLayerMouseEvent) => {
@@ -281,6 +280,30 @@ export const MapProvider = ({ children }: Props) => {
     }
     const newMap = new Map(options)
 
+    newMap.once('rendercomplete', () => {
+      setIsLoaded(true)
+      newMap.setTarget(mapDivRef.current)
+      setIsLoaded(true)
+
+      const overlay = new Overlay({
+        element: popupRef.current as HTMLElement,
+        autoPan: true,
+        // autoPanAnimation: {
+        //   duration: 250,
+        // },
+      })
+
+      const onclick = () => {
+        overlay.setPosition(undefined)
+        return false
+      }
+
+      setPopupOnClose(() => onclick)
+      setPopupOverlay(overlay)
+
+      newMap.addOverlay(overlay)
+    })
+
     return { newMap, newMbMap }
   }
 
@@ -288,7 +311,7 @@ export const MapProvider = ({ children }: Props) => {
     switch (mode) {
       case 'mapbox': {
         let newMbMap = initMbMap(viewSettings, false)
-        setMbMap(newMbMap)
+        mbMapRef.current = newMbMap
 
         mapLibraryRef.current = 'mapbox'
 
@@ -299,8 +322,8 @@ export const MapProvider = ({ children }: Props) => {
       }
       case 'hybrid': {
         let { newMap, newMbMap } = initHybridMap(viewSettings)
-        setMap(newMap)
-        setMbMap(newMbMap)
+        mapRef.current = newMap
+        mbMapRef.current = newMbMap
 
         mapLibraryRef.current = 'hybrid'
 
@@ -320,21 +343,21 @@ export const MapProvider = ({ children }: Props) => {
       return initMapMode(mapLibraryMode, { center, zoom })
     } else {
       if (mapLibraryRef.current === 'mapbox') {
-        const mbCenter = mbMap?.getCenter()
+        const mbCenter = mbMapRef.current?.getCenter()
         if (mbCenter != null) {
           center = [mbCenter.lng, mbCenter.lat]
         }
 
-        const mbZoom = mbMap?.getZoom()
+        const mbZoom = mbMapRef.current?.getZoom()
         if (mbZoom != null) {
           zoom = mbZoom
         }
       } else {
-        const olCenter = map?.getView().getCenter()
+        const olCenter = mapRef.current?.getView().getCenter()
         if (olCenter != null) {
           center = proj.toLonLat(olCenter) as [number, number]
         }
-        const olZoom = map?.getView().getZoom()
+        const olZoom = mapRef.current?.getView().getZoom()
         if (olZoom != null) {
           zoom = olZoom
         }
@@ -345,60 +368,23 @@ export const MapProvider = ({ children }: Props) => {
   }, [mapLibraryMode])
 
   useEffect(() => {
-    if (isLoaded === false && map) {
-      map.setTarget(mapRef.current)
-      setIsLoaded(true)
-
-      // const popupContainer = document.createElement('div')
-      // popupContainer.innerHTML = `
-      //     <div id="popup" class="ol-popup">
-      //         <a href="#" id="popup-closer" class="ol-popup-closer"></a>
-      //         <div id="popup-content"></div>
-      //     </div>
-      // `
-      // document.body.appendChild(popupContainer)
-
-      // const content = document.getElementById('popup-content') as HTMLElement
-      // const closer = document.getElementById('popup-closer') as HTMLElement
-
-      const overlay = new Overlay({
-        element: popupRef.current as HTMLElement,
-        autoPan: true,
-        // autoPanAnimation: {
-        //   duration: 250,
-        // },
-      })
-
-      const onclick = () => {
-        overlay.setPosition(undefined)
-        return false
-      }
-
-      setPopupOnClose(() => onclick)
-      setPopupOverlay(overlay)
-
-      map.addOverlay(overlay)
-    }
-  }, [isLoaded, map])
-
-  useEffect(() => {
     if (isLoaded) {
       // remove the old callback and create a new one each time state is updated
       unByKey(popupKey)
 
       const newPopupFunc = (evt: MapBrowserEvent<any>) => {
-        let point = map?.getCoordinateFromPixel(evt.pixel)
+        let point = mapRef.current?.getCoordinateFromPixel(evt.pixel)
 
         if (point != undefined) {
           point = proj.toLonLat(point)
-          mbMap?.fire('click', {
+          mbMapRef.current?.fire('click', {
             lngLat: point as mapboxgl.LngLatLike,
           })
         }
 
         let featureObjs: any[] = []
 
-        map?.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
+        mapRef.current?.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
           featureObjs.push({ feature, layer })
         })
 
@@ -441,11 +427,11 @@ export const MapProvider = ({ children }: Props) => {
         }
       }
 
-      const newpopupKey = map?.on('singleclick', newPopupFunc)
+      const newpopupKey = mapRef.current?.on('singleclick', newPopupFunc)
 
       setPopupKey(newpopupKey)
     }
-  }, [activeLayerGroupIds, map, isLoaded, popups])
+  }, [activeLayerGroupIds, isLoaded, popups])
 
   useEffect(() => {
     const filterSelectedFeatures = (
@@ -523,7 +509,7 @@ export const MapProvider = ({ children }: Props) => {
             return feature.id
           })
 
-        mbMap?.setFilter(getLayerName(id) + '-highlighted', ['in', 'id', ...featureIds])
+        mbMapRef.current?.setFilter(getLayerName(id) + '-highlighted', ['in', 'id', ...featureIds])
       }
 
       setSelectedFeatures(selectedFeaturesCopy)
@@ -626,7 +612,7 @@ export const MapProvider = ({ children }: Props) => {
 
     for (const layer in layerGroup) {
       if (layerOptions[layer].useMb) {
-        mbMap?.setLayoutProperty(layer, 'visibility', isVisible ? 'visible' : 'none')
+        mbMapRef.current?.setLayoutProperty(layer, 'visibility', isVisible ? 'visible' : 'none')
       } else {
         layerGroup[layer].setVisible(isVisible)
       }
@@ -746,7 +732,7 @@ export const MapProvider = ({ children }: Props) => {
 
     try {
       for (const sourceKey in style.sources) {
-        mbMap?.addSource(sourceKey, style.sources[sourceKey])
+        mbMapRef.current?.addSource(sourceKey, style.sources[sourceKey])
       }
 
       const layerOptionsCopy = { ...layerOptions }
@@ -779,12 +765,12 @@ export const MapProvider = ({ children }: Props) => {
         layerOptionsCopy[layerOpt.id] = layerOpt
         layerGroup[layer.id] = layer
 
-        mbMap?.addLayer(layer)
+        mbMapRef.current?.addLayer(layer)
 
         if (isVisible) {
-          mbMap?.setLayoutProperty(layer.id, 'visibility', 'visible')
+          mbMapRef.current?.setLayoutProperty(layer.id, 'visibility', 'visible')
         } else {
-          mbMap?.setLayoutProperty(layer.id, 'visibility', 'none')
+          mbMapRef.current?.setLayoutProperty(layer.id, 'visibility', 'none')
         }
       }
 
@@ -804,12 +790,12 @@ export const MapProvider = ({ children }: Props) => {
     }
 
     // if (layerConf.popup) {
-    //   mbMap?.on('click', (e: MapLayerMouseEvent) => {
+    //   mbMapRef.current?.on('click', (e: MapLayerMouseEvent) => {
     //     // Set `bbox` as 5px reactangle area around clicked point.
     //     // Find features intersecting the bounding box.
     //     // @ts-ignore
-    //     const point = mbMap.project(e.lngLat)
-    //     const selectedFeatures = mbMap.queryRenderedFeatures(point, {
+    //     const point = mbMapRef.current.project(e.lngLat)
+    //     const selectedFeatures = mbMapRef.current.queryRenderedFeatures(point, {
     //       layers: [
     //         'fi_forests_country-fill',
     //         'fi_forests_region-fill',
@@ -822,13 +808,13 @@ export const MapProvider = ({ children }: Props) => {
     //     const ids = selectedFeatures.map((feature: any) => feature.properties.id)
     //     // Set a filter matching selected features by FIPS codes
     //     // to activate the 'counties-highlighted' layer.
-    //     // mbMap.setFilter('counties-highlighted', ['in', 'FIPS', ...fips])
+    //     // mbMapRef.current.setFilter('counties-highlighted', ['in', 'FIPS', ...fips])
     //   })
-    //   mbMap?.on('mouseenter', function () {
-    //     mbMap.getCanvas().style.cursor = 'pointer'
+    //   mbMapRef.current?.on('mouseenter', function () {
+    //     mbMapRef.current.getCanvas().style.cursor = 'pointer'
     //   })
-    //   mbMap?.on('mouseleave', function () {
-    //     mbMap.getCanvas().style.cursor = ''
+    //   mbMapRef.current?.on('mouseleave', function () {
+    //     mbMapRef.current.getCanvas().style.cursor = ''
     //   })
     // }
   }
@@ -858,12 +844,12 @@ export const MapProvider = ({ children }: Props) => {
     const uniqueVals = _.uniq(_.map(json.features, 'properties.' + featureColorField))
     const colorArr = getColorExpressionArrForValues(uniqueVals)
 
-    mbMap?.addSource('carbon-shapes', {
+    mbMapRef.current?.addSource('carbon-shapes', {
       type: 'geojson',
       // Use a URL for the value for the `data` property.
       data: json,
     })
-    mbMap?.addLayer({
+    mbMapRef.current?.addLayer({
       id: 'carbon-shapes-outline',
       type: 'line',
       source: 'carbon-shapes',
@@ -872,7 +858,7 @@ export const MapProvider = ({ children }: Props) => {
       },
     })
 
-    mbMap?.addLayer({
+    mbMapRef.current?.addLayer({
       id: 'carbon-shapes-fill',
       type: 'fill',
       source: 'carbon-shapes', // reference the data source
@@ -883,7 +869,7 @@ export const MapProvider = ({ children }: Props) => {
       },
     })
 
-    mbMap?.addLayer({
+    mbMapRef.current?.addLayer({
       id: `carbon-shapes-sym`,
       source: 'carbon-shapes',
       type: 'symbol',
@@ -977,21 +963,21 @@ export const MapProvider = ({ children }: Props) => {
       addToFunctionQueue('setLayoutProperty', [layer, name, value])
       return
     }
-    mbMap?.setLayoutProperty(layer, name, value)
+    mbMapRef.current?.setLayoutProperty(layer, name, value)
   }
   const setPaintProperty = (layer: string, name: string, value: any) => {
     if (isLoaded) {
       addToFunctionQueue('setPaintProperty', [layer, name, value])
       return
     }
-    mbMap?.setPaintProperty(layer, name, value)
+    mbMapRef.current?.setPaintProperty(layer, name, value)
   }
   const setFilter = (layer: string, filter: any[]) => {
     if (isLoaded) {
       addToFunctionQueue('setFilter', [layer, filter])
       return
     }
-    mbMap?.setFilter(layer, filter)
+    mbMapRef.current?.setFilter(layer, filter)
   }
 
   const setOverlayMessage = (condition: boolean, message: OverlayMessage) => {
@@ -1008,7 +994,7 @@ export const MapProvider = ({ children }: Props) => {
     const [lonMin, latMin, lonMax, latMax] = bbox
     const lonDiff = lonMax - lonMin
     const latDiff = latMax - latMin
-    mbMap?.fitBounds(
+    mbMapRef.current?.fitBounds(
       [
         [lonMin - lonExtra * lonDiff, latMin - latExtra * latDiff],
         [lonMax + lonExtra * lonDiff, latMax + latExtra * latDiff],
@@ -1023,6 +1009,8 @@ export const MapProvider = ({ children }: Props) => {
       return
     }
 
+    setMapLibraryMode('mapbox')
+
     const draw = new MapboxDraw({
       displayControlsDefault: false,
       // Select which mapbox-gl-draw control buttons to add to the map.
@@ -1035,26 +1023,7 @@ export const MapProvider = ({ children }: Props) => {
       defaultMode: 'draw_polygon',
     })
 
-    map
-      ?.getLayers()
-      .getArray()
-      .forEach((layer) => map.removeLayer(layer))
-
-    const layer = new MapLibreLayer({
-      opacity: 0.7,
-      maplibreOptions: {
-        style: 'https://demotiles.maplibre.org/style.json',
-      },
-    })
-
-    // ...
-    map?.addLayer(layer)
-
-    map
-      ?.getLayers()
-      .getArray()
-      .filter((layer: any) => layer instanceof MapLibreLayer)
-      .forEach((layer: any) => layer.maplibreMap.addControl(draw, 'bottom-right'))
+    mbMapRef.current?.addControl(draw, 'bottom-right')
 
     setDraw(draw)
     setIsDrawEnabled(true)
@@ -1084,7 +1053,6 @@ export const MapProvider = ({ children }: Props) => {
 
   const values: IMapContext = {
     isLoaded,
-    map,
     setMapLibraryMode,
     activeLayerGroupIds,
     layerGroups,
@@ -1125,7 +1093,7 @@ export const MapProvider = ({ children }: Props) => {
   return (
     <MapContext.Provider value={values}>
       {/* <Box
-        ref={mapRef}
+        ref={mapDivRef}
         id="map"
         className="ol-map"
         sx={{
@@ -1137,7 +1105,7 @@ export const MapProvider = ({ children }: Props) => {
         }}
       ></Box> */}
       <Box
-        ref={mapRef}
+        ref={mapDivRef}
         id="map"
         className={mapLibraryMode === 'hybrid' ? 'ol-map' : ''}
         sx={{
