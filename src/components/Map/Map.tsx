@@ -23,7 +23,6 @@ import olms, { getLayer } from 'ol-mapbox-style'
 import { LngLat, MapLayerMouseEvent, PointLike, Style as MbStyle, MapboxGeoJSONFeature } from 'mapbox-gl'
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
-import MapLibreLayer from '@geoblocks/ol-maplibre-layer'
 
 import {
   LayerId,
