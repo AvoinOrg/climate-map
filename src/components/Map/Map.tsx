@@ -350,10 +350,9 @@ export const MapProvider = ({ children }: Props) => {
 
         if (point != undefined) {
           point = proj.toLonLat(point)
-
-          // mbMap?.fire('click', {
-          //   lngLat: point as mapboxgl.LngLatLike,
-          // })
+          mbMap?.fire('click', {
+            lngLat: point as mapboxgl.LngLatLike,
+          })
         }
 
         let featureObjs: any[] = []
