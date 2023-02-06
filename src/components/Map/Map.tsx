@@ -248,6 +248,11 @@ export const MapProvider = ({ children }: Props) => {
 
     return mbLayer
   }
+
+  const initHybridMap = (viewSettings: { center: [number, number]; zoom?: number }) => {
+    const newMbMap = initMbMap(viewSettings, true)
+    const mbLayer = getHybridMbLayer(newMbMap)
+
     const attribution = new Attribution({
       collapsible: false,
     })
@@ -255,7 +260,7 @@ export const MapProvider = ({ children }: Props) => {
     const options = {
       renderer: 'webgl',
       target: 'map',
-      view: new View({ zoom: 5, center: proj.fromLonLat(center) }),
+      view: new View({ zoom: viewSettings.zoom, center: proj.fromLonLat(viewSettings.center) }),
       layers: [
         new TileLayer({
           source: new OSM(),
@@ -265,15 +270,14 @@ export const MapProvider = ({ children }: Props) => {
             attributions: '© Powered by <a href="https://www.netlify.com/" target="_blank">Netlify</a>',
           }),
         }),
-        // mbLayer,
+        mbLayer,
       ],
       controls: defaultControls({ attribution: false }).extend([attribution, new ScaleLine()]),
     }
-    const mapObject = new Map(options)
-    setMap(mapObject)
-    setMbMap(mbMap)
+    const newMap = new Map(options)
 
-    // return () => mapObject.setTarget(undefined)
+    return { newMap, newMbMap }
+  }
   }, [])
 
   useEffect(() => {
