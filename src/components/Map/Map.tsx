@@ -102,75 +102,102 @@ export const MapProvider = ({ children }: Props) => {
   const [newlySelectedFeatures, setNewlySelectedFeatures] = useState<MapboxGeoJSONFeature[]>([])
   const [overlayMessage, _setOverlayMessage] = useState<OverlayMessage | null>(null)
 
-  useEffect(() => {
+  const initMbMap = (viewSettings: { center: [number, number]; zoom?: number }, isHybrid = true) => {
     // Mapbox does not render without a valid access token
-    if (mbMapRef.current) {
-      return
-    }
-
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN as string
 
-    const center = [15, 62] as [number, number]
+    let newMbMap: mapboxgl.Map
 
-    const emptyStyle: MbStyle = {
-      version: 8,
-      name: 'Empty',
-      metadata: {
-        'mapbox:autocomposite': true,
-        'mapbox:type': 'template',
-      },
-      glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
-      sources: {},
-      layers: [
-        {
-          id: 'background',
-          type: 'background',
-          paint: {
-            'background-color': 'rgba(0,0,0,0)',
+    if (isHybrid) {
+      const emptyStyle: MbStyle = {
+        version: 8,
+        name: 'Empty',
+        metadata: {
+          'mapbox:autocomposite': true,
+          'mapbox:type': 'template',
+        },
+        glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
+        sources: {},
+        layers: [
+          {
+            id: 'background',
+            type: 'background',
+            paint: {
+              'background-color': 'rgba(0,0,0,0)',
+            },
+          },
+        ],
+      }
+
+      newMbMap = new mapboxgl.Map({
+        // style: 'mapbox://styles/mapbox/satellite-v9',
+        attributionControl: false,
+        boxZoom: false,
+        center: viewSettings.center,
+        container: 'map',
+        doubleClickZoom: false,
+        dragPan: false,
+        dragRotate: false,
+        interactive: true,
+        keyboard: false,
+        pitchWithRotate: false,
+        scrollZoom: false,
+        touchZoomRotate: false,
+        style: emptyStyle,
+      })
+    } else {
+      const style: MbStyle = {
+        version: 8,
+        sources: {
+          osm: {
+            type: 'raster',
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution:
+              'Map tiles by <a target="_top" rel="noopener" href="https://tile.openstreetmap.org/">OpenStreetMap tile servers</a>, under the <a target="_top" rel="noopener" href="https://operations.osmfoundation.org/policies/tiles/">tile usage policy</a>. Data by <a target="_top" rel="noopener" href="http://openstreetmap.org">OpenStreetMap</a>',
           },
         },
-      ],
+        layers: [
+          {
+            id: 'osm',
+            type: 'raster',
+            source: 'osm',
+          },
+        ],
+      }
+
+      newMbMap = new mapboxgl.Map({
+        //@ts-ignore
+        container: 'map', // container id
+        style: style,
+        center: viewSettings.center, // starting position [lng, lat]
+        zoom: viewSettings.zoom, // starting zoom
+        attributionControl: false,
+        // transformRequest: (url) => {
+        //   return {
+        //     url: url,
+        //     headers: { "Accept-Encoding": "gzip" },
+        //   };
+        // },
+      })
     }
 
-    const mbMap = new mapboxgl.Map({
-      // style: 'mapbox://styles/mapbox/satellite-v9',
-      attributionControl: false,
-      boxZoom: false,
-      center: center,
-      container: 'map',
-      doubleClickZoom: false,
-      dragPan: false,
-      dragRotate: false,
-      interactive: true,
-      keyboard: false,
-      pitchWithRotate: false,
-      scrollZoom: false,
-      touchZoomRotate: false,
-      style: emptyStyle,
-    })
-
-    // const mbMap = new mapboxgl.Map({
-    //   //@ts-ignore
-    //   container: 'map', // container id
-    //   style: 'mapbox://styles/mapbox/streets-v11',
-    //   center: [28, 65], // starting position [lng, lat]
-    //   zoom: 5, // starting zoom
-    //   attributionControl: false,
-    //   // transformRequest: (url) => {
-    //   //   return {
-    //   //     url: url,
-    //   //     headers: { "Accept-Encoding": "gzip" },
-    //   //   };
-    //   // },
-    // })
-
-    mbMapRef.current = mbMap
+    if (mbMap) {
+      const sources = mbMap.getStyle().sources
+      for (const key in sources) {
+        newMbMap.addSource(key, sources[key])
+      }
+      for (const layer of mbMap.getStyle().layers) {
+        newMbMap.addLayer(layer)
+      }
+      mbMap.remove()
+    }
 
     const mbSelectionFunction = (e: MapLayerMouseEvent) => {
       // Set `bbox` as 5px reactangle area around clicked point.
       // Find features intersecting the bounding box.
       // @ts-ignore
-      const point = e.point
+      const point = newMbMap.project(e.lngLat)
 
       const features = newMbMap.queryRenderedFeatures(point)
 
@@ -178,6 +205,9 @@ export const MapProvider = ({ children }: Props) => {
     }
 
     newMbMap.on('click', mbSelectionFunction)
+
+    return newMbMap
+  }
 
     const attribution = new Attribution({
       collapsible: false,
