@@ -8,6 +8,7 @@ import ExploreIcon from '@mui/icons-material/Explore'
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 import GpsFixedIcon from '@mui/icons-material/GpsFixed'
+import EditIcon from '@mui/icons-material/Edit';
 
 import { MapContext } from '#/components/Map'
 import { Button } from '@mui/material'
@@ -35,7 +36,7 @@ export const GroupOrientation = () => {
           <GpsFixedIcon fontSize="small" />
         </StyledButton>
         <StyledButton onClick={() => setIsDrawPolygon(true)} size="small">
-          <GpsFixedIcon fontSize="small" />
+          <EditIcon fontSize="small" />
         </StyledButton>
       </ButtonGroup>
     </IconGroup>
