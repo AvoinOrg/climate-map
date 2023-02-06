@@ -183,7 +183,7 @@ export const MapProvider = ({ children }: Props) => {
       })
     }
 
-    if (mbMap) {
+    if (mbMap && mbMap.getStyle()) {
       const sources = mbMap.getStyle().sources
       for (const key in sources) {
         newMbMap.addSource(key, sources[key])
