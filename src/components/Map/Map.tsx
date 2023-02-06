@@ -278,6 +278,29 @@ export const MapProvider = ({ children }: Props) => {
 
     return { newMap, newMbMap }
   }
+
+  useEffect(() => {
+    const center = [15, 62] as [number, number]
+    const zoom = 5
+
+    switch (mapLibraryMode) {
+      case 'mapbox': {
+        let newMbMap = initMbMap({ center, zoom }, false)
+        setMbMap(newMbMap)
+        return () => {
+          newMbMap.remove()
+        }
+      }
+      case 'hybrid': {
+        let { newMap, newMbMap } = initHybridMap({ center, zoom })
+        setMap(newMap)
+        setMbMap(newMbMap)
+        return () => {
+          newMap.setTarget(undefined)
+          newMbMap.remove()
+        }
+      }
+    }
   }, [])
 
   useEffect(() => {
