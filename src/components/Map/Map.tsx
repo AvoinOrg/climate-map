@@ -49,6 +49,7 @@ interface Props {
 interface IMapContext {
   isLoaded: boolean
   map: Map | null
+  setMapLibraryMode: (mode: MapLibraryMode) => void
   mapToggleTerrain: () => void | null
   mapResetNorth: () => void | null
   getGeocoder: () => any | null
