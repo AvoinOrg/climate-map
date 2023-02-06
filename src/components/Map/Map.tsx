@@ -1114,14 +1114,14 @@ export const MapProvider = ({ children }: Props) => {
       <Box
         ref={mapRef}
         id="map"
-        className="ol-map"
+        className={mapLibraryMode === 'hybrid' ? 'ol-map' : ''}
         sx={{
           position: 'absolute',
           top: 0,
           bottom: 0,
           width: '100vw',
           height: '100vh',
-          '.ol-scale-line': { right: '8px', left: 'auto', bottom: '26px' },
+          ...(mapLibraryMode === 'hybrid' && { '.ol-scale-line': { right: '8px', left: 'auto', bottom: '26px' } }),
           // pointerEvents: 'none',
           // '> *': {
           //   pointerEvents: 'auto',
