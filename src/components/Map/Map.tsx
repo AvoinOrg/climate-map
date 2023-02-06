@@ -209,6 +209,45 @@ export const MapProvider = ({ children }: Props) => {
     return newMbMap
   }
 
+  const getHybridMbLayer = (newMbMap: mapboxgl.Map) => {
+    const mbLayer = new Layer({
+      render: function (frameState) {
+        const canvas: any = newMbMap.getCanvas()
+        const viewState = frameState.viewState
+
+        const visible = mbLayer.getVisible()
+        canvas.style.display = visible ? 'block' : 'none'
+        canvas.style.position = 'absolute'
+
+        const opacity = mbLayer.getOpacity()
+        canvas.style.opacity = opacity
+
+        // adjust view parameters in mapbox
+        const rotation = viewState.rotation
+        newMbMap.jumpTo({
+          center: proj.toLonLat(viewState.center) as [number, number],
+          zoom: viewState.zoom - 1,
+          bearing: (-rotation * 180) / Math.PI,
+        })
+
+        // cancel the scheduled update & trigger synchronous redraw
+        // see https://github.com/mapbox/mapbox-gl-js/issues/7893#issue-408992184
+        // NOTE: THIS MIGHT BREAK IF UPDATING THE MAPBOX VERSION
+        //@ts-ignore
+        if (newMbMap._frame) {
+          //@ts-ignore
+          newMbMap._frame.cancel()
+          //@ts-ignore
+          newMbMap._frame = null
+        } //@ts-ignore
+        newMbMap._render()
+
+        return canvas
+      },
+    })
+
+    return mbLayer
+  }
     const attribution = new Attribution({
       collapsible: false,
     })
