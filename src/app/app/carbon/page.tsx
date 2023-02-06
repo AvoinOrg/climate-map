@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import axios from 'axios'
 import { Button, Box } from '@mui/material'
 import shp from 'shpjs'
@@ -11,7 +11,11 @@ import { MapContext } from '#/components/Map'
 const CarbonMap = () => {
   const [uploadFile, setUploadFile] = useState<string | Blob>('')
   const [res, setRes] = useState(null)
-  const { addJSONLayer }: any = useContext(MapContext)
+  const { addJSONLayer, setMapLibraryMode } = useContext(MapContext)
+
+  useEffect(() => {
+    setMapLibraryMode('mapbox')
+  }, [])
 
   const handleSubmit = async () => {
     const formData = new FormData()
