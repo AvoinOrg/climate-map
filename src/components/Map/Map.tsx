@@ -81,6 +81,7 @@ export const MapContext = createContext({ isLoaded: false } as IMapContext)
 export const MapProvider = ({ children }: Props) => {
   const mapRef = useRef<HTMLDivElement>()
   const mbMapRef = useRef<mapboxgl.Map | null>()
+  const [mapLibraryMode, setMapLibraryMode] = useState<MapLibraryMode>('hybrid')
   const [map, setMap] = useState<Map | null>(null)
   const [mbMap, setMbMap] = useState<mapboxgl.Map | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -1044,6 +1045,7 @@ export const MapProvider = ({ children }: Props) => {
   const values: IMapContext = {
     isLoaded,
     map,
+    setMapLibraryMode,
     activeLayerGroupIds,
     layerGroups,
     mapToggleTerrain,
