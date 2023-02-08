@@ -31,6 +31,16 @@ const convertToFloat = (a: string) => {
   // Return float value
   return floatValue
 }
+// integer numbers:
+function numberWithISpaces(xa) {
+  return xa.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+// floating numbers
+function numberWithFSpaces(xa) {
+  var parts = xa.toString().split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  return parts.join(".");
+}
 // Emission factors [kgCO2/kWh]
 const empdp = [0.255, 0.195, 0.104, 0.104, 0.104]
 // round the tecons value
@@ -208,19 +218,19 @@ const Popup = ({ features }: Props) => {
       tableValues['From District Heat to Geothermal Heat (Cost Savings):'] = (<address></address>)
       tableValues['Before Investing: [Mwh/a, €/a]'] = (
       <address>         
-        <div>{buildingHePaybackClass[1]} : {districthconsmp.toFixed(2)}</div>
-        <div>{buildingHePaybackClass[2]} : {electenergyconspt.toFixed(2)}</div> 
-        <div>{buildingHePaybackClass[3]}: {yearcostbi.toFixed(0).toLocaleString()}</div> 
+        <div>{buildingHePaybackClass[1]} : {districthconsmp.toFixed(3)}</div>
+        <div>{buildingHePaybackClass[2]} : {electenergyconspt.toFixed(3)}</div> 
+        <div>{buildingHePaybackClass[3]}: {numberWithISpaces(yearcostbi.toFixed(0).toLocaleString())}</div> 
       </address>)
       tableValues['After Investing: [Mwh/a, €/a]'] = (
       <address>            
         <div>{buildingHePaybackClass[1]}: 0</div>
-        <div>{buildingHePaybackClass[2]}: {electenergyconsptm.toFixed(2)}</div> 
-        <div>{buildingHePaybackClass[3]}: {Number(yearcostai).toFixed(0).toLocaleString()}</div> 
+        <div>{buildingHePaybackClass[2]}: {electenergyconsptm.toFixed(3)}</div> 
+        <div>{buildingHePaybackClass[3]}: {numberWithISpaces(Number(yearcostai).toFixed(0).toLocaleString())}</div> 
       </address>)
-      tableValues['Saving: [€]'] = (<address>{savingsum.toFixed(0)}</address>)
+      tableValues['Saving: [€]'] = (<address>{numberWithISpaces(savingsum.toFixed(0))}</address>)
       tableValues['Price of district heating & Electricity: [€/MWh, snt/kWh]'] = (<address>{districtprice} & {powerprice/10}</address>)
-      tableValues['Cumulative Savings (Payback 15a / Rate 3%): [€]'] = (<address>{cumulative_yield.toFixed(0).toLocaleString()}</address>)
+      tableValues['Cumulative Savings (Payback 15a / Rate 3%): [€]'] = (<address>{numberWithISpaces(cumulative_yield.toFixed(0).toLocaleString())}</address>)
     }
     // Oil
     if (kktark == '032' || (kktark == '039' && p.c_poltaine == 2) || (p.c_poltaine == 3 && p.c_valmpvm != null)) {
