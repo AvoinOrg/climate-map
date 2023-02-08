@@ -1,4 +1,5 @@
 import { Style as MbStyle } from 'mapbox-gl'
+import * as Pg from 'pg';
 import _ from 'lodash'
 
 import { fillOpacity, roundToSignificantDigits } from '#/utils/mapUtils'
