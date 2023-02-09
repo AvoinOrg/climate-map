@@ -6,19 +6,7 @@ import _ from 'lodash'
 import { buildingHelBhsysClass, buildingHePaybackClass, energyConsumption } from './constants'
 
 // Variables
-let heatings
-let heatingsL
-let heatingsS
-let heatingsmS
-let tecons
-let teconss
-let teconsL
-let teconsS
-let teconsmS
-let tecdate
-let tecdate_st
-let emisfactord
-let emisfactords
+let heatings, heatingsL, heatingsS, heatingsmS, tecons, teconss, teconsL, teconsS, teconsmS, tecdate, tecdate_st, emisfactord, emisfactords
 const nulls = '000'
 // Energy prices
 const districtprice = 81
@@ -109,7 +97,7 @@ const Popup = ({ features }: Props) => {
         tecons = docctilav * convertToFloat(heatings)
         teconsL = docctilav * convertToFloat(heatingsL)
         teconsS = docctilav * convertToFloat(heatingsS)
-        heatingsmS = energyConsumption.consumption[0].ghpumpS
+        heatingsmS = energyConsumption.consumption[0].estenergCons
         teconsmS = docctilav * convertToFloat(heatingsmS)
       } else if (tecdate <= 1977 || tecdate >= 1976) {
         heatings = energyConsumption.consumption[1].dis_heating
@@ -118,7 +106,7 @@ const Popup = ({ features }: Props) => {
         tecons = docctilav * convertToFloat(heatings)
         teconsL = docctilav * convertToFloat(heatingsL)
         teconsS = docctilav * convertToFloat(heatingsS)
-        heatingsmS = energyConsumption.consumption[1].ghpumpS
+        heatingsmS = energyConsumption.consumption[1].estenergCons
         teconsmS = docctilav * convertToFloat(heatingsmS)
       } else if (tecdate <= 1984 || tecdate >= 1978) {
         heatings = energyConsumption.consumption[2].dis_heating
@@ -127,7 +115,7 @@ const Popup = ({ features }: Props) => {
         tecons = docctilav * convertToFloat(heatings)
         teconsL = docctilav * convertToFloat(heatingsL)
         teconsS = docctilav * convertToFloat(heatingsS)
-        heatingsmS = energyConsumption.consumption[2].ghpumpS
+        heatingsmS = energyConsumption.consumption[2].estenergCons
         teconsmS = docctilav * convertToFloat(heatingsmS)
       } else if (tecdate <= 2002 || tecdate >= 1985) {
         heatings = energyConsumption.consumption[3].dis_heating
@@ -136,7 +124,7 @@ const Popup = ({ features }: Props) => {
         tecons = docctilav * convertToFloat(heatings)
         teconsL = docctilav * convertToFloat(heatingsL)
         teconsS = docctilav * convertToFloat(heatingsS)
-        heatingsmS = energyConsumption.consumption[3].ghpumpS
+        heatingsmS = energyConsumption.consumption[3].estenergCons
         teconsmS = docctilav * convertToFloat(heatingsmS)
       } else if (tecdate <= 2007 || tecdate >= 2003) {
         heatings = energyConsumption.consumption[4].dis_heating
@@ -145,7 +133,7 @@ const Popup = ({ features }: Props) => {
         tecons = docctilav * convertToFloat(heatings)
         teconsL = docctilav * convertToFloat(heatingsL)
         teconsS = docctilav * convertToFloat(heatingsS)
-        heatingsmS = energyConsumption.consumption[4].ghpumpS
+        heatingsmS = energyConsumption.consumption[4].estenergCons
         teconsmS = docctilav * convertToFloat(heatingsmS)
       } else if (tecdate <= 2009 || tecdate >= 2008) {
         heatings = energyConsumption.consumption[5].dis_heating
@@ -154,7 +142,7 @@ const Popup = ({ features }: Props) => {
         tecons = docctilav * convertToFloat(heatings)
         teconsL = docctilav * convertToFloat(heatingsL)
         teconsS = docctilav * convertToFloat(heatingsS)
-        heatingsmS = energyConsumption.consumption[5].ghpumpS
+        heatingsmS = energyConsumption.consumption[5].estenergCons
         teconsmS = docctilav * convertToFloat(heatingsmS)
       } else if (tecdate <= 2011 || tecdate >= 2010) {
         heatings = energyConsumption.consumption[6].dis_heating
@@ -163,7 +151,7 @@ const Popup = ({ features }: Props) => {
         tecons = docctilav * convertToFloat(heatings)
         teconsL = docctilav * convertToFloat(heatingsL)
         teconsS = docctilav * convertToFloat(heatingsS)
-        heatingsmS = energyConsumption.consumption[6].ghpumpS
+        heatingsmS = energyConsumption.consumption[6].estenergCons
         teconsmS = docctilav * convertToFloat(heatingsmS)
       } else if (tecdate <= 2017 || tecdate >= 2012) {
         heatings = energyConsumption.consumption[7].dis_heating
@@ -172,7 +160,7 @@ const Popup = ({ features }: Props) => {
         tecons = docctilav * convertToFloat(heatings)
         teconsL = docctilav * convertToFloat(heatingsL)
         teconsS = docctilav * convertToFloat(heatingsS)
-        heatingsmS = energyConsumption.consumption[7].ghpumpS
+        heatingsmS = energyConsumption.consumption[7].estenergCons
         teconsmS = docctilav * convertToFloat(heatingsmS)
       } else if (tecdate >= 2018) {
         heatings = energyConsumption.consumption[8].dis_heating
@@ -181,7 +169,7 @@ const Popup = ({ features }: Props) => {
         tecons = docctilav * convertToFloat(heatings)
         teconsL = docctilav * convertToFloat(heatingsL)
         teconsS = docctilav * convertToFloat(heatingsS)
-        heatingsmS = energyConsumption.consumption[8].ghpumpS
+        heatingsmS = energyConsumption.consumption[8].estenergCons
         teconsmS = docctilav * convertToFloat(heatingsmS)
       } else {
         heatings = 0
@@ -200,14 +188,14 @@ const Popup = ({ features }: Props) => {
       let savingsum = (Number(yearcostbi) - Number(yearcostai))
 
       const n = 15
-      let present_value = 0
-      let cumulative_yield = Number(savingsum)
-      
-      for (let i = 1; i <= n; i++) {
-          let discretes = 1/(1+interest_rate)**n
-          let present_value = discretes*Number(savingsum)
+      let present_value, cumulative_yield, discretes    
+      cumulative_yield = 0
+      // calculates the cumulative sum
+      for (let i = 1; i <= n; i++) {          
+          discretes = 1/(1+interest_rate)**i          
+          present_value = discretes*Number(savingsum)
           cumulative_yield += present_value
-      }
+      }      
 
       tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = (
         <address>{Tecons(tecons) + ' ' + nulls}</address>
@@ -215,6 +203,7 @@ const Popup = ({ features }: Props) => {
       tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>
       tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/kWh]'] = (
         <address>{emissionFactor(tecons, empdp[1]) + ' ' + nulls}</address>)
+      // payback time
       tableValues['From District Heat to Geothermal Heat (Cost Savings):'] = (<address></address>)
       tableValues['Before Investing: [Mwh/a, €/a]'] = (
       <address>         
