@@ -7,8 +7,8 @@ export const buildingHelBhsysClass: any = {
 }
 
 export const buildingHePaybackClass: any = {
-  1: 'Dist.consp',
-  2: 'Elect.consp.',
+  1: 'District heat consumption',
+  2: 'Electricity consumption',
   3: 'Year Cost',
   4: 'Mwh/a',
   5: '€/a',
@@ -36,7 +36,8 @@ export const energyConsumption: any = {
       dis_heatingS: '6.409',
       direct_heatingS: '62.625',
       awhpumpS: '6.45',
-      ghpumpS: '6.295',
+      ghpumpS: '6.295',      
+      estenergCons: '35.928', 
     },
     {
       year: '1976',
@@ -55,6 +56,7 @@ export const energyConsumption: any = {
       direct_heatingS: '56.309',
       awhpumpS: '6.416',
       ghpumpS: '6.290',
+      estenergCons: '32.857',
     },
     {
       year: '1978',
@@ -73,6 +75,7 @@ export const energyConsumption: any = {
       direct_heatingS: '48.554',
       awhpumpS: '6.404',
       ghpumpS: '6.285',
+      estenergCons: '28.958',
     },
     {
       year: '1985',
@@ -91,6 +94,7 @@ export const energyConsumption: any = {
       direct_heatingS: '46.352',
       awhpumpS: '6.391',
       ghpumpS: '6.283',
+      estenergCons: '27.861',
     },
     {
       year: '2003',
@@ -109,6 +113,7 @@ export const energyConsumption: any = {
       direct_heatingS: '43.156',
       awhpumpS: '7.68',
       ghpumpS: '7.57',
+      estenergCons: '26.574',
     },
     {
       year: '2008',
@@ -127,6 +132,7 @@ export const energyConsumption: any = {
       direct_heatingS: '42.832',
       awhpumpS: '7.679',
       ghpumpS: '7.57',
+      estenergCons: '26.411',
     },
     {
       year: '2010',
@@ -145,6 +151,7 @@ export const energyConsumption: any = {
       direct_heatingS: '36.216',
       awhpumpS: '7.65',
       ghpumpS: '7.56 ',
+      estenergCons: '23.408',
     },
     {
       year: '2012',
@@ -163,6 +170,7 @@ export const energyConsumption: any = {
       direct_heatingS: '33.122',
       awhpumpS: '26.018',
       ghpumpS: '21.708',
+      estenergCons: '21.708',
     },
     {
       year: '2018',
@@ -181,6 +189,7 @@ export const energyConsumption: any = {
       direct_heatingS: '31.101',
       awhpumpS: '7.074',
       ghpumpS: '7.009',
+      estenergCons: '20.722',
     },
   ],
 }
