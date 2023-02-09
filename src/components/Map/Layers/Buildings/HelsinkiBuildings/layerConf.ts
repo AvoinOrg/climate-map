@@ -1,5 +1,5 @@
 import { Style as MbStyle } from 'mapbox-gl'
-import * as Pg from 'pg';
+
 import _ from 'lodash'
 
 import { fillOpacity, roundToSignificantDigits } from '#/utils/mapUtils'
@@ -128,28 +128,7 @@ const getStyle = async (): Promise<MbStyle> => {
     ],
   }
 }
-/* 
-var map = new mapboxgl.Map({
-  container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v11'
-});
 
-map.on('load', function() {
-  map.addSource('hel-buildings', {
-    'type': 'geojson',
-    'data': 'src/components/Map/Layers/Buildings/HelsinkiBuildings/geojson/Helsinki_rakennukset_039_022023.geojson'
-  });
-  map.addLayer({
-    'id': 'hel-layer',
-    'type': 'fill',
-    'source': 'hel-buildings',
-    'paint': {
-      'fill-color': '#088',
-      'fill-opacity': 0.5
-    }
-  });
-});
-*/
 const layerConf: LayerConf = { id: id, style: getStyle, popup: Popup }
 
 export default layerConf
