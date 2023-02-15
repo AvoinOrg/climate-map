@@ -20,11 +20,11 @@ const convertToFloat = (a: string) => {
   return floatValue
 }
 // integer numbers:
-function numberWithISpaces(xa) {
+function numberWithISpaces(xa : any) {
   return xa.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 }
 // floating numbers
-function numberWithFSpaces(xa) {
+function numberWithFSpaces(xa: any) {
   var parts = xa.toString().split(".");
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
   return parts.join(".");
@@ -200,7 +200,7 @@ const Popup = ({ features }: Props) => {
       tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = (
         <address>{Tecons(tecons) + ' ' + nulls}</address>
       )
-      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3/a)]'] = <address>{heatings}</address>
       tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/kWh]'] = (
         <address>{emissionFactor(tecons, empdp[1]) + ' ' + nulls}</address>)
       // payback time
@@ -219,7 +219,7 @@ const Popup = ({ features }: Props) => {
       </address>)
       tableValues['Saving: [€]'] = (<address>{numberWithISpaces(savingsum.toFixed(0))}</address>)
       tableValues['Price of district heating & Electricity: [€/MWh, snt/kWh]'] = (<address>{districtprice} & {powerprice/10}</address>)
-      tableValues['Cumulative Savings (Payback 15a / Rate 3%): [€]'] = (<address>{numberWithISpaces(cumulative_yield.toFixed(0).toLocaleString())}</address>)
+      tableValues['Cumulative Savings (15a / Rate 3%): [€]'] = (<address>{numberWithISpaces(cumulative_yield.toFixed(0).toLocaleString())}</address>)
     }
     // Oil
     if (kktark == '032' || (kktark == '039' && p.c_poltaine == 2) || (p.c_poltaine == 3 && p.c_valmpvm != null)) {
@@ -257,7 +257,7 @@ const Popup = ({ features }: Props) => {
       tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = (
         <address>{Tecons(tecons) + ' ' + nulls}</address>
       )
-      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3/a)]'] = <address>{heatings}</address>
       tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/kWh]'] = (
         <address>{emissionFactor(tecons, empdp[0]) + ' ' + nulls}</address>
       )
@@ -298,7 +298,7 @@ const Popup = ({ features }: Props) => {
       tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = (
         <address>{Tecons(tecons) + ' ' + nulls}</address>
       )
-      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3/a)]'] = <address>{heatings}</address>
       tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/kWh]'] = (
         <address>{emissionFactor(tecons, empdp[2]) + ' ' + nulls}</address>
       )
@@ -339,7 +339,7 @@ const Popup = ({ features }: Props) => {
       tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = (
         <address>{Tecons(tecons) + ' ' + nulls}</address>
       )
-      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3,a)]'] = <address>{heatings}</address>
+      tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3/a)]'] = <address>{heatings}</address>
       tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/kWh]'] = (
         <address>{emissionFactor(tecons, empdp[3]) + ' ' + nulls}</address>
       )      
