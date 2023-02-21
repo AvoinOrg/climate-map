@@ -1,7 +1,6 @@
 import React from 'react'
 import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow } from '@mui/material'
-import _ from 'lodash'
 
 interface Props {
   features: Feature[]
