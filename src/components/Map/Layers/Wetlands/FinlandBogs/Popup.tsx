@@ -1,6 +1,7 @@
 import React from 'react'
 import Feature from 'ol/Feature'
-import { Table, TableBody, TableCell, TableRow, Box, styled } from '@mui/material'
+import { Table, TableBody, TableCell, TableRow, Box } from '@mui/material'
+import { styled } from '@mui/material/styles'
 
 import { gtkTurveVaratLuonnontilaisuusluokka } from './constants'
 

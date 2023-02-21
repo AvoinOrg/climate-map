@@ -1,5 +1,6 @@
 import React from 'react'
-import { Button, Table, TableBody, Paper, TableCell, TableContainer, TableHead, TableRow, styled } from '@mui/material'
+import { Button, Table, TableBody, Paper, TableCell, TableContainer, TableHead, TableRow } from '@mui/material'
+import { styled } from '@mui/material/styles'
 
 import { GpsFixed } from '@mui/icons-material'
 

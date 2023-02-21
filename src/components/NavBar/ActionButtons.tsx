@@ -2,7 +2,8 @@
 
 import React from 'react'
 import Button from '@mui/material/Button'
-import { Box, styled } from '@mui/material'
+import { Box } from '@mui/material'
+import { styled } from '@mui/material/styles'
 import { UiStateContext } from '../State'
 
 const ActionButtons = () => {

@@ -1,5 +1,6 @@
 import React from 'react'
-import { Box, styled } from '@mui/material'
+import { Box } from '@mui/material'
+import { styled } from '@mui/material/styles'
 import { AOAccordionLink, AOAccordion } from '#/components/Sidebar/Accordion'
 
 const LegendBox = (props: any) => {
@@ -89,7 +90,6 @@ const ForestContent = () => {
     </Box>
   )
 }
-
 
 const InfoContainer = styled(Box)({
   // TODO: figure out why this does not work

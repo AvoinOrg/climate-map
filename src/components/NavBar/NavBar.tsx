@@ -4,7 +4,8 @@ import React from 'react'
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
 import IconButton from '@mui/material/IconButton'
-import { Box, styled } from '@mui/material'
+import { Box } from '@mui/material'
+import { styled } from '@mui/material/styles'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
@@ -42,7 +43,7 @@ export const NavBar = () => {
 
         <Link href="/" className="neutral-link">
           <ImageWrapper>
-            <Image src={'/img/logo.svg'} alt="Logo" width={160} height={100}/>
+            <Image src={'/img/logo.svg'} alt="Logo" width={160} height={100} />
           </ImageWrapper>
         </Link>
 
