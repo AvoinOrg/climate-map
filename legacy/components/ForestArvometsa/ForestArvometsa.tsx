@@ -38,8 +38,8 @@ import { assert, execWithMapLoaded, getGeoJsonGeometryBounds } from '#/common/ut
 import { setOverlayMessage } from '../../OverlayMessages/OverlayMessages'
 import * as SelectedFeatureState from './ArvometsaSelectedLayer'
 import { HeaderTable, SimpleTable } from '../ForestArvometsaTable'
-import { setIsSidebarOpen } from '../../State/UiState'
-import { setSearchPlaceholder } from '../../NavBar/NavBarSearch'
+import { setIsSidebarOpen } from '../../../src/components/State/UiState'
+import { setSearchPlaceholder } from '../../../src/components/NavBar/NavBarSearch'
 
 import arvometsaLogo from './arvometsa_logo.png'
 
