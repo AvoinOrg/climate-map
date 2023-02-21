@@ -1,12 +1,10 @@
-import { Style as MbStyle } from 'mapbox-gl'
-
 import { fillOpacity } from '#/common/utils/map'
-import { LayerId, LayerConf } from '#/common/types/map'
+import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import Popup from './Popup'
 
 const id: LayerId = 'fi_bogs'
 
-const getStyle = async (): Promise<MbStyle> => {
+const getStyle = async (): Promise<ExtendedMbStyle> => {
   const sourceNames = ['fi_bogs', 'gtk_peat']
 
   return {
