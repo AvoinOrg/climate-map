@@ -7,6 +7,15 @@ const nextConfig = {
   experimental: {
     appDir: true,
   },
+  modularizeImports: {
+    '@mui/material': {
+      transform: '@mui/material/{{member}}',
+    },
+    '@mui/icons-material/?(((\\w*)?/?)*)': {
+      transform: '@mui/icons-material/{{ matches.[1] }}/{{member}}',
+    },
+  },
+  transpilePackages: ['lodash-es'],
   eslint: {
     ignoreDuringBuilds: true,
   },
