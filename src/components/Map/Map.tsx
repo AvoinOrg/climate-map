@@ -1,10 +1,10 @@
-'use client'
-
 // This is the main Map component, exported as a context.
 // Uses Openlayers with Mapbox GL added as a layer. This is due to the low performance of
 // Openlayers as WebGL renderer, while Mapbox GL lacks a lot of features that Openlayers has.
 // TODO: Look into Maplibre GL, which is a fork of Mapbox GL that is more open source friendly.
 // See: https://github.com/geoblocks/ol-maplibre-layer
+//
+'use client'
 
 import 'ol/ol.css'
 import '#/common/style/mapbox.css'
@@ -1111,7 +1111,6 @@ export const MapProvider = ({ children }: Props) => {
     isDrawEnabled,
     setIsDrawEnabled,
     setIsDrawPolygon,
-
     // enableGroup,
     // setFilter,
     // AddMapEventHandler,
