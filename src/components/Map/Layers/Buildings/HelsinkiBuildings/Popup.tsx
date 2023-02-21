@@ -1,7 +1,7 @@
 import React from 'react'
 import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow } from '@mui/material'
-import _ from 'lodash'
+import { uniqWith, isEqual } from 'lodash-es'
 
 import { buildingHelBhsysClass, energyConsumption } from './constants'
 
@@ -261,7 +261,7 @@ const Popup = ({ features }: Props) => {
   })
 
   // remove duplicate building ids by comparing the objects
-  buildingIds = _.uniqWith(buildingIds, _.isEqual)
+  buildingIds = uniqWith(buildingIds, isEqual)
 
   const buildingIdString = Object.keys(buildingIds).reduce((prev: any, index: any) => {
     const curr = buildingIds[index]

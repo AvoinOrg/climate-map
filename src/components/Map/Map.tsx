@@ -8,6 +8,8 @@
 
 import 'ol/ol.css'
 import '#/common/style/mapbox.css'
+import { pickBy, uniq, map, cloneDeep } from 'lodash-es'
+
 import React, { createContext, useState, useRef, useEffect, useCallback } from 'react'
 import Box from '@mui/material/Box'
 import { Map, View, MapBrowserEvent } from 'ol'
@@ -447,7 +449,7 @@ export const MapProvider = ({ children }: Props) => {
       newlySelectedFeatures: MapboxGeoJSONFeature[]
     ) => {
       const selectableLayers = Object.keys(
-        _.pickBy(layerOptions, (value, _key) => {
+        pickBy(layerOptions, (value, _key) => {
           return value.selectable
         })
       )
@@ -507,7 +509,7 @@ export const MapProvider = ({ children }: Props) => {
         selectedLayerIds.push(feature.layer.id)
       })
 
-      selectedLayerIds = _.uniq(selectedLayerIds)
+      selectedLayerIds = uniq(selectedLayerIds)
 
       for (const id of selectedLayerIds) {
         const featureIds = selectedFeaturesCopy
@@ -866,7 +868,7 @@ export const MapProvider = ({ children }: Props) => {
 
     // }
 
-    const uniqueVals = _.uniq(_.map(json.features, 'properties.' + featureColorField))
+    const uniqueVals = uniq(map(json.features, 'properties.' + featureColorField))
     const colorArr = getColorExpressionArrForValues(uniqueVals)
 
     mbMapRef.current?.addSource('carbon-shapes', {
@@ -1047,7 +1049,7 @@ export const MapProvider = ({ children }: Props) => {
       // The user does not have to click the polygon control button first.
       // defaultMode: 'draw_polygon',
     })
-    const source = _.cloneDeep(mbMapRef.current?.getStyle().sources['carbon-shapes'])
+    const source = cloneDeep(mbMapRef.current?.getStyle().sources['carbon-shapes'])
 
     mbMapRef.current?.removeLayer('carbon-shapes-outline')
     mbMapRef.current?.removeLayer('carbon-shapes-fill')

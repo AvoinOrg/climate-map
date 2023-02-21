@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import { every } from 'lodash-es'
 import { Expression, Layer } from 'mapbox-gl'
 import { GeoJsonProperties } from 'geojson'
 
@@ -391,7 +391,7 @@ export const getChartTitleSingleLayer = (selectedFeatureLayer: Layer, featurePro
     if (multiple) return `Multiple properties selected: ${name}`
     return `Property with forest (${name})`
   } else {
-    assert(_.every(featureProps.map((p) => p.namefin)), `Expected namefin: ${selectedFeatureLayer}`)
+    assert(every(featureProps.map((p) => p.namefin)), `Expected namefin: ${selectedFeatureLayer}`)
     const name = featureProps.map((p) => p.namefin || p.nameswe).join(', ')
     if (multiple) return `Multiple administrative areas selected: ${name}`
     return name
