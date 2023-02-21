@@ -1,13 +1,12 @@
 import { Style as MbStyle } from 'mapbox-gl'
-import _ from 'lodash'
 
 import { fillOpacity } from '#/common/utils/map'
-import { LayerId, LayerConf } from '#/common/types/map'
+import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import Popup from './Popup'
 
 const id: LayerId = 'fi_buildings'
 
-const getStyle = async (): Promise<MbStyle> => {
+const getStyle = async (): Promise<ExtendedMbStyle> => {
   return {
     version: 8,
     name: id,
@@ -30,7 +29,6 @@ const getStyle = async (): Promise<MbStyle> => {
           'fill-color': 'cyan',
           'fill-opacity': fillOpacity,
         },
-        BEFORE: 'FILL',
       },
       {
         id: id + '-outline',
@@ -40,7 +38,6 @@ const getStyle = async (): Promise<MbStyle> => {
         paint: {
           'line-opacity': 0.75,
         },
-        BEFORE: 'OUTLINE',
       },
     ],
   }
