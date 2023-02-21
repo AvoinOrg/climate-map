@@ -1,7 +1,7 @@
 import React from 'react'
 import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow } from '@mui/material'
-import _ from 'lodash'
+import { pp } from '#/common/utils/general'
 
 interface Props {
   features: Feature[]
@@ -11,9 +11,7 @@ const Popup = ({ features }: Props) => {
   const p = features[0].getProperties()
 
   const energyUse = p.e_luku * p.lämmitetty_nettoala
-  const energyPerVolume = p.i_raktilav
-    ? `<br/>Energy use per m³: ${_.round(energyUse / p.i_raktilav)} kWh per year`
-    : ''
+  const energyPerVolume = p.i_raktilav ? `<br/>Energy use per m³: ${pp(energyUse / p.i_raktilav)} kWh per year` : ''
 
   const url = `https://www.energiatodistusrekisteri.fi/public_html?energiatodistus-id=${p.todistustunnus}&command=access&t=energiatodistus&p=energiatodistukset`
 

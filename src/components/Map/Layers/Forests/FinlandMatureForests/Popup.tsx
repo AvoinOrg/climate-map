@@ -1,5 +1,4 @@
 import React from 'react'
-import _ from 'lodash'
 import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow } from '@mui/material'
 
@@ -13,6 +12,7 @@ import {
   metsaanFiSubgroups,
   metsaanFiSoilTypes,
 } from './constants'
+import { pp } from '#/common/utils/general'
 
 interface Props {
   features: Feature[]
@@ -57,7 +57,7 @@ const Popup = ({ features }: Props) => {
         </TableRow>
         <TableRow>
           <TableCell>Area</TableCell>
-          <TableCell>{_.round(p.area, 3)} hectares</TableCell>
+          <TableCell>{pp(p.area, 3)} hectares</TableCell>
         </TableRow>
         <TableRow>
           <TableCell>Accessibility</TableCell>

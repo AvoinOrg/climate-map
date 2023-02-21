@@ -1,7 +1,7 @@
 import React from 'react'
-import _ from 'lodash'
 import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow, Box } from '@mui/material'
+import { pp } from '#/common/utils/general'
 
 interface Props {
   features: Feature[]
@@ -51,12 +51,12 @@ const Popup = ({ features }: Props) => {
           )}
           <TableRow>
             <TableCell>Area</TableCell>
-            <TableCell>{_.round(area_ha, 3)}</TableCell>
+            <TableCell>{pp(area_ha, 3)}</TableCell>
           </TableRow>
           {isPeat && (
             <TableRow>
               <TableCell>Emission reduction potential when ground water level is raised by 40 cm</TableCell>
-              <TableCell>{_.round(19.4 * area_ha)} tons CO2e/year</TableCell>
+              <TableCell>{pp(19.4 * area_ha)} tons CO2e/year</TableCell>
             </TableRow>
           )}
           <TableRow>

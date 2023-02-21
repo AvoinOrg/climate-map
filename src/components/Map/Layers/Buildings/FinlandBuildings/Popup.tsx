@@ -1,7 +1,8 @@
 import React from 'react'
 import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow } from '@mui/material'
-import _ from 'lodash'
+
+import { pp } from '#/common/utils/general'
 
 interface IBuildingSchemaVRK {
   building_id: string
@@ -88,7 +89,7 @@ const Popup = ({ features }: Props) => {
           <TableRow>
             <TableCell>Estimated floorage</TableCell>
             <TableCell>
-              {_.round(approxArea, 2)} m<sup>2</sup> per floor
+              {pp(approxArea, 2)} m<sup>2</sup> per floor
             </TableCell>
           </TableRow>
         )}
@@ -96,7 +97,7 @@ const Popup = ({ features }: Props) => {
           <TableRow>
             <TableCell>Estimated volume</TableCell>
             <TableCell>
-              {_.round(approxVolume, 2)} m<sup>3</sup> per floor
+              {pp(approxVolume, 2)} m<sup>3</sup> per floor
             </TableCell>
           </TableRow>
         )}
