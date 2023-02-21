@@ -449,7 +449,7 @@ export const MapProvider = ({ children }: Props) => {
       newlySelectedFeatures: MapboxGeoJSONFeature[]
     ) => {
       const selectableLayers = Object.keys(
-        pickBy(layerOptions, (value, _key) => {
+        pickBy(layerOptions, (value: LayerOpt, _key: string) => {
           return value.selectable
         })
       )
