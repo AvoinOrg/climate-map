@@ -7,7 +7,7 @@
 // See: https://github.com/geoblocks/ol-maplibre-layer
 
 import 'ol/ol.css'
-import _ from 'lodash'
+import '#/common/style/mapbox.css'
 import React, { createContext, useState, useRef, useEffect, useCallback } from 'react'
 import Box from '@mui/material/Box'
 import { Map, View, MapBrowserEvent } from 'ol'

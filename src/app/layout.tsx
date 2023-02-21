@@ -1,7 +1,6 @@
 'use client'
 
 import '#/common/style/index.css'
-import '#/common/style/mapbox.css'
 
 import React from 'react'
 import CssBaseline from '@mui/material/CssBaseline'
@@ -27,20 +26,20 @@ const RootLayout = ({
     <html lang="en">
       <body>
         {/* <RootStyleRegistry> */}
-          <ThemeProvider theme={theme}>
-            <UiStateProvider>
-              <MapProvider>
-                {/* <UserStateProvider> */}
-                <CssBaseline>
-                  <GroupOrientation />
-                  <NavBar />
-                  <Sidebar>{children}</Sidebar>
-                  {/* <UserModal /> */}
-                </CssBaseline>
-                {/* </UserStateProvider> */}
-              </MapProvider>
-            </UiStateProvider>
-          </ThemeProvider>
+        <ThemeProvider theme={theme}>
+          <UiStateProvider>
+            <MapProvider>
+              {/* <UserStateProvider> */}
+              <CssBaseline>
+                <GroupOrientation />
+                <NavBar />
+                <Sidebar>{children}</Sidebar>
+                {/* <UserModal /> */}
+              </CssBaseline>
+              {/* </UserStateProvider> */}
+            </MapProvider>
+          </UiStateProvider>
+        </ThemeProvider>
         {/* </RootStyleRegistry> */}
       </body>
     </html>
