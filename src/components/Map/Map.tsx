@@ -1147,8 +1147,8 @@ export const MapProvider = ({ children }: Props) => {
           position: 'absolute',
           top: 0,
           bottom: 0,
-          width: '100wh',
-          height: 'calc(100vh + 3px)', // TODO: remove this hack
+          width: '100vw',
+          height: '100vh',
           overflow: 'hidden',
           ...(mapLibraryMode === 'hybrid' && { '.ol-scale-line': { right: '8px', left: 'auto', bottom: '26px' } }),
           // pointerEvents: 'none',
