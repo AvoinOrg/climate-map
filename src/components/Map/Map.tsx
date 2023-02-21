@@ -932,9 +932,12 @@ export const MapProvider = ({ children }: Props) => {
   }
 
   // ensures that latest state is used in the callback
-  const addToFunctionQueue = (funcName: string, args: any[]) => {
-    const functionQueueCopy = [...functionQueue, { func: funcName, args: args }]
-    setFunctionQueue(functionQueueCopy)
+  const addToFunctionQueue = (funcName: string, args: any[], prepend = false) => {
+    if (prepend) {
+      setFunctionQueue((prevQueue) => [{ func: funcName, args: args }, ...prevQueue])
+    } else {
+      setFunctionQueue((prevQueue) => [...prevQueue, { func: funcName, args: args }])
+    }
   }
 
   const enableLayerGroup = async (layerId: LayerId, layerConf?: LayerConf) => {
@@ -945,7 +948,7 @@ export const MapProvider = ({ children }: Props) => {
       setActiveLayerGroupIds(activeLayerGroupIdsCopy)
     } else {
       if (!isLoaded) {
-        addToFunctionQueue('enableLayerGroup', [layerId, layerConf])
+        addToFunctionQueue('enableLayerGroup', [layerId, layerConf], true)
         return
       }
 
