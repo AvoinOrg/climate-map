@@ -8,6 +8,8 @@
 
 import 'ol/ol.css'
 import '#/common/style/mapbox.css'
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
+
 import { pickBy, uniq, map, cloneDeep } from 'lodash-es'
 
 import React, { createContext, useState, useRef, useEffect, useCallback } from 'react'
@@ -25,6 +27,7 @@ import olms, { getLayer } from 'ol-mapbox-style'
 import { LngLat, MapLayerMouseEvent, PointLike, Style as MbStyle, MapboxGeoJSONFeature } from 'mapbox-gl'
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
+import MapboxDraw from '@mapbox/mapbox-gl-draw'
 
 import {
   LayerId,
@@ -41,8 +44,6 @@ import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
 import { getColorExpressionArrForValues } from '#/common/utils/map'
 import { OverlayMessages } from './OverlayMessages'
-import MapboxDraw from '@mapbox/mapbox-gl-draw'
-import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 interface Props {
   children?: React.ReactNode
 }
