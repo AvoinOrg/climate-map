@@ -67,3 +67,9 @@ export type LayerType = (typeof layerTypes)[number] | 'invalid'
 export type OverlayMessage = { message: string | null; layerGroupId: LayerId }
 
 export type MapLibraryMode = 'hybrid' | 'mapbox'
+
+export enum QueuePriority {
+  LOW = 0,
+  MEDIUM = 1,
+  HIGH = 2,
+}
