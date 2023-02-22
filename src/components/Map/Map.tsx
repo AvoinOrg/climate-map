@@ -39,6 +39,7 @@ import {
   ExtendedAnyLayer,
   OverlayMessage,
   MapLibraryMode,
+  QueuePriority,
 } from '#/common/types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
@@ -65,10 +66,10 @@ interface IMapContext {
   registerGroup?: (layerGroup: any) => void | null
   addJSONLayer: (id: string, groupId: string, json: any, projection: string) => void | null
   selectedFeatures: MapboxGeoJSONFeature[]
-  setLayoutProperty: (layerId: string, property: string, value: any) => void | null
-  setPaintProperty: (layerId: string, property: string, value: any) => void | null
-  setFilter: (layerId: string, filter: any) => void | null
-  setOverlayMessage: (condition: boolean, nmessage: OverlayMessage) => void | null
+  setLayoutProperty: (layerId: string, property: string, value: any) => Promise<void> | null
+  setPaintProperty: (layerId: string, property: string, value: any) => Promise<void> | null
+  setFilter: (layerId: string, filter: any) => Promise<void> | null
+  setOverlayMessage: (condition: boolean, nmessage: OverlayMessage) => Promise<void> | null
   fitBounds: (bbox: number[], lonExtra: number, latExtra: number) => void | null
   isDrawEnabled: boolean
   setIsDrawEnabled: (enabled: boolean) => void
@@ -547,16 +548,48 @@ export const MapProvider = ({ children }: Props) => {
   useEffect(() => {
     // Run queued function once map has loaded
     if (isLoaded && functionQueue.length > 0) {
-      setFunctionQueue([])
-      functionQueue.forEach((call) => {
-        try {
-          // @ts-ignore
-          values[call.func](...call.args)
-        } catch (e) {
-          console.error("Couldn't run queued map function", call.func, call.args)
-          console.error(e)
+      let functionsToCall: any[] = []
+      let newFunctionQueue: any[] = []
+
+      // reverse the QueuePriority enum array, since we want to call the highest priority functions first
+      let priorityArr = Object.values(QueuePriority)
+      priorityArr = priorityArr.reverse().splice(0, priorityArr.length / 2)
+
+      for (let i in priorityArr) {
+        functionsToCall = functionsToCall.concat(functionQueue.filter((f) => f.priority === priorityArr[i]))
+
+        if (functionsToCall.length > 0) {
+          newFunctionQueue = functionQueue.filter((f) => !functionsToCall.includes(f))
+          break
         }
-      })
+      }
+
+      const callFuncs = async () => {
+        await Promise.all(
+          functionsToCall.map((call) => {
+            try {
+              // @ts-ignore
+              return values[call.func](...call.args)
+            } catch (e) {
+              console.error("Couldn't run queued map function", call.func, call.args)
+              console.error(e)
+              call.promise.reject()
+              call.promise = null
+              return null
+            }
+          })
+        )
+
+        functionsToCall.forEach((call) => {
+          if (call.promise != null) {
+            call.promise.resolve()
+          }
+        })
+
+        setFunctionQueue(newFunctionQueue)
+      }
+
+      callFuncs()
     }
   }, [isLoaded, functionQueue])
 
@@ -932,12 +965,20 @@ export const MapProvider = ({ children }: Props) => {
   }
 
   // ensures that latest state is used in the callback
-  const addToFunctionQueue = (funcName: string, args: any[], prepend = false) => {
-    if (prepend) {
-      setFunctionQueue((prevQueue) => [{ func: funcName, args: args }, ...prevQueue])
-    } else {
-      setFunctionQueue((prevQueue) => [...prevQueue, { func: funcName, args: args }])
-    }
+  const addToFunctionQueue = (funcName: string, args: any[], priority = QueuePriority.LOW): Promise<any> => {
+    // construct a promise that will be manually resolved when the function is called
+    let promiseResolve: any, promiseReject: any
+    const promise = new Promise((resolve, reject) => {
+      promiseResolve = resolve
+      promiseReject = reject
+    })
+
+    setFunctionQueue((prevQueue) => [
+      ...prevQueue,
+      { func: funcName, args: args, priority: priority, promise: { resolve: promiseResolve, reject: promiseReject } },
+    ])
+
+    return promise
   }
 
   const enableLayerGroup = async (layerId: LayerId, layerConf?: LayerConf) => {
@@ -948,8 +989,7 @@ export const MapProvider = ({ children }: Props) => {
       setActiveLayerGroupIds(activeLayerGroupIdsCopy)
     } else {
       if (!isLoaded) {
-        addToFunctionQueue('enableLayerGroup', [layerId, layerConf], true)
-        return
+        return addToFunctionQueue('enableLayerGroup', [layerId, layerConf], QueuePriority.HIGH)
       }
 
       // Initialize layer if it doesn't exist
@@ -963,9 +1003,9 @@ export const MapProvider = ({ children }: Props) => {
 
       if (conf) {
         if (conf.useMb) {
-          addMbStyleToMb(layerId, conf)
+          await addMbStyleToMb(layerId, conf)
         } else {
-          addMbStyle(layerId, conf)
+          await addMbStyle(layerId, conf)
         }
       } else {
         console.error('No layer config found for id: ' + layerId)
@@ -989,36 +1029,34 @@ export const MapProvider = ({ children }: Props) => {
     }
   }
 
-  const setLayoutProperty = (layer: string, name: string, value: any) => {
+  const setLayoutProperty = async (layer: string, name: string, value: any): Promise<any> => {
     if (!isLoaded) {
-      addToFunctionQueue('setLayoutProperty', [layer, name, value])
-      return
+      return addToFunctionQueue('setLayoutProperty', [layer, name, value])
     }
     mbMapRef.current?.setLayoutProperty(layer, name, value)
   }
-  const setPaintProperty = (layer: string, name: string, value: any) => {
+
+  const setPaintProperty = async (layer: string, name: string, value: any): Promise<any> => {
     if (!isLoaded) {
-      addToFunctionQueue('setPaintProperty', [layer, name, value])
-      return
+      return addToFunctionQueue('setPaintProperty', [layer, name, value])
     }
     mbMapRef.current?.setPaintProperty(layer, name, value)
   }
-  const setFilter = (layer: string, filter: any[]) => {
+
+  const setFilter = async (layer: string, filter: any[]): Promise<any> => {
     if (!isLoaded) {
-      addToFunctionQueue('setFilter', [layer, filter])
-      return
+      return addToFunctionQueue('setFilter', [layer, filter])
     }
     mbMapRef.current?.setFilter(layer, filter)
   }
 
-  const setOverlayMessage = (condition: boolean, message: OverlayMessage) => {
+  const setOverlayMessage = async (condition: boolean, message: OverlayMessage) => {
     _setOverlayMessage(condition ? message : null)
   }
 
-  const fitBounds = (bbox: number[], lonExtra: number, latExtra: number) => {
+  const fitBounds = (bbox: number[], lonExtra: number, latExtra: number): Promise<any> => {
     if (!isLoaded) {
-      addToFunctionQueue('fitBounds', [bbox, lonExtra, latExtra])
-      return
+      return addToFunctionQueue('fitBounds', [bbox, lonExtra, latExtra])
     }
 
     const flyOptions = {}
