@@ -1070,6 +1070,8 @@ export const MapProvider = ({ children }: Props) => {
       ],
       flyOptions
     )
+
+    return Promise.resolve()
   }
 
   const setIsDrawPolygon = (enabled: boolean) => {
