@@ -76,21 +76,25 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
         ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
       },
-      layerId === LayerLevel.Parcel && {
-        id: `${layerId}-symbol`,
-        source: layerId,
-        'source-layer': options.serverId,
-        type: 'symbol',
-        paint: {},
-        layout: {
-          'text-size': 20,
-          'symbol-placement': 'point',
-          'text-font': ['Open Sans Regular'],
-          'text-field': fiForestsTextfieldExpression(fiForestsCumulativeCO2eValueExpr),
-        },
-        ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
-        ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
-      },
+      ...(layerId === LayerLevel.Parcel
+        ? [
+            {
+              id: `${layerId}-symbol`,
+              source: layerId,
+              'source-layer': options.serverId,
+              type: 'symbol',
+              paint: {},
+              layout: {
+                'text-size': 20,
+                'symbol-placement': 'point',
+                'text-font': ['Open Sans Regular'],
+                'text-field': fiForestsTextfieldExpression(fiForestsCumulativeCO2eValueExpr),
+              },
+              ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
+              ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
+            },
+          ]
+        : []),
     ]
   }
 
