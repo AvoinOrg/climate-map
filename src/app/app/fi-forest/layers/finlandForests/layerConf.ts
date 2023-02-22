@@ -3,7 +3,12 @@ import { Expression } from 'mapbox-gl'
 import { fillOpacity } from '#/common/utils/map'
 import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import { layerOptions } from '#/app/app/fi-forest/constants'
-import { fiForestsAreaCO2FillColor, fiForestsCumulativeCO2eValueExpr } from '#/app/app/fi-forest/utils'
+import { LayerLevel } from '#/app/app/fi-forest/types'
+import {
+  fiForestsAreaCO2FillColor,
+  fiForestsCumulativeCO2eValueExpr,
+  fiForestsTextfieldExpression,
+} from '#/app/app/fi-forest/utils'
 import Popup from './Popup'
 
 const SERVER_URL = process.env.NEXT_PUBLIC_GEOSERVER_URL
@@ -71,8 +76,24 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
         ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
       },
+      layerId === LayerLevel.Parcel && {
+        id: `${layerId}-symbol`,
+        source: layerId,
+        'source-layer': options.serverId,
+        type: 'symbol',
+        paint: {},
+        layout: {
+          'text-size': 20,
+          'symbol-placement': 'point',
+          'text-font': ['Open Sans Regular'],
+          'text-field': fiForestsTextfieldExpression(fiForestsCumulativeCO2eValueExpr),
+        },
+        ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
+        ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
+      },
     ]
   }
+
   return {
     version: 8,
     name: id,
