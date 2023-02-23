@@ -1,8 +1,8 @@
 import { StringValueOf } from './general'
 
 export enum LayerLevel {
-    helsinki_buildings = 'helsinki_buildinds',
-    helsinki_apartment_buildings = 'helsinki_apartment_buildings',
+    Helsinki_buildings = 'fi_miscs_helsinki_buildings',
+    Helsinki_apartment_buildings = 'fi_miscs_helsinki_apartment_buildings',
 }
 export type LayerLevelStrings = StringValueOf<LayerLevel>
 
