@@ -10,7 +10,6 @@ import Popup from './Popup'
 const SERVER_URL = process.env.NEXT_PUBLIC_GEOSERVER_URL
 
 const id: LayerId = 'helsinki_buildings'
- // [`${SERVER_URL}/gwc/service/tms/1.0.0/forest:${options.serverId}@EPSG:900913@pbf/{z}/{x}/{y}.pbf`],
 
 const getStyle = async (): Promise<MbStyle> => {
   const sources: any = {}
@@ -19,9 +18,10 @@ const getStyle = async (): Promise<MbStyle> => {
   for (const layerId in layerOptions) {
     const options = layerOptions[layerId]
     sources[layerId] = {
-      type: 'vector',
-      scheme: 'tms',
+      type: 'raster',
+      scheme: 'tms',      
       tiles: [`${SERVER_URL}/gwc/service/tms/1.0.0/misc:${options.serverId}@EPSG:900913@pbf/{z}/{x}/{y}.pbf`],
+      // tiles: [`${SERVER_URL}/gwc/service/tms/1.0.0/misc:${options.serverId}@pbf/{z}/{x}/{y}.pbf`],
       minzoom: options.minzoom,
       maxzoom: options.maxzoom,
       bounds: [19, 59, 32, 71], // Finland
@@ -47,7 +47,7 @@ const getStyle = async (): Promise<MbStyle> => {
         source: layerId,
         'source-layer': options.serverId,
         type: 'line',
-        minzoom: 11,
+        minzoom: 0,
         paint: {
           'line-opacity': 0.75,
         },
