@@ -1,8 +1,8 @@
 import { ILayerOptions, LayerLevel } from './types'
 
 export const layerOptions: ILayerOptions = {
-  [LayerLevel.helsinki_buildings]: { minzoom: 0, maxzoom: 30, serverId: 'helsinki_buildings', layerMinzoom: 0, layerMaxzoom: 30 },
-  [LayerLevel.helsinki_apartment_buildings]: { minzoom: 0, maxzoom: 30, serverId: 'helsinki_apartment_buildings', layerMinzoom: 0, layerMaxzoom: 30 },
+  [LayerLevel.Helsinki_buildings]: { minzoom: 0, maxzoom: 30, serverId: 'helsinki_buildings', layerMinzoom: 0, layerMaxzoom: 30},
+  [LayerLevel.Helsinki_apartment_buildings]: { minzoom: 0, maxzoom: 30, serverId: 'helsinki_apartment_buildings', layerMinzoom: 0, layerMaxzoom: 30 },
 } as const
 
 export const buildingHelBhsysClass: any = {
