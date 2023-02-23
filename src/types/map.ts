@@ -5,6 +5,14 @@ import Feature from 'ol/Feature'
 
 export type SourceType = 'geojson' | 'vector' | 'raster' | 'image' | 'video' | 'canvas'
 
+export type LayerOpt = {  
+  useMb: boolean
+}
+
+export type LayerOpts = {
+  [key: string]: LayerOpt
+}
+
 export type LayerId =
   | 'building_energy_certs'
   | 'no2'
@@ -29,5 +37,5 @@ export type LayerConf = {
   id: LayerId
   style: () => Promise<MbStyle>
   popup?: (props: { features: Feature[] }) => ReactNode
-  useGL?: boolean
+  useMb?: boolean
 }
