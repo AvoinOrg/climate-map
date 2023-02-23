@@ -18,10 +18,9 @@ const getStyle = async (): Promise<MbStyle> => {
   for (const layerId in layerOptions) {
     const options = layerOptions[layerId]
     sources[layerId] = {
-      type: 'raster',
-      scheme: 'tms',      
+      type: 'vector',
+      scheme: 'tms',
       tiles: [`${SERVER_URL}/gwc/service/tms/1.0.0/misc:${options.serverId}@EPSG:900913@pbf/{z}/{x}/{y}.pbf`],
-      // tiles: [`${SERVER_URL}/gwc/service/tms/1.0.0/misc:${options.serverId}@pbf/{z}/{x}/{y}.pbf`],
       minzoom: options.minzoom,
       maxzoom: options.maxzoom,
       bounds: [19, 59, 32, 71], // Finland
@@ -38,7 +37,7 @@ const getStyle = async (): Promise<MbStyle> => {
         type: 'fill',
         paint: {
           'fill-color': 'cyan',
-          'fill-opacity': fillOpacity,
+          'fill-opacity': layerId === 'helsinki-buildings' ? 1 : fillOpacity,
         },
         BEFORE: 'FILL',
       },
@@ -63,7 +62,7 @@ const getStyle = async (): Promise<MbStyle> => {
   }
 }
 
-const layerConf: LayerConf = { id: id, style: getStyle, popup: Popup }
+const layerConf: LayerConf = { id: id, style: getStyle, popup: Popup, useMb: true, }
 
 export default layerConf
 
