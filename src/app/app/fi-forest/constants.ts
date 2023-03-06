@@ -41,8 +41,8 @@ export const CO2_TONS_PER_PERSON = 7.0 // EU-27 in 2018
 export const nC_to_CO2 = 44 / 12
 
 // export const TRADITIONAL_FORESTRY_METHOD_KEY = 'tasaikainen'
-export const TRADITIONAL_FORESTRY_METHOD = ForestryMethod['tasaikainen']
-export const FILL_COLOR_FORESTRY_METHOD = ForestryMethod['vapaa']
+export const TRADITIONAL_FORESTRY_METHOD = ForestryMethod.tasaikainen
+export const FILL_COLOR_FORESTRY_METHOD = ForestryMethod.vapaa
 
 export const carbonStockAttrPrefixes = ['bio', 'maa']
 
