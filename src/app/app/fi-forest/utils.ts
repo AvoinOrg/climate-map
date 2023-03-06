@@ -46,14 +46,13 @@ export const fiForestsSumMethodAttrs = (
     ['concat', 'f', forestryMethod, '_'],
     [
       '*',
-      1 / 50,
+      1 / 40,
       [
         '+',
         ['get', ['concat', ['var', 'p'], `${attrPrefix}1${attrSuffix}`]],
         ['get', ['concat', ['var', 'p'], `${attrPrefix}2${attrSuffix}`]],
         ['get', ['concat', ['var', 'p'], `${attrPrefix}3${attrSuffix}`]],
         ['get', ['concat', ['var', 'p'], `${attrPrefix}4${attrSuffix}`]],
-        ['get', ['concat', ['var', 'p'], `${attrPrefix}5${attrSuffix}`]],
       ],
     ],
   ]
