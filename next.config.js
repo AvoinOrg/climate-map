@@ -52,6 +52,8 @@ const nextConfig = {
 
     config.resolve.mainFields.push(['browser', 'main'])
 
+    config.resolve.fallback = { ...(config.resolve.fallback ? config.resolve.fallback : {}), ...{ fs: false } }
+
     return config
   },
 }
