@@ -1,3 +1,6 @@
+const path = require('path')
+const CopyPlugin = require('copy-webpack-plugin')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // If set to true (default) openlayers will render blank.
@@ -32,11 +35,21 @@ const nextConfig = {
   webpack: (config, { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }) => {
     // Important: return the modified config
 
-    config.plugins.push(
+    config.plugins = config.plugins.concat([
       new webpack.ProvidePlugin({
         Buffer: ['buffer', 'Buffer'],
-      })
-    )
+      }),
+      new CopyPlugin({
+        patterns: [
+          {
+            // copy sql-wasm for the GPKG library used in carbon app
+            from: path.join(__dirname, 'node_modules/rtree-sql.js/dist/sql-wasm.wasm'),
+            to: path.join(__dirname, '/public/dyn/'),
+          },
+        ],
+      }),
+    ])
+
     config.resolve.mainFields.push(['browser', 'main'])
 
     return config
