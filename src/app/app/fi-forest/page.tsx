@@ -208,7 +208,15 @@ const FinlandForests = () => {
     newOptions.showReport = reportPanelOpen && hasFeature
 
     setOptions(newOptions)
-  }, [filteredFeatures, reportPanelOpen, hasFeature])
+  }, [
+    filteredFeatures,
+    reportPanelOpen,
+    hasFeature,
+    forestryMethod,
+    carbonBalanceDifferenceFlag,
+    perHectareFlag,
+    cumulativeFlag,
+  ])
 
   const onChangeCheckbox = (callback: React.Dispatch<React.SetStateAction<boolean>>) => {
     return (event: any) => {
@@ -314,14 +322,14 @@ const FinlandForests = () => {
                   }}
                   value={forestryMethod}
                   onChange={(event) => {
-                    onChangeValue(setForestryMethod)(event)
+                    setForestryMethod(Number(event.target.value))
                     setReportPanelOpen(true)
                   }}
                 >
-                  <option value={1}> No cuttings </option>
-                  <option value={2}> Continuous cover forestry </option>
-                  <option value={3}> Thin from below – extended rotation </option>
-                  <option value={4}> Unrestricted</option>
+                  <option value={ForestryMethod.eihakata}> No cuttings </option>
+                  <option value={ForestryMethod.jatkuva}> Continuous cover forestry </option>
+                  <option value={ForestryMethod.tasaikainen}> Thin from below – extended rotation </option>
+                  <option value={ForestryMethod.vapaa}> Unrestricted</option>
                 </Select>
               </FormControl>
               <br />
