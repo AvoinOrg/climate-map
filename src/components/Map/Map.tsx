@@ -64,7 +64,7 @@ interface IMapContext {
   activeLayerGroupIds: string[]
   layerGroups: {} | null
   registerGroup?: (layerGroup: any) => void | null
-  addJSONLayer: (id: string, groupId: string, json: any, projection: string) => void | null
+  addJSONLayer: (id: string, groupId: string, json: any, featureColorCol: string, projection: string) => void | null
   selectedFeatures: MapboxGeoJSONFeature[]
   setLayoutProperty: (layerId: string, property: string, value: any) => Promise<void> | null
   setPaintProperty: (layerId: string, property: string, value: any) => Promise<void> | null
@@ -880,8 +880,7 @@ export const MapProvider = ({ children }: Props) => {
     // }
   }
 
-  const addJSONLayer = (id: string, groupId: string, json: any, projection: string) => {
-    const featureColorField = 'kt'
+  const addJSONLayer = (id: string, groupId: string, json: any, featureColorCol: string, projection: string) => {
     // const vectorSource = new VectorSource({
     //   features: new GeoJSON().readFeatures(json, {
     //     featureProjection: projection,
@@ -902,7 +901,7 @@ export const MapProvider = ({ children }: Props) => {
 
     // }
 
-    const uniqueVals = uniq(map(json.features, 'properties.' + featureColorField))
+    const uniqueVals = uniq(map(json.features, 'properties.' + featureColorCol))
     const colorArr = getColorExpressionArrForValues(uniqueVals)
 
     mbMapRef.current?.addSource('carbon-shapes', {
@@ -925,7 +924,7 @@ export const MapProvider = ({ children }: Props) => {
       source: 'carbon-shapes', // reference the data source
       layout: {},
       paint: {
-        'fill-color': ['match', ['get', featureColorField], ...colorArr, 'white'],
+        'fill-color': ['match', ['get', featureColorCol], ...colorArr, 'white'],
         'fill-opacity': 0.7,
       },
     })
