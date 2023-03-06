@@ -103,7 +103,7 @@ const FinlandForests = () => {
 
   const [reportPanelOpen, setReportPanelOpen] = useState(true)
 
-  const [forestryMethod, setForestryMethod] = useState<ForestryMethod>(ForestryMethod['jatkuva'])
+  const [forestryMethod, setForestryMethod] = useState<ForestryMethod>(ForestryMethod.jatkuva)
   const [perHectareFlag, setPerHectareFlag] = useState(true)
   const [cumulativeFlag, setCumulativeFlag] = useState(true)
   const [carbonBalanceDifferenceFlag, setCarbonBalanceDifferenceFlag] = useState(true)
