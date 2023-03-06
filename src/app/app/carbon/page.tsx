@@ -3,7 +3,6 @@
 import React, { useContext, useState, useEffect } from 'react'
 import axios from 'axios'
 import { Button, Box } from '@mui/material'
-import shp from 'shpjs'
 
 // import { useFileUploadMutation } from 'Queries/carbon'
 import { MapContext } from '#/components/Map'
@@ -50,7 +49,7 @@ const CarbonMap = () => {
     <Box sx={{ margin: '100px', display: 'flex', flexDirection: 'column' }}>
       <Button variant="contained" component="label">
         Select shapefile
-        <input hidden accept=".zip" multiple type="file" onChange={handleFileInput} />
+        <input hidden accept=".zip, .gpkg" multiple type="file" onChange={handleFileInput} />
       </Button>
       <Button onClick={handleSubmit} sx={{ margin: '10px 0 0 0' }}>
         Calculate carbon
