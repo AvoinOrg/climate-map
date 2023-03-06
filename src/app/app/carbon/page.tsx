@@ -37,9 +37,47 @@ const CarbonMap = () => {
     reader.readAsArrayBuffer(f)
 
     reader.onloadend = async () => {
-      //@ts-ignore
-      const json = await shp(reader.result)
-      addJSONLayer('userCarbonJson', '1', json, 'EPSG:3857')
+      if (reader.result != null) {
+        if (f.name.split('.').pop() === 'gpkg') {
+          if (typeof reader.result !== 'string') {
+            const { GeoPackageAPI, setSqljsWasmLocateFile } = await import('@ngageoint/geopackage')
+            setSqljsWasmLocateFile((file) => '/dyn/' + file)
+
+            const geopackage = await GeoPackageAPI.open(new Uint8Array(reader.result))
+            const featureTables = geopackage.getFeatureTables()
+            const featureDao = geopackage.getFeatureDao(featureTables[0])
+            // console.log(featureDao.columns)
+
+            // // get the info for the table
+            // const tableInfo = geopackage.getInfoForTable(featureDao)
+
+            // const srs = geopackage.getSrs(tableInfo.srs.id)
+            // const srsName = srs.organization.toUpperCase() + ':' + srs.organization_coordsys_id
+
+            const extract = async (geopackage: any, tableName: string): Promise<any> => {
+              const geoJson: any = {
+                type: 'FeatureCollection',
+                features: [],
+              }
+              const iterator = geopackage.iterateGeoJSONFeatures(tableName)
+              for (const feature of iterator) {
+                geoJson.features.push(feature)
+              }
+              return Promise.resolve(geoJson)
+            }
+
+            const json = await extract(geopackage, featureTables[0])
+            console.log(json)
+            addJSONLayer('userCarbonJson', '1', json, 'kaytto_tark', 'EPSG:3857')
+          } else {
+            console.error('reader.result is a string, not an ArrayBuffer')
+          }
+        } else {
+          const shp = (await import('shpjs')).default
+          const json = await shp(reader.result)
+          addJSONLayer('userCarbonJson', '1', json, 'kt', 'EPSG:3857')
+        }
+      }
     }
 
     setUploadFile(f)
