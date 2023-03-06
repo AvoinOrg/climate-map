@@ -14,7 +14,7 @@ const nextConfig = {
     '@mui/material': {
       transform: '@mui/material/{{member}}',
     },
-    'ol': {
+    ol: {
       transform: 'ol/{{member}}',
     },
     '@mui/icons-material/?(((\\w*)?/?)*)': {
