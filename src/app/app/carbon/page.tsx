@@ -3,6 +3,7 @@
 import React, { useContext, useState, useEffect } from 'react'
 import axios from 'axios'
 import { Button, Box } from '@mui/material'
+import { styled } from '@mui/material/styles'
 
 // import { useFileUploadMutation } from 'Queries/carbon'
 import { MapContext } from '#/components/Map'
@@ -84,17 +85,26 @@ const CarbonMap = () => {
   }
 
   return (
-    <Box sx={{ margin: '100px', display: 'flex', flexDirection: 'column' }}>
-      <Button variant="contained" component="label">
-        Select shapefile
+    <Box sx={{ padding: '150px 30px 100px 30px', minWidth: '300px', display: 'flex', flexDirection: 'column' }}>
+      <BigMenuButton variant="contained" component="label">
+        Tuo kaava
         <input hidden accept=".zip, .gpkg" multiple type="file" onChange={handleFileInput} />
-      </Button>
-      <Button onClick={handleSubmit} sx={{ margin: '10px 0 0 0' }}>
-        Calculate carbon
-      </Button>
+      </BigMenuButton>
+      {/* <BigMenuButton variant="contained">
+        Uusi kaava
+        <input hidden accept=".zip, .gpkg" multiple type="file" onChange={handleFileInput} />
+      </BigMenuButton> */}
+      {/* <BigMenuButton variant="outlined" onClick={handleSubmit}>
+        Laske hiilivarasto
+      </BigMenuButton> */}
       {res && <p>{JSON.stringify(res)}</p>}
     </Box>
   )
 }
 
-export default CarbonMap
+const BigMenuButton = styled(Button)<{ component?: string }>({
+  width: '300px',
+  height: '50px',
+  margin: '0 0 15px 0',
+})
+
