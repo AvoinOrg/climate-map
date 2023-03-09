@@ -10,6 +10,8 @@ import { MapContext } from '#/components/Map'
 import { getGeoJsonArea } from '#/common/utils/gis'
 
 import { AppStateContext } from '../state/AppState'
+import PlanListItem from './PlanListItem'
+
 const MainMenu = () => {
   const [uploadFile, setUploadFile] = useState<string | Blob>('')
   const [res, setRes] = useState(null)
@@ -98,6 +100,17 @@ const MainMenu = () => {
         Tuo kaava
         <input hidden accept=".zip, .gpkg" multiple type="file" onChange={handleFileInput} />
       </BigMenuButton>
+
+      {planConfs != null && (
+        <>
+          <Box component="p">Omat kaavat</Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            {planConfs.map((planConf) => (
+              <PlanListItem key={planConf.id} planConf={planConf} />
+            ))}
+          </Box>
+        </>
+      )}
       {/* <BigMenuButton variant="contained">
         Uusi kaava
         <input hidden accept=".zip, .gpkg" multiple type="file" onChange={handleFileInput} />
