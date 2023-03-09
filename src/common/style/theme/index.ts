@@ -1,6 +1,17 @@
 import { createTheme } from '@mui/material/styles'
 import { TypographyOptions } from '@mui/material/styles/createTypography'
 import { Roboto, Raleway } from '@next/font/google'
+import '@mui/material/styles/createPalette'
+
+//extending palette to add tertiary color
+declare module '@mui/material/styles/createPalette' {
+  interface Palette {
+    tertiary: PaletteColor
+  }
+  interface PaletteOptions {
+    tertiary: PaletteColorOptions
+  }
+}
 
 export const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -37,7 +48,12 @@ export const raleway = Raleway({
 const palette = {
   primary: { main: '#0B2027' },
   secondary: { main: '#126A42' },
-  info: { main: '##fbfbfb' },
+  tertiary: {
+    main: '#D3DBD8',
+    light: '#F5FBEF',
+  },
+  info: { main: '#EEA243' },
+  warning: { main: '#F5FBEF' },
 }
 
 const zIndex = {
