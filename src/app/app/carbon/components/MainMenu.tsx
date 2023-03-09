@@ -7,6 +7,7 @@ import { styled } from '@mui/material/styles'
 
 // import { useFileUploadMutation } from 'Queries/carbon'
 import { MapContext } from '#/components/Map'
+import { getGeoJsonArea } from '#/common/utils/gis'
 
 const MainMenu = () => {
   const [uploadFile, setUploadFile] = useState<string | Blob>('')
@@ -39,6 +40,7 @@ const MainMenu = () => {
 
     const initializePlan = (json: any) => {
       addJSONLayer('userCarbonJson', '1', json, 'kaytto_tark', 'EPSG:3857')
+      const areaHa = getGeoJsonArea(json) / 10000
     }
 
     reader.onloadend = async () => {
