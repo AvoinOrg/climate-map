@@ -37,6 +37,10 @@ const MainMenu = () => {
     const reader = new window.FileReader()
     reader.readAsArrayBuffer(f)
 
+    const initializePlan = (json: any) => {
+      addJSONLayer('userCarbonJson', '1', json, 'kaytto_tark', 'EPSG:3857')
+    }
+
     reader.onloadend = async () => {
       if (reader.result != null) {
         if (f.name.split('.').pop() === 'gpkg') {
@@ -68,15 +72,14 @@ const MainMenu = () => {
             }
 
             const json = await extract(geopackage, featureTables[0])
-            console.log(json)
-            addJSONLayer('userCarbonJson', '1', json, 'kaytto_tark', 'EPSG:3857')
+            initializePlan(json)
           } else {
             console.error('reader.result is a string, not an ArrayBuffer')
           }
         } else {
           const shp = (await import('shpjs')).default
           const json = await shp(reader.result)
-          addJSONLayer('userCarbonJson', '1', json, 'kt', 'EPSG:3857')
+          initializePlan(json)
         }
       }
     }
