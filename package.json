@@ -42,6 +42,7 @@
     "@turf/boolean-within": "^6.5.0",
     "@turf/helpers": "^6.5.0",
     "@turf/meta": "^6.5.0",
+    "@turf/turf": "^6.5.0",
     "autoprefixer": "^10.4.13",
     "axios": "^1.2.6",
     "buffer": "^6.0.3",
