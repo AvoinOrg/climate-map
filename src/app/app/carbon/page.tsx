@@ -3,13 +3,13 @@
 import React from 'react'
 
 import MainMenu from './components/MainMenu'
-import { StateProvider } from './state/State'
+import { AppStateProvider } from './state/AppState'
 
 const CarbonMap = () => {
   return (
-    <StateProvider>
+    <AppStateProvider>
       <MainMenu />
-    </StateProvider>
+    </AppStateProvider>
   )
 }
 
