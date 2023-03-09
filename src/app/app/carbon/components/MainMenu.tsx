@@ -9,10 +9,12 @@ import { styled } from '@mui/material/styles'
 import { MapContext } from '#/components/Map'
 import { getGeoJsonArea } from '#/common/utils/gis'
 
+import { AppStateContext } from '../state/AppState'
 const MainMenu = () => {
   const [uploadFile, setUploadFile] = useState<string | Blob>('')
   const [res, setRes] = useState(null)
   const { addJSONLayer, setMapLibraryMode } = useContext(MapContext)
+  const { planConfs, updatePlanConf, addPlanConf } = useContext(AppStateContext)
 
   useEffect(() => {
     setMapLibraryMode('mapbox')
@@ -41,6 +43,7 @@ const MainMenu = () => {
     const initializePlan = (json: any) => {
       addJSONLayer('userCarbonJson', '1', json, 'kaytto_tark', 'EPSG:3857')
       const areaHa = getGeoJsonArea(json) / 10000
+      addPlanConf({ json: json, name: f.name, id: '1', areaHa: areaHa })
     }
 
     reader.onloadend = async () => {
