@@ -113,7 +113,7 @@ const UploadButton = () => {
 
 const BigMenuButton = styled(Button)<{ component?: string }>({
   width: '300px',
-  height: '50px',
+  height: '60px',
   margin: '0 0 15px 0',
 })
 
