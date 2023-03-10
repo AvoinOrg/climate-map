@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useContext, useEffect, useState } from 'react'
-import { Box } from '@mui/material'
+import { Box, Button } from '@mui/material'
 import { useRouter } from 'next/navigation'
+import { styled } from '@mui/material/styles'
 
 import { AppStateContext } from '../../state/AppState'
 import { PlanConf } from '../../types'
@@ -26,7 +27,40 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     }
   }, [planConfs])
 
-  return <>{isLoaded && <Box>{planConf && <Box>{planConf.name}</Box>}</Box>}</>
+  return (
+    <>
+      {isLoaded && planConf && (
+        <>
+          <Box sx={(theme) => ({ typography: theme.typography.h6, margin: '80px 0 0 0' })}>{planConf.name}</Box>
+          <MenuButton sx={{ margin: '25px 0 0 0' }} variant="outlined">
+            Kaavan asetukset
+          </MenuButton>
+          <MenuButton variant="outlined">Laske hiilimuutokset</MenuButton>
+          <MenuButton variant="outlined">Laske nykyiset hiilivarastot</MenuButton>
+          <SmallMenuButton sx={{ margin: '50px 0 0 0' }} variant="outlined">
+            Jakoasetukset
+          </SmallMenuButton>
+          <SmallMenuButton variant="outlined">Poista kaava</SmallMenuButton>
+        </>
+      )}
+    </>
+  )
 }
+
+const MenuButton = styled(Button)<{ component?: string }>({
+  width: '300px',
+  height: '50px',
+  margin: '15px 0 0 0',
+  display: 'flex',
+  justifyContent: 'space-between',
+})
+
+const SmallMenuButton = styled(Button)<{ component?: string }>({
+  width: '300px',
+  height: '35px',
+  margin: '15px 0 0 0',
+  display: 'flex',
+  justifyContent: 'space-between',
+})
 
 export default Page
