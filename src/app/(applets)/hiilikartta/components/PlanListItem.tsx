@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Link as MuiLink } from '@mui/material'
 
 import { PlanConf } from '../types'
+import { routes } from '../constants'
 
 interface Props {
   planConf: PlanConf
@@ -28,7 +29,7 @@ const PlanListItem = ({ planConf }: Props) => {
     >
       <Box sx={(theme) => ({ minHeight: '25px' })}>
         <MuiLink
-          href={'/app/carbon/plan/' + planConf.id}
+          href={routes.planSettings + planConf.id}
           sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
           component={Link}
         >
