@@ -4,6 +4,11 @@ import React, { useContext, useEffect, useState } from 'react'
 import { Box, Button } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import { styled } from '@mui/material/styles'
+import TuneIcon from '@mui/icons-material/Tune'
+import ParkIcon from '@mui/icons-material/Park'
+import ForestIcon from '@mui/icons-material/Forest'
+import PeopleIcon from '@mui/icons-material/People'
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 
 import { AppStateContext } from '../../state/AppState'
 import { PlanConf } from '../../types'
@@ -33,14 +38,20 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         <>
           <Box sx={(theme) => ({ typography: theme.typography.h6, margin: '80px 0 0 0' })}>{planConf.name}</Box>
           <MenuButton sx={{ margin: '25px 0 0 0' }} variant="outlined">
-            Kaavan asetukset
+            Kaavan asetukset <TuneIcon />
           </MenuButton>
-          <MenuButton variant="outlined">Laske hiilimuutokset</MenuButton>
-          <MenuButton variant="outlined">Laske nykyiset hiilivarastot</MenuButton>
+          <MenuButton variant="outlined">
+            Laske hiilimuutokset <ForestIcon />
+          </MenuButton>
+          <MenuButton variant="outlined">
+            Laske nykyiset hiilivarastot <ParkIcon />
+          </MenuButton>
           <SmallMenuButton sx={{ margin: '50px 0 0 0' }} variant="outlined">
-            Jakoasetukset
+            Jakoasetukset <PeopleIcon />
           </SmallMenuButton>
-          <SmallMenuButton variant="outlined">Poista kaava</SmallMenuButton>
+          <SmallMenuButton variant="outlined">
+            Poista kaava <DeleteForeverIcon />
+          </SmallMenuButton>
         </>
       )}
     </>
