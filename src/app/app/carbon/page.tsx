@@ -12,7 +12,7 @@ const Page = () => {
 
   return (
     <>
-      {planConfs != null && (
+      {planConfs != null && planConfs.length > 0 && (
         <>
           <Box component="p">Omat kaavat</Box>
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
