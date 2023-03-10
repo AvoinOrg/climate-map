@@ -29,7 +29,7 @@ const PlanListItem = ({ planConf }: Props) => {
       })}
     >
       <Box sx={(theme) => ({ minHeight: '25px' })}>
-        <TuneIcon sx={(theme) => ({ float: 'left' })}></TuneIcon>
+        <TuneIcon sx={(theme) => ({ float: 'left', cursor: 'pointer' })}></TuneIcon>
       </Box>
       <Box sx={(theme) => ({ typography: theme.typography.body1 })}>{planConf.name}</Box>
       <Box sx={(theme) => ({ minHeight: '25px' })}></Box>
