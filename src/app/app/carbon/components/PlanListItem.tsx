@@ -1,20 +1,18 @@
 'use client'
 
-import React, { useContext, useState, useEffect } from 'react'
-import { Button, Box } from '@mui/material'
-import { styled } from '@mui/material/styles'
+import React from 'react'
+import { Box } from '@mui/material'
 import TuneIcon from '@mui/icons-material/Tune'
+import Link from 'next/link'
+import { Link as MuiLink } from '@mui/material'
 
 import { PlanConf } from '../types'
-import { AppStateContext } from '../state/AppState'
 
 interface Props {
   planConf: PlanConf
 }
 
 const PlanListItem = ({ planConf }: Props) => {
-  const { updatePlanConf } = useContext(AppStateContext)
-
   return (
     <Box
       sx={(theme) => ({
@@ -29,7 +27,13 @@ const PlanListItem = ({ planConf }: Props) => {
       })}
     >
       <Box sx={(theme) => ({ minHeight: '25px' })}>
-        <TuneIcon sx={(theme) => ({ float: 'left', cursor: 'pointer' })}></TuneIcon>
+        <MuiLink
+          href={'/app/carbon/plan/' + planConf.id}
+          sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
+          component={Link}
+        >
+          <TuneIcon sx={(theme) => ({ float: 'left', cursor: 'pointer' })}></TuneIcon>
+        </MuiLink>
       </Box>
       <Box sx={(theme) => ({ typography: theme.typography.body1 })}>{planConf.name}</Box>
       <Box sx={(theme) => ({ minHeight: '25px' })}></Box>
