@@ -37,10 +37,4 @@ const PlanListItem = ({ planConf }: Props) => {
   )
 }
 
-const BigMenuButton = styled(Button)<{ component?: string }>({
-  width: '300px',
-  height: '50px',
-  margin: '0 0 15px 0',
-})
-
 export default PlanListItem
