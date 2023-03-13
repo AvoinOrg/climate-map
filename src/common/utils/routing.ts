@@ -66,7 +66,7 @@ export const getRoute = (route: any, routeTree: any, params: string[] = []) => {
       }
     }
   }
-  console.log(path)
+
   return path
 }
 
