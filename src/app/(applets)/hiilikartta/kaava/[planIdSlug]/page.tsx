@@ -12,7 +12,8 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 
 import { AppStateContext } from '../../state/AppState'
 import { PlanConf } from '../../types'
-import { routes } from '../../constants'
+import { routeTree } from '../../routes'
+import { getRoute } from '#/common/utils/routing'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const { planConfs } = useContext(AppStateContext)
@@ -26,7 +27,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
       if (planConf) {
         setPlanConf(planConf)
       } else {
-        router.push(routes.base)
+        router.push(getRoute(routeTree.base, routeTree))
       }
       setIsLoaded(true)
     }

@@ -7,7 +7,8 @@ import Link from 'next/link'
 import { Link as MuiLink } from '@mui/material'
 
 import { PlanConf } from '../types'
-import { routes } from '../constants'
+import { routeTree } from '../routes'
+import { getRoute } from '#/common/utils/routing'
 
 interface Props {
   planConf: PlanConf
@@ -29,7 +30,7 @@ const PlanListItem = ({ planConf }: Props) => {
     >
       <Box sx={(theme) => ({ minHeight: '25px' })}>
         <MuiLink
-          href={routes.planSettings + planConf.id}
+          href={getRoute(routeTree.base.plan, routeTree, [planConf.id])}
           sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
           component={Link}
         >
