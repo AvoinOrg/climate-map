@@ -99,10 +99,10 @@ const UploadButton = () => {
         Tuo kaava
         <input hidden accept=".zip, .gpkg" multiple type="file" onChange={handleFileInput} />
       </BigMenuButton>
-      {/* <BigMenuButton variant="contained">
-      Uusi kaava
-      <input hidden accept=".zip, .gpkg" multiple type="file" onChange={handleFileInput} />
-    </BigMenuButton> */}
+      <BigMenuButton variant="contained">
+        Uusi kaava
+        <input hidden accept=".zip, .gpkg" multiple type="file" onChange={handleFileInput} />
+      </BigMenuButton>
       {/* <BigMenuButton variant="outlined" onClick={handleSubmit}>
       Laske hiilivarasto
     </BigMenuButton> */}
