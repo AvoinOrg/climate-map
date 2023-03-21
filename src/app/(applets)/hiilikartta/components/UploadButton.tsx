@@ -10,6 +10,7 @@ import { MapContext } from '#/components/Map'
 import { getGeoJsonArea } from '#/common/utils/gis'
 
 import { AppStateContext } from '../state/AppState'
+import { generateUUID } from '#/common/utils/general'
 
 const UploadButton = () => {
   const [uploadFile, setUploadFile] = useState<string | Blob>('')
@@ -42,9 +43,10 @@ const UploadButton = () => {
     reader.readAsArrayBuffer(f)
 
     const initializePlan = (json: any) => {
-      addJSONLayer('userCarbonJson', '1', json, 'kaytto_tark', 'EPSG:3857')
+      const id = generateUUID()
+      addJSONLayer('userCarbonJson', id, json, 'kaytto_tark', 'EPSG:3857')
       const areaHa = getGeoJsonArea(json) / 10000
-      addPlanConf({ json: json, name: f.name, id: '1', areaHa: areaHa })
+      addPlanConf({ json: json, name: f.name, id: id, areaHa: areaHa })
     }
 
     reader.onloadend = async () => {
