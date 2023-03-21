@@ -82,6 +82,7 @@ const UploadButton = () => {
 
             const json = await extract(geopackage, featureTables[0])
             initializePlan(json)
+            e.target.value = ''
           } else {
             console.error('reader.result is a string, not an ArrayBuffer')
           }
