@@ -44,7 +44,8 @@ const UploadButton = () => {
 
     const initializePlan = (json: any) => {
       const id = generateUUID()
-      addJSONLayer('userCarbonJson', id, json, 'kaytto_tark', 'EPSG:3857')
+      addJSONLayer(id, 'userZoningPlan', json, 'kaytto_tark', 'EPSG:3857')
+
       const areaHa = getGeoJsonArea(json) / 10000
       addPlanConf({ json: json, name: f.name, id: id, areaHa: areaHa })
     }
