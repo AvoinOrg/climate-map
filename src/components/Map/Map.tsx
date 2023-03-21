@@ -904,24 +904,25 @@ export const MapProvider = ({ children }: Props) => {
     const uniqueVals = uniq(map(json.features, 'properties.' + featureColorCol))
     const colorArr = getColorExpressionArrForValues(uniqueVals)
 
-    mbMapRef.current?.addSource('carbon-shapes', {
+    const sourceId = `${id}-carbon-shapes`
+    mbMapRef.current?.addSource(sourceId, {
       type: 'geojson',
       // Use a URL for the value for the `data` property.
       data: json,
     })
     mbMapRef.current?.addLayer({
-      id: 'carbon-shapes-outline',
+      id: `${sourceId}-outline`,
       type: 'line',
-      source: 'carbon-shapes',
+      source: sourceId,
       paint: {
         'line-opacity': 0.9,
       },
     })
 
     mbMapRef.current?.addLayer({
-      id: 'carbon-shapes-fill',
+      id: `${sourceId}-fill`,
       type: 'fill',
-      source: 'carbon-shapes', // reference the data source
+      source: sourceId, // reference the data source
       layout: {},
       paint: {
         'fill-color': ['match', ['get', featureColorCol], ...colorArr, 'white'],
@@ -930,8 +931,8 @@ export const MapProvider = ({ children }: Props) => {
     })
 
     mbMapRef.current?.addLayer({
-      id: `carbon-shapes-sym`,
-      source: 'carbon-shapes',
+      id: `${sourceId}-sym`,
+      source: sourceId,
       type: 'symbol',
       layout: {
         'symbol-placement': 'point',
@@ -1092,12 +1093,12 @@ export const MapProvider = ({ children }: Props) => {
       // The user does not have to click the polygon control button first.
       // defaultMode: 'draw_polygon',
     })
-    const source = cloneDeep(mbMapRef.current?.getStyle().sources['carbon-shapes'])
+    const source = cloneDeep(mbMapRef.current?.getStyle().sources[sourceName])
 
     mbMapRef.current?.removeLayer('carbon-shapes-outline')
     mbMapRef.current?.removeLayer('carbon-shapes-fill')
     mbMapRef.current?.removeLayer('carbon-shapes-sym')
-    mbMapRef.current?.removeSource('carbon-shapes')
+    mbMapRef.current?.removeSource(sourceName)
 
     // console.log(source.data.features)
     mbMapRef.current?.addControl(draw, 'bottom-right')
