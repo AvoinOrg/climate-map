@@ -11,6 +11,7 @@ import { getGeoJsonArea } from '#/common/utils/gis'
 
 import { AppStateContext } from '../state/AppState'
 import { generateUUID } from '#/common/utils/general'
+import { FileType } from '../types'
 
 const UploadButton = () => {
   const [uploadFile, setUploadFile] = useState<string | Blob>('')
@@ -42,12 +43,12 @@ const UploadButton = () => {
     const reader = new window.FileReader()
     reader.readAsArrayBuffer(f)
 
-    const initializePlan = (json: any) => {
+    const initializePlan = (json: any, fileType: FileType) => {
       const id = generateUUID()
       addJSONLayer(id, 'userZoningPlan', json, 'kaytto_tark', 'EPSG:3857')
 
       const areaHa = getGeoJsonArea(json) / 10000
-      addPlanConf({ json: json, name: f.name, id: id, areaHa: areaHa })
+      addPlanConf({ json: json, name: f.name, id: id, areaHa: areaHa, fileSettings: { fileType } })
     }
 
     reader.onloadend = async () => {
@@ -81,7 +82,7 @@ const UploadButton = () => {
             }
 
             const json = await extract(geopackage, featureTables[0])
-            initializePlan(json)
+            initializePlan(json, 'gpkg')
             e.target.value = ''
           } else {
             console.error('reader.result is a string, not an ArrayBuffer')
@@ -89,7 +90,7 @@ const UploadButton = () => {
         } else {
           const shp = (await import('shpjs')).default
           const json = await shp(reader.result)
-          initializePlan(json)
+          initializePlan(json, 'shp')
         }
       }
     }
