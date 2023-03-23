@@ -4,6 +4,12 @@ export const routeTree = {
       path: '/hiilikartta',
       name: 'Omat kaavat',
     },
+    import: {
+      _conf: {
+        path: '/tuo',
+        name: 'Tuo kaava',
+      },
+    },
     plan: {
       _conf: {
         path: '/kaava/:id',
@@ -11,7 +17,7 @@ export const routeTree = {
       },
       settings: {
         _conf: {
-          path: '/settings',
+          path: '/asetukset',
           name: 'Kaavan asetukset',
         },
       },
