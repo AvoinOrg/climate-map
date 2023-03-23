@@ -10,10 +10,11 @@ import ForestIcon from '@mui/icons-material/Forest'
 import PeopleIcon from '@mui/icons-material/People'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 
-import { AppStateContext } from '../../state/AppState'
-import { PlanConf } from '../../types'
-import { routeTree } from '../../routes'
 import { getRoute } from '#/common/utils/routing'
+
+import { AppStateContext } from 'applets/hiilikartta/state/AppState'
+import { PlanConf } from 'applets/hiilikartta/types'
+import { routeTree } from 'applets/hiilikartta/routes'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const { planConfs } = useContext(AppStateContext)
