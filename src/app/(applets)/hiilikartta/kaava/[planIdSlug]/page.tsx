@@ -5,10 +5,13 @@ import { Box, Button } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import { styled } from '@mui/material/styles'
 import TuneIcon from '@mui/icons-material/Tune'
+// import SettingsIcon from '@mui/icons-material/Settings'
 import ParkIcon from '@mui/icons-material/Park'
 import ForestIcon from '@mui/icons-material/Forest'
 import PeopleIcon from '@mui/icons-material/People'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
+// import MuiLink from '@mui/material/Link'
+// import Link from 'next/link'
 
 import { getRoute } from '#/common/utils/routing'
 
@@ -39,6 +42,15 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
       {isLoaded && planConf && (
         <>
           <Box sx={(theme) => ({ typography: theme.typography.h6, margin: '80px 0 0 0' })}>{planConf.name}</Box>
+          {/* <MuiLink
+            href={getRoute(routeTree.base.plan.settings, routeTree, [planConf.id])}
+            sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
+            component={Link}
+          >
+            <MenuButton sx={{ margin: '25px 0 0 0' }} variant="outlined">
+              Kaavatiedoston asetukset <SettingsIcon />
+            </MenuButton>
+          </MuiLink> */}
           <MenuButton sx={{ margin: '25px 0 0 0' }} variant="outlined">
             Kaavan asetukset <TuneIcon />
           </MenuButton>
