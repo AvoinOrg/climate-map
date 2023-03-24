@@ -30,7 +30,7 @@ const DropDownSelect = ({ value, options, onChange, label, sx }: Props) => {
             horizontal: 'left',
           },
         }}
-        sx={{ '.MuiSvgIcon-root': { fontSize: '16px', margin: '0 10px 0 0' } }}
+        sx={{ backgroundColor: 'background.main', '.MuiSvgIcon-root': { fontSize: '16px', margin: '0 10px 0 0' } }}
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
