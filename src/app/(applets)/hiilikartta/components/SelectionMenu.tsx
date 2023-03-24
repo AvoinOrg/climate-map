@@ -1,27 +1,26 @@
 import * as React from 'react'
 import InputLabel from '@mui/material/InputLabel'
-import MenuItem from '@mui/material/MenuItem'
 import FormControl from '@mui/material/FormControl'
 import Select, { SelectChangeEvent } from '@mui/material/Select'
 
 interface Props {
-  label: string
   id: string
   options: string[]
   value: string | undefined
-  sx: any
-  handleChange: (event: SelectChangeEvent) => void
+  onChange: (event: SelectChangeEvent) => void
+  label?: string
+  sx?: any
 }
 
-const SelectionMenu = ({ label, id, options, value, sx, handleChange }: Props) => {
+const SelectionMenu = ({ id, options, value, onChange, sx, label }: Props) => {
   return (
     <FormControl variant="filled" sx={sx}>
-      <InputLabel id={`${id}-label`}>{label}</InputLabel>
-      <Select labelId={`${id}-label`} id={`${id}`} value={value} onChange={handleChange}>
+      {label && <InputLabel id={`${id}-label`}>{label}</InputLabel>}
+      <Select labelId={`${id}-label`} id={`${id}`} value={value} onChange={onChange}>
         {options.map((option) => (
-          <MenuItem key={option} value={option}>
+          <option key={option} value={option}>
             {option}
-          </MenuItem>
+          </option>
         ))}
       </Select>
     </FormControl>
