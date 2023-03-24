@@ -6,8 +6,6 @@ import Toolbar from '@mui/material/Toolbar'
 import IconButton from '@mui/material/IconButton'
 import { Box } from '@mui/material'
 import { styled } from '@mui/material/styles'
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -17,6 +15,8 @@ import Image from 'next/image'
 import ActionButtons from './ActionButtons'
 // import { UserStateContext, UiStateContext } from '#/components/State'
 import { UiStateContext } from '#/components/State'
+import HamburgerOpen from '../icons/HamburgerOpen'
+import HamburgerClosed from '../icons/HamburgerClosed'
 
 export const NavBar = () => {
   const { isSidebarOpen, setIsSidebarOpen, isSidebarDisabled }: any = React.useContext(UiStateContext)
@@ -28,17 +28,23 @@ export const NavBar = () => {
 
   return (
     <AppBar position="fixed" color="inherit" sx={(theme) => ({ zIndex: theme.zIndex.appBar })}>
-      <Toolbar sx={{ padding: 0, height: 64 }}>
+      <Toolbar sx={{ padding: "0 0 0 0 !important", height: 64 }}>
         <IconButton
           onClick={toggleSidebar}
           edge="start"
-          sx={(theme) => ({ marginRight: theme.spacing(4), marginLeft: theme.spacing(2), padding: '0 5px 0 5px' })}
+          sx={(theme) => ({
+            padding: '0',
+            width: '80px',
+            margin: '8px 0 0 0',
+            display: 'flex',
+          })}
+          disableRipple
           color="inherit"
           aria-label="open drawer"
           disabled={isSidebarDisabled}
           size="large"
         >
-          {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          {isSidebarOpen ? <HamburgerOpen /> : <HamburgerClosed sx={{ width: '80px' }} />}
         </IconButton>
 
         <Link href="/" className="neutral-link">
