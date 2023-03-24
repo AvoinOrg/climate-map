@@ -3,7 +3,7 @@ import { TypographyOptions } from '@mui/material/styles/createTypography'
 import { Roboto, Raleway } from '@next/font/google'
 import '@mui/material/styles/createPalette'
 
-//extending palette to add tertiary color
+//extending palette to add background color
 declare module '@mui/material/styles/createPalette' {
   interface Palette {
     tertiary: PaletteColor
@@ -52,8 +52,16 @@ const palette = {
     main: '#D3DBD8',
     light: '#F5FBEF',
   },
+  background: {
+    default: '#F4F4F4',
+    light: '#FFFFFF',
+  },
   info: { main: '#EEA243' },
   warning: { main: '#F5FBEF' },
+}
+
+const shape = {
+  borderRadius: 0,
 }
 
 const zIndex = {
@@ -115,4 +123,4 @@ const typography: TypographyOptions = {
   fontFamily: fonts[0],
 }
 
-export default createTheme({ palette, typography, zIndex })
+export default createTheme({ palette, typography, zIndex, shape })
