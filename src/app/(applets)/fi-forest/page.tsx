@@ -33,6 +33,7 @@ import { finlandForests } from './layers'
 import { useFilteredSelectedFeatures } from '#/common/hooks/useFilteredSelectedFeatures'
 import { FinlandForestsChart } from './components/FinlandForestsChart'
 import { ForestryMethod } from './types'
+import DropDownSelect from '#/components/common/DropDownSelect'
 // import * as Analytics from 'src/map/analytics'
 
 // import arvometsaLogo from './assets/arvometsa_logo.png'
@@ -311,27 +312,21 @@ const FinlandForests = () => {
                 Equals {pp(options.averageCarbonBalanceOverall / CO2_TONS_PER_PERSON, 1)} times average 👤 CO2 emissions
               </p>
               <h1>Forestry projections</h1>
-              <Divider />
-              <FormControl style={{ width: '100%' }}>
-                <InputLabel htmlFor="forestry-method">Forestry method</InputLabel>
-                <Select
-                  native
-                  inputProps={{
-                    name: 'forestry-method',
-                    id: 'forestry-method',
-                  }}
-                  value={forestryMethod}
-                  onChange={(event) => {
-                    setForestryMethod(Number(event.target.value))
-                    setReportPanelOpen(true)
-                  }}
-                >
-                  <option value={ForestryMethod.eihakata}> No cuttings </option>
-                  <option value={ForestryMethod.jatkuva}> Continuous cover forestry </option>
-                  <option value={ForestryMethod.tasaikainen}> Thin from below – extended rotation </option>
-                  <option value={ForestryMethod.vapaa}> Unrestricted</option>
-                </Select>
-              </FormControl>
+              <hr />
+              <DropDownSelect
+                value={forestryMethod}
+                options={[
+                  { value: ForestryMethod.eihakata, label: 'No cuttings' },
+                  { value: ForestryMethod.jatkuva, label: 'Continuous cover forestry' },
+                  { value: ForestryMethod.tasaikainen, label: 'Thin from below - extended rotation' },
+                  { value: ForestryMethod.vapaa, label: 'Unrestricted' },
+                ]}
+                onChange={(event) => {
+                  setForestryMethod(Number(event.target.value))
+                  setReportPanelOpen(true)
+                }}
+                sx={{ width: '100%' }}
+              />
               <br />
               <br />
               <Button
