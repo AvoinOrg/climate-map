@@ -7,7 +7,7 @@ import { SvgIcon } from '@mui/material'
 //   </svg>
 // )
 
-const HamburgerOpen = (props: any) => (
+const HamburgerClosed = (props: any) => (
   <SvgIcon {...props}>
     <svg width={44} height={16} fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path fill="#000" d="M23.913 0H44v6H23.913zM0 0h20.087v6H0zM23.913 10H44v6H23.913zM0 10h20.087v6H0z" />
@@ -16,4 +16,4 @@ const HamburgerOpen = (props: any) => (
   </SvgIcon>
 )
 
-export default HamburgerOpen
+export default HamburgerClosed
