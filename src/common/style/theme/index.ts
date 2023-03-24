@@ -53,7 +53,7 @@ const palette = {
     light: '#F5FBEF',
   },
   background: {
-    default: '#F4F4F4',
+    main: '#F4F4F4',
     light: '#FFFFFF',
   },
   info: { main: '#EEA243' },
