@@ -314,6 +314,7 @@ const FinlandForests = () => {
               <h1>Forestry projections</h1>
               <hr />
               <DropDownSelect
+                label={'Choose forestry method for calculations:'}
                 value={forestryMethod}
                 options={[
                   { value: ForestryMethod.eihakata, label: 'No cuttings' },

@@ -43,7 +43,7 @@ const DropDownSelect = ({ value, options, onChange, label, sx }: Props) => {
 }
 
 const Label = styled('p')({
-  fontSize: '14px',
+  fontSize: '16px',
 })
 
 export default DropDownSelect
