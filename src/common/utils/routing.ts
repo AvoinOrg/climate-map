@@ -38,8 +38,11 @@ const findRouteObjects = (route: any, routeTree: any, routeObjects: any[] = []):
   }
 }
 
-export const getRoute = (route: any, routeTree: any, params: string[] = []) => {
-  const routeObjects = findRouteObjects(route, routeTree)
+export const getRoute = (route: any, routeTree: any, params: string[] = [], removeSteps = 0) => {
+  let routeObjects = findRouteObjects(route, routeTree)
+  // Remove the last steps from the route
+  routeObjects = routeObjects.slice(0, routeObjects.length - removeSteps)
+
   if (routeObjects.length === 0) {
     throw new Error('Route not found: ' + route + ' in ' + routeTree)
   }
@@ -70,4 +73,7 @@ export const getRoute = (route: any, routeTree: any, params: string[] = []) => {
   return path
 }
 
-export const getParentRoute = (currentPath: any, routeTree: any) => {}
+export const getRouteParent = (route: any, routeTree: any, params: string[] = []) => {
+  const path = getRoute(route, routeTree, params, 1)
+  return path
+}
