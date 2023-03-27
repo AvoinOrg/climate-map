@@ -34,7 +34,10 @@ const findRouteObjects = (route: any, routeTree: any, routeObjects: any[] = []):
   }
 
   for (const child of getRouteChildren(routeTree)) {
-    return findRouteObjects(route, child, routeObjectsCopy)
+    const objects = findRouteObjects(route, child, routeObjectsCopy)
+    if (objects) {
+      return objects
+    }
   }
 }
 
