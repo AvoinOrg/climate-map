@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import UploadButton from './components/UploadButton'
 import { Box, Button } from '@mui/material'
 import { styled } from '@mui/material/styles'
 
@@ -16,13 +15,13 @@ import MuiLink from '@mui/material/Link'
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <AppStateProvider>
-      <Box sx={{ padding: '120px 30px 100px 50px', minWidth: '300px', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ padding: '120px 30px 100px 50px', minWidth: '400px', display: 'flex', flexDirection: 'column' }}>
         <MuiLink
           href={getRoute(routeTree.base.import, routeTree)}
           sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
           component={Link}
         >
-          <BigMenuButton variant="contained" component="label"></BigMenuButton>
+          <BigMenuButton variant="contained" component="label">Tuo kaava</BigMenuButton>
         </MuiLink>
         <BigMenuButton variant="contained">Uusi kaava</BigMenuButton>
         {/* <NavigationHeader></NavigationHeader> */}
@@ -33,7 +32,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 }
 
 const BigMenuButton = styled(Button)<{ component?: string }>({
-  width: '300px',
+  width: '100%',
   height: '60px',
   margin: '0 0 15px 0',
 })
