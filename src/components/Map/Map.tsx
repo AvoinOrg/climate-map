@@ -65,6 +65,7 @@ interface IMapContext {
   layerGroups: {} | null
   registerGroup?: (layerGroup: any) => void | null
   addJSONLayer: (id: string, groupId: string, json: any, featureColorCol: string, projection: string) => void | null
+  getLayerJson: (id: string) => any
   selectedFeatures: MapboxGeoJSONFeature[]
   setLayoutProperty: (layerId: string, property: string, value: any) => Promise<void> | null
   setPaintProperty: (layerId: string, property: string, value: any) => Promise<void> | null
@@ -964,6 +965,10 @@ export const MapProvider = ({ children }: Props) => {
     //   setActiveLayerGroupIds(activeLayerGroupIdsCopy)
   }
 
+  const getLayerJson = (id: string) => {
+    return mbMapRef.current?.querySourceFeatures(id)
+  }
+
   // ensures that latest state is used in the callback
   const addToFunctionQueue = (funcName: string, args: any[], priority = QueuePriority.LOW): Promise<any> => {
     // construct a promise that will be manually resolved when the function is called
@@ -1145,6 +1150,7 @@ export const MapProvider = ({ children }: Props) => {
     enableLayerGroup,
     disableLayerGroup,
     addJSONLayer,
+    getLayerJson,
     selectedFeatures,
     setLayoutProperty,
     setPaintProperty,
