@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { FormControl, Select, SelectChangeEvent } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import DownIcon from '#/components/icons/DownIcon'
@@ -12,12 +12,14 @@ interface Props {
 }
 
 const DropDownSelect = ({ value, options, onChange, label, sx }: Props) => {
+  const [hasEmpty, setHasEmpty] = React.useState(value == null)
+
   return (
     <FormControl sx={sx}>
       {label && <Label>{label}</Label>}
       <Select
         native
-        value={value}
+        value={value == null ? '' : value}
         onChange={onChange}
         IconComponent={DownIcon}
         MenuProps={{
@@ -32,11 +34,14 @@ const DropDownSelect = ({ value, options, onChange, label, sx }: Props) => {
         }}
         sx={{ backgroundColor: 'background.main', '.MuiSvgIcon-root': { fontSize: '16px', margin: '0 10px 0 0' } }}
       >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
+        {...[
+          hasEmpty == true && <option key={''} value={undefined}></option>,
+          options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          )),
+        ]}
       </Select>
     </FormControl>
   )
