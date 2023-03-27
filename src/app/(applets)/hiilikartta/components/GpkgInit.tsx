@@ -4,7 +4,6 @@ import { Box, IconButton, SelectChangeEvent } from '@mui/material'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 
 import DropDownSelect from '#/components/common/DropDownSelect'
-import { calculateSizeAdjustValues } from 'next/dist/server/font-utils'
 
 const GpkgInit = ({
   fileBuffer,
