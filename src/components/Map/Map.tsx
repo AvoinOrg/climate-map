@@ -905,7 +905,7 @@ export const MapProvider = ({ children }: Props) => {
     const uniqueVals = uniq(map(json.features, 'properties.' + featureColorCol))
     const colorArr = getColorExpressionArrForValues(uniqueVals)
 
-    const sourceId = `${id}-carbon-shapes`
+    const sourceId = `${id}_zoning_plan`
     mbMapRef.current?.addSource(sourceId, {
       type: 'geojson',
       // Use a URL for the value for the `data` property.
