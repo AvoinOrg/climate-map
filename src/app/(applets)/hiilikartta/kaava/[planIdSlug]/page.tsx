@@ -78,7 +78,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
           <MenuButton variant="outlined">
             Laske hiilimuutokset <ForestIcon />
           </MenuButton>
-          <MenuButton variant="outlined">
+          <MenuButton variant="outlined" onClick={handleSubmit}>
             Laske nykyiset hiilivarastot <ParkIcon />
           </MenuButton>
           <SmallMenuButton sx={{ margin: '50px 0 0 0' }} variant="outlined">
