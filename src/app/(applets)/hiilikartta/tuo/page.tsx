@@ -55,7 +55,7 @@ const Page = () => {
         } else if (f.name.split('.').pop() === 'zip') {
           const shp = (await import('shpjs')).default
           const json = await shp(reader.result)
-          initializePlan(json)
+          // initializePlan(json)
         }
       }
       e.target.value = ''
