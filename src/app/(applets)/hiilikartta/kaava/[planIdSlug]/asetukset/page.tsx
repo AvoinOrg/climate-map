@@ -1,14 +1,9 @@
 'use client'
 
 import React, { useContext, useEffect, useState } from 'react'
-import { Box, Button } from '@mui/material'
+import { Box, Button, Select } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import { styled } from '@mui/material/styles'
-import TuneIcon from '@mui/icons-material/Tune'
-import ParkIcon from '@mui/icons-material/Park'
-import ForestIcon from '@mui/icons-material/Forest'
-import PeopleIcon from '@mui/icons-material/People'
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 
 import { getRoute } from '#/common/utils/routing'
 
@@ -39,24 +34,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     <>
       {isLoaded && planConf && (
         <>
-          <MenuButton sx={{ margin: '25px 0 0 0' }} variant="outlined">
-            Kaavatiedoston asetukset <TuneIcon />
-          </MenuButton>
-          <MenuButton sx={{ margin: '25px 0 0 0' }} variant="outlined">
-            Kaavan asetukset <TuneIcon />
-          </MenuButton>
-          <MenuButton variant="outlined">
-            Laske hiilimuutokset <ForestIcon />
-          </MenuButton>
-          <MenuButton variant="outlined">
-            Laske nykyiset hiilivarastot <ParkIcon />
-          </MenuButton>
-          <SmallMenuButton sx={{ margin: '50px 0 0 0' }} variant="outlined">
-            Jakoasetukset <PeopleIcon />
-          </SmallMenuButton>
-          <SmallMenuButton variant="outlined">
-            Poista kaava <DeleteForeverIcon />
-          </SmallMenuButton>
+          <SelectionMenu />
         </>
       )}
     </>
