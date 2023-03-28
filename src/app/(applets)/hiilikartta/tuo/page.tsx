@@ -29,22 +29,8 @@ const Page = () => {
   const [jsonFile, setJsonFile] = useState<File>()
   const router = useRouter()
 
-  const handleSubmit = async () => {
-    const formData = new FormData()
-    formData.append('file', uploadFile)
 
-    // const response = await useFileUploadMutation("http://localhost:8000/calculate", uploadFile)
 
-    const response = await axios.post('http://localhost:8000/calculate', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-
-    setRes(response.data)
-  }
-
-  const initializePlan = (json: any) => {
     const id = generateUUID()
     addJSONLayer(id, 'userZoningPlan', json, 'kaytto_tark', 'EPSG:3857')
 

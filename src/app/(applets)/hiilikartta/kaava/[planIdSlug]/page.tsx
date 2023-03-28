@@ -24,6 +24,26 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const [planConf, setPlanConf] = useState<PlanConf>()
   const [isLoaded, setIsLoaded] = useState(false)
   const router = useRouter()
+  const [res, setRes] = useState(null)
+
+  const handleSubmit = async () => {
+    if (planConf) {
+      const formData = new FormData()
+      const json = getLayerJson(`${planConf.id}_zoning_plan`)
+      console.log(json)
+      formData.append('file', json)
+
+      // const response = await useFileUploadMutation("http://localhost:8000/calculate", uploadFile)
+
+      const response = await axios.post('http://localhost:8000/calculate', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+
+      setRes(response.data)
+    }
+  }
 
   useEffect(() => {
     if (planConfs != null) {
