@@ -20,19 +20,16 @@ import GpkgInit from '../components/GpkgInit'
 
 const Page = () => {
   const [uploadFile, setUploadFile] = useState<string | Blob>('')
-  const [res, setRes] = useState(null)
-  const { addJSONLayer, setMapLibraryMode } = useContext(MapContext)
+  const { addJSONLayer } = useContext(MapContext)
   const { addPlanConf } = useContext(AppStateContext)
   const [fileType, setFileType] = useState<FileType>()
   const [fileName, setFileName] = useState<string>('')
   const [arrayBuffer, setArrayBuffer] = useState<ArrayBuffer>()
-  const [jsonFile, setJsonFile] = useState<File>()
   const router = useRouter()
 
-
-
+  const initializePlan = (json: any, colName: string) => {
     const id = generateUUID()
-    addJSONLayer(id, 'userZoningPlan', json, 'kaytto_tark', 'EPSG:3857')
+    addJSONLayer(id, 'userZoningPlan', json, colName, 'EPSG:3857')
 
     const areaHa = getGeoJsonArea(json) / 10000
     addPlanConf({ json: json, name: fileName, id: id, areaHa: areaHa, fileSettings: { fileType: 'geojson' } })
@@ -48,6 +45,7 @@ const Page = () => {
     reader.onloadend = async () => {
       // TODO: add error handling. An error message popup if file is invalid?
       if (reader.result != null) {
+        setFileName(f.name)
         if (f.name.split('.').pop() === 'gpkg') {
           if (typeof reader.result !== 'string') {
             setFileType('gpkg')
@@ -67,8 +65,8 @@ const Page = () => {
     setUploadFile(f)
   }
 
-  const handleFinish = (json: any) => {
-    const id = initializePlan(json)
+  const handleFinish = (json: any, colName: string) => {
+    const id = initializePlan(json, colName)
     const route = getRoute(routeTree.base.plan, routeTree, [id])
     router.push(route)
   }
