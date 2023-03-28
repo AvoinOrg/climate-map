@@ -14,7 +14,6 @@ import { routeTree } from 'applets/hiilikartta/routes'
 import { MapContext } from '#/components/Map'
 import { generateUUID } from '#/common/utils/general'
 import { getGeoJsonArea } from '#/common/utils/gis'
-import axios from 'axios'
 import NavigationBack from '../components/NavigationBack'
 import GpkgInit from '../components/GpkgInit'
 
