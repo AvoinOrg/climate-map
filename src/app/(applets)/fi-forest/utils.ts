@@ -1,6 +1,7 @@
 import { every } from 'lodash-es'
 import { Expression, Layer } from 'mapbox-gl'
 import { GeoJsonProperties } from 'geojson'
+import { uniqBy } from 'lodash-es'
 
 import { roundToSignificantDigitsExpr } from '#/common/utils/map'
 import { assert, pp } from '#/common/utils/general'
@@ -401,7 +402,7 @@ export const getChartTitle = (selectedFeatureLayers: Layer[], featureProps: any[
   if (featureProps.length === 0) return 'No area selected'
 
   assert(selectedFeatureLayers.length > 0, 'selectedFeatureLayer must be non-empty')
-  const uniqueLayers = Array.from(new Set(selectedFeatureLayers))
+  const uniqueLayers = uniqBy(selectedFeatureLayers, (l) => l.id)
   if (uniqueLayers.length > 1) return 'Areas selected across multiple scales: double-counting an area is possible'
 
   return getChartTitleSingleLayer(uniqueLayers[0], featureProps, selectedFeatureLayers.length > 1)
