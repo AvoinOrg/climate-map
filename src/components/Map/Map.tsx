@@ -45,6 +45,7 @@ import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
 import { getColorExpressionArrForValues } from '#/common/utils/map'
 import { OverlayMessages } from './OverlayMessages'
+import { ConstructionOutlined } from '@mui/icons-material'
 interface Props {
   children?: React.ReactNode
 }
@@ -966,7 +967,9 @@ export const MapProvider = ({ children }: Props) => {
   }
 
   const getLayerJson = (id: string) => {
-    return mbMapRef.current?.querySourceFeatures(id)
+    // const features = mbMapRef.current?.queryRenderedFeatures(undefined, { layers: [id] })
+    const features: any = mbMapRef.current?.querySourceFeatures(id)
+    const geojson = [features.map((feature: any) => feature.toJSON())]
   }
 
   // ensures that latest state is used in the callback
