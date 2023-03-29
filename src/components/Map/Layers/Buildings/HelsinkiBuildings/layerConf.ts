@@ -17,23 +17,15 @@ const getStyle = async (): Promise<MbStyle> => {
     sources: {
       [sourceNames[0]]: {
         type: 'vector',
-        tiles: ['https://server.avoin.org/data/map/helsinki-buildings/{z}/{x}/{y}.pbf'],
-        // tiles: ['https://gis.avoin.org/geoserver/gwc/service/tms/1.0.0/misc:helsinkiblockhouses@pbf/{z}/{x}/{y}.pbf'],
-        maxzoom: 14,
-        // Bounds source: https://koordinates.com/layer/4257-finland-11000000-administrative-regions/
-        // select ST_Extent(ST_Transform(ST_SetSRID(geom,3067), 4326))
-        // from "finland-11000000-administrative-regions" where kunta_ni1='Helsinki';
+        tiles: ['https://server.avoin.org/data/map/helsinki-buildings/{z}/{x}/{y}.pbf'],        
+        maxzoom: 14,        
         bounds: [24, 59, 26, 61],
         attribution: '<a href="https://www.hel.fi">© City of Helsinki</a>',
       },
       [sourceNames[1]]: {
         type: 'vector',
-        tiles: ['https://server.avoin.org/data/map/hel-puretut/{z}/{x}/{y}.pbf.gz?v=0'],
-        // tiles: ['https://gis.avoin.org/geoserver/gwc/service/tms/1.0.0/misc:helsinkiotherbuildings@pbf/{z}/{x}/{y}.pbf'],
-        maxzoom: 14,
-        // Bounds source: https://koordinates.com/layer/4257-finland-11000000-administrative-regions/
-        // select ST_Extent(ST_Transform(ST_SetSRID(geom,3067), 4326))
-        // from "finland-11000000-administrative-regions" where kunta_ni1='Helsinki';
+        tiles: ['https://server.avoin.org/data/map/hel-puretut/{z}/{x}/{y}.pbf.gz?v=0'],        
+        maxzoom: 14,        
         bounds: [24, 59, 26, 61],
         attribution: '<a href="https://www.hel.fi">© City of Helsinki</a>',
       },
