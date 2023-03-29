@@ -7,7 +7,6 @@ import { styled } from '@mui/material/styles'
 
 import { getRoute } from '#/common/utils/routing'
 
-import { AppStateContext } from 'applets/hiilikartta/state/AppState'
 import { PlanConf } from 'applets/hiilikartta/types'
 import { routeTree } from 'applets/hiilikartta/routes'
 import SelectionMenu from 'applets/hiilikartta/components/SelectionMenu'

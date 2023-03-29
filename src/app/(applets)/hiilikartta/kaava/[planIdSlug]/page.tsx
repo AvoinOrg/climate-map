@@ -16,13 +16,13 @@ import axios from 'axios'
 
 import { getRoute } from '#/common/utils/routing'
 
-import { AppStateContext } from 'applets/hiilikartta/state/AppState'
+import { useStore } from 'applets/hiilikartta/state/appStore'
 import { PlanConf } from 'applets/hiilikartta/types'
 import { routeTree } from 'applets/hiilikartta/routes'
 import { MapContext } from '#/components/Map'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
-  const { planConfs } = useContext(AppStateContext)
+  const planConfs = useStore((state) => state.planConfs)
   const { getLayerJson } = useContext(MapContext)
   const [planConf, setPlanConf] = useState<PlanConf>()
   const [isLoaded, setIsLoaded] = useState(false)
