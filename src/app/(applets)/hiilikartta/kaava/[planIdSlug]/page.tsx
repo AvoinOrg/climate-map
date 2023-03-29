@@ -23,7 +23,7 @@ import { MapContext } from '#/components/Map'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const planConfs = useStore((state) => state.planConfs)
-  const { getLayerJson } = useContext(MapContext)
+  const { getSourceJson } = useContext(MapContext)
   const [planConf, setPlanConf] = useState<PlanConf>()
   const [isLoaded, setIsLoaded] = useState(false)
   const router = useRouter()
@@ -32,7 +32,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const handleSubmit = async () => {
     if (planConf) {
       const formData = new FormData()
-      const json = getLayerJson(`${planConf.id}_zoning_plan`)
+      const json = getSourceJson(`${planConf.id}_zoning_plan`)
       console.log(json)
       formData.append('file', json)
 
