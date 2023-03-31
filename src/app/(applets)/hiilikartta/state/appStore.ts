@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
-import { PlanConf } from '../types'
+import { PlanConf } from '../common/types'
 
 interface AppState {
   planConfs: PlanConf[]

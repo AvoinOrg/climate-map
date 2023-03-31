@@ -6,7 +6,7 @@ import { Link as MuiLink } from '@mui/material'
 import { useRouter, usePathname } from 'next/navigation'
 
 import { getRouteParent } from '#/common/utils/routing'
-import { routeTree } from '../routes'
+import { routeTree } from '../common/routes'
 
 // interface Props {
 //   basePath: string

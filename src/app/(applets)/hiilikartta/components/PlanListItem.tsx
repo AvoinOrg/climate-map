@@ -6,8 +6,8 @@ import TuneIcon from '@mui/icons-material/Tune'
 import Link from 'next/link'
 import { Link as MuiLink } from '@mui/material'
 
-import { PlanConf } from '../types'
-import { routeTree } from '../routes'
+import { PlanConf } from '../common/types'
+import { routeTree } from '../common/routes'
 import { getRoute } from '#/common/utils/routing'
 
 interface Props {

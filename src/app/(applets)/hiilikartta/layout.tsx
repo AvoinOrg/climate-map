@@ -8,7 +8,7 @@ import { getRoute } from '#/common/utils/routing'
 
 import NavigationHeader from './components/NavigationHeader'
 import Link from 'next/link'
-import { routeTree } from './routes'
+import { routeTree } from './common/routes'
 import MuiLink from '@mui/material/Link'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
