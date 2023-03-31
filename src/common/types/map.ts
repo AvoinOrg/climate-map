@@ -52,11 +52,15 @@ export type ExtendedMbStyle = MbStyle & {
   layers: ExtendedAnyLayer[]
 }
 
-export type LayerConf = {
-  id: LayerId
+export type LayerConfAnyId = {
+  id: string
   style: () => Promise<ExtendedMbStyle>
   popup?: Popup
   useMb?: boolean
+}
+
+export interface LayerConf extends LayerConfAnyId {
+  id: LayerId
 }
 
 // For checking if layer name adheres to LayerType, in runtime
