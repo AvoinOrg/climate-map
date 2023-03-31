@@ -7,8 +7,8 @@ import { styled } from '@mui/material/styles'
 
 import { getRoute } from '#/common/utils/routing'
 
-import { FileType, PlanConf } from 'applets/hiilikartta/types'
-import { routeTree } from 'applets/hiilikartta/routes'
+import { FileType, PlanConf } from 'applets/hiilikartta/common/types'
+import { routeTree } from 'applets/hiilikartta/common/routes'
 import useStore from '#/common/hooks/useStore'
 
 import { MapContext } from '#/components/Map'
