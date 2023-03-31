@@ -70,7 +70,6 @@ interface IMapContext {
   activeLayerGroupIds: string[]
   layerGroups: {} | null
   registerGroup?: (layerGroup: any) => void | null
-  addJSONLayer: (id: string, groupId: string, json: any, featureColorCol: string, projection: string) => void | null
   getSourceJson: (id: string) => any
   selectedFeatures: MapboxGeoJSONFeature[]
   setLayoutProperty: (layerId: string, property: string, value: any) => Promise<void> | null
