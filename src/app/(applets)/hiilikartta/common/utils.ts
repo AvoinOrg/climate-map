@@ -13,7 +13,7 @@ export const createLayerConf = (json: any, planId: string, featureColorCol: stri
 
   const sourceId = planId
 
-  const getStyle = async (): Promise<ExtendedMbStyle> {
+  const getStyle = async (): Promise<ExtendedMbStyle> => {
     return {
       version: 8,
       sources: {
@@ -43,7 +43,7 @@ export const createLayerConf = (json: any, planId: string, featureColorCol: stri
           },
         },
         {
-          id: `${sourceId}-sym`,
+          id: `${sourceId}-symbol`,
           source: sourceId,
           type: 'symbol',
           layout: {
