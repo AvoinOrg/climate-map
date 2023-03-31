@@ -18,8 +18,8 @@ import { getRoute } from '#/common/utils/routing'
 import useStore from '#/common/hooks/useStore'
 
 import { useAppStore } from 'applets/hiilikartta/state/appStore'
-import { PlanConf } from 'applets/hiilikartta/types'
-import { routeTree } from 'applets/hiilikartta/routes'
+import { PlanConf } from 'applets/hiilikartta/common/types'
+import { routeTree } from 'applets/hiilikartta/common/routes'
 import { MapContext } from '#/components/Map'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
