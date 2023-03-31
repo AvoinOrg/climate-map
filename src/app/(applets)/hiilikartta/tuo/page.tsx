@@ -16,11 +16,11 @@ import { getGeoJsonArea } from '#/common/utils/gis'
 import NavigationBack from '../components/NavigationBack'
 import GpkgInit from '../components/GpkgInit'
 import { useAppStore } from 'applets/hiilikartta/state/appStore'
+import { createLayerConf } from '../common/utils'
 
 const Page = () => {
   const [uploadFile, setUploadFile] = useState<string | Blob>('')
-  const { addJSONLayer } = useContext(MapContext)
-  const planConfs = useStore(useAppStore, (state) => state.planConfs)
+  const { addAnyLayerGroup } = useContext(MapContext)
   const [fileType, setFileType] = useState<FileType>()
   const [fileName, setFileName] = useState<string>('')
   const [arrayBuffer, setArrayBuffer] = useState<ArrayBuffer>()
@@ -28,7 +28,8 @@ const Page = () => {
 
   const initializePlan = (json: any, colName: string) => {
     const id = generateUUID()
-    addJSONLayer(id, 'userZoningPlan', json, colName, 'EPSG:3857')
+    const style = createLayerConf(json, id, colName)
+    addAnyLayerGroup(id, style)
 
     const areaHa = getGeoJsonArea(json) / 10000
     const planConf: PlanConf = {
@@ -38,8 +39,8 @@ const Page = () => {
       areaHa: areaHa,
       fileSettings: { fileType: 'geojson' },
     }
-    useStore.setState((state) => ({
-      planConfs: [...planConfs, planConf],
+    useAppStore.setState((state) => ({
+      planConfs: [...state.planConfs, planConf],
     }))
 
     return id
