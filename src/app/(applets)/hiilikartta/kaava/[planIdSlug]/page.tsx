@@ -15,14 +15,15 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import axios from 'axios'
 
 import { getRoute } from '#/common/utils/routing'
+import useStore from '#/common/hooks/useStore'
 
-import { useStore } from 'applets/hiilikartta/state/appStore'
+import { useAppStore } from 'applets/hiilikartta/state/appStore'
 import { PlanConf } from 'applets/hiilikartta/types'
 import { routeTree } from 'applets/hiilikartta/routes'
 import { MapContext } from '#/components/Map'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
-  const planConfs = useStore((state) => state.planConfs)
+  const planConfs = useStore(useAppStore, (state) => state.planConfs)
   const { getSourceJson } = useContext(MapContext)
   const [planConf, setPlanConf] = useState<PlanConf>()
   const [isLoaded, setIsLoaded] = useState(false)

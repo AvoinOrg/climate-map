@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
@@ -7,7 +8,7 @@ interface AppState {
   planConfs: PlanConf[]
 }
 
-export const useStore = create<AppState>()(
+export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
       planConfs: [],

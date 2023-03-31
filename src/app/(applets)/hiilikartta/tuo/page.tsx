@@ -9,18 +9,19 @@ import { getRoute } from '#/common/utils/routing'
 
 import { FileType, PlanConf } from 'applets/hiilikartta/types'
 import { routeTree } from 'applets/hiilikartta/routes'
+import useStore from '#/common/hooks/useStore'
 
 import { MapContext } from '#/components/Map'
 import { generateUUID } from '#/common/utils/general'
 import { getGeoJsonArea } from '#/common/utils/gis'
 import NavigationBack from '../components/NavigationBack'
 import GpkgInit from '../components/GpkgInit'
-import { useStore } from 'applets/hiilikartta/state/appStore'
+import { useAppStore } from 'applets/hiilikartta/state/appStore'
 
 const Page = () => {
   const [uploadFile, setUploadFile] = useState<string | Blob>('')
   const { addJSONLayer } = useContext(MapContext)
-  const planConfs = useStore((state) => state.planConfs)
+  const planConfs = useStore(useAppStore, (state) => state.planConfs)
   const [fileType, setFileType] = useState<FileType>()
   const [fileName, setFileName] = useState<string>('')
   const [arrayBuffer, setArrayBuffer] = useState<ArrayBuffer>()

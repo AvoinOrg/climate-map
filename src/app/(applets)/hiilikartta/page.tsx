@@ -3,12 +3,14 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Box } from '@mui/material'
 
+import useStore from '#/common/hooks/useStore'
+
 import { MapContext } from '#/components/Map'
-import { useStore } from './state/appStore'
+import { useAppStore } from './state/appStore'
 import PlanListItem from './components/PlanListItem'
 
 const Page = () => {
-  const planConfs = useStore((state) => state.planConfs)
+  const planConfs = useStore(useAppStore, (state) => state.planConfs)
   const { setMapLibraryMode } = useContext(MapContext)
 
   useEffect(() => {
