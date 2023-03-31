@@ -31,7 +31,7 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw'
 
 import {
   LayerId,
-  LayerConf,
+  LayerConfAnyId,
   LayerOpt,
   LayerOpts,
   layerTypes,
@@ -40,6 +40,7 @@ import {
   OverlayMessage,
   MapLibraryMode,
   QueuePriority,
+  ExtendedMbStyle,
 } from '#/common/types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
@@ -59,8 +60,8 @@ interface IMapContext {
   mapRelocate: () => void | null
   mapZoomIn: () => void | null
   mapZoomOut: () => void | null
-  toggleLayerGroup: (layer: LayerId, layerConf?: LayerConf) => Promise<void> | null
-  enableLayerGroup: (layer: LayerId, layerConf?: LayerConf) => Promise<void> | null
+  toggleLayerGroup: (layer: LayerId, layerConf?: LayerConfAnyId) => Promise<void> | null
+  enableLayerGroup: (layer: LayerId, layerConf?: LayerConfAnyId) => Promise<void> | null
   disableLayerGroup: (layer: LayerId) => Promise<void> | null
   activeLayerGroupIds: string[]
   layerGroups: {} | null
@@ -718,7 +719,7 @@ export const MapProvider = ({ children }: Props) => {
     }
   }
 
-  const addMbStyle = async (id: LayerId, layerConf: LayerConf, isVisible: boolean = true) => {
+  const addMbStyle = async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
     const style = await layerConf.style()
     const layers: ExtendedAnyLayer[] = style.layers
     const sourceKeys = Object.keys(style.sources)
@@ -790,7 +791,7 @@ export const MapProvider = ({ children }: Props) => {
     })
   }
 
-  const addMbStyleToMb = async (id: LayerId, layerConf: LayerConf, isVisible: boolean = true) => {
+  const addMbStyleToMb = async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
     const style = await layerConf.style()
 
     try {
@@ -993,7 +994,7 @@ export const MapProvider = ({ children }: Props) => {
     return promise
   }
 
-  const enableLayerGroup = async (layerId: LayerId, layerConf?: LayerConf) => {
+  const enableLayerGroup = async (layerId: LayerId, layerConf?: LayerConfAnyId) => {
     if (layerGroups[layerId]) {
       setGroupVisibility(layerId, true)
 
@@ -1008,7 +1009,7 @@ export const MapProvider = ({ children }: Props) => {
       let conf = layerConf
 
       if (!conf) {
-        conf = layerConfs.find((el: LayerConf) => {
+        conf = layerConfs.find((el: LayerConfAnyId) => {
           return el.id === layerId
         })
       }
@@ -1033,7 +1034,7 @@ export const MapProvider = ({ children }: Props) => {
     setGroupVisibility(layerId, false)
   }
 
-  const toggleLayerGroup = async (layerId: LayerId, layerConf?: LayerConf) => {
+  const toggleLayerGroup = async (layerId: LayerId, layerConf?: LayerConfAnyId) => {
     if (activeLayerGroupIds.includes(layerId)) {
       disableLayerGroup(layerId)
     } else {
