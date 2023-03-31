@@ -883,90 +883,6 @@ export const MapProvider = ({ children }: Props) => {
     // }
   }
 
-  const addJSONLayer = (id: string, groupId: string, json: any, featureColorCol: string, projection: string) => {
-    // const vectorSource = new VectorSource({
-    //   features: new GeoJSON().readFeatures(json, {
-    //     featureProjection: projection,
-    //   }),
-    // })
-
-    // const vectorLayer = new VectorLayer({
-    //   source: vectorSource,
-    //   // style: defaultVectorStyleFunction,
-    // })
-
-    // map.addLayer(vectorLayer)
-
-    // const ktVals = ['uga', 'buga']
-
-    // for (const i in ktVals) {
-    //   const ktVal = ktVals[i]
-
-    // }
-
-    const uniqueVals = uniq(map(json.features, 'properties.' + featureColorCol))
-    const colorArr = getColorExpressionArrForValues(uniqueVals)
-
-    const sourceId = `${id}_zoning_plan`
-    mbMapRef.current?.addSource(sourceId, {
-      type: 'geojson',
-      // Use a URL for the value for the `data` property.
-      data: json,
-    })
-    mbMapRef.current?.addLayer({
-      id: `${sourceId}-outline`,
-      type: 'line',
-      source: sourceId,
-      paint: {
-        'line-opacity': 0.9,
-      },
-    })
-
-    mbMapRef.current?.addLayer({
-      id: `${sourceId}-fill`,
-      type: 'fill',
-      source: sourceId, // reference the data source
-      layout: {},
-      paint: {
-        'fill-color': ['match', ['get', featureColorCol], ...colorArr, 'white'],
-        'fill-opacity': 0.7,
-      },
-    })
-
-    mbMapRef.current?.addLayer({
-      id: `${sourceId}-sym`,
-      source: sourceId,
-      type: 'symbol',
-      layout: {
-        'symbol-placement': 'point',
-        'text-size': 20,
-        'text-font': ['Open Sans Regular'],
-        'text-field': ['case', ['has', 'kt'], ['get', 'kt'], ''],
-      },
-      paint: {
-        'text-color': '#999',
-        'text-halo-blur': 1,
-        'text-halo-color': 'rgb(242,243,240)',
-        'text-halo-width': 2,
-      },
-      minzoom: 12,
-    })
-
-    //   let layerGroup: any = {}
-
-    //   if (layerGroups[groupId]) {
-    //     layerGroup = layerGroups[groupId]
-    //   }
-
-    //   layerGroup[id] = vectorLayer
-
-    //   const layerGroupsCopy = { ...layerGroups, [groupId]: vectorLayer }
-    //   setLayerGroups(layerGroupsCopy)
-
-    //   const activeLayerGroupIdsCopy = [...activeLayerGroupIds, groupId]
-    //   setActiveLayerGroupIds(activeLayerGroupIdsCopy)
-  }
-
   const getSourceJson = (id: string) => {
     try {
       //@ts-ignore
@@ -1157,7 +1073,6 @@ export const MapProvider = ({ children }: Props) => {
     toggleLayerGroup,
     enableLayerGroup,
     disableLayerGroup,
-    addJSONLayer,
     getSourceJson,
     selectedFeatures,
     setLayoutProperty,
