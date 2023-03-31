@@ -41,6 +41,7 @@ import {
   MapLibraryMode,
   QueuePriority,
   ExtendedMbStyle,
+  LayerConf,
 } from '#/common/types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
@@ -60,9 +61,12 @@ interface IMapContext {
   mapRelocate: () => void | null
   mapZoomIn: () => void | null
   mapZoomOut: () => void | null
-  toggleLayerGroup: (layer: LayerId, layerConf?: LayerConfAnyId) => Promise<void> | null
-  enableLayerGroup: (layer: LayerId, layerConf?: LayerConfAnyId) => Promise<void> | null
-  disableLayerGroup: (layer: LayerId) => Promise<void> | null
+  toggleLayerGroup: (layerId: LayerId, layerConf?: LayerConf) => Promise<void> | null
+  enableLayerGroup: (layerId: LayerId, layerConf?: LayerConf) => Promise<void> | null
+  disableLayerGroup: (layerId: LayerId) => Promise<void> | null
+  toggleAnyLayerGroup: (layerId: string, layerConf?: LayerConfAnyId) => Promise<void> | null
+  enableAnyLayerGroup: (layerId: string, layerConf?: LayerConfAnyId) => Promise<void> | null
+  disableAnyLayerGroup: (layerId: string) => Promise<void> | null
   activeLayerGroupIds: string[]
   layerGroups: {} | null
   registerGroup?: (layerGroup: any) => void | null
@@ -600,8 +604,8 @@ export const MapProvider = ({ children }: Props) => {
     if (isLoaded) {
       let activeLayerIds: string[] = []
 
-      for (const layerGroupId of activeLayerGroupIds) {
-        const layerGroupLayers = layerGroups[layerGroupId]
+      for (const layerId of activeLayerGroupIds) {
+        const layerGroupLayers = layerGroups[layerId]
 
         activeLayerIds = [...activeLayerIds, ...Object.keys(layerGroupLayers)]
       }
@@ -910,7 +914,7 @@ export const MapProvider = ({ children }: Props) => {
     return promise
   }
 
-  const enableLayerGroup = async (layerId: LayerId, layerConf?: LayerConfAnyId) => {
+  const enableLayerGroup = async (layerId: LayerId, layerConf?: LayerConf) => {
     if (layerGroups[layerId]) {
       setGroupVisibility(layerId, true)
 
@@ -950,12 +954,27 @@ export const MapProvider = ({ children }: Props) => {
     setGroupVisibility(layerId, false)
   }
 
-  const toggleLayerGroup = async (layerId: LayerId, layerConf?: LayerConfAnyId) => {
+  const toggleLayerGroup = async (layerId: LayerId, layerConf?: LayerConf) => {
     if (activeLayerGroupIds.includes(layerId)) {
       disableLayerGroup(layerId)
     } else {
       enableLayerGroup(layerId, layerConf)
     }
+  }
+
+  // these are used used for layers with dynamic ids
+  const toggleAnyLayerGroup = async (layerIdString: string, layerConf?: LayerConfAnyId) => {
+    // @ts-ignore
+    toggleLayerGroup(layerIdString as LayerId, layerConf)
+  }
+
+  const enableAnyLayerGroup = async (layerIdString: string, layerConf?: LayerConfAnyId) => {
+    // @ts-ignore
+    enableLayerGroup(layerIdString as LayerId, layerConf)
+  }
+
+  const disableAnyLayerGroup = async (layerIdString: string) => {
+    disableLayerGroup(layerIdString as LayerId)
   }
 
   const setLayoutProperty = async (layer: string, name: string, value: any): Promise<any> => {
@@ -1073,6 +1092,9 @@ export const MapProvider = ({ children }: Props) => {
     toggleLayerGroup,
     enableLayerGroup,
     disableLayerGroup,
+    toggleAnyLayerGroup,
+    enableAnyLayerGroup,
+    disableAnyLayerGroup,
     getSourceJson,
     selectedFeatures,
     setLayoutProperty,
