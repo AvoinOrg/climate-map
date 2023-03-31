@@ -3,7 +3,7 @@ import { map, uniq } from 'lodash-es'
 import { getColorExpressionArrForValues } from '#/common/utils/map'
 import { ExtendedMbStyle, LayerConfAnyId } from '#/common/types/map'
 
-export const getPlanLayerId = (planId: 'string') => {
+export const getPlanLayerId = (planId: string) => {
   return `${planId}_zoning_plan`
 }
 
