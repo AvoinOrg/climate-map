@@ -62,8 +62,10 @@ interface IMapContext {
   mapZoomIn: () => void | null
   mapZoomOut: () => void | null
   toggleLayerGroup: (layerId: LayerId, layerConf?: LayerConf) => Promise<void> | null
+  addLayerGroup: (layerId: LayerId, layerConf?: LayerConf) => Promise<void> | null
   enableLayerGroup: (layerId: LayerId, layerConf?: LayerConf) => Promise<void> | null
   disableLayerGroup: (layerId: LayerId) => Promise<void> | null
+  addAnyLayerGroup: (layerId: string, layerConf?: LayerConfAnyId) => Promise<void> | null
   toggleAnyLayerGroup: (layerId: string, layerConf?: LayerConfAnyId) => Promise<void> | null
   enableAnyLayerGroup: (layerId: string, layerConf?: LayerConfAnyId) => Promise<void> | null
   disableAnyLayerGroup: (layerId: string) => Promise<void> | null
@@ -913,6 +915,31 @@ export const MapProvider = ({ children }: Props) => {
     return promise
   }
 
+  const addLayerGroup = async (layerId: LayerId, layerConf?: LayerConf) => {
+    if (!isLoaded) {
+      return addToFunctionQueue('addLayerGroup', [layerId, layerConf], QueuePriority.HIGH)
+    }
+
+    // Initialize layer if it doesn't exist
+    let conf = layerConf
+
+    if (!conf) {
+      conf = layerConfs.find((el: LayerConfAnyId) => {
+        return el.id === layerId
+      })
+    }
+
+    if (conf) {
+      if (conf.useMb) {
+        await addMbStyleToMb(layerId, conf)
+      } else {
+        await addMbStyle(layerId, conf)
+      }
+    } else {
+      console.error('No layer config found for id: ' + layerId)
+    }
+  }
+
   const enableLayerGroup = async (layerId: LayerId, layerConf?: LayerConf) => {
     if (layerGroups[layerId]) {
       setGroupVisibility(layerId, true)
@@ -920,28 +947,7 @@ export const MapProvider = ({ children }: Props) => {
       const activeLayerGroupIdsCopy = [...activeLayerGroupIds, layerId]
       setActiveLayerGroupIds(activeLayerGroupIdsCopy)
     } else {
-      if (!isLoaded) {
-        return addToFunctionQueue('enableLayerGroup', [layerId, layerConf], QueuePriority.HIGH)
-      }
-
-      // Initialize layer if it doesn't exist
-      let conf = layerConf
-
-      if (!conf) {
-        conf = layerConfs.find((el: LayerConfAnyId) => {
-          return el.id === layerId
-        })
-      }
-
-      if (conf) {
-        if (conf.useMb) {
-          await addMbStyleToMb(layerId, conf)
-        } else {
-          await addMbStyle(layerId, conf)
-        }
-      } else {
-        console.error('No layer config found for id: ' + layerId)
-      }
+      addLayerGroup(layerId, layerConf)
     }
   }
 
@@ -962,6 +968,11 @@ export const MapProvider = ({ children }: Props) => {
   }
 
   // these are used used for layers with dynamic ids
+  const addAnyLayerGroup = async (layerIdString: string, layerConf?: LayerConfAnyId) => {
+    // @ts-ignore
+    addLayerGroup(layerIdString as LayerId, layerConf)
+  }
+
   const toggleAnyLayerGroup = async (layerIdString: string, layerConf?: LayerConfAnyId) => {
     // @ts-ignore
     toggleLayerGroup(layerIdString as LayerId, layerConf)
@@ -1089,9 +1100,11 @@ export const MapProvider = ({ children }: Props) => {
     mapZoomIn,
     mapZoomOut,
     toggleLayerGroup,
+    addLayerGroup,
     enableLayerGroup,
     disableLayerGroup,
     toggleAnyLayerGroup,
+    addAnyLayerGroup,
     enableAnyLayerGroup,
     disableAnyLayerGroup,
     getSourceJson,
