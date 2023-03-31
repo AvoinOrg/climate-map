@@ -9,7 +9,6 @@ import { getRoute } from '#/common/utils/routing'
 
 import { FileType, PlanConf } from 'applets/hiilikartta/common/types'
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import useStore from '#/common/hooks/useStore'
 
 import { MapContext } from '#/components/Map'
 import { generateUUID } from '#/common/utils/general'
