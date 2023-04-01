@@ -23,8 +23,8 @@ export const generateUUID = () => {
 
 export const generateShortId = () => {
   let id = generateUUID()
+  id = id.replaceAll('-', '')
   id = id.substring(0, 20)
-  id = id.replace('-', '')
 
   return id
 }
