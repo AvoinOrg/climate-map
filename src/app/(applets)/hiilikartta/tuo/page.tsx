@@ -11,7 +11,7 @@ import { FileType, PlanConf } from 'applets/hiilikartta/common/types'
 import { routeTree } from 'applets/hiilikartta/common/routes'
 
 import { MapContext } from '#/components/Map'
-import { generateUUID } from '#/common/utils/general'
+import { generateShortId } from '#/common/utils/general'
 import { getGeoJsonArea } from '#/common/utils/gis'
 import NavigationBack from '../components/NavigationBack'
 import GpkgInit from '../components/GpkgInit'
@@ -27,7 +27,7 @@ const Page = () => {
   const router = useRouter()
 
   const initializePlan = (json: any, colName: string) => {
-    const id = generateUUID()
+    const id = generateShortId()
     const style = createLayerConf(json, id, colName)
     addAnyLayerGroup(id, style)
 
