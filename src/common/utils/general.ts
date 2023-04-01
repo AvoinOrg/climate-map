@@ -5,8 +5,9 @@ export const assert = (expr: any, message: any) => {
 }
 
 export const generateUUID = () => {
-  let d = new Date().getTime(),
-    d2 = (typeof performance !== 'undefined' && performance.now && performance.now() * 1000) || 0
+  let d = new Date().getTime()
+  let d2 = (typeof performance !== 'undefined' && performance.now && performance.now() * 1000) || 0
+
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     let r = Math.random() * 16
     if (d > 0) {
@@ -18,4 +19,12 @@ export const generateUUID = () => {
     }
     return (c == 'x' ? r : (r & 0x7) | 0x8).toString(16)
   })
+}
+
+export const generateShortId = () => {
+  let id = generateUUID()
+  id = id.substring(0, 20)
+  id = id.replace('-', '')
+
+  return id
 }
