@@ -49,6 +49,15 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     }
   }
 
+  const handleDeleteClick = async () => {
+    if (planConf) {
+      router.push(getRoute(routeTree.base, routeTree))
+      useAppStore.setState((state) => ({
+        planConfs: [...state.planConfs.filter((el) => el.id !== planConf.id)],
+      }))
+    }
+  }
+
   useEffect(() => {
     if (planConfs != null) {
       const planConf = planConfs.find((planConf) => planConf.id === params.planIdSlug)
@@ -87,7 +96,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
           <SmallMenuButton sx={{ margin: '50px 0 0 0' }} variant="outlined">
             Jakoasetukset <PeopleIcon />
           </SmallMenuButton>
-          <SmallMenuButton variant="outlined">
+          <SmallMenuButton variant="outlined" onClick={handleDeleteClick}>
             Poista kaava <DeleteForeverIcon />
           </SmallMenuButton>
         </>
