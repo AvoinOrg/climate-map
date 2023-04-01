@@ -26,10 +26,10 @@ const Page = () => {
   const [arrayBuffer, setArrayBuffer] = useState<ArrayBuffer>()
   const router = useRouter()
 
-  const initializePlan = (json: any, colName: string) => {
+  const initializePlan = async (json: any, colName: string) => {
     const id = generateShortId()
-    const style = createLayerConf(json, id, colName)
-    addAnyLayerGroup(id, style)
+    const layerConf = createLayerConf(json, id, colName)
+    await addAnyLayerGroup(layerConf.id, layerConf)
 
     const areaHa = getGeoJsonArea(json) / 10000
     const planConf: PlanConf = {
@@ -74,8 +74,8 @@ const Page = () => {
     setUploadFile(f)
   }
 
-  const handleFinish = (json: any, colName: string) => {
-    const id = initializePlan(json, colName)
+  const handleFinish = async (json: any, colName: string) => {
+    const id = await initializePlan(json, colName)
     const route = getRoute(routeTree.base.plan, routeTree, [id])
     router.push(route)
   }
