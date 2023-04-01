@@ -11,7 +11,7 @@ export const createLayerConf = (json: any, planId: string, featureColorCol: stri
   const uniqueVals = uniq(map(json.features, 'properties.' + featureColorCol))
   const colorArr = getColorExpressionArrForValues(uniqueVals)
 
-  const sourceId = planId
+  const sourceId = getPlanLayerId(planId)
 
   const getStyle = async (): Promise<ExtendedMbStyle> => {
     return {
