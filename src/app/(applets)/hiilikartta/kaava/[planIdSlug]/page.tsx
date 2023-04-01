@@ -21,6 +21,7 @@ import { useAppStore } from 'applets/hiilikartta/state/appStore'
 import { PlanConf } from 'applets/hiilikartta/common/types'
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { MapContext } from '#/components/Map'
+import { getPlanLayerId } from 'applets/hiilikartta/common/utils'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const planConfs = useStore(useAppStore, (state) => state.planConfs)
@@ -33,7 +34,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const handleSubmit = async () => {
     if (planConf) {
       const formData = new FormData()
-      const json = getSourceJson(`${planConf.id}_zoning_plan`)
+      const json = getSourceJson(getPlanLayerId(planConf.id))
       console.log(json)
       formData.append('file', json)
 
