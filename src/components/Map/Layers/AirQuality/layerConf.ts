@@ -1,8 +1,6 @@
 "use client"
 
-import { Style as MbStyle } from 'mapbox-gl'
-
-import { LayerId, LayerConf } from '#/common/types/map'
+import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 
 const id: LayerId = 'no2'
 
@@ -11,7 +9,7 @@ const id: LayerId = 'no2'
 const no2Tileset = 0
 const timestampHour = Math.round(+new Date() / 1e6)
 
-const getStyle = async (): Promise<MbStyle> => {
+const getStyle = async (): Promise<ExtendedMbStyle> => {
   return {
     version: 8,
     name: id,
@@ -43,6 +41,6 @@ const getStyle = async (): Promise<MbStyle> => {
   }
 }
 
-const layerConf: LayerConf = { id: id, style: getStyle }
+const layerConf: LayerConf = { id: id, style: getStyle, useMb: true }
 
 export default layerConf

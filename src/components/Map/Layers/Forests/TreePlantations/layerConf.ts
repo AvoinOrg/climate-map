@@ -1,12 +1,10 @@
-import { Style as MbStyle } from 'mapbox-gl'
-
-import { LayerId, LayerConf } from '#/common/types/map'
+import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import { fillOpacity } from '#/common/utils/map'
 import Popup from './Popup'
 
 const id: LayerId = 'gfw_tree_plantations'
 
-const getStyle = async (): Promise<MbStyle> => {
+const getStyle = async (): Promise<ExtendedMbStyle> => {
   return {
     version: 8,
     name: id,
@@ -61,6 +59,6 @@ const getStyle = async (): Promise<MbStyle> => {
   }
 }
 
-const layerConf: LayerConf = { id: id, style: getStyle, popup: Popup }
+const layerConf: LayerConf = { id: id, style: getStyle, popup: Popup, useMb: true }
 
 export default layerConf

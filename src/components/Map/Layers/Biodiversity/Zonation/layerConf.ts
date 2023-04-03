@@ -1,6 +1,6 @@
-import { Style as MbStyle, AnyLayer, RasterSource } from 'mapbox-gl'
+import { RasterSource } from 'mapbox-gl'
 
-import { LayerId, LayerConf } from '#/common/types/map'
+import { LayerId, LayerConf, ExtendedMbStyle, ExtendedAnyLayer } from '#/common/types/map'
 
 const id: LayerId = 'zonation'
 
@@ -29,7 +29,7 @@ const getZonationSources = () => {
 }
 
 const getZonationLayers = () => {
-  const layers: AnyLayer[] = []
+  const layers: ExtendedAnyLayer[] = []
 
   zonationVersions.forEach((v) => {
     const id = `zonation-v${v}`
@@ -43,15 +43,14 @@ const getZonationLayers = () => {
       paint: {
         'raster-opacity': 0.6,
       },
-      BEFORE: 'FILL',
     })
   })
 
   return layers
 }
 
-const getStyle = async (): Promise<MbStyle> => {
-  const style: MbStyle = {
+const getStyle = async (): Promise<ExtendedMbStyle> => {
+  const style: ExtendedMbStyle = {
     version: 8,
     name: id,
     sources: getZonationSources(),
@@ -61,6 +60,6 @@ const getStyle = async (): Promise<MbStyle> => {
   return style
 }
 
-const layerConf: LayerConf = { id: id, style: getStyle }
+const layerConf: LayerConf = { id: id, style: getStyle, useMb: true }
 
 export default layerConf

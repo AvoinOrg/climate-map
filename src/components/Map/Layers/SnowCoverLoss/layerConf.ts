@@ -1,13 +1,11 @@
-import { Style as MbStyle } from 'mapbox-gl'
-
 import { fillOpacity } from '#/common/utils/map'
-import { LayerId, LayerConf } from '#/common/types/map'
+import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 
 const id: LayerId = 'snow_cover_loss'
 
 const snowCoverLossDays = ['-', ['get', 'avg_snow_cover_1980_1990'], ['get', 'avg_snow_cover_1996_2016']]
 
-const getStyle = async (): Promise<MbStyle> => {
+const getStyle = async (): Promise<ExtendedMbStyle> => {
   return {
     version: 8,
     name: 'snow_cover_loss',
@@ -70,6 +68,6 @@ const getStyle = async (): Promise<MbStyle> => {
   }
 }
 
-const layerConf: LayerConf = { id: id, style: getStyle }
+const layerConf: LayerConf = { id: id, style: getStyle, useMb: true }
 
 export default layerConf

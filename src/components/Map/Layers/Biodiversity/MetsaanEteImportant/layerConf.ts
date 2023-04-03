@@ -1,12 +1,12 @@
 import axios from 'axios'
 import { Style as MbStyle, Expression } from 'mapbox-gl'
 
-import { LayerId, LayerConf } from '#/common/types/map'
+import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import { fillOpacity } from '#/common/utils/map'
 
 const id: LayerId = 'metsaan_ete_important'
 
-const getStyle = async (): Promise<MbStyle> => {
+const getStyle = async (): Promise<ExtendedMbStyle> => {
   const { data } = await axios.get('ete_codes.json')
 
   const eteAllLabels = ['match', ['get', 'featurecode'], ...data, 'UNKNOWN habitat type'] as Expression
@@ -69,6 +69,6 @@ const getStyle = async (): Promise<MbStyle> => {
   return style
 }
 
-const layerConf: LayerConf = { id: id, style: getStyle }
+const layerConf: LayerConf = { id: id, style: getStyle, useMb: true }
 
 export default layerConf

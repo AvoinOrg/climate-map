@@ -1,6 +1,6 @@
-import { Style as MbStyle, Expression } from 'mapbox-gl'
+import { Expression } from 'mapbox-gl'
 
-import { LayerId, LayerConf } from '#/common/types/map'
+import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import { fillOpacity } from '#/common/utils/map'
 
 const id: LayerId = 'metsaan_ete_basic'
@@ -21,7 +21,7 @@ const eteBasicLabels: Expression = [
   '',
 ]
 
-const getStyle = async (): Promise<MbStyle> => {
+const getStyle = async (): Promise<ExtendedMbStyle> => {
   return {
     version: 8,
     name: id,
@@ -78,6 +78,6 @@ const getStyle = async (): Promise<MbStyle> => {
   }
 }
 
-const layerConf: LayerConf = { id: id, style: getStyle }
+const layerConf: LayerConf = { id: id, style: getStyle, useMb: true }
 
 export default layerConf

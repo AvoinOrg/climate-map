@@ -1,6 +1,4 @@
-import { Style as MbStyle, AnyLayer } from 'mapbox-gl'
-
-import { LayerId, LayerConf } from '#/common/types/map'
+import { LayerId, LayerConf, ExtendedMbStyle, ExtendedAnyLayer } from '#/common/types/map'
 
 const id: LayerId = 'natura2000'
 
@@ -14,7 +12,7 @@ const natura2000Mappings = {
 }
 
 const getNaturaLayers = () => {
-  const layers: AnyLayer[] = []
+  const layers: ExtendedAnyLayer[] = []
 
   Object.entries(natura2000Mappings).forEach(([baseName, x]) => {
     layers.push({
@@ -58,8 +56,8 @@ const getNaturaLayers = () => {
   return layers
 }
 
-const getStyle = async (): Promise<MbStyle> => {
-  const style: MbStyle = {
+const getStyle = async (): Promise<ExtendedMbStyle> => {
+  const style: ExtendedMbStyle = {
     version: 8,
     name: id,
     sources: {
@@ -78,6 +76,6 @@ const getStyle = async (): Promise<MbStyle> => {
   return style
 }
 
-const layerConf: LayerConf = { id: id, style: getStyle }
+const layerConf: LayerConf = { id: id, style: getStyle, useMb: true }
 
 export default layerConf

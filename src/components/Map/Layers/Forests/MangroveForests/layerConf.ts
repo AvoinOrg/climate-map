@@ -1,10 +1,8 @@
-import { Style as MbStyle } from 'mapbox-gl'
-
-import { LayerId, LayerConf } from '#/common/types/map'
+import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 
 const id: LayerId = 'mangrove_forests'
 
-const getStyle = async (): Promise<MbStyle> => {
+const getStyle = async (): Promise<ExtendedMbStyle> => {
   return {
     version: 8,
     name: id,
@@ -33,6 +31,6 @@ const getStyle = async (): Promise<MbStyle> => {
   }
 }
 
-const layerConf: LayerConf = { id: id, style: getStyle }
+const layerConf: LayerConf = { id: id, style: getStyle, useMb: true }
 
 export default layerConf
