@@ -88,7 +88,7 @@ interface IMapContext {
 
 export const MapContext = createContext({ isLoaded: false } as IMapContext)
 
-const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'hybrid'
+const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
 const DEFAULT_CENTER = [15, 62] as [number, number]
 const DEFAULT_ZOOM = 5
 
@@ -930,7 +930,7 @@ export const MapProvider = ({ children }: Props) => {
     }
 
     if (conf) {
-      if (conf.useMb) {
+      if (conf.useMb == null || conf.useMb) {
         await addMbStyleToMb(layerId, conf)
       } else {
         await addMbStyle(layerId, conf)
