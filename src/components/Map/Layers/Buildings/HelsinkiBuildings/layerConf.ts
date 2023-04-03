@@ -102,7 +102,7 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         },
       },
       {
-        id: sourceNames[1] + '-sym',
+        id: sourceNames[1] + '-symbol',
         source: sourceNames[1],
         'source-layer': 'default',
         type: 'symbol',

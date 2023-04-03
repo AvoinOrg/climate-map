@@ -41,7 +41,7 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         },
       },
       {
-        id: id + '-sym',
+        id: id + '-symbol',
         source: id,
         'source-layer': 'solarpower_potential',
         type: 'symbol',

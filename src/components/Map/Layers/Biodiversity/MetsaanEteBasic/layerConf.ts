@@ -58,7 +58,7 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         BEFORE: 'OUTLINE',
       },
       {
-        id: id + '-sym',
+        id: id + '-symbol',
         source: id,
         'source-layer': 'metsaan-ete',
         type: 'symbol',

@@ -41,7 +41,7 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         BEFORE: 'FILL',
       },
       {
-        id: id + '-sym',
+        id: id + '-symbol',
         source: id,
         'source-layer': 'snow_cover_loss_1980_through_2016',
         type: 'symbol',
