@@ -82,3 +82,9 @@ input::placeholder {
 .ol-popup-closer:after {
   content: '✖';
 }
+
+.mapboxgl-ctrl-logo {
+  width: 55px !important;
+  background-size: 55px;
+  margin: 0 0 -16px -8px !important;
+}
