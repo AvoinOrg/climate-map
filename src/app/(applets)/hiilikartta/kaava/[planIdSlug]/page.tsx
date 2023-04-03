@@ -13,6 +13,7 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 // import MuiLink from '@mui/material/Link'
 // import Link from 'next/link'
 import axios from 'axios'
+import JSZip from 'jszip'
 
 import { getRoute } from '#/common/utils/routing'
 import useStore from '#/common/hooks/useStore'
@@ -33,10 +34,16 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
 
   const handleSubmit = async () => {
     if (planConf) {
-      const formData = new FormData()
       const json = getSourceJson(getPlanLayerId(planConf.id))
-      console.log(json)
-      formData.append('file', json)
+
+      const zip = new JSZip()
+      zip.file('file', JSON.stringify(json))
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' })
+
+      const formData = new FormData()
+      formData.append('file', zipBlob, 'file.zip')
+      formData.append('zoning_col', planConf.fileSettings.zoningColumn)
 
       // const response = await useFileUploadMutation("http://localhost:8000/calculate", uploadFile)
 
