@@ -37,7 +37,7 @@ const Page = () => {
       name: fileName,
       id: id,
       areaHa: areaHa,
-      fileSettings: { fileType: 'geojson' },
+      fileSettings: { fileType: 'geojson', zoningColumn: colName },
     }
     useAppStore.setState((state) => ({
       planConfs: [...state.planConfs, planConf],
