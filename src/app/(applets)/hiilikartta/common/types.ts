@@ -5,8 +5,8 @@ export type PlanConf = {
   json: any
   fileSettings: {
     fileType: FileType
+    zoningColumn: string
     tableName?: string
-    zoningColumn?: string
     crs?: string
   }
 }
