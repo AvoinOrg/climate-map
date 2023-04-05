@@ -65,7 +65,7 @@ const Popup = ({ features }: Props) => {
         </TableRow>
         <TableRow>
           <TableCell>Approx. tree stem count</TableCell>
-          <TableCell>{_.round(p.stemcount * p.area)}</TableCell>
+          <TableCell>{pp(p.stemcount * p.area)}</TableCell>
         </TableRow>
         {/* <TableRow><TableCell>TODO(Probably/Not/Yes/No): Mature enough for regeneration felling?</TableCell><TableCell>{
               p.regeneration_felling_prediction
