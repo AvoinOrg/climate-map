@@ -3,13 +3,9 @@ import { Table, TableBody, TableCell, TableRow, Box } from '@mui/material'
 import { styled } from '@mui/material/styles'
 
 import { gtkTurveVaratLuonnontilaisuusluokka } from './constants'
-import { PopupFeature } from '#/common/types/map'
+import { PopupProps } from '#/common/types/map'
 
-interface Props {
-  features: PopupFeature[]
-}
-
-const Popup = ({ features }: Props) => {
+const Popup = ({ features }: PopupProps) => {
   const p = features[0].properties
 
   return (

@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableRow } from '@mui/material'
 import { uniqWith, isEqual } from 'lodash-es'
 
 import { buildingHelBhsysClass, energyConsumption } from './constants'
-import { PopupFeature } from '#/common/types/map'
+import { PopupProps } from '#/common/types/map'
 
 // Variables
 let heatings
@@ -37,11 +37,7 @@ const emissionFactor = (tecc: number, empdpn: number) => {
   return emisfactords
 }
 
-interface Props {
-  features: PopupFeature[]
-}
-
-const Popup = ({ features }: Props) => {
+const Popup = ({ features }: PopupProps) => {
   let buildingIds: any = []
   const tableValues: any = {}
 

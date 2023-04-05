@@ -12,13 +12,9 @@ import {
   metsaanFiSoilTypes,
 } from './constants'
 import { pp } from '#/common/utils/general'
-import { PopupFeature } from '#/common/types/map'
+import { PopupProps } from '#/common/types/map'
 
-interface Props {
-  features: PopupFeature[]
-}
-
-const Popup = ({ features }: Props) => {
+const Popup = ({ features }: PopupProps) => {
   const p = features[0].properties
 
   const soilTypeInfo = metsaanFiSoilTypes.filter((x: any) => x[0] === p.soiltype)[0]

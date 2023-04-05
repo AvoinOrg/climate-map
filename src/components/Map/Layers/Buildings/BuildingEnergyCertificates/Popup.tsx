@@ -2,13 +2,9 @@ import React from 'react'
 import { Table, TableBody, TableCell, TableRow } from '@mui/material'
 import { pp } from '#/common/utils/general'
 
-import { PopupFeature } from '#/common/types/map'
+import { PopupProps } from '#/common/types/map'
 
-interface Props {
-  features: PopupFeature[]
-}
-
-const Popup = ({ features }: Props) => {
+const Popup = ({ features }: PopupProps) => {
   const p = features[0].properties
   const energyUse = p.e_luku * p.lämmitetty_nettoala
   const energyPerVolume = p.i_raktilav ? `<br/>Energy use per m³: ${pp(energyUse / p.i_raktilav)} kWh per year` : ''

@@ -1,13 +1,10 @@
 import React from 'react'
 import { Table, TableBody, TableCell, TableRow, Box } from '@mui/material'
+
 import { pp } from '#/common/utils/general'
-import { PopupFeature } from '#/common/types/map'
+import { PopupProps } from '#/common/types/map'
 
-interface Props {
-  features: PopupFeature[]
-}
-
-const Popup = ({ features }: Props) => {
+const Popup = ({ features }: PopupProps) => {
   const p = features[0].properties || features[0]
   const { image, spec_simp, type_text, area_ha, peat_ratio, avg_peatdepth } = p
   const isPeat = peat_ratio >= 0.4
