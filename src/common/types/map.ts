@@ -1,4 +1,4 @@
-import { Style as MbStyle, AnyLayer } from 'mapbox-gl'
+import { Style as MbStyle, AnyLayer, MapboxGeoJSONFeature } from 'mapbox-gl'
 import { ReactNode } from 'react'
 import Feature from 'ol/Feature'
 // interface mapFunctions {}
@@ -76,4 +76,9 @@ export enum QueuePriority {
   LOW = 0,
   MEDIUM = 1,
   HIGH = 2,
+}
+
+export interface PopupOpts {
+  features: Feature[] | MapboxGeoJSONFeature[]
+  PopupElement: React.FC<{ features: any }>
 }
