@@ -1,13 +1,31 @@
-import React, { Ref } from 'react'
+import React, { Ref, useEffect } from 'react'
 import Box from '@mui/material/Box'
 import { styled } from '@mui/material/styles'
+import { MapboxGeoJSONFeature } from 'mapbox-gl'
+import Feature from 'ol/Feature'
+import { PopupOpts } from '#/common/types/map'
+import { MapContext } from './Map'
+import { UiStateContext } from '../State'
 
-interface Props {
-  onClose: () => void
-  children?: React.ReactNode
-}
+export const MapPopup = () => {
+  const [popupFeatures, setPopupFeatures] = React.useState<any[]>()
+  const { popupOpts } = React.useContext(MapContext)
 
-export const MapPopup = React.forwardRef((props: Props, ref: Ref<HTMLDivElement>) => {
+  useEffect(() => {
+    if (!popupOpts) {
+      setPopupFeatures(undefined)
+    } else {
+      // check if the object is an ol feature
+      //@ts-ignore
+      if (popupOpts.features[0].getProperties) {
+        //@ts-ignore
+        setPopupFeatures(popupOpts.features.map((f) => f.getProperties()))
+      } else {
+        setPopupFeatures(popupOpts.features)
+      }
+    }
+  }, [popupOpts])
+
   return (
     //   <Box
     //   ref={mapRef}
@@ -22,53 +40,41 @@ export const MapPopup = React.forwardRef((props: Props, ref: Ref<HTMLDivElement>
     //     '.ol-scale-line': { right: '8px', left: 'auto', bottom: '26px' },
     //   }}
     // ></Box>
-    <Box ref={ref}>
-      <PopupContainer>
-        <PopupCloser onClick={props.onClose} />
-        {props.children}
-      </PopupContainer>
-    </Box>
+    <>
+      {popupOpts && (
+        <Box>
+          <PopupContainer>
+            {popupFeatures && <popupOpts.PopupElement features={popupFeatures}></popupOpts.PopupElement>}
+          </PopupContainer>
+        </Box>
+      )}
+    </>
   )
-})
+}
 
 const PopupContainer = styled('div')(({ theme }) => ({
-  position: 'absolute',
-  backgroundColor: 'white',
-  filter: 'drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2))',
+  // position: 'absolute',
   padding: '15px',
-  borderRadius: '10px',
-  border: '1px solid #cccccc',
-  bottom: '12px',
-  left: '-50px',
-  minWidth: '280px',
+  // bottom: '12px',
+  // left: '-50px',
+  minWidth: '200px',
+  maxWidth: '480px',
+  // '&:after, &:before': {
+  //   top: '100%',
+  //   border: 'solid transparent',
+  //   content: "' '",
+  //   height: 0,
+  //   width: 0,
+  //   position: 'absolute',
+  //   pointerEvents: 'none',
+  // },
 
-  '&:after, &:before': {
-    top: '100%',
-    border: 'solid transparent',
-    content: "' '",
-    height: 0,
-    width: 0,
-    position: 'absolute',
-    pointerEvents: 'none',
-  },
+  // '&:after': {
+  //   borderTopColor: 'white',
+  //   borderWidth: '10px',
+  //   left: '48px',
+  //   marginLeft: '-10px',
+  // },
 
-  '&:after': {
-    borderTopColor: 'white',
-    borderWidth: '10px',
-    left: '48px',
-    marginLeft: '-10px',
-  },
-
-  '&:before': { borderTopColor: '#cccccc', borderWidth: '11px', left: '48px', marginLeft: '-11px' },
-}))
-
-const PopupCloser = styled('div')(({ theme }) => ({
-  textDecoration: 'none',
-  position: 'absolute',
-  top: '2px',
-  right: '8px',
-
-  '&:after': {
-    content: "'✖'",
-  },
+  // '&:before': { borderTopColor: '#cccccc', borderWidth: '11px', left: '48px', marginLeft: '-11px' },
 }))
