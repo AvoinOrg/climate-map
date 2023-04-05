@@ -1,5 +1,4 @@
 import React from 'react'
-import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow } from '@mui/material'
 
 import {
@@ -13,13 +12,14 @@ import {
   metsaanFiSoilTypes,
 } from './constants'
 import { pp } from '#/common/utils/general'
+import { PopupFeature } from '#/common/types/map'
 
 interface Props {
-  features: Feature[]
+  features: PopupFeature[]
 }
 
 const Popup = ({ features }: Props) => {
-  const p = features[0].getProperties()
+  const p = features[0].properties
 
   const soilTypeInfo = metsaanFiSoilTypes.filter((x: any) => x[0] === p.soiltype)[0]
   let soilEn = '',
@@ -33,7 +33,7 @@ const Popup = ({ features }: Props) => {
     p.ditch_completed_at || p.ditchingyear ? `Completed at: {p.ditch_completion_date || p.ditchingyear}` : ''
 
   return (
-    <Table sx={{ width: '500px' }} size={'small'}>
+    <Table size={'small'}>
       <TableBody>
         <TableRow>
           <TableCell>Main Tree species</TableCell>
