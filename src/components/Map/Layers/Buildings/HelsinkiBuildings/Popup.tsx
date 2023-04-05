@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableRow } from '@mui/material'
 import { uniqWith, isEqual } from 'lodash-es'
 
 import { buildingHelBhsysClass, energyConsumption } from './constants'
+import { PopupFeature } from '#/common/types/map'
 
 // Variables
 let heatings
@@ -37,7 +38,7 @@ const emissionFactor = (tecc: number, empdpn: number) => {
 }
 
 interface Props {
-  features: Feature[]
+  features: PopupFeature[]
 }
 
 const Popup = ({ features }: Props) => {
@@ -45,7 +46,7 @@ const Popup = ({ features }: Props) => {
   const tableValues: any = {}
 
   features.forEach((feature) => {
-    const p = feature.getProperties()
+    const p = feature.properties
 
     buildingIds.push({ vtj_prt: p.vtj_prt, ratu: p.ratu })
 
@@ -279,7 +280,7 @@ const Popup = ({ features }: Props) => {
   }, '')
 
   return (
-    <Table sx={{ width: '500px' }} size={'small'}>
+    <Table size={'small'}>
       <TableBody>
         <TableRow>
           <TableCell>Building ID:</TableCell>
