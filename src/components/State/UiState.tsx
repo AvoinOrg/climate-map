@@ -31,6 +31,8 @@ interface IUIContext {
   setIsSidebarOpen: (value: boolean) => void
   isSidebarDisabled: boolean
   setIsSidebarDisabled: (value: boolean) => void
+  isMapPopupOpen: boolean
+  setIsMapPopupOpen: (value: boolean) => void
   profileState: ProfileState
   setProfileState: (value: ProfileState) => void
   modalState: ModalState
@@ -45,6 +47,7 @@ export const UiStateContext = createContext({} as IUIContext)
 
 export const UiStateProvider = (props: any) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isMapPopupOpen, setIsMapPopupOpen] = useState(true)
   const [isSidebarDisabled, setIsSidebarDisabled] = useState(false)
   const [profileState, setProfileState] = useState<ProfileState>('none')
   const [modalState, setModalState] = useState<ModalState>('none')
@@ -100,6 +103,8 @@ export const UiStateProvider = (props: any) => {
   const values: IUIContext = {
     isSidebarOpen,
     setIsSidebarOpen,
+    isMapPopupOpen,
+    setIsMapPopupOpen,
     isSidebarDisabled,
     setIsSidebarDisabled,
     profileState,
