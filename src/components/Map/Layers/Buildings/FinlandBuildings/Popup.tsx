@@ -1,8 +1,8 @@
 import React from 'react'
-import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow } from '@mui/material'
 
 import { pp } from '#/common/utils/general'
+import { PopupFeature } from '#/common/types/map'
 
 interface IBuildingSchemaVRK {
   building_id: string
@@ -37,7 +37,7 @@ interface IBuildingSchema {
 }
 
 interface Props {
-  features: Feature[]
+  features: PopupFeature[]
 }
 
 const Popup = ({ features }: Props) => {
@@ -45,7 +45,7 @@ const Popup = ({ features }: Props) => {
 
   let vrk = <></>
   let nls = <></>
-  const props = features[0].getProperties() as IBuildingSchema
+  const props = features[0].properties as IBuildingSchema
 
   if (props.building_id) {
     p = props as unknown as IBuildingSchemaVRK
@@ -106,7 +106,7 @@ const Popup = ({ features }: Props) => {
   }
 
   return (
-    <Table sx={{ width: '500px' }} size={'small'}>
+    <Table size={'small'}>
       <TableBody>
         {vrk}
         {nls}
