@@ -26,7 +26,7 @@ const Popup = ({ features }: Props) => {
         </TableRow>
         <TableRow>
           <TableCell>Total energy consumption</TableCell>
-          <TableCell>{_.round(energyUse)} years</TableCell>
+          <TableCell>{pp(energyUse)} years</TableCell>
         </TableRow>
         <TableRow>
           <TableCell>Energy use per m²</TableCell>
