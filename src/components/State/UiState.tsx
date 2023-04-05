@@ -47,7 +47,7 @@ export const UiStateContext = createContext({} as IUIContext)
 
 export const UiStateProvider = (props: any) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const [isMapPopupOpen, setIsMapPopupOpen] = useState(true)
+  const [isMapPopupOpen, setIsMapPopupOpen] = useState(false)
   const [isSidebarDisabled, setIsSidebarDisabled] = useState(false)
   const [profileState, setProfileState] = useState<ProfileState>('none')
   const [modalState, setModalState] = useState<ModalState>('none')
