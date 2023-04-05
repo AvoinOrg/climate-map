@@ -1,22 +1,22 @@
 import React from 'react'
-import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow } from '@mui/material'
 import { pp } from '#/common/utils/general'
 
+import { PopupFeature } from '#/common/types/map'
+
 interface Props {
-  features: Feature[]
+  features: PopupFeature[]
 }
 
 const Popup = ({ features }: Props) => {
-  const p = features[0].getProperties()
-
+  const p = features[0].properties
   const energyUse = p.e_luku * p.lämmitetty_nettoala
   const energyPerVolume = p.i_raktilav ? `<br/>Energy use per m³: ${pp(energyUse / p.i_raktilav)} kWh per year` : ''
 
   const url = `https://www.energiatodistusrekisteri.fi/public_html?energiatodistus-id=${p.todistustunnus}&command=access&t=energiatodistus&p=energiatodistukset`
 
   return (
-    <Table sx={{ width: '500px' }} size={'small'}>
+    <Table size={'small'}>
       <TableBody>
         <TableRow>
           <TableCell>Certificate ID</TableCell>
