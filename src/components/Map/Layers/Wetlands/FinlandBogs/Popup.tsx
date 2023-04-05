@@ -1,20 +1,20 @@
 import React from 'react'
-import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow, Box } from '@mui/material'
 import { styled } from '@mui/material/styles'
 
 import { gtkTurveVaratLuonnontilaisuusluokka } from './constants'
+import { PopupFeature } from '#/common/types/map'
 
 interface Props {
-  features: Feature[]
+  features: PopupFeature[]
 }
 
 const Popup = ({ features }: Props) => {
-  const p = features[0].getProperties()
+  const p = features[0].properties
 
   return (
     <>
-      <Table sx={{ width: '500px' }} size={'small'}>
+      <Table size={'small'}>
         <TableBody>
           <TableRow>
             <TableCell>Name</TableCell>
