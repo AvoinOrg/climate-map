@@ -54,7 +54,7 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         },
       },
       {
-        id: sourceNames[0] + '-co2',
+        id: sourceNames[0] + '-symbol',
         source: sourceNames[0],
         'source-layer': 'Rakennukset_alue',
         type: 'symbol',
