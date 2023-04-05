@@ -12,7 +12,7 @@ import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 
 import { pickBy, uniq, map, cloneDeep } from 'lodash-es'
 
-import React, { createContext, useState, useRef, useEffect, useCallback } from 'react'
+import React, { createContext, useState, useRef, useEffect, useCallback, useContext } from 'react'
 import Box from '@mui/material/Box'
 import { Map, View, MapBrowserEvent } from 'ol'
 import * as proj from 'ol/proj'
@@ -28,6 +28,7 @@ import { LngLat, MapLayerMouseEvent, PointLike, Style as MbStyle, MapboxGeoJSONF
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
+import { UiStateContext } from '../State'
 
 import {
   LayerId,
@@ -42,6 +43,7 @@ import {
   QueuePriority,
   ExtendedMbStyle,
   LayerConf,
+  PopupOpts,
 } from '#/common/types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
@@ -84,6 +86,7 @@ interface IMapContext {
   // isDrawPolygon: () => void
   setIsDrawPolygon: (enabled: boolean) => void
   // addMbStyle?: (style: any) => void
+  popupOpts: PopupOpts | null
 }
 
 export const MapContext = createContext({ isLoaded: false } as IMapContext)
@@ -93,6 +96,8 @@ const DEFAULT_CENTER = [15, 62] as [number, number]
 const DEFAULT_ZOOM = 5
 
 export const MapProvider = ({ children }: Props) => {
+  const { setIsMapPopupOpen } = useContext(UiStateContext)
+
   const mapDivRef = useRef<HTMLDivElement>()
   const mapRef = useRef<Map | null>(null)
   const mbMapRef = useRef<mapboxgl.Map | null>(null)
@@ -110,10 +115,9 @@ export const MapProvider = ({ children }: Props) => {
 
   const popupRef = useRef<HTMLDivElement>(null)
   const [popups, setPopups] = useState<any>({})
-  const [popupOverlay, setPopupOverlay] = useState<any>(null)
   const [popupOnClose, setPopupOnClose] = useState<any>(null)
   const [popupKey, setPopupKey] = useState<any>(null)
-  const [popupElement, setPopupElement] = useState<React.ReactNode | null>(null)
+  const [popupOpts, setPopupOpts] = useState<PopupOpts>(null)
 
   const [selectedFeatures, setSelectedFeatures] = useState<MapboxGeoJSONFeature[]>([])
   const [newlySelectedFeatures, setNewlySelectedFeatures] = useState<MapboxGeoJSONFeature[]>([])
@@ -316,7 +320,6 @@ export const MapProvider = ({ children }: Props) => {
       }
 
       setPopupOnClose(() => onclick)
-      setPopupOverlay(overlay)
 
       newMap.addOverlay(overlay)
     })
@@ -388,69 +391,75 @@ export const MapProvider = ({ children }: Props) => {
 
   useEffect(() => {
     if (isLoaded) {
-      // remove the old callback and create a new one each time state is updated
-      unByKey(popupKey)
+      if (mapLibraryRef.current !== 'mapbox') {
+        // remove the old callback and create a new one each time state is updated
+        unByKey(popupKey)
 
-      const newPopupFunc = (evt: MapBrowserEvent<any>) => {
-        let point = mapRef.current?.getCoordinateFromPixel(evt.pixel)
+        const newPopupFunc = (evt: MapBrowserEvent<any>) => {
+          let point = mapRef.current?.getCoordinateFromPixel(evt.pixel)
 
-        if (point != undefined) {
-          point = proj.toLonLat(point)
-          mbMapRef.current?.fire('click', {
-            lngLat: point as mapboxgl.LngLatLike,
-          })
-        }
-
-        let featureObjs: any[] = []
-
-        mapRef.current?.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
-          featureObjs.push({ feature, layer })
-        })
-
-        if (featureObjs.length > 0) {
-          featureObjs = featureObjs.sort((a: any, b: any) => {
-            const aZ = a.layer.getZIndex()
-            const bZ = b.layer.getZIndex()
-
-            if (aZ > bZ) {
-              return -1
-            } else if (bZ > aZ) {
-              return 1
-            } else {
-              return 0
-            }
-          })
-
-          const featureGroup = featureObjs[0].layer.get('group')
-          const features = featureObjs.map((f) => {
-            if (f.layer.get('group') === featureGroup) {
-              return f.feature
-            }
-          })
-
-          const Popup = popups[featureGroup]
-          if (Popup != null) {
-            const popupElement = <Popup features={features}></Popup>
-
-            createPopup(evt.coordinate, popupElement)
+          if (point != undefined) {
+            point = proj.toLonLat(point)
+            mbMapRef.current?.fire('click', {
+              lngLat: point as mapboxgl.LngLatLike,
+            })
           }
 
-          // console.log(features)
-          // for (const i in activeLayers) {
-          //   console.log(layers[activeLayers[i]].getSource)
-          //   if (layers[activeLayers[i]].hasFeature(features[0])) {
-          //     console.log("asdfasdf")
-          //   }
-          // }
-          // map.forEachLayerAtPixel(evt.pixel, function (layer: any) {})
+          let featureObjs: any[] = []
+
+          mapRef.current?.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
+            featureObjs.push({ feature, layer })
+          })
+
+          if (featureObjs.length > 0) {
+            featureObjs = featureObjs.sort((a: any, b: any) => {
+              const aZ = a.layer.getZIndex()
+              const bZ = b.layer.getZIndex()
+
+              if (aZ > bZ) {
+                return -1
+              } else if (bZ > aZ) {
+                return 1
+              } else {
+                return 0
+              }
+            })
+
+            const featureGroup = featureObjs[0].layer.get('group')
+            const features = featureObjs.map((f) => {
+              if (f.layer.get('group') === featureGroup) {
+                return f.feature
+              }
+            })
+
+            const Popup = popups[featureGroup]
+            if (Popup != null) {
+              const popupOpts: PopupOpts = {
+                features,
+                PopupElement: Popup,
+              }
+
+              setPopupOpts(popupOpts)
+              setIsMapPopupOpen(true)
+            }
+
+            // console.log(features)
+            // for (const i in activeLayers) {
+            //   console.log(layers[activeLayers[i]].getSource)
+            //   if (layers[activeLayers[i]].hasFeature(features[0])) {
+            //     console.log("asdfasdf")
+            //   }
+            // }
+            // map.forEachLayerAtPixel(evt.pixel, function (layer: any) {})
+          }
         }
+        const newpopupKey = mapRef.current?.on('singleclick', newPopupFunc)
+
+        setPopupKey(newpopupKey)
+      } else {
       }
-
-      const newpopupKey = mapRef.current?.on('singleclick', newPopupFunc)
-
-      setPopupKey(newpopupKey)
     }
-  }, [activeLayerGroupIds, isLoaded, popups])
+  }, [activeLayerGroupIds, mapLibraryMode, isLoaded, popups])
 
   useEffect(() => {
     const filterSelectedFeatures = (
@@ -623,11 +632,6 @@ export const MapProvider = ({ children }: Props) => {
     }
   }, [isLoaded, selectedFeatures, activeLayerGroupIds, layerGroups])
 
-  const createPopup = (coords: any, popupElement: React.ReactNode) => {
-    popupOverlay.setPosition(coords)
-    setPopupElement(popupElement)
-  }
-
   // TODO ZONE
   const getGeocoder = () => {}
   const mapRelocate = () => {}
@@ -796,6 +800,20 @@ export const MapProvider = ({ children }: Props) => {
     })
   }
 
+  const addMbPopup = (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => {
+    mbMapRef.current?.on('click', layer, fn)
+    mbMapRef.current?.on('mouseenter', layer, () => {
+      if (mbMapRef.current) {
+        mbMapRef.current.getCanvas().style.cursor = 'pointer'
+      }
+    })
+    mbMapRef.current?.on('mouseleave', layer, (map) => {
+      if (mbMapRef.current) {
+        mbMapRef.current.getCanvas().style.cursor = ''
+      }
+    })
+  }
+
   const addMbStyleToMb = async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
     const style = await layerConf.style()
 
@@ -835,6 +853,22 @@ export const MapProvider = ({ children }: Props) => {
         layerGroup[layer.id] = layer
 
         mbMapRef.current?.addLayer(layer)
+
+        if (layerConf.popup) {
+          const Popup: any = layerConf.popup
+
+          const popupFn = (evt: MapLayerMouseEvent) => {
+            const features = evt.features || []
+            const popupOpts: PopupOpts = {
+              features,
+              PopupElement: Popup,
+            }
+
+            setPopupOpts(popupOpts)
+            setIsMapPopupOpen(true)
+          }
+          addMbPopup(layer.id, popupFn)
+        }
 
         if (isVisible) {
           mbMapRef.current?.setLayoutProperty(layer.id, 'visibility', 'visible')
@@ -1117,6 +1151,7 @@ export const MapProvider = ({ children }: Props) => {
     isDrawEnabled,
     setIsDrawEnabled,
     setIsDrawPolygon,
+    popupOpts,
     // enableGroup,
     // setFilter,
     // AddMapEventHandler,
@@ -1163,9 +1198,6 @@ export const MapProvider = ({ children }: Props) => {
           // },
         }}
       ></Box>
-      <MapPopup onClose={popupOnClose} ref={popupRef}>
-        {popupElement}
-      </MapPopup>
       <OverlayMessages message={overlayMessage}></OverlayMessages>
       {children}
     </MapContext.Provider>
