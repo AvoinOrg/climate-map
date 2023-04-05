@@ -1,9 +1,11 @@
 import { Style as MbStyle, AnyLayer, MapboxGeoJSONFeature } from 'mapbox-gl'
-import { ReactNode } from 'react'
 import Feature from 'ol/Feature'
+import { ReactNode } from 'react'
 // interface mapFunctions {}
 
-export type Popup = (props: { features: Feature[] }) => ReactNode
+export type PopupProps = { features: PopupFeature[] }
+
+export type Popup = (props: PopupProps) => ReactNode
 
 export type SourceType = 'geojson' | 'vector' | 'raster' | 'image' | 'video' | 'canvas'
 
