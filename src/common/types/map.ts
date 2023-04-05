@@ -82,3 +82,7 @@ export interface PopupOpts {
   features: Feature[] | MapboxGeoJSONFeature[]
   PopupElement: React.FC<{ features: any }>
 }
+
+export type PopupFeature = {
+  properties: any
+}
