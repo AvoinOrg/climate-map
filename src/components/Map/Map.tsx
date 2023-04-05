@@ -845,6 +845,21 @@ export const MapProvider = ({ children }: Props) => {
               )
             }
           }
+          if (layerConf.popup) {
+            const Popup: any = layerConf.popup
+
+            const popupFn = (evt: MapLayerMouseEvent) => {
+              const features = evt.features || []
+              const popupOpts: PopupOpts = {
+                features,
+                PopupElement: Popup,
+              }
+
+              setPopupOpts(popupOpts)
+              setIsMapPopupOpen(true)
+            }
+            addMbPopup(layer.id, popupFn)
+          }
         }
 
         assertValidHighlightingConf(layerOpt, style.layers)
@@ -853,22 +868,6 @@ export const MapProvider = ({ children }: Props) => {
         layerGroup[layer.id] = layer
 
         mbMapRef.current?.addLayer(layer)
-
-        if (layerConf.popup) {
-          const Popup: any = layerConf.popup
-
-          const popupFn = (evt: MapLayerMouseEvent) => {
-            const features = evt.features || []
-            const popupOpts: PopupOpts = {
-              features,
-              PopupElement: Popup,
-            }
-
-            setPopupOpts(popupOpts)
-            setIsMapPopupOpen(true)
-          }
-          addMbPopup(layer.id, popupFn)
-        }
 
         if (isVisible) {
           mbMapRef.current?.setLayoutProperty(layer.id, 'visibility', 'visible')
