@@ -38,8 +38,6 @@ export const MainMenu = () => {
 export const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const { isSidebarOpen, isMapPopupOpen, setIsMapPopupOpen }: any = useContext(UiStateContext)
 
-  console.log(isSidebarOpen)
-
   return (
     <Box
     // sx={{
