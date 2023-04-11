@@ -13,6 +13,7 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
     sources: {
       [sourceNames[0]]: {
         type: 'vector',
+        // tiles: ['https://gis.avoin.org/geoserver/gwc/service/tms/1.0.0/misc:helsinki_buildings@EPSG:900913@pbf/{z}/{x}/{-y}.pbf'],  
         tiles: ['https://server.avoin.org/data/map/helsinki-buildings/{z}/{x}/{y}.pbf'],
         maxzoom: 14,
         // Bounds source: https://koordinates.com/layer/4257-finland-11000000-administrative-regions/
@@ -122,3 +123,5 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
 const layerConf: LayerConf = { id: id, style: getStyle, popup: Popup, useMb: true }
 
 export default layerConf
+
+
