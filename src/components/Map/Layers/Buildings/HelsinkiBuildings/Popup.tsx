@@ -1,6 +1,8 @@
 import React from 'react'
-import Feature from 'ol/Feature'
+// import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow } from '@mui/material'
+import { pp } from '#/common/utils/general'
+import { PopupProps } from '#/common/types/map'
 import _ from 'lodash'
 
 import { buildingHelBhsysClass, buildingHePaybackClass, energyConsumption } from './constants'
@@ -44,16 +46,16 @@ const emissionFactor = (tecc: number, empdpn: number) => {
   return emisfactords
 }
 
-interface Props {
-  features: Feature[]
-}
+// interface Props {
+//   features: Feature[]
+// }
 
-const Popup = ({ features }: Props) => {
+const Popup = ({ features }: PopupProps) => {
   let buildingIds: any = []
   const tableValues: any = {}
 
   features.forEach((feature) => {
-    const p = feature.getProperties()
+    const p = features[0].properties
 
     buildingIds.push({ vtj_prt: p.vtj_prt, ratu: p.ratu })
 
