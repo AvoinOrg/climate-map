@@ -1,3 +1,5 @@
+import { Style as MbStyle } from 'mapbox-gl'
+
 import { fillOpacity, roundToSignificantDigitsExpr } from '#/common/utils/map'
 import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import Popup from './Popup'
@@ -13,13 +15,13 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
     sources: {
       [sourceNames[0]]: {
         type: 'vector',
-        // tiles: ['https://gis.avoin.org/geoserver/gwc/service/tms/1.0.0/misc:helsinki_buildings@EPSG:900913@pbf/{z}/{x}/{-y}.pbf'],  
-        tiles: ['https://server.avoin.org/data/map/helsinki-buildings/{z}/{x}/{y}.pbf'],
+        tiles: ['https://gis.avoin.org/geoserver/gwc/service/tms/1.0.0/misc:helsinki_buildings@EPSG:900913@pbf/{z}/{x}/{-y}.pbf'],  
+        // tiles: ['https://server.avoin.org/data/map/helsinki-buildings/{z}/{x}/{y}.pbf'],
         maxzoom: 14,
         // Bounds source: https://koordinates.com/layer/4257-finland-11000000-administrative-regions/
         // select ST_Extent(ST_Transform(ST_SetSRID(geom,3067), 4326))
         // from "finland-11000000-administrative-regions" where kunta_ni1='Helsinki';
-        bounds: [24, 59, 26, 61],
+        bounds: [24, 59, 26, 61], // Finland
         attribution: '<a href="https://www.hel.fi">© City of Helsinki</a>',
       },
       [sourceNames[1]]: {
@@ -37,7 +39,7 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
       {
         id: sourceNames[0] + '-fill',
         source: sourceNames[0],
-        'source-layer': 'Rakennukset_alue',
+        'source-layer': 'c_year',
         type: 'fill',
         paint: {
           'fill-color': 'cyan',
@@ -47,7 +49,7 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
       {
         id: sourceNames[0] + '-outline',
         source: sourceNames[0],
-        'source-layer': 'Rakennukset_alue',
+        'source-layer': 'c_year',
         type: 'line',
         minzoom: 11,
         paint: {
@@ -57,7 +59,7 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
       {
         id: sourceNames[0] + '-symbol',
         source: sourceNames[0],
-        'source-layer': 'Rakennukset_alue',
+        'source-layer': 'geometry',
         type: 'symbol',
         minzoom: 16,
         paint: {},
