@@ -13,14 +13,15 @@ export const buildingHelBhsysClass: any = {
 }
 
 export const buildingHePaybackClass: any = {
-  1: 'District heat consumption',
-  2: 'Electricity consumption',
+  1: 'District heat consump.',
+  2: 'Electricity consump.',
   3: 'Year Cost',
   4: 'Mwh/a',
   5: '€/a',
   6: '€',
   7: 'snt/kWh',
-  8: '€/MWh'
+  8: '€/MWh',
+  9: 'District heat consump.',
 }
 
 // Estimated annual energy consumption [kWh/m3,a]
