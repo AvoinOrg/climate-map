@@ -37,17 +37,12 @@ for (const layerId in layerOptions) {
         'source-layer': options.serverId,
         type: 'fill',
         paint: {          
-           'fill-color': [
+           'fill-color': [             
              'match',
-             ['get', 'c_poltaine'],                          
-             '1', '#f0afaa',
-             '2', '#f3bcb8',
-             '3', '#f0afaa',
-             '4', '#ffffff',
-             '9', '#68c296',
-             'cyan', // fallback value
+             // ['get', 'c_poltaine'], '1', '#f0afaa', '2', '#f3bcb8', '3', '#f0afaa', '4', '#ffffff', '9', '#68c296',                                         
+             ['get', 'c_kayttark'], '032', 'cyan', '039', 'cyan',                     
+             'gray', // fallback value
            ],
-        
           'fill-opacity': fillOpacity,
         },
         // paint: {
