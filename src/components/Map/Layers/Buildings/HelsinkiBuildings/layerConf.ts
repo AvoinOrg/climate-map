@@ -3,13 +3,6 @@
 import { fillOpacity, roundToSignificantDigitsExpr } from '#/common/utils/map'
 import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import { layerOptions } from './constants'
-import { LayerLevel } from './types'
-/* import {
-  fiForestsAreaCO2FillColor,
-  fiForestsCumulativeCO2eValueExpr,
-  fiForestsTextfieldExpression,
-} from '#/app/(applets)/fi-forest/utils'
-*/
 import _ from 'lodash'
 
 import Popup from './Popup'
