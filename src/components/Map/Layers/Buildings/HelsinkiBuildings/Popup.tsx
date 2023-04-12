@@ -207,8 +207,8 @@ const Popup = ({ features }: PopupProps) => {
       tableValues['From District Heat to Geothermal Heat (Cost Savings):'] = (<address></address>)
       tableValues['Before Investing: [Mwh/a, €/a]'] = (
       <address>         
-        <div>{buildingHePaybackClass[1]} : {districthconsmp.toFixed(3)}</div>
-        <div>{buildingHePaybackClass[2]} : {electenergyconspt.toFixed(3)}</div> 
+        <div>{buildingHePaybackClass[1]}: {districthconsmp.toFixed(3)}</div>
+        <div>{buildingHePaybackClass[2]}: {electenergyconspt.toFixed(3)}</div> 
         <div>{buildingHePaybackClass[3]}: {numberWithISpaces(yearcostbi.toFixed(0).toLocaleString())}</div> 
       </address>)
       tableValues['After Investing: [Mwh/a, €/a]'] = (
@@ -381,7 +381,7 @@ const Popup = ({ features }: PopupProps) => {
   }, '')
 
   return (
-    <Table sx={{ width: '520px' }} size={'small'}>
+    <Table sx={{ width: '500px' }} size={'small'}>
       <TableBody>
         <TableRow>
           <TableCell>Building ID:</TableCell>
