@@ -1,7 +1,5 @@
 import React from 'react'
-// import Feature from 'ol/Feature'
 import { Table, TableBody, TableCell, TableRow } from '@mui/material'
-import { pp } from '#/common/utils/general'
 import { PopupProps } from '#/common/types/map'
 import _ from 'lodash'
 
@@ -383,7 +381,7 @@ const Popup = ({ features }: PopupProps) => {
   }, '')
 
   return (
-    <Table sx={{ width: '500px' }} size={'small'}>
+    <Table sx={{ width: '520px' }} size={'small'}>
       <TableBody>
         <TableRow>
           <TableCell>Building ID:</TableCell>
