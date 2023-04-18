@@ -3,7 +3,7 @@
 import React, { useContext } from 'react'
 import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
-import { Box, ListItem } from '@mui/material'
+import { Box, IconButton, ListItem } from '@mui/material'
 
 import { Accordion } from '#/components/Sidebar/Accordion'
 // import { UserStateContext, UiStateContext } from '#/components/State'
@@ -11,6 +11,8 @@ import { UiStateContext } from '#/components/State'
 // import drawerItems, { privateDrawerItems } from './drawerItems'
 import drawerItems from '#/components/Sidebar/drawerItems'
 import { MapPopup } from '../Map/MapPopup'
+import HamburgerOpen from '../icons/HamburgerOpen'
+import HamburgerClosed from '../icons/HamburgerClosed'
 
 const DRAWER_WIDTH = 340
 const TRANSITION_DURATION = 350
