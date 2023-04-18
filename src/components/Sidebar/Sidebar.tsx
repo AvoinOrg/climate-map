@@ -8,6 +8,7 @@ import { Box } from '@mui/material'
 import { UiStateContext } from '#/components/State'
 // import drawerItems, { privateDrawerItems } from './drawerItems'
 import { MapPopup } from '../Map/MapPopup'
+import SidebarHeader from './SidebarHeader'
 
 const DRAWER_WIDTH = 340
 const TRANSITION_DURATION = 350
@@ -48,6 +49,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
         //   },
         // }}
       >
+        <SidebarHeader />
         {children}
       </Drawer>
       <Drawer
