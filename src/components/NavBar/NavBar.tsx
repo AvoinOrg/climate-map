@@ -14,39 +14,12 @@ import Image from 'next/image'
 // import ProfileMenu from './ProfileMenu'
 import ActionButtons from './ActionButtons'
 // import { UserStateContext, UiStateContext } from '#/components/State'
-import { UiStateContext } from '#/components/State'
-import HamburgerOpen from '../icons/HamburgerOpen'
-import HamburgerClosed from '../icons/HamburgerClosed'
 
 export const NavBar = () => {
-  const { isSidebarOpen, setIsSidebarOpen, isSidebarDisabled }: any = React.useContext(UiStateContext)
   // const { isLoggedIn }: any = React.useContext(UserStateContext)
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen)
-  }
-
   return (
-    <AppBar position="fixed" color="inherit" sx={(theme) => ({ zIndex: theme.zIndex.appBar })}>
-      <Toolbar sx={{ padding: "0 0 0 0 !important", height: 64 }}>
-        <IconButton
-          onClick={toggleSidebar}
-          edge="start"
-          sx={(theme) => ({
-            padding: '0',
-            width: '80px',
-            margin: '8px 0 0 0',
-            display: 'flex',
-          })}
-          disableRipple
-          color="inherit"
-          aria-label="open drawer"
-          disabled={isSidebarDisabled}
-          size="large"
-        >
-          {isSidebarOpen ? <HamburgerOpen /> : <HamburgerClosed sx={{ width: '80px' }} />}
-        </IconButton>
-
+    <AppBar position="fixed" color="inherit" sx={(theme) => ({ zIndex: theme.zIndex.appBar, top: 'auto', bottom: 0 })}>
+      <Toolbar sx={{ padding: '0 0 0 0 !important', height: 64 }}>
         <Link href="/" className="neutral-link">
           <ImageWrapper>
             <Image src={'/img/logo.svg'} alt="Logo" width={160} height={100} />
