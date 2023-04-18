@@ -117,7 +117,7 @@ export const MapProvider = ({ children }: Props) => {
   const [popups, setPopups] = useState<any>({})
   const [popupOnClose, setPopupOnClose] = useState<any>(null)
   const [popupKey, setPopupKey] = useState<any>(null)
-  const [popupOpts, setPopupOpts] = useState<PopupOpts>(null)
+  const [popupOpts, setPopupOpts] = useState<PopupOpts | null>(null)
 
   const [selectedFeatures, setSelectedFeatures] = useState<MapboxGeoJSONFeature[]>([])
   const [newlySelectedFeatures, setNewlySelectedFeatures] = useState<MapboxGeoJSONFeature[]>([])
