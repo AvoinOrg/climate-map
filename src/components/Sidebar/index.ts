@@ -1,3 +1,4 @@
-import { MainMenu, Sidebar } from './Sidebar'
+import { Sidebar } from './Sidebar'
+import { MainMenu } from './MainMenu'
 
 export { MainMenu, Sidebar }
