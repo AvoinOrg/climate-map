@@ -1184,7 +1184,7 @@ export const MapProvider = ({ children }: Props) => {
         id="map"
         className={'ol-map'}
         sx={{
-          position: 'absolute',
+          position: 'absolute !important',
           top: 0,
           bottom: 0,
           width: '100vw',
