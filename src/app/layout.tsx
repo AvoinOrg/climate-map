@@ -32,7 +32,7 @@ const RootLayout = ({
               {/* <UserStateProvider> */}
               <CssBaseline>
                 <GroupOrientation />
-                <NavBar />
+                {/* <NavBar /> */}
                 <Sidebar>{children}</Sidebar>
                 {/* <UserModal /> */}
               </CssBaseline>
