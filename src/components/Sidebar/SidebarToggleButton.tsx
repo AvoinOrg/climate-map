@@ -5,12 +5,13 @@ import HamburgerClosed from '../icons/HamburgerClosed'
 import HamburgerOpen from '../icons/HamburgerOpen'
 import { UiStateContext } from '../State'
 
-const SidebarHeader = () => {
+const SidebarToggleButton = () => {
   const { isSidebarOpen, setIsSidebarOpen, isSidebarDisabled }: any = useContext(UiStateContext)
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen)
   }
+
   return (
     <IconButton
       onClick={toggleSidebar}
@@ -32,4 +33,4 @@ const SidebarHeader = () => {
   )
 }
 
-export default SidebarHeader
+export default SidebarToggleButton

@@ -4,7 +4,6 @@ import React, { useContext } from 'react'
 import { Box } from '@mui/material'
 import { UiStateContext } from '#/components/State'
 import { MapPopup } from '../Map/MapPopup'
-import SidebarHeader from './SidebarHeader'
 import Drawer from './Drawer'
 import PopupDrawer from './PopupDrawer'
 
@@ -23,10 +22,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-        <Drawer open={isSidebarOpen}>
-          <SidebarHeader />
-          {children}
-        </Drawer>
+        <Drawer open={isSidebarOpen}>{children}</Drawer>
 
         <PopupDrawer open={isMapPopupOpen}>
           <Box
