@@ -55,7 +55,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
 // TODO: theme styling
 const IconGroup = styled('div')(({ theme }) => ({
   position: 'absolute',
-  top: theme.spacing(12),
+  top: theme.spacing(2),
   right: theme.spacing(2),
   zIndex: theme.zIndex.mobileStepper /* force this to be on top of the map */,
 }))
