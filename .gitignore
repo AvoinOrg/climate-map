@@ -135,4 +135,5 @@ yarn-error.log*
 
 out
 .next
+next-env.d.ts
 
