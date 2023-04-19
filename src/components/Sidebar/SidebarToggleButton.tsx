@@ -5,7 +5,11 @@ import HamburgerClosed from '../icons/HamburgerClosed'
 import HamburgerOpen from '../icons/HamburgerOpen'
 import { UiStateContext } from '../State'
 
-const SidebarToggleButton = () => {
+interface Props {
+  sx?: any
+}
+
+const SidebarToggleButton = ({ sx }: Props) => {
   const { isSidebarOpen, setIsSidebarOpen, isSidebarDisabled }: any = useContext(UiStateContext)
 
   const toggleSidebar = () => {
@@ -18,9 +22,10 @@ const SidebarToggleButton = () => {
       edge="start"
       sx={(theme) => ({
         padding: '0',
-        width: '80px',
-        margin: '24px 0 0 0',
+        width: '30px',
+        margin: '0 0 0 0',
         display: 'flex',
+        ...sx,
       })}
       disableRipple
       color="inherit"
