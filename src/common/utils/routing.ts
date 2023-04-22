@@ -89,3 +89,74 @@ export const getRouteParent = (route: any, routeTree: any, params: string[] = []
   const path = getRoute(route, routeTree, params, 1)
   return path
 }
+
+export const getRoutesForPath = (path: string, routeTree: any) => {
+  const subPaths = path
+    .toLowerCase()
+    .split('/')
+    .filter((p) => p.length > 0)
+  const routes = [{ name: routeTree._conf.name, path: '/' }]
+
+  let currentRouteTree = routeTree
+  let currentPath = ''
+
+  let i = 0
+
+  while (i < subPaths.length) {
+    let foundChild = false
+    const children = getRouteChildren(currentRouteTree)
+    const subPath = subPaths[i]
+
+    for (const child of children) {
+      if (child._conf && child._conf.path.includes(subPath)) {
+        if (child._conf.path === subPath) {
+          currentPath += `/${subPath}`
+
+          routes.push({ name: child._conf.name, path: currentPath })
+          currentRouteTree = child
+          foundChild = true
+          i++
+          break
+        } else {
+          const childPaths = child._conf.path.split('/').filter((p: string) => p.length > 0)
+          if (childPaths[0] !== subPath && childPaths[0].charAt(0) !== ':') {
+            break
+          }
+
+          if (childPaths.length > 0) {
+            const max = childPaths.length + i
+            while (i < max) {
+              currentPath += `/${subPaths[i]}`
+              i++
+            }
+
+            routes.push({ name: child._conf.name, path: currentPath })
+            currentRouteTree = child
+            foundChild = true
+            break
+          } else {
+            throw new Error('RouteTree contains invalid paths: ' + child + ' in ' + routeTree)
+          }
+        }
+      } else if (child._conf.path.charAt(0) === ':') {
+        currentPath += `/${subPath}`
+
+        routes.push({ name: child._conf.name, path: currentPath })
+        currentRouteTree = child
+        foundChild = true
+        i++
+        break
+      }
+    }
+
+    if (!foundChild) {
+      throw new Error('Route not found: ' + path + ' in ' + routeTree)
+    }
+  }
+  return routes
+
+  // return matchingRoutes[0].map((routeObject: any) => ({
+  //   name: routeObject._conf.name,
+  //   path: routeObject._conf.path,
+  // }))
+}
