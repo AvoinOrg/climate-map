@@ -76,7 +76,7 @@ const Page = () => {
 
   const handleFinish = async (json: any, colName: string) => {
     const id = await initializePlan(json, colName)
-    const route = getRoute(routeTree.base.plan, routeTree, [id])
+    const route = getRoute(routeTree.plan, routeTree, [id])
     router.push(route)
   }
 

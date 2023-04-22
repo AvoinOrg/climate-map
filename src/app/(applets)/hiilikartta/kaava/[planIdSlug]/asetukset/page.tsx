@@ -23,7 +23,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
       if (planConf) {
         setPlanConf(planConf)
       } else {
-        router.push(getRoute(routeTree.base, routeTree))
+        router.push(getRoute(routeTree, routeTree))
       }
       setIsLoaded(true)
     }

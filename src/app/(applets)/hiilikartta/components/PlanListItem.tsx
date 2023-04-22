@@ -31,7 +31,7 @@ const PlanListItem = ({ planConf }: Props) => {
     >
       <Box sx={(theme) => ({ minHeight: '25px' })}>
         <MuiLink
-          href={getRoute(routeTree.base.plan, routeTree, [planConf.id])}
+          href={getRoute(routeTree.plan, routeTree, [planConf.id])}
           sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
           component={Link}
         >

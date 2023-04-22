@@ -59,7 +59,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
 
   const handleDeleteClick = async () => {
     if (planConf) {
-      router.push(getRoute(routeTree.base, routeTree))
+      router.push(getRoute(routeTree, routeTree))
       useAppStore.setState((state) => ({
         planConfs: [...state.planConfs.filter((el) => el.id !== planConf.id)],
       }))
@@ -72,7 +72,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
       if (planConf) {
         setPlanConf(planConf)
       } else {
-        router.push(getRoute(routeTree.base, routeTree))
+        router.push(getRoute(routeTree, routeTree))
       }
       setIsLoaded(true)
     }
@@ -84,7 +84,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         <>
           <Box sx={(theme) => ({ typography: theme.typography.h6, margin: '80px 0 0 0' })}>{planConf.name}</Box>
           {/* <MuiLink
-            href={getRoute(routeTree.base.plan.settings, routeTree, [planConf.id])}
+            href={getRoute(routeTree.plan.settings, routeTree, [planConf.id])}
             sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
             component={Link}
           >
