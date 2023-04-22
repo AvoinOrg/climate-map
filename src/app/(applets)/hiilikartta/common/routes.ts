@@ -1,23 +1,23 @@
 export const routeTree = {
   base: {
     _conf: {
-      path: '/hiilikartta',
+      path: 'hiilikartta',
       name: 'Omat kaavat',
     },
     import: {
       _conf: {
-        path: '/tuo',
+        path: 'tuo',
         name: 'Tuo kaava',
       },
     },
     plan: {
       _conf: {
-        path: '/kaava/:id',
+        path: 'kaava/:id',
         name: 'Kaavan tiedot',
       },
       settings: {
         _conf: {
-          path: '/asetukset',
+          path: 'asetukset',
           name: 'Kaavan asetukset',
         },
       },
