@@ -97,10 +97,13 @@ export const getRoutesForPath = (path: string, routeTree: RouteTree) => {
     .toLowerCase()
     .split('/')
     .filter((p) => p.length > 0)
-  const routes = [{ name: routeTree._conf.name, path: '/' }]
+
+  const basePath = '/' + routeTree._conf.path.replace(/^\/|\/$/g, '')
+  const routes = [{ name: routeTree._conf.name, path: basePath }]
+
+  let currentPath = basePath.length > 1 ? basePath : ''
 
   let currentRouteTree = routeTree
-  let currentPath = ''
 
   let i = 0
 
