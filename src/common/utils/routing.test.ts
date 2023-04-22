@@ -24,10 +24,37 @@ describe('routing utils', () => {
     },
   }
 
+  const routeTreeWithBase: RouteTree = {
+    _conf: { path: 'home', name: 'Home' },
+    products: {
+      _conf: { path: 'products', name: 'Products' },
+      product: {
+        _conf: { path: ':id', name: 'Product' },
+        details: {
+          _conf: { path: 'details', name: 'Details' },
+        },
+      },
+    },
+    stuff: {
+      _conf: { path: 'stuff/:id', name: 'Stuff' },
+      settings: {
+        _conf: { path: 'settings', name: 'Settings' },
+      },
+    },
+    about: {
+      _conf: { path: 'about', name: 'About' },
+    },
+  }
+
   describe('getRoute', () => {
     it('returns the correct route with no parameters', () => {
       const route = getRoute(routeTree.about, routeTree)
       expect(route).toBe('/about')
+    })
+
+    it('returns the correct route with no parameters for a route tree with a base path', () => {
+      const route = getRoute(routeTreeWithBase.about, routeTreeWithBase)
+      expect(route).toBe('/home/about')
     })
 
     it('returns the correct route with parameters', () => {
@@ -38,6 +65,11 @@ describe('routing utils', () => {
     it('returns the correct route with parameters', () => {
       const route = getRoute(routeTree.stuff.settings, routeTree, ['123'])
       expect(route).toBe('/stuff/123/settings')
+    })
+
+    it('returns the correct route with parameters for a route tree with a base path', () => {
+      const route = getRoute(routeTreeWithBase.stuff.settings, routeTreeWithBase, ['123'])
+      expect(route).toBe('/home/stuff/123/settings')
     })
 
     it('throws an error if route not found', () => {
@@ -64,6 +96,11 @@ describe('routing utils', () => {
       const route = getRouteParent(routeTree.about, routeTree)
       expect(route).toBe('/')
     })
+
+    it('returns the root route as the parent of a top-level route for a route tree with a base path', () => {
+      const route = getRouteParent(routeTreeWithBase.about, routeTreeWithBase)
+      expect(route).toBe('/home')
+    })
   })
 
   describe('getRoutesForPath', () => {
@@ -82,6 +119,15 @@ describe('routing utils', () => {
         { name: 'Home', path: '/' },
         { name: 'Stuff', path: '/stuff/123' },
         { name: 'Settings', path: '/stuff/123/settings' },
+      ])
+    })
+
+    it('returns a correct set of routes for a path for a route tree with a base path', () => {
+      const routes = getRoutesForPath('/stuff/123/settings', routeTreeWithBase)
+      expect(routes).toEqual([
+        { name: 'Home', path: '/home' },
+        { name: 'Stuff', path: '/home/stuff/123' },
+        { name: 'Settings', path: '/home/stuff/123/settings' },
       ])
     })
   })
