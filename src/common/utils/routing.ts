@@ -47,6 +47,7 @@ export const getRoute = (route: any, routeTree: any, params: string[] = [], remo
   if (!routeObjects) {
     throw new Error('Route not found: ' + route + ' in ' + routeTree)
   }
+  // Remove the last steps from the route, e.g. removeSteps = 1 will take the parent route
   routeObjects = routeObjects.slice(0, routeObjects.length - removeSteps)
 
   if (routeObjects.length === 0) {
@@ -74,6 +75,11 @@ export const getRoute = (route: any, routeTree: any, params: string[] = [], remo
         }
       }
     }
+  }
+
+  // check if the path is empty, if so, return the root path
+  if (path === '') {
+    return '/'
   }
 
   return path
