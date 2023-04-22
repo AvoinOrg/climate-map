@@ -1,4 +1,6 @@
-const getRouteChildren = (routeTree: any) => {
+import { RouteTree, RouteObject } from '../types/routing'
+
+const getRouteChildren = (routeTree: RouteTree) => {
   const children = []
   for (const key in routeTree) {
     if (key.charAt(0) !== '_') {
@@ -9,7 +11,7 @@ const getRouteChildren = (routeTree: any) => {
   return children
 }
 
-const getRouteWithoutChildren = (routeTree: any) => {
+const getRouteWithoutChildren = (routeTree: RouteTree) => {
   const keys = []
   for (const key in routeTree) {
     if (key.charAt(0) === '_') {
@@ -25,7 +27,7 @@ const getRouteWithoutChildren = (routeTree: any) => {
   return route
 }
 
-const findRouteObjects = (route: any, routeTree: any, routeObjects: any[] = []): any => {
+const findRouteObjects = (route: RouteTree, routeTree: RouteTree, routeObjects: RouteObject[] = []): any => {
   const currentRoute = getRouteWithoutChildren(routeTree)
   const routeObjectsCopy = [...routeObjects]
   routeObjectsCopy.push(currentRoute)
@@ -41,7 +43,7 @@ const findRouteObjects = (route: any, routeTree: any, routeObjects: any[] = []):
   }
 }
 
-export const getRoute = (route: any, routeTree: any, params: string[] = [], removeSteps = 0) => {
+export const getRoute = (route: RouteTree, routeTree: RouteTree, params: string[] = [], removeSteps = 0) => {
   let routeObjects = findRouteObjects(route, routeTree)
 
   if (!routeObjects) {
@@ -85,12 +87,12 @@ export const getRoute = (route: any, routeTree: any, params: string[] = [], remo
   return path
 }
 
-export const getRouteParent = (route: any, routeTree: any, params: string[] = []) => {
+export const getRouteParent = (route: RouteTree, routeTree: RouteTree, params: string[] = []) => {
   const path = getRoute(route, routeTree, params, 1)
   return path
 }
 
-export const getRoutesForPath = (path: string, routeTree: any) => {
+export const getRoutesForPath = (path: string, routeTree: RouteTree) => {
   const subPaths = path
     .toLowerCase()
     .split('/')
