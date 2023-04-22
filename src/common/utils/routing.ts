@@ -43,7 +43,10 @@ const findRouteObjects = (route: any, routeTree: any, routeObjects: any[] = []):
 
 export const getRoute = (route: any, routeTree: any, params: string[] = [], removeSteps = 0) => {
   let routeObjects = findRouteObjects(route, routeTree)
-  // Remove the last steps from the route
+
+  if (!routeObjects) {
+    throw new Error('Route not found: ' + route + ' in ' + routeTree)
+  }
   routeObjects = routeObjects.slice(0, routeObjects.length - removeSteps)
 
   if (routeObjects.length === 0) {
