@@ -98,8 +98,13 @@ export const getRoutesForPath = (path: string, routeTree: RouteTree) => {
     .split('/')
     .filter((p) => p.length > 0)
 
+  // ensure that the basePath only has a starting slash
   const basePath = '/' + routeTree._conf.path.replace(/^\/|\/$/g, '')
   const routes = [{ name: routeTree._conf.name, path: basePath }]
+
+  if (basePath === path || path.length <= 1) {
+    return routes
+  }
 
   let currentPath = basePath.length > 1 ? basePath : ''
 
@@ -159,9 +164,4 @@ export const getRoutesForPath = (path: string, routeTree: RouteTree) => {
     }
   }
   return routes
-
-  // return matchingRoutes[0].map((routeObject: any) => ({
-  //   name: routeObject._conf.name,
-  //   path: routeObject._conf.path,
-  // }))
 }
