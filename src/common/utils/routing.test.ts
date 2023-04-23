@@ -130,7 +130,7 @@ describe('routing utils', () => {
     })
 
     it('returns a correct set of routes for a path for a route tree with a base path', () => {
-      const routes = getRoutesForPath('/stuff/123/settings', routeTreeWithBase)
+      const routes = getRoutesForPath('/home/stuff/123/settings', routeTreeWithBase)
       expect(routes).toEqual([
         { name: 'Home', path: '/home' },
         { name: 'Stuff', path: '/home/stuff/123' },
