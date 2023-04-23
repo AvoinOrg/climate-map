@@ -122,6 +122,13 @@ describe('routing utils', () => {
       ])
     })
 
+    it('returns a correct set of routes for a path', () => {
+      const routes = getRoutesForPath('/', routeTree)
+      expect(routes).toEqual([
+        { name: 'Home', path: '/' },
+      ])
+    })
+
     it('returns a correct set of routes for a path for a route tree with a base path', () => {
       const routes = getRoutesForPath('/stuff/123/settings', routeTreeWithBase)
       expect(routes).toEqual([
@@ -129,6 +136,11 @@ describe('routing utils', () => {
         { name: 'Stuff', path: '/home/stuff/123' },
         { name: 'Settings', path: '/home/stuff/123/settings' },
       ])
+    })
+
+    it('returns a correct set of routes for a path for a route tree with a base path', () => {
+      const routes = getRoutesForPath('/home', routeTreeWithBase)
+      expect(routes).toEqual([{ name: 'Home', path: '/home' }])
     })
   })
 })
