@@ -51,6 +51,7 @@ const palette = {
   tertiary: {
     main: '#D3DBD8',
     light: '#F5FBEF',
+    dark: '#A0A0A0',
   },
   background: {
     main: '#F4F4F4',
