@@ -10,6 +10,9 @@ const nextConfig = {
   experimental: {
     appDir: true,
   },
+  compiler: {
+    styledComponents: true
+  },
   modularizeImports: {
     '@mui/material': {
       transform: '@mui/material/{{member}}',
