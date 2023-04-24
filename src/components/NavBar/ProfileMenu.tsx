@@ -5,11 +5,11 @@ import IconButton from '@mui/material/IconButton'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 
 // import { UserStateContext, UiStateContext } from '#/components/State'
-import { UiStateContext } from '#/components/State'
+import { useUIStore } from '../State'
 
 const ProfileMenu = () => {
   // const { logout }: any = React.useContext(UserStateContext)
-  const { setModalState }: any = React.useContext(UiStateContext)
+  const setModalState = useUIStore((state) => state.setModalState)
 
   const [menuAnchorEl, setMenuAnchorEl] = React.useState(null)
 

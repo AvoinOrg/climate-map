@@ -28,7 +28,7 @@ import { LngLat, MapLayerMouseEvent, PointLike, Style as MbStyle, MapboxGeoJSONF
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
-import { UiStateContext } from '../State'
+import { useUIStore } from '../State'
 
 import {
   LayerId,
@@ -96,7 +96,7 @@ const DEFAULT_CENTER = [15, 62] as [number, number]
 const DEFAULT_ZOOM = 5
 
 export const MapProvider = ({ children }: Props) => {
-  const { setIsMapPopupOpen } = useContext(UiStateContext)
+  const setIsMapPopupOpen = useUIStore((state) => state.setIsMapPopupOpen)
 
   const mapDivRef = useRef<HTMLDivElement>()
   const mapRef = useRef<Map | null>(null)

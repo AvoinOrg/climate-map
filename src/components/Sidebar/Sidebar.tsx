@@ -2,13 +2,16 @@
 
 import React, { useContext } from 'react'
 import { Box } from '@mui/material'
-import { UiStateContext } from '#/components/State'
+
+import { useUIStore } from '#/components/State'
 import { MapPopup } from '../Map/MapPopup'
 import Drawer from './Drawer'
 import PopupDrawer from './PopupDrawer'
 
 export const Sidebar = ({ children }: { children: React.ReactNode }) => {
-  const { isSidebarOpen, isMapPopupOpen, setIsMapPopupOpen }: any = useContext(UiStateContext)
+  const isSidebarOpen = useUIStore((state) => state.isSidebarOpen)
+  const isMapPopupOpen = useUIStore((state) => state.isMapPopupOpen)
+  const setIsMapPopupOpen = useUIStore((state) => state.setIsMapPopupOpen)
 
   return (
     <Box
@@ -42,7 +45,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
               }}
               onClick={() => setIsMapPopupOpen(false)}
             />
-            <MapPopup />
+            {/* <MapPopup /> */}
           </Box>
         </PopupDrawer>
       </Box>

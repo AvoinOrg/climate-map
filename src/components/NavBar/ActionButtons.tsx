@@ -4,10 +4,11 @@ import React from 'react'
 import Button from '@mui/material/Button'
 import { Box } from '@mui/material'
 import { styled } from '@mui/material/styles'
-import { UiStateContext } from '../State'
+import { useUIStore } from '../State'
 
 const ActionButtons = () => {
-  const { modalState, setModalState }: any = React.useContext(UiStateContext)
+  const modalState = useUIStore((state) => state.modalState)
+  const setModalState = useUIStore((state) => state.setModalState)
 
   const handleLoginClick = () => {
     if (modalState === 'login') {
