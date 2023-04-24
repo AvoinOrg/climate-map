@@ -3,14 +3,16 @@ import { IconButton } from '@mui/material'
 
 import HamburgerClosed from '../icons/HamburgerClosed'
 import HamburgerOpen from '../icons/HamburgerOpen'
-import { UiStateContext } from '../State'
+import { useUIStore } from '../State'
 
 interface Props {
   sx?: any
 }
 
 const SidebarToggleButton = ({ sx }: Props) => {
-  const { isSidebarOpen, setIsSidebarOpen, isSidebarDisabled }: any = useContext(UiStateContext)
+  const isSidebarOpen = useUIStore((state) => state.isSidebarOpen)
+  const setIsSidebarOpen = useUIStore((state) => state.setIsSidebarOpen)
+  const isSidebarDisabled = useUIStore((state) => state.isSidebarDisabled)
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen)
