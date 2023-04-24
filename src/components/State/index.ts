@@ -1,6 +1,6 @@
-import { UiStateContext, UiStateProvider } from './UiState'
+import { useUIStore } from './UIStore'
 // import { UserStateContext, UserStateProvider } from './UserState'
 
 // export { UiStateContext, UiStateProvider, UserStateContext, UserStateProvider }
 
-export { UiStateContext, UiStateProvider }
+export { useUIStore }
