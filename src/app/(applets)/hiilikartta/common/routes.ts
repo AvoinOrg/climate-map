@@ -5,10 +5,16 @@ export const routeTree: RouteTree = {
     path: 'hiilikartta',
     name: 'Etusivu',
   },
-  import: {
+  create: {
     _conf: {
       path: 'luo',
       name: 'Luo kaava',
+    },
+    import: {
+      _conf: {
+        path: 'tuo',
+        name: 'Tuo uusi kaavatiedosto',
+      },
     },
   },
   plan: {
