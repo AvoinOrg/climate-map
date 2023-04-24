@@ -106,7 +106,7 @@ const GpkgInit = ({
 
   return (
     <>
-      {tables.length > 0 && (
+      {tables.length > 1 && (
         <DropDownSelect
           value={table}
           options={tables.map((table) => {
