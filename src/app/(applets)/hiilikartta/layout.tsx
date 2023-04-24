@@ -14,7 +14,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <SidebarHeader title={'Hiilikartta'}>
         <BreadcrumbNav routeTree={routeTree}></BreadcrumbNav>
       </SidebarHeader>
-      <Box sx={{ padding: '120px 30px 100px 30px', minWidth: '400px', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ padding: '35px 30px 100px 30px', minWidth: '400px', display: 'flex', flexDirection: 'column' }}>
         {children}
       </Box>
     </>
