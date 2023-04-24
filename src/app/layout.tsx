@@ -2,7 +2,7 @@
 
 import '#/common/style/index.css'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
 
@@ -21,22 +21,29 @@ const RootLayout = ({
 }: {
   children: React.ReactNode
 }) => {
+  const [isHydrated, setIsHydrated] = useState(false)
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+
   return (
     <html lang="en">
       <body>
         {/* <RootStyleRegistry> */}
-        <ThemeProvider theme={theme}>
-          <MapProvider>
-            {/* <UserStateProvider> */}
-            <CssBaseline>
-              <GroupOrientation />
-              {/* <NavBar /> */}
-              <Sidebar>{children}</Sidebar>
-              {/* <UserModal /> */}
-            </CssBaseline>
-            {/* </UserStateProvider> */}
-          </MapProvider>
-        </ThemeProvider>
+        {isHydrated && (
+          <ThemeProvider theme={theme}>
+            <MapProvider>
+              {/* <UserStateProvider> */}
+              <CssBaseline>
+                <GroupOrientation />
+                {/* <NavBar /> */}
+                <Sidebar>{children}</Sidebar>
+                {/* <UserModal /> */}
+              </CssBaseline>
+              {/* </UserStateProvider> */}
+            </MapProvider>
+          </ThemeProvider>
+        )}
         {/* </RootStyleRegistry> */}
       </body>
     </html>
