@@ -15,8 +15,8 @@ const SidebarHeader = ({ children, title }: Props) => {
         <Typography sx={{ margin: '20px 0 0 0', width: '100%', textAlign: 'end' }} variant="h2">
           {title}
         </Typography>
-        {children}
       </Box>
+      {children}
     </Box>
   )
 }
