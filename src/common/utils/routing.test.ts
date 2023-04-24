@@ -1,5 +1,6 @@
 import { RouteTree } from '../types/routing'
 import { getRoute, getRouteParent, getRoutesForPath } from './routing'
+import { cloneDeep } from 'lodash'
 
 describe('routing utils', () => {
   const routeTree: RouteTree = {
@@ -21,30 +22,14 @@ describe('routing utils', () => {
     },
     about: {
       _conf: { path: 'about', name: 'About' },
+      contact: {
+        _conf: { path: 'contact', name: 'Contact' },
+      },
     },
   }
 
-  const routeTreeWithBase: RouteTree = {
-    _conf: { path: 'home', name: 'Home' },
-    products: {
-      _conf: { path: 'products', name: 'Products' },
-      product: {
-        _conf: { path: ':id', name: 'Product' },
-        details: {
-          _conf: { path: 'details', name: 'Details' },
-        },
-      },
-    },
-    stuff: {
-      _conf: { path: 'stuff/:id', name: 'Stuff' },
-      settings: {
-        _conf: { path: 'settings', name: 'Settings' },
-      },
-    },
-    about: {
-      _conf: { path: 'about', name: 'About' },
-    },
-  }
+  const routeTreeWithBase: RouteTree = cloneDeep(routeTree)
+  routeTreeWithBase._conf.path = '/home'
 
   describe('getRoute', () => {
     it('returns the correct route with no parameters', () => {
@@ -124,9 +109,7 @@ describe('routing utils', () => {
 
     it('returns a correct set of routes for a path', () => {
       const routes = getRoutesForPath('/', routeTree)
-      expect(routes).toEqual([
-        { name: 'Home', path: '/' },
-      ])
+      expect(routes).toEqual([{ name: 'Home', path: '/' }])
     })
 
     it('returns a correct set of routes for a path for a route tree with a base path', () => {
@@ -135,6 +118,15 @@ describe('routing utils', () => {
         { name: 'Home', path: '/home' },
         { name: 'Stuff', path: '/home/stuff/123' },
         { name: 'Settings', path: '/home/stuff/123/settings' },
+      ])
+    })
+
+    it('returns a correct set of routes for a path for a route tree with a base path', () => {
+      const routes = getRoutesForPath('/home/about/contact', routeTreeWithBase)
+      expect(routes).toEqual([
+        { name: 'Home', path: '/home' },
+        { name: 'About', path: '/home/about' },
+        { name: 'Contact', path: '/home/about/contact' },
       ])
     })
 
