@@ -10,14 +10,17 @@ import Link from 'next/link'
 import { routeTree } from './common/routes'
 import MuiLink from '@mui/material/Link'
 import { SidebarHeader } from '#/components/Sidebar'
+import { BreadcrumbNav } from '../../../components/Sidebar'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
-      <SidebarHeader title={'Hiilikartta'}></SidebarHeader>
+      <SidebarHeader title={'Hiilikartta'}>
+        <BreadcrumbNav routeTree={routeTree}></BreadcrumbNav>
+      </SidebarHeader>
       <Box sx={{ padding: '120px 30px 100px 50px', minWidth: '400px', display: 'flex', flexDirection: 'column' }}>
         <MuiLink
-          href={getRoute(routeTree.base.import, routeTree)}
+          href={getRoute(routeTree.import, routeTree)}
           sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
           component={Link}
         >
