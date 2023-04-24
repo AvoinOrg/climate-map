@@ -1,7 +1,7 @@
 import { Sidebar } from './Sidebar'
 import { MainMenu } from './MainMenu'
 import SidebarToggleButton from './SidebarToggleButton'
-import SidebarNavigation from './SidebarNavigation'
 import SidebarHeader from './SidebarHeader'
+import BreadcrumbNav from './BreadcrumbNav'
 
-export { MainMenu, Sidebar, SidebarToggleButton, SidebarHeader, SidebarNavigation }
+export { MainMenu, Sidebar, SidebarToggleButton, SidebarHeader, BreadcrumbNav }
