@@ -1,11 +1,10 @@
-import React, { Ref, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import Box from '@mui/material/Box'
 import { styled } from '@mui/material/styles'
-import { MapboxGeoJSONFeature } from 'mapbox-gl'
-import Feature from 'ol/Feature'
-import { PopupOpts } from '#/common/types/map'
+// import { MapboxGeoJSONFeature } from 'mapbox-gl'
+// import Feature from 'ol/Feature'
+// import { PopupOpts } from '#/common/types/map'
 import { MapContext } from './Map'
-import { UiStateContext } from '../State'
 
 export const MapPopup = () => {
   const [popupFeatures, setPopupFeatures] = React.useState<any[]>()
