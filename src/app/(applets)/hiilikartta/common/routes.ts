@@ -3,12 +3,12 @@ import { RouteTree } from '#/common/types/routing'
 export const routeTree: RouteTree = {
   _conf: {
     path: 'hiilikartta',
-    name: 'Omat kaavat',
+    name: 'Etusivu',
   },
   import: {
     _conf: {
-      path: 'tuo',
-      name: 'Tuo kaava',
+      path: 'luo',
+      name: 'Luo kaava',
     },
   },
   plan: {

@@ -6,13 +6,14 @@ import { useRouter } from 'next/navigation'
 import { styled } from '@mui/material/styles'
 
 import { getRoute } from '#/common/utils/routing'
-
-import { FileType, PlanConf } from 'applets/hiilikartta/common/types'
-import { routeTree } from 'applets/hiilikartta/common/routes'
-
+import Link from 'next/link'
+import { Link as MuiLink } from '@mui/material'
 import { MapContext } from '#/components/Map'
+import { FileType, PlanConf } from 'applets/hiilikartta/common/types'
 import { generateShortId } from '#/common/utils/general'
 import { getGeoJsonArea } from '#/common/utils/gis'
+
+import { routeTree } from 'applets/hiilikartta/common/routes'
 import NavigationBack from '../components/NavigationBack'
 import GpkgInit from '../components/GpkgInit'
 import { useAppStore } from 'applets/hiilikartta/state/appStore'
@@ -82,16 +83,32 @@ const Page = () => {
 
   return (
     <>
+      <MuiLink
+        href={getRoute(routeTree.import, routeTree)}
+        sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
+        component={Link}
+      >
+        <BigMenuButton variant="contained" component="label">
+          Tuo kaava
+        </BigMenuButton>
+      </MuiLink>
       <NavigationBack route={'/hiilikartta'} label="Omat kaavat"></NavigationBack>
       <UploadButton variant="outlined" component="label">
         Valitse tiedosto
         <input hidden accept=".zip, .gpkg" multiple type="file" onChange={handleFileInput} />
       </UploadButton>
+      <BigMenuButton variant="contained">Uusi kaava</BigMenuButton>
       {fileType === 'gpkg' && arrayBuffer && <GpkgInit fileBuffer={arrayBuffer} onFinish={handleFinish}></GpkgInit>}
       {/* {res && <p>{JSON.stringify(res)}</p>} */}
     </>
   )
 }
+
+const BigMenuButton = styled(Button)<{ component?: string }>({
+  width: '100%',
+  height: '60px',
+  margin: '0 0 15px 0',
+})
 
 const UploadButton = styled(Button)<{ component?: string }>({
   width: '100%',
