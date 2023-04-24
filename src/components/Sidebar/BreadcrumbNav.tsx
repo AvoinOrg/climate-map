@@ -74,8 +74,13 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
                 return <RouteElementInert key={route.path} name={route.name}></RouteElementInert>
               }
               return (
-                <>
-                  <RouteElement key={route.path} route={route.path} name={route.name}></RouteElement>
+                <Box
+                  sx={(theme) => ({
+                    display: 'inline-block',
+                  })}
+                  key={route.path}
+                >
+                  <RouteElement route={route.path} name={route.name}></RouteElement>
                   <Typography
                     sx={(theme) => ({
                       display: 'inline-block',
@@ -84,7 +89,7 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
                   >
                     /
                   </Typography>
-                </>
+                </Box>
               )
             })}
           </Box>
