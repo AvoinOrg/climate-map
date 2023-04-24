@@ -45,7 +45,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
               }}
               onClick={() => setIsMapPopupOpen(false)}
             />
-            {/* <MapPopup /> */}
+            <MapPopup />
           </Box>
         </PopupDrawer>
       </Box>
