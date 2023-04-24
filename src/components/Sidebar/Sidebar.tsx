@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useContext } from 'react'
+import React from 'react'
 import { Box } from '@mui/material'
 
 import { useUIStore } from '#/components/State'
 import { MapPopup } from '../Map/MapPopup'
+import { MapContext } from '../Map'
 import Drawer from './Drawer'
 import PopupDrawer from './PopupDrawer'
 
@@ -12,6 +13,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const isSidebarOpen = useUIStore((state) => state.isSidebarOpen)
   const isMapPopupOpen = useUIStore((state) => state.isMapPopupOpen)
   const setIsMapPopupOpen = useUIStore((state) => state.setIsMapPopupOpen)
+  const { popupOpts } = React.useContext(MapContext)
 
   return (
     <Box
@@ -45,7 +47,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
               }}
               onClick={() => setIsMapPopupOpen(false)}
             />
-            <MapPopup />
+            <MapPopup popupOpts={popupOpts} />
           </Box>
         </PopupDrawer>
       </Box>

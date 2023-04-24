@@ -6,11 +6,14 @@ import { styled } from '@mui/material/styles'
 // import { MapboxGeoJSONFeature } from 'mapbox-gl'
 // import Feature from 'ol/Feature'
 // import { PopupOpts } from '#/common/types/map'
-import { MapContext } from './Map'
+import { PopupOpts } from '#/common/types/map'
 
-export const MapPopup = () => {
+interface Props {
+  popupOpts: PopupOpts | null
+}
+
+export const MapPopup = ({ popupOpts }: Props) => {
   const [popupFeatures, setPopupFeatures] = React.useState<any[]>()
-  const { popupOpts } = React.useContext(MapContext)
 
   useEffect(() => {
     if (!popupOpts) {
