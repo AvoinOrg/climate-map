@@ -4,6 +4,7 @@ import Layer from 'ol/layer/Layer'
 import WebGLVectorLayerRenderer from 'ol/renderer/webgl/VectorLayer'
 import { asArray } from 'ol/color'
 import { packColor } from 'ol/renderer/webgl/shaders'
+import { Geometry, Position } from 'geojson'
 
 export const fillOpacity = 0.65
 
@@ -157,4 +158,29 @@ export const getCombinedBounds = (features: MapboxGeoJSONFeature[]) => {
     ([a1, b1, c1, d1], [a2, b2, c2, d2]) => [Math.min(a1, a2), Math.min(b1, b2), Math.max(c1, c2), Math.max(d1, d2)],
     [999, 999, -999, -999] // fallback bounds
   )
+}
+
+export const getCoordinateFromGeometry = (geometry: Geometry): Position | null => {
+  switch (geometry.type) {
+    case 'Point':
+      return geometry.coordinates as Position
+    case 'LineString':
+    case 'Polygon':
+      return geometry.coordinates[0] as Position
+    case 'MultiPoint':
+    case 'MultiLineString':
+    case 'MultiPolygon':
+      return geometry.coordinates[0][0] as Position
+    case 'GeometryCollection':
+      if (geometry.geometries.length > 0) {
+        return getCoordinateFromGeometry(geometry.geometries[0])
+      }
+      return null
+    default:
+      return null
+  }
+}
+
+export const positionToLngLatLike = (position: Position): mapboxgl.LngLatLike => {
+  return { lng: position[0], lat: position[1] }
 }
