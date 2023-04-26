@@ -1045,19 +1045,38 @@ export const MapProvider = ({ children }: Props) => {
     _setOverlayMessage(condition ? message : null)
   }
 
-  const fitBounds = (bbox: number[], lonExtra: number, latExtra: number): Promise<any> => {
+  const fitBounds = (
+    bbox: number[] | LngLatBounds,
+    options: { duration: 1000; lonExtra: 0; latExtra: 0 }
+  ): Promise<any> => {
     if (!isLoaded) {
-      return addToFunctionQueue('fitBounds', [bbox, lonExtra, latExtra])
+      return addToFunctionQueue('fitBounds', [bbox, options])
     }
 
-    const flyOptions = {}
-    const [lonMin, latMin, lonMax, latMax] = bbox
+    let [lonMax, lonMin, latMax, latMin] = [0, 0, 0, 0]
+
+    if (bbox instanceof LngLatBounds) {
+      const southWest = bbox.getSouthWest()
+      const northEast = bbox.getNorthEast()
+
+      lonMax = northEast.lng
+      lonMin = southWest.lng
+      latMax = northEast.lat
+      latMin = southWest.lat
+    } else {
+      lonMax = bbox[0]
+      lonMin = bbox[1]
+      latMax = bbox[2]
+      latMin = bbox[3]
+    }
+
+    const flyOptions = { duration: options.duration }
     const lonDiff = lonMax - lonMin
     const latDiff = latMax - latMin
     mbMapRef.current?.fitBounds(
       [
-        [lonMin - lonExtra * lonDiff, latMin - latExtra * latDiff],
-        [lonMax + lonExtra * lonDiff, latMax + latExtra * latDiff],
+        [lonMin - options.lonExtra * lonDiff, latMin - options.latExtra * latDiff],
+        [lonMax + options.lonExtra * lonDiff, latMax + options.latExtra * latDiff],
       ],
       flyOptions
     )
