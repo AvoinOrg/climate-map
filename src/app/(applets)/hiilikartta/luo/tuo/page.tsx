@@ -31,6 +31,10 @@ const Page = () => {
   }, [])
 
   const initializePlan = async (json: any, colName: string) => {
+    if (!fileName) {
+      return null
+    }
+
     const id = generateShortId()
     const layerConf = createLayerConf(json, id, colName)
     await addAnyLayerGroup(layerConf.id, layerConf)
@@ -82,8 +86,10 @@ const Page = () => {
 
   const handleFinish = async (json: any, colName: string) => {
     const id = await initializePlan(json, colName)
-    const route = getRoute(routeTree.plan, routeTree, [id])
-    router.push(route)
+    if (id) {
+      const route = getRoute(routeTree.plan, routeTree, [id])
+      router.push(route)
+    }
   }
 
   return (
