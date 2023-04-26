@@ -1,5 +1,9 @@
-export type PlanConf = {
+export interface PlanConf extends NewPlanConf {
   id: string
+  created: number
+}
+
+export type NewPlanConf = {
   name: string
   areaHa: number
   json: any
