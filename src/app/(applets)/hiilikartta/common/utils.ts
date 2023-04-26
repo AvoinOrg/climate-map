@@ -50,7 +50,7 @@ export const createLayerConf = (json: any, planId: string, featureColorCol: stri
             'symbol-placement': 'point',
             'text-size': 20,
             'text-font': ['Open Sans Regular'],
-            'text-field': ['case', ['has', 'kt'], ['get', 'kt'], ''],
+            'text-field': ['case', ['has', featureColorCol], ['get', featureColorCol], ''],
           },
           paint: {
             'text-color': '#999',
