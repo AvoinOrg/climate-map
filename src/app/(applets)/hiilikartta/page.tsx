@@ -19,12 +19,12 @@ const Page = () => {
 
   return (
     <>
-      {planConfs != null && planConfs.length > 0 && (
+      {planConfs != null && Object.keys(planConfs).length > 0 && (
         <>
           <Box component="p">Omat kaavat</Box>
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            {planConfs.map((planConf) => (
-              <PlanListItem key={planConf.id} planConf={planConf} />
+            {Object.keys(planConfs).map((id) => (
+              <PlanListItem key={id} planConf={planConfs.id} />
             ))}
           </Box>
         </>
