@@ -84,7 +84,10 @@ interface IMapContext {
   setPaintProperty: (layerId: string, property: string, value: any) => Promise<void> | null
   setFilter: (layerId: string, filter: any) => Promise<void> | null
   setOverlayMessage: (condition: boolean, nmessage: OverlayMessage) => Promise<void> | null
-  fitBounds: (bbox: number[] | LngLatBounds, lonExtra?: number, latExtra?: number) => Promise<void> | null
+  fitBounds: (
+    bbox: number[] | LngLatBounds,
+    options: { duration?: number; lonExtra?: number; latExtra?: number }
+  ) => Promise<void> | null
   isDrawEnabled: boolean
   setIsDrawEnabled: (enabled: boolean) => void
   // isDrawPolygon: () => void
