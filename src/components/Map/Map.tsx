@@ -23,8 +23,9 @@ import OSM from 'ol/source/OSM'
 import VectorSource from 'ol/source/Vector'
 import { Attribution, ScaleLine, defaults as defaultControls } from 'ol/control'
 import olms, { getLayer } from 'ol-mapbox-style'
+import turfBbox from '@turf/bbox'
 
-import { LngLat, MapLayerMouseEvent, PointLike, Style as MbStyle, MapboxGeoJSONFeature } from 'mapbox-gl'
+import { MapLayerMouseEvent, Style as MbStyle, LngLatBounds, MapboxGeoJSONFeature } from 'mapbox-gl'
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
@@ -47,9 +48,11 @@ import {
 } from '#/common/types/map'
 import { layerConfs } from './Layers'
 import { MapPopup } from './MapPopup'
-import { getColorExpressionArrForValues } from '#/common/utils/map'
+import { getColorExpressionArrForValues, getCoordinateFromGeometry, positionToLngLatLike } from '#/common/utils/map'
 import { OverlayMessages } from './OverlayMessages'
 import { ConstructionOutlined } from '@mui/icons-material'
+import { FeatureCollection, Geometry } from 'geojson'
+import { feature } from '@turf/helpers'
 interface Props {
   children?: React.ReactNode
 }
@@ -71,6 +74,7 @@ interface IMapContext {
   toggleAnyLayerGroup: (layerId: string, layerConf?: LayerConfAnyId) => Promise<void> | null
   enableAnyLayerGroup: (layerId: string, layerConf?: LayerConfAnyId) => Promise<void> | null
   disableAnyLayerGroup: (layerId: string) => Promise<void> | null
+  getSourceBounds: (sourceId: string) => LngLatBounds | null
   activeLayerGroupIds: string[]
   layerGroups: {} | null
   registerGroup?: (layerGroup: any) => void | null
@@ -80,7 +84,7 @@ interface IMapContext {
   setPaintProperty: (layerId: string, property: string, value: any) => Promise<void> | null
   setFilter: (layerId: string, filter: any) => Promise<void> | null
   setOverlayMessage: (condition: boolean, nmessage: OverlayMessage) => Promise<void> | null
-  fitBounds: (bbox: number[], lonExtra: number, latExtra: number) => Promise<void> | null
+  fitBounds: (bbox: number[] | LngLatBounds, lonExtra?: number, latExtra?: number) => Promise<void> | null
   isDrawEnabled: boolean
   setIsDrawEnabled: (enabled: boolean) => void
   // isDrawPolygon: () => void
@@ -921,14 +925,58 @@ export const MapProvider = ({ children }: Props) => {
     // }
   }
 
+  const getSourceBounds = (sourceId: string): LngLatBounds | null => {
+    // Query source features for the specified source
+
+    if (!mbMapRef.current) {
+      return null
+    }
+
+    let featureColl: FeatureCollection | null = null
+
+    const sourceFeatures = getSourceJson(sourceId)
+    if (sourceFeatures) {
+      featureColl = sourceFeatures
+    } else {
+      const features = mbMapRef.current.querySourceFeatures(sourceId)
+
+      if (features.length > 0 && features[0].geometry) {
+        featureColl = { type: 'FeatureCollection', features: features }
+      } else {
+        const source = mbMapRef.current.getSource(sourceId)
+        // TODO: check the method of finding the set extent of a source in style. This method is probably deprecated.
+        //@ts-ignore
+        if (source.tileBounds && source.tileBounds.bounds) {
+          //@ts-ignore
+          return source.tileBounds.bounds
+        }
+      }
+    }
+
+    if (!featureColl) {
+      return null
+    }
+
+    const bbox = turfBbox(featureColl)
+
+    // Convert Turf.js bbox to Mapbox LngLatBounds
+    const bounds = new mapboxgl.LngLatBounds(
+      [bbox[0], bbox[1]], // [west, south] or [minX, minY]
+      [bbox[2], bbox[3]] // [east, north] or [maxX, maxY]
+    )
+
+    return bounds
+  }
+
   const getSourceJson = (id: string) => {
     try {
       //@ts-ignore
-      const geojson = mbMapRef.current?.getSource(id)._options.data
+      const geojson: FeatureCollection = mbMapRef.current?.getSource(id)._options.data
       return geojson
     } catch (e) {
       console.error(e)
     }
+    return null
   }
 
   // ensures that latest state is used in the callback
@@ -1161,6 +1209,7 @@ export const MapProvider = ({ children }: Props) => {
     disableAnyLayerGroup,
     getSourceJson,
     selectedFeatures,
+    getSourceBounds,
     setLayoutProperty,
     setPaintProperty,
     setFilter,
