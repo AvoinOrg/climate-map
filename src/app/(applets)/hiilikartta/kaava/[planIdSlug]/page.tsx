@@ -25,9 +25,8 @@ import { MapContext } from '#/components/Map'
 import { getPlanLayerId } from 'applets/hiilikartta/common/utils'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
-  const planConfs = useStore(useAppStore, (state) => state.planConfs)
   const { getSourceJson } = useContext(MapContext)
-  const [planConf, setPlanConf] = useState<PlanConf>()
+  const planConf = useStore(useAppStore, (state) => state.planConfs.planIdSlug)
   const [isLoaded, setIsLoaded] = useState(false)
   const router = useRouter()
   const [res, setRes] = useState(null)
@@ -60,23 +59,17 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const handleDeleteClick = async () => {
     if (planConf) {
       router.push(getRoute(routeTree, routeTree))
-      useAppStore.setState((state) => ({
-        planConfs: [...state.planConfs.filter((el) => el.id !== planConf.id)],
-      }))
+      useAppStore((state) => state.deletePlanConf(planConf.id))
     }
   }
 
   useEffect(() => {
-    if (planConfs != null) {
-      const planConf = planConfs.find((planConf) => planConf.id === params.planIdSlug)
-      if (planConf) {
-        setPlanConf(planConf)
-      } else {
-        router.push(getRoute(routeTree, routeTree))
-      }
+    if (planConf != null) {
       setIsLoaded(true)
+    } else {
+      router.push(getRoute(routeTree, routeTree))
     }
-  }, [planConfs])
+  }, [planConf])
 
   return (
     <>
