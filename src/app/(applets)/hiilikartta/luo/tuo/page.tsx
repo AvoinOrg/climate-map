@@ -7,8 +7,7 @@ import { styled } from '@mui/material/styles'
 
 import { getRoute } from '#/common/utils/routing'
 import { MapContext } from '#/components/Map'
-import { FileType, PlanConf } from 'applets/hiilikartta/common/types'
-import { generateShortId } from '#/common/utils/general'
+import { FileType, NewPlanConf } from 'applets/hiilikartta/common/types'
 import { getGeoJsonArea } from '#/common/utils/gis'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
@@ -35,23 +34,25 @@ const Page = () => {
       return null
     }
 
-    const id = generateShortId()
-    const layerConf = createLayerConf(json, id, colName)
-    await addAnyLayerGroup(layerConf.id, layerConf)
-
     const areaHa = getGeoJsonArea(json) / 10000
-    const planConf: PlanConf = {
+    const newPlanConf: NewPlanConf = {
       json: json,
       name: fileName,
-      id: id,
       areaHa: areaHa,
       fileSettings: { fileType: 'geojson', zoningColumn: colName },
     }
-    useAppStore.setState((state) => ({
-      planConfs: [...state.planConfs, planConf],
-    }))
+    const planConf = await useAppStore((state) => state.addPlanConf(newPlanConf))
 
-    return id
+    try {
+      const layerConf = createLayerConf(json, planConf.id, colName)
+      await addAnyLayerGroup(layerConf.id, layerConf)
+    } catch (e) {
+      useAppStore((state) => state.deletePlanConf(planConf.id))
+      console.error(e)
+      return null
+    }
+
+    return planConf.id
   }
 
   const handleFileInput = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -86,6 +87,7 @@ const Page = () => {
 
   const handleFinish = async (json: any, colName: string) => {
     const id = await initializePlan(json, colName)
+    // TODO: throw error if id is null, i.e. if file is invalid
     if (id) {
       const route = getRoute(routeTree.plan, routeTree, [id])
       router.push(route)
