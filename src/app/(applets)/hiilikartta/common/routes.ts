@@ -28,5 +28,11 @@ export const routeTree: RouteTree = {
         name: 'Kaavan asetukset',
       },
     },
+    report: {
+      _conf: {
+        path: 'report/:id',
+        name: 'Raportti',
+      },
+    },
   },
 }
