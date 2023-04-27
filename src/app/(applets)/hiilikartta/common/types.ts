@@ -1,6 +1,9 @@
 export interface PlanConf extends NewPlanConf {
   id: string
   created: number
+  reports: {
+    [key: string]: any
+  }
 }
 
 export type NewPlanConf = {
