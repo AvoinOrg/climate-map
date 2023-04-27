@@ -47,7 +47,7 @@ export const raleway = Raleway({
 
 const palette = {
   primary: { main: '#0B2027' },
-  secondary: { main: '#126A42' },
+  secondary: { main: 'rgba(175, 178, 154, 0.5)', dark: '#AFB29A', light: 'rgba(246, 244, 244, 1)' },
   tertiary: {
     main: '#D3DBD8',
     light: '#F5FBEF',
