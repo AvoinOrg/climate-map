@@ -51,6 +51,7 @@
     "chart.js": "^4.2.0",
     "dompurify": "^2.4.3",
     "dotenv": "^16.0.3",
+    "immer": "^10.0.1",
     "jszip": "^3.10.1",
     "lodash-es": "^4.17.21",
     "mapbox-gl": "^2.12.0",
