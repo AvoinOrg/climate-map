@@ -36,11 +36,11 @@ export const useAppStore = create<State & Actions>()(
       },
       addReportToPlan: async (planId: string, report: any) => {
         const id = generateShortId()
-        const planConf = await get().planConfs[planId]
+        const updatedReport = { id, ...report }
         await set((state) => {
-          state.planConfs.reports[id] = report
+          state.planConfs[planId].reports[id] = report
         })
-        return planConf
+        return updatedReport
       },
     })),
     {
