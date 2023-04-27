@@ -23,9 +23,9 @@ const Page = () => {
         <>
           <Box component="p">Omat kaavat</Box>
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            {Object.keys(planConfs).map((id) => (
-              <PlanListItem key={id} planConf={planConfs.id} />
-            ))}
+            {Object.keys(planConfs).map((id) => {
+              return <PlanListItem key={id} planConf={planConfs[id]} />
+            })}
           </Box>
         </>
       )}
