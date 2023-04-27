@@ -13,7 +13,7 @@ type State = {
 type Actions = {
   deletePlanConf: (planId: string) => void
   addPlanConf: (newPlanConf: NewPlanConf) => Promise<PlanConf>
-  // addReport: (planId: string, report: any) => Promise<any>
+  addReportToPlan: (planId: string, report: any) => Promise<any>
 }
 
 export const useAppStore = create<State & Actions>()(
@@ -34,7 +34,7 @@ export const useAppStore = create<State & Actions>()(
         })
         return planConf
       },
-      addReport: async (planId: string, report: any) => {
+      addReportToPlan: async (planId: string, report: any) => {
         const id = generateShortId()
         const planConf = await get().planConfs[planId]
         await set((state) => {
