@@ -41,13 +41,14 @@ const Page = () => {
       areaHa: areaHa,
       fileSettings: { fileType: 'geojson', zoningColumn: colName },
     }
-    const planConf = await useAppStore((state) => state.addPlanConf(newPlanConf))
+
+    const planConf = await useAppStore.getState().addPlanConf(newPlanConf)
 
     try {
       const layerConf = createLayerConf(json, planConf.id, colName)
       await addAnyLayerGroup(layerConf.id, layerConf)
     } catch (e) {
-      useAppStore((state) => state.deletePlanConf(planConf.id))
+      useAppStore.getState().deletePlanConf(planConf.id)
       console.error(e)
       return null
     }
