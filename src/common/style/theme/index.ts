@@ -7,9 +7,28 @@ import '@mui/material/styles/createPalette'
 declare module '@mui/material/styles/createPalette' {
   interface Palette {
     tertiary: PaletteColor
+    quaternary: PaletteColor
   }
   interface PaletteOptions {
     tertiary: PaletteColorOptions
+    quaternary: PaletteColorOptions
+  }
+}
+
+declare module '@mui/material/styles' {
+  interface TypographyVariants {
+    buttonSmall: React.CSSProperties
+  }
+
+  // allow configuration using `createTheme`
+  interface TypographyVariantsOptions {
+    buttonSmall?: React.CSSProperties
+  }
+}
+
+declare module '@mui/material/Typography' {
+  interface TypographyPropsVariantOverrides {
+    buttonSmall: true
   }
 }
 
@@ -53,7 +72,7 @@ const palette = {
     light: '#F5FBEF',
     dark: '#A0A0A0',
   },
-  background: {
+  quaternary: {
     main: '#F4F4F4',
     light: '#FFFFFF',
   },
@@ -94,6 +113,13 @@ const typography: TypographyOptions = {
     fontWeight: 400,
   },
   button: {
+    textTransform: 'none',
+    color: 'rgba(0, 0, 0, 0.87)',
+    fontFamily: fonts[0],
+    fontSize: '1rem',
+    fontWeight: 500,
+  },
+  buttonSmall: {
     textTransform: 'none',
     color: 'rgba(0, 0, 0, 0.87)',
     fontFamily: fonts[0],
