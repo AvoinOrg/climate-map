@@ -26,10 +26,10 @@ import { getPlanLayerId } from 'applets/hiilikartta/common/utils'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const { getSourceJson } = useContext(MapContext)
-  const planConf = useStore(useAppStore, (state) => state.planConfs.planIdSlug)
+  const planConf = useStore(useAppStore, (state) => state.planConfs[params.planIdSlug])
+  const addReportToPlan = useAppStore((state) => state.addReportToPlan)
   const [isLoaded, setIsLoaded] = useState(false)
   const router = useRouter()
-  const [res, setRes] = useState(null)
 
   const handleSubmit = async () => {
     if (planConf) {
@@ -52,7 +52,11 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         },
       })
 
-      setRes(response.data)
+      if (addReportToPlan) {
+        const report = await addReportToPlan(params.planIdSlug, response.data)
+        const route = getRoute(routeTree.plan.report, routeTree, [params.planIdSlug, report.id])
+        router.push(route)
+      }
     }
   }
 
@@ -64,10 +68,10 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   }
 
   useEffect(() => {
-    if (planConf != null) {
-      setIsLoaded(true)
-    } else {
+    if (planConf === undefined) {
       router.push(getRoute(routeTree, routeTree))
+    } else {
+      setIsLoaded(true)
     }
   }, [planConf])
 
