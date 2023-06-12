@@ -17,6 +17,8 @@ import { createLayerConf } from '../../common/utils'
 
 const Page = () => {
   const { addAnyLayerGroup } = useContext(MapContext)
+  const addPlanConf = useAppStore((state) => state.addPlanConf)
+  const deletePlanConf = useAppStore((state) => state.deletePlanConf)
   const [fileType, setFileType] = useState<FileType>()
   const [fileName, setFileName] = useState<string>()
   const [arrayBuffer, setArrayBuffer] = useState<ArrayBuffer>()
@@ -42,13 +44,13 @@ const Page = () => {
       fileSettings: { fileType: 'geojson', zoningColumn: colName },
     }
 
-    const planConf = await useAppStore.getState().addPlanConf(newPlanConf)
+    const planConf = await addPlanConf(newPlanConf)
 
     try {
       const layerConf = createLayerConf(json, planConf.id, colName)
       await addAnyLayerGroup(layerConf.id, layerConf)
     } catch (e) {
-      useAppStore.getState().deletePlanConf(planConf.id)
+      deletePlanConf(planConf.id)
       console.error(e)
       return null
     }
