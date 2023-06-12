@@ -138,14 +138,43 @@ const typography: TypographyOptions = {
     fontFamily: fonts[0],
     lineHeight: '1.16667em',
     fontSize: '1.3125rem',
-    fontWeight: 500,
+    fontWeight: 700,
+    letterSpacing: '0.1em',
   },
   h3: {
     color: 'rgba(0, 0, 0, 0.87)',
     fontFamily: fonts[0],
+    lineHeight: '1.16667em',
+    fontSize: '1.3125rem',
+    fontWeight: 700,
+    letterSpacing: '0.1em',
+  },
+
+  h4: {
+    color: 'rgba(0, 0, 0, 0.87)',
+    fontFamily: fonts[0],
     lineHeight: '1.5em',
-    fontSize: '1rem',
-    fontWeight: 400,
+    fontSize: '1.2rem',
+    fontWeight: 700,
+    letterSpacing: '0.1em',
+  },
+
+  h5: {
+    color: 'rgba(0, 0, 0, 0.87)',
+    fontFamily: fonts[0],
+    lineHeight: '1.5em',
+    fontSize: '1.1rem',
+    fontWeight: 500,
+    letterSpacing: '0.1em',
+  },
+
+  h6: {
+    color: 'rgba(0, 0, 0, 0.87)',
+    fontFamily: fonts[0],
+    lineHeight: '1.5em',
+    fontSize: '1.0rem',
+    fontWeight: 700,
+    letterSpacing: '0.1em',
   },
   fontFamily: fonts[0],
 }
