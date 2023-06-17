@@ -123,4 +123,16 @@ const typography: TypographyOptions = {
   fontFamily: fonts[0],
 }
 
-export default createTheme({ palette, typography, zIndex, shape })
+const components = {
+  MuiTableRow: {
+    styleOverrides: {
+      root: {
+        '&:last-child td': {
+          borderBottom: 0,
+        },
+      },
+    },
+  },
+}
+
+export default createTheme({ palette, components, typography, zIndex, shape })
