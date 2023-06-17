@@ -62,7 +62,7 @@ const PopupContainer = styled('div')(({ theme }) => ({
   // bottom: '12px',
   // left: '-50px',
   minWidth: '200px',
-  maxWidth: '480px',
+  maxWidth: '550px',
   // '&:after, &:before': {
   //   top: '100%',
   //   border: 'solid transparent',

@@ -88,3 +88,11 @@ export interface PopupOpts {
 export type PopupFeature = {
   properties: any
 }
+
+export interface ILayerOption {
+  serverId: string
+  minzoom: number
+  maxzoom?: number
+  layerMinzoom?: number | null
+  layerMaxzoom?: number | null
+}
