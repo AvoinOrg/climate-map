@@ -1,4 +1,4 @@
-import { StringValueOf } from './general'
+import { StringValueOf } from '#/common/types/general'
 import { ILayerOption } from '#/common/types/map'
 
 export enum LayerLevel {
