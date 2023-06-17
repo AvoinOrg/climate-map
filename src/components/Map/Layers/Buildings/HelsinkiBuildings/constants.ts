@@ -1,7 +1,13 @@
 import { ILayerOptions, LayerLevel } from './types'
 
 export const layerOptions: ILayerOptions = {
-  [LayerLevel.Helsinki_buildings]: { minzoom: 5, maxzoom: 14, serverId: 'helsinki_buildings', layerMinzoom: 5, layerMaxzoom: 14 },
+  [LayerLevel.Helsinki_buildings]: {
+    minzoom: 5,
+    maxzoom: 14,
+    serverId: 'helsinki_buildings',
+    layerMinzoom: 6,
+    layerMaxzoom: 14,
+  },
 } as const
 
 export const buildingHelBhsysClass: any = {
@@ -43,8 +49,8 @@ export const energyConsumption: any = {
       dis_heatingS: '6.409',
       direct_heatingS: '62.625',
       awhpumpS: '6.45',
-      ghpumpS: '6.295',      
-      estenergCons: '35.928', 
+      ghpumpS: '6.295',
+      estenergCons: '35.928',
     },
     {
       year: '1976',

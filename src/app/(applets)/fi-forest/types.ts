@@ -1,4 +1,5 @@
 import { StringValueOf } from '#/common/types/general'
+import { ILayerOption } from '#/common/types/map'
 
 export enum LayerLevel {
   Parcel = 'fi_forests_parcel',
@@ -9,14 +10,6 @@ export enum LayerLevel {
 }
 
 export type LayerLevelStrings = StringValueOf<LayerLevel>
-
-export interface ILayerOption {
-  minzoom: number
-  maxzoom?: number
-  serverId: string
-  layerMinzoom?: number | null
-  layerMaxzoom?: number | null
-}
 
 export type ILayerOptions = {
   [key in LayerLevelStrings]: ILayerOption
