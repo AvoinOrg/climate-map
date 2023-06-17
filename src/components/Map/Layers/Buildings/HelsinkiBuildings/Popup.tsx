@@ -188,14 +188,14 @@ const Popup = ({ features }: PopupProps) => {
       let savingsum = (Number(yearcostbi) - Number(yearcostai))
 
       const n = 15
-      let present_value, cumulative_yield, discretes    
+      let present_value, cumulative_yield, discretes
       cumulative_yield = 0
       // calculates the cumulative sum
-      for (let i = 1; i <= n; i++) {          
-          discretes = 1/(1+interest_rate)**i          
+      for (let i = 1; i <= n; i++) {
+          discretes = 1/(1+interest_rate)**i
           present_value = discretes*Number(savingsum)
           cumulative_yield += present_value
-      }      
+      }
 
       tableValues['Estimated yearly heating related CO2-emissions: [tCO2/a]'] = (
         <address>{Tecons(tecons) + ' ' + nulls}</address>
@@ -206,16 +206,16 @@ const Popup = ({ features }: PopupProps) => {
       // payback time
       tableValues['From District Heat to Geothermal Heat (Cost Savings):'] = (<address></address>)
       tableValues['Before Investing: [Mwh/a, €/a]'] = (
-      <address>         
+      <address>
         <div>{buildingHePaybackClass[1]}: {districthconsmp.toFixed(3)}</div>
-        <div>{buildingHePaybackClass[2]}: {electenergyconspt.toFixed(3)}</div> 
-        <div>{buildingHePaybackClass[3]}: {numberWithISpaces(yearcostbi.toFixed(0).toLocaleString())}</div> 
+        <div>{buildingHePaybackClass[2]}: {electenergyconspt.toFixed(3)}</div>
+        <div>{buildingHePaybackClass[3]}: {numberWithISpaces(yearcostbi.toFixed(0).toLocaleString())}</div>
       </address>)
       tableValues['After Investing: [Mwh/a, €/a]'] = (
-      <address>            
+      <address>
         <div>{buildingHePaybackClass[1]}: 0</div>
-        <div>{buildingHePaybackClass[2]}: {electenergyconsptm.toFixed(3)}</div> 
-        <div>{buildingHePaybackClass[3]}: {numberWithISpaces(Number(yearcostai).toFixed(0).toLocaleString())}</div> 
+        <div>{buildingHePaybackClass[2]}: {electenergyconsptm.toFixed(3)}</div>
+        <div>{buildingHePaybackClass[3]}: {numberWithISpaces(Number(yearcostai).toFixed(0).toLocaleString())}</div>
       </address>)
       tableValues['Saving: [€]'] = (<address>{numberWithISpaces(savingsum.toFixed(0))}</address>)
       tableValues['Price of district heating & Electricity: [€/MWh, snt/kWh]'] = (<address>{districtprice} & {powerprice/10}</address>)
@@ -342,8 +342,8 @@ const Popup = ({ features }: PopupProps) => {
       tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/(m3/a)]'] = <address>{heatings}</address>
       tableValues['Estimated yearly heating related CO2-emissions: [kgCO2/kWh]'] = (
         <address>{emissionFactor(tecons, empdp[3]) + ' ' + nulls}</address>
-      )      
-      // district heat price 
+      )
+      // district heat price
       /*tableValues['Energy consumption reduction potential by switching to GSHP: MWh/a'] = <address>{'GSHP = Ground source heat pum'}</address>
       tableValues['CO2-emission reduction potential by switching to GSHP: tCO2/a'] = <address>{''}</address>
       tableValues['Energy consumption reduction potential by switching to AWHP: MWh/a'] = <address>{'AWHP = Air-to-water heat pump'}</address>
@@ -382,7 +382,8 @@ const Popup = ({ features }: PopupProps) => {
 
   return (
     <Table sx={{ width: '500px' }} size={'small'}>
-      <TableBody>
+      <TableBody
+      >
         <TableRow>
           <TableCell>Building ID:</TableCell>
           <TableCell>{buildingIdString.slice(0, 10)}</TableCell>
