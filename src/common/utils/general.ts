@@ -1,4 +1,5 @@
-export const pp = (x: number, precision = 2) => (+x.toPrecision(precision)).toLocaleString()
+//TODO: FIX PP to format numbers correctly
+export const pp = (x: number, precision = 2) => (+x.toPrecision(precision))
 
 export const assert = (expr: any, message: any) => {
   if (!expr) throw new Error(`Assertion error: ${message}`)

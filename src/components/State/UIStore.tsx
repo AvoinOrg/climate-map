@@ -7,6 +7,8 @@ interface UIState {
   isSidebarOpen: boolean
   setIsSidebarOpen: (value: boolean) => void
   isSidebarDisabled: boolean
+  mode: 'side' | 'full'
+  setMode: (value: 'side' | 'full') => void
   setIsSidebarDisabled: (value: boolean) => void
   isMapPopupOpen: boolean
   setIsMapPopupOpen: (value: boolean) => void
@@ -24,6 +26,8 @@ export const useUIStore = create<UIState>((set, get) => ({
   isSidebarOpen: true,
   setIsSidebarOpen: (value) => set({ isSidebarOpen: value }),
   isSidebarDisabled: false,
+  mode: 'side',
+  setMode: (value) => set({ mode: value }),
   setIsSidebarDisabled: (value) => set({ isSidebarDisabled: value }),
   isMapPopupOpen: false,
   setIsMapPopupOpen: (value) => set({ isMapPopupOpen: value }),

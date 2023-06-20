@@ -7,9 +7,28 @@ import '@mui/material/styles/createPalette'
 declare module '@mui/material/styles/createPalette' {
   interface Palette {
     tertiary: PaletteColor
+    quaternary: PaletteColor
   }
   interface PaletteOptions {
     tertiary: PaletteColorOptions
+    quaternary: PaletteColorOptions
+  }
+}
+
+declare module '@mui/material/styles' {
+  interface TypographyVariants {
+    buttonSmall: React.CSSProperties
+  }
+
+  // allow configuration using `createTheme`
+  interface TypographyVariantsOptions {
+    buttonSmall?: React.CSSProperties
+  }
+}
+
+declare module '@mui/material/Typography' {
+  interface TypographyPropsVariantOverrides {
+    buttonSmall: true
   }
 }
 
@@ -53,7 +72,7 @@ const palette = {
     light: '#F5FBEF',
     dark: '#A0A0A0',
   },
-  background: {
+  quaternary: {
     main: '#F4F4F4',
     light: '#FFFFFF',
   },
@@ -100,6 +119,13 @@ const typography: TypographyOptions = {
     fontSize: '1rem',
     fontWeight: 500,
   },
+  buttonSmall: {
+    textTransform: 'none',
+    color: 'rgba(0, 0, 0, 0.87)',
+    fontFamily: fonts[0],
+    fontSize: '1rem',
+    fontWeight: 500,
+  },
   caption: {
     color: 'rgba(0, 0, 0, 0.54)',
     fontFamily: fonts[0],
@@ -112,16 +138,57 @@ const typography: TypographyOptions = {
     fontFamily: fonts[0],
     lineHeight: '1.16667em',
     fontSize: '1.3125rem',
-    fontWeight: 500,
+    fontWeight: 700,
+    letterSpacing: '0.1em',
   },
   h3: {
     color: 'rgba(0, 0, 0, 0.87)',
     fontFamily: fonts[0],
+    lineHeight: '1.16667em',
+    fontSize: '1.3125rem',
+    fontWeight: 700,
+    letterSpacing: '0.1em',
+  },
+
+  h4: {
+    color: 'rgba(0, 0, 0, 0.87)',
+    fontFamily: fonts[0],
     lineHeight: '1.5em',
-    fontSize: '1rem',
-    fontWeight: 400,
+    fontSize: '1.2rem',
+    fontWeight: 700,
+    letterSpacing: '0.1em',
+  },
+
+  h5: {
+    color: 'rgba(0, 0, 0, 0.87)',
+    fontFamily: fonts[0],
+    lineHeight: '1.5em',
+    fontSize: '1.1rem',
+    fontWeight: 500,
+    letterSpacing: '0.1em',
+  },
+
+  h6: {
+    color: 'rgba(0, 0, 0, 0.87)',
+    fontFamily: fonts[0],
+    lineHeight: '1.5em',
+    fontSize: '1.0rem',
+    fontWeight: 700,
+    letterSpacing: '0.1em',
   },
   fontFamily: fonts[0],
 }
 
-export default createTheme({ palette, typography, zIndex, shape })
+const components = {
+  MuiTableRow: {
+    styleOverrides: {
+      root: {
+        '&:last-child td': {
+          borderBottom: 0,
+        },
+      },
+    },
+  },
+}
+
+export default createTheme({ palette, components, typography, zIndex, shape })

@@ -12,6 +12,7 @@ import PopupDrawer from './PopupDrawer'
 export const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const isSidebarOpen = useUIStore((state) => state.isSidebarOpen)
   const isMapPopupOpen = useUIStore((state) => state.isMapPopupOpen)
+  const mode = useUIStore((state) => state.mode)
   const setIsMapPopupOpen = useUIStore((state) => state.setIsMapPopupOpen)
   const { popupOpts } = React.useContext(MapContext)
 
@@ -26,31 +27,36 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
         height: '100%',
       }}
     >
-      <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-        <Drawer open={isSidebarOpen}>{children}</Drawer>
+      {mode === 'side' && (
+        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+          <Drawer open={isSidebarOpen}>{children}</Drawer>
 
-        <PopupDrawer open={isMapPopupOpen}>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
+          <PopupDrawer open={isMapPopupOpen}>
             <Box
               sx={{
-                textDecoration: 'none',
-                alignSelf: 'flex-end',
-                margin: '10px 10px 0 0',
-                '&:after': {
-                  content: "'✖'",
-                },
+                display: 'flex',
+                flexDirection: 'column',
               }}
-              onClick={() => setIsMapPopupOpen(false)}
-            />
-            <MapPopup popupOpts={popupOpts} />
-          </Box>
-        </PopupDrawer>
-      </Box>
+            >
+              <Box
+                sx={{
+                  textDecoration: 'none',
+                  alignSelf: 'flex-end',
+                  margin: '10px 10px 0 0',
+                  '&:after': {
+                    content: "'✖'",
+                  },
+                }}
+                onClick={() => setIsMapPopupOpen(false)}
+              />
+              <MapPopup popupOpts={popupOpts} />
+            </Box>
+          </PopupDrawer>
+        </Box>
+      )}
+      {mode === 'full' && (
+        <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', height: '100%' }}>{children}</Box>
+      )}
     </Box>
   )
 }
