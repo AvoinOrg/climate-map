@@ -29,7 +29,7 @@ import { MapLayerMouseEvent, Style as MbStyle, LngLatBounds, MapboxGeoJSONFeatur
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
-import { useUIStore } from '../State'
+import { useUIStore } from '../../../src/components/State'
 
 import {
   LayerId,
@@ -46,10 +46,10 @@ import {
   LayerConf,
   PopupOpts,
 } from '#/common/types/map'
-import { layerConfs } from './Layers'
-import { MapPopup } from './MapPopup'
+import { layerConfs } from '../../../src/components/Map/Layers'
+import { MapPopup } from '../../../src/components/Map/MapPopup'
 import { getColorExpressionArrForValues, getCoordinateFromGeometry, positionToLngLatLike } from '#/common/utils/map'
-import { OverlayMessages } from './OverlayMessages'
+import { OverlayMessages } from '../../../src/components/Map/OverlayMessages'
 import { ConstructionOutlined } from '@mui/icons-material'
 import { FeatureCollection, Geometry } from 'geojson'
 import { feature } from '@turf/helpers'
@@ -86,7 +86,7 @@ interface IMapContext {
   setOverlayMessage: (condition: boolean, nmessage: OverlayMessage) => Promise<void> | null
   fitBounds: (
     bbox: number[] | LngLatBounds,
-    options: { duration?: number; lonExtra?: number; latExtra?: number }
+    options: { duration: number; lonExtra: number; latExtra: number }
   ) => Promise<void> | null
   isDrawEnabled: boolean
   setIsDrawEnabled: (enabled: boolean) => void
@@ -699,42 +699,6 @@ export const MapProvider = ({ children }: Props) => {
     }
   }
 
-  const getLayerType = (layerId: string): LayerType => {
-    const suffix = layerId.split('-').slice(-1)[0]
-    if (layerTypes.includes(suffix)) {
-      return suffix as LayerType
-    }
-
-    console.error(
-      'Invalid layer type: "' + suffix + '" for layer: ' + layerId + '". Valid types are: ' + layerTypes.join(', ')
-    )
-    return 'invalid'
-  }
-
-  const getLayerName = (layerId: string): LayerType => {
-    const layerIdSplitArr = layerId.split('-')
-    if (layerIdSplitArr.length > 2) {
-      console.error('Invalid layer id. Only use hyphen ("-") to separate the LayerType-suffix from the rest of the id.')
-    }
-
-    const name = layerIdSplitArr.slice(0, -1).join('-')
-    if (name.length > 0) {
-      return name
-    }
-
-    return layerId
-  }
-
-  const assertValidHighlightingConf = (layerOpt: LayerOpt, layers: ExtendedAnyLayer[]) => {
-    if (layerOpt.layerType === 'fill') {
-      if (layerOpt.selectable) {
-        if (!layers.find((l: any) => l.id === layerOpt.name + '-highlighted')) {
-          console.error("Layer '" + layerOpt.name + "' is selectable but missing the corresponding highlighted layer.")
-        }
-      }
-    }
-  }
-
   const addMbStyle = async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
     const style = await layerConf.style()
     const layers: ExtendedAnyLayer[] = style.layers
@@ -1098,10 +1062,10 @@ export const MapProvider = ({ children }: Props) => {
 
   const fitBounds = (
     bbox: number[] | LngLatBounds,
-    options: { duration: 1000; lonExtra: 0; latExtra: 0 }
+    { duration = 1000, lonExtra = 0, latExtra = 0 }: { duration?: number; lonExtra?: number; latExtra?: number } = {}
   ): Promise<any> => {
     if (!isLoaded) {
-      return addToFunctionQueue('fitBounds', [bbox, options])
+      return _addToFunctionQueue('fitBounds', [bbox, { duration, lonExtra, latExtra }])
     }
 
     let [lonMax, lonMin, latMax, latMin] = [0, 0, 0, 0]
@@ -1121,13 +1085,13 @@ export const MapProvider = ({ children }: Props) => {
       latMin = bbox[3]
     }
 
-    const flyOptions = { duration: options.duration }
+    const flyOptions = { duration: duration }
     const lonDiff = lonMax - lonMin
     const latDiff = latMax - latMin
     mbMapRef.current?.fitBounds(
       [
-        [lonMin - options.lonExtra * lonDiff, latMin - options.latExtra * latDiff],
-        [lonMax + options.lonExtra * lonDiff, latMax + options.latExtra * latDiff],
+        [lonMin - lonExtra * lonDiff, latMin - latExtra * latDiff],
+        [lonMax + lonExtra * lonDiff, latMax + latExtra * latDiff],
       ],
       flyOptions
     )
