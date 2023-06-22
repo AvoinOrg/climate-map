@@ -21,7 +21,7 @@ import {
   PopupOpts,
   QueueFunction,
 } from '#/common/types/map'
-import { layerConfs } from './Layers'
+import { layerConfs } from '../Map/Layers'
 import { FeatureCollection } from 'geojson'
 import { create } from 'zustand'
 
@@ -67,7 +67,7 @@ type Actions = {
   _addToFunctionQueue: (queueFunction: QueueFunction) => Promise<any>
   _setFunctionQueue: (functionQueue: QueueFunction[]) => void
 }
-// export const useMapStore = create<MapState>((set, get) => ({
+
 export const useMapStore = create<State & Actions>()(
   // Include your additional states and setters...
 
