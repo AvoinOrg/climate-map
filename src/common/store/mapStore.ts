@@ -40,6 +40,7 @@ type State = {
   _layerGroups: Record<string, any>
   _activeLayerGroupIds: string[]
   _layerOptions: Record<string, LayerOpt>
+  _popupOpts: PopupOpts | null
 }
 
 type Actions = {
@@ -69,6 +70,7 @@ type Actions = {
   _addMbStyleToMb: (id: LayerId, layerConf: LayerConfAnyId, isVisible?: boolean) => Promise<void>
   _addToFunctionQueue: (queueFunction: QueueFunction) => Promise<any>
   _setFunctionQueue: (functionQueue: QueueFunction[]) => void
+  _setPopupOpts: (popupOpts: PopupOpts) => void
 }
 
 export const useMapStore = create<State & Actions>()(
@@ -82,6 +84,7 @@ export const useMapStore = create<State & Actions>()(
       isLoaded: false,
       overlayMessage: null,
       selectedFeatures: [],
+      _popupOpts: null,
       _functionQueue: [],
       _mbMapRef: null,
       _mapRef: null,
@@ -106,6 +109,12 @@ export const useMapStore = create<State & Actions>()(
             layerGroup[layer].setVisible(isVisible)
           }
         }
+      },
+
+      _setPopupOpts: (popupOpts: PopupOpts) => {
+        set((state) => {
+          state._popupOpts = popupOpts
+        })
       },
 
       _addMbStyle: async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
