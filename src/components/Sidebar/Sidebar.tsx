@@ -5,7 +5,7 @@ import { Box } from '@mui/material'
 
 import { useUIStore } from '#/common/store'
 import { MapPopup } from '../Map/MapPopup'
-import { MapContext } from '../Map'
+import { useMapStore } from '#/common/store'
 import Drawer from './Drawer'
 import PopupDrawer from './PopupDrawer'
 
@@ -14,7 +14,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const isMapPopupOpen = useUIStore((state) => state.isMapPopupOpen)
   const mode = useUIStore((state) => state.mode)
   const setIsMapPopupOpen = useUIStore((state) => state.setIsMapPopupOpen)
-  const { popupOpts } = React.useContext(MapContext)
+  const popupOpts = useMapStore((state) => state.popupOpts)
 
   return (
     <Box
