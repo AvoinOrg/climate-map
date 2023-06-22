@@ -1,4 +1,4 @@
-import { MapContext, MapProvider } from './Map'
+import { Map } from './Map'
 import { GroupOrientation } from './MapButtons'
 
-export { MapContext, MapProvider, GroupOrientation }
+export { Map, GroupOrientation }
