@@ -21,7 +21,7 @@ import {
   PopupOpts,
   QueueFunction,
 } from '#/common/types/map'
-import { layerConfs } from '../Map/Layers'
+import { layerConfs } from '#/components/Map/Layers'
 import { FeatureCollection } from 'geojson'
 import { create } from 'zustand'
 
