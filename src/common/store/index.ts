@@ -1,5 +1,5 @@
 import { useUIStore } from './UIStore'
-import { useMapStore } from './MapStore'
+import { useMapStore } from './mapStore'
 // import { UserStateContext, UserStateProvider } from './UserState'
 
 // export { UiStateContext, UiStateProvider, UserStateContext, UserStateProvider }

@@ -27,8 +27,8 @@ import { MapLayerMouseEvent, Style as MbStyle, MapboxGeoJSONFeature } from 'mapb
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
-import { useUIStore } from '../State'
-import { useMapStore } from '../State'
+import { useUIStore } from '../../common/store'
+import { useMapStore } from '../../common/store'
 
 import { LayerOpt, LayerOpts, MapLibraryMode, QueuePriority, PopupOpts } from '#/common/types/map'
 import { getLayerName } from '#/common/utils/map'

@@ -4,7 +4,7 @@ import React from 'react'
 import Button from '@mui/material/Button'
 import { Box } from '@mui/material'
 import { styled } from '@mui/material/styles'
-import { useUIStore } from '../State'
+import { useUIStore } from '../../common/store'
 
 const ActionButtons = () => {
   const modalState = useUIStore((state) => state.modalState)

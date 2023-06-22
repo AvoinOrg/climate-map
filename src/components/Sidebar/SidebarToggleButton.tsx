@@ -3,7 +3,7 @@ import { IconButton } from '@mui/material'
 
 import HamburgerClosed from '../icons/HamburgerClosed'
 import HamburgerOpen from '../icons/HamburgerOpen'
-import { useUIStore } from '../State'
+import { useUIStore } from '../../common/store'
 
 interface Props {
   sx?: any
