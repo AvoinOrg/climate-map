@@ -34,13 +34,13 @@ type State = {
   isLoaded: boolean
   overlayMessage: OverlayMessage | null
   selectedFeatures: MapboxGeoJSONFeature[]
+  popupOpts: PopupOpts | null
   _functionQueue: (QueueFunction & { promise: Promise<any> })[]
   _mbMapRef: any | null
   _mapRef: any | null
   _layerGroups: Record<string, any>
   _activeLayerGroupIds: string[]
   _layerOptions: Record<string, LayerOpt>
-  _popupOpts: PopupOpts | null
 }
 
 type Actions = {
@@ -84,7 +84,7 @@ export const useMapStore = create<State & Actions>()(
       isLoaded: false,
       overlayMessage: null,
       selectedFeatures: [],
-      _popupOpts: null,
+      popupOpts: null,
       _functionQueue: [],
       _mbMapRef: null,
       _mapRef: null,
@@ -113,7 +113,7 @@ export const useMapStore = create<State & Actions>()(
 
       _setPopupOpts: (popupOpts: PopupOpts) => {
         set((state) => {
-          state._popupOpts = popupOpts
+          state.popupOpts = popupOpts
         })
       },
 
