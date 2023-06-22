@@ -5,6 +5,7 @@ import WebGLVectorLayerRenderer from 'ol/renderer/webgl/VectorLayer'
 import { asArray } from 'ol/color'
 import { packColor } from 'ol/renderer/webgl/shaders'
 import { Geometry, Position } from 'geojson'
+import { LayerType, layerTypes, LayerOpt, ExtendedAnyLayer } from '../types/map'
 
 export const fillOpacity = 0.65
 
@@ -183,4 +184,40 @@ export const getCoordinateFromGeometry = (geometry: Geometry): Position | null =
 
 export const positionToLngLatLike = (position: Position): mapboxgl.LngLatLike => {
   return { lng: position[0], lat: position[1] }
+}
+
+export const getLayerType = (layerId: string): LayerType => {
+  const suffix = layerId.split('-').slice(-1)[0]
+  if (layerTypes.includes(suffix)) {
+    return suffix as LayerType
+  }
+
+  console.error(
+    'Invalid layer type: "' + suffix + '" for layer: ' + layerId + '". Valid types are: ' + layerTypes.join(', ')
+  )
+  return 'invalid'
+}
+
+export const getLayerName = (layerId: string): LayerType => {
+  const layerIdSplitArr = layerId.split('-')
+  if (layerIdSplitArr.length > 2) {
+    console.error('Invalid layer id. Only use hyphen ("-") to separate the LayerType-suffix from the rest of the id.')
+  }
+
+  const name = layerIdSplitArr.slice(0, -1).join('-')
+  if (name.length > 0) {
+    return name
+  }
+
+  return layerId
+}
+
+export const assertValidHighlightingConf = (layerOpt: LayerOpt, layers: ExtendedAnyLayer[]) => {
+  if (layerOpt.layerType === 'fill') {
+    if (layerOpt.selectable) {
+      if (!layers.find((l: any) => l.id === layerOpt.name + '-highlighted')) {
+        console.error("Layer '" + layerOpt.name + "' is selectable but missing the corresponding highlighted layer.")
+      }
+    }
+  }
 }
