@@ -32,7 +32,8 @@ const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
 type State = {
   mapLibraryMode: MapLibraryMode
   isLoaded: boolean
-  // TODO: add type for functionqueue items
+  overlayMessage: OverlayMessage | null
+  selectedFeatures: MapboxGeoJSONFeature[]
   _functionQueue: (QueueFunction & { promise: Promise<any> })[]
   _mbMapRef: any | null
   _mapRef: any | null
@@ -77,6 +78,8 @@ export const useMapStore = create<State & Actions>()(
     return {
       mapLibraryMode: DEFAULT_MAP_LIBRARY_MODE, // Assume an initial value
       isLoaded: false,
+      overlayMessage: null,
+      selectedFeatures: [],
       _functionQueue: [],
       _mbMapRef: null,
       _mapRef: null,
