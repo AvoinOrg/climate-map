@@ -62,6 +62,7 @@ type Actions = {
     options: { duration?: number; lonExtra?: number; latExtra?: number }
   ) => Promise<any>
   setSelectedFeatures: (features: MapboxGeoJSONFeature[]) => void
+  _setIsLoaded: { (isLoaded: boolean): void }
   _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => void
   _addMbStyle: (id: LayerId, layerConf: LayerConfAnyId, isVisible?: boolean) => Promise<void>
   _addMbPopup: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => void
@@ -87,6 +88,12 @@ export const useMapStore = create<State & Actions>()(
       _layerGroups: {},
       _activeLayerGroupIds: [],
       _layerOptions: {},
+
+      _setIsLoaded: (isLoaded: boolean) => {
+        set((state) => {
+          state.isLoaded = isLoaded
+        })
+      },
 
       _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => {
         const { _layerGroups, _layerOptions, _mbMapRef } = get()
