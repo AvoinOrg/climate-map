@@ -61,6 +61,7 @@ type Actions = {
     bbox: number[] | LngLatBounds,
     options: { duration?: number; lonExtra?: number; latExtra?: number }
   ) => Promise<any>
+  setSelectedFeatures: (features: MapboxGeoJSONFeature[]) => void
   _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => void
   _addMbStyle: (id: LayerId, layerConf: LayerConfAnyId, isVisible?: boolean) => Promise<void>
   _addMbPopup: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => void
@@ -321,6 +322,12 @@ export const useMapStore = create<State & Actions>()(
           console.error(e)
         }
         return null
+      },
+
+      setSelectedFeatures: (features: MapboxGeoJSONFeature[]) => {
+        set((state) => {
+          state.selectedFeatures = features
+        })
       },
 
       // ensures that latest state is used in the callback
