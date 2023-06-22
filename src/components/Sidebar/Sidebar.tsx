@@ -3,7 +3,7 @@
 import React from 'react'
 import { Box } from '@mui/material'
 
-import { useUIStore } from '#/components/State'
+import { useUIStore } from '#/common/store'
 import { MapPopup } from '../Map/MapPopup'
 import { MapContext } from '../Map'
 import Drawer from './Drawer'

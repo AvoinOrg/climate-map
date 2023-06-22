@@ -7,7 +7,7 @@ import { MapLayerMouseEvent, Style as MbStyle, LngLatBounds, MapboxGeoJSONFeatur
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
-import { useUIStore } from '#/components/State'
+import { useUIStore } from '#/common/store'
 
 import {
   LayerId,
