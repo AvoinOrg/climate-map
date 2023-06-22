@@ -11,7 +11,7 @@ import { Sidebar } from '#/components/Sidebar'
 import { NavBar } from '#/components/NavBar'
 // import { UserModal } from '#/components/Profile'
 // import { UiStateProvider, UserStateProvider } from '#/components/State'
-import { MapProvider, GroupOrientation } from '#/components/Map'
+import { GroupOrientation } from '#/components/Map'
 // import RootStyleRegistry from './emotion'
 
 const RootLayout = ({
@@ -32,16 +32,14 @@ const RootLayout = ({
         {/* <RootStyleRegistry> */}
         {isHydrated && (
           <ThemeProvider theme={theme}>
-            <MapProvider>
-              {/* <UserStateProvider> */}
-              <CssBaseline>
-                <GroupOrientation />
-                {/* <NavBar /> */}
-                <Sidebar>{children}</Sidebar>
-                {/* <UserModal /> */}
-              </CssBaseline>
-              {/* </UserStateProvider> */}
-            </MapProvider>
+            {/* <UserStateProvider> */}
+            <CssBaseline>
+              <GroupOrientation />
+              {/* <NavBar /> */}
+              <Sidebar>{children}</Sidebar>
+              {/* <UserModal /> */}
+            </CssBaseline>
+            {/* </UserStateProvider> */}
           </ThemeProvider>
         )}
         {/* </RootStyleRegistry> */}
