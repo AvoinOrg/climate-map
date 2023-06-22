@@ -1,16 +1,5 @@
-import { pickBy, uniq, map, cloneDeep } from 'lodash-es'
-
-import React, { createContext, useState, useRef, useEffect, useCallback, useContext } from 'react'
-import Box from '@mui/material/Box'
-import { Map, View, MapBrowserEvent } from 'ol'
-import * as proj from 'ol/proj'
-import { unByKey } from 'ol/Observable'
-import { Layer, Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
-import Overlay from 'ol/Overlay'
-import OSM from 'ol/source/OSM'
-import VectorSource from 'ol/source/Vector'
-import { Attribution, ScaleLine, defaults as defaultControls } from 'ol/control'
-import olms, { getLayer } from 'ol-mapbox-style'
+import { map, cloneDeep } from 'lodash-es'
+import olms from 'ol-mapbox-style'
 import turfBbox from '@turf/bbox'
 import { immer } from 'zustand/middleware/immer'
 
@@ -24,72 +13,58 @@ import {
   LayerId,
   LayerConfAnyId,
   LayerOpt,
-  LayerOpts,
-  layerTypes,
-  LayerType,
   ExtendedAnyLayer,
   OverlayMessage,
   MapLibraryMode,
   QueuePriority,
-  ExtendedMbStyle,
   LayerConf,
   PopupOpts,
 } from '#/common/types/map'
 import { layerConfs } from './Layers'
-import { MapPopup } from './MapPopup'
-import { getColorExpressionArrForValues, getCoordinateFromGeometry, positionToLngLatLike } from '#/common/utils/map'
-import { OverlayMessages } from './OverlayMessages'
-import { ConstructionOutlined } from '@mui/icons-material'
-import { FeatureCollection, Geometry } from 'geojson'
-import { feature } from '@turf/helpers'
+import { FeatureCollection } from 'geojson'
 import { create } from 'zustand'
 
-import { ProfileState, ModalState, NotificationMessage } from '#/common/types/state'
+import { getLayerName, getLayerType, assertValidHighlightingConf } from '#/common/utils/map'
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
-const DEFAULT_CENTER = [15, 62] as [number, number]
-const DEFAULT_ZOOM = 5
 
 type State = {
+  mapLibraryMode: MapLibraryMode
   isLoaded: boolean
-  setMapLibraryMode: (mode: MapLibraryMode) => void
-  mapToggleTerrain: () => void | null
-  mapResetNorth: () => void | null
-  getGeocoder: () => any | null
-  mapRelocate: () => void | null
-  mapZoomIn: () => void | null
-  mapZoomOut: () => void | null
-  toggleLayerGroup: (layerId: LayerId, layerConf?: LayerConf) => Promise<void> | null
-  addLayerGroup: (layerId: LayerId, layerConf?: LayerConf) => Promise<void> | null
-  enableLayerGroup: (layerId: LayerId, layerConf?: LayerConf) => Promise<void> | null
-  disableLayerGroup: (layerId: LayerId) => Promise<void> | null
-  addAnyLayerGroup: (layerId: string, layerConf?: LayerConfAnyId) => Promise<void> | null
-  toggleAnyLayerGroup: (layerId: string, layerConf?: LayerConfAnyId) => Promise<void> | null
-  enableAnyLayerGroup: (layerId: string, layerConf?: LayerConfAnyId) => Promise<void> | null
-  disableAnyLayerGroup: (layerId: string) => Promise<void> | null
+  // TODO: add type for functionqueue items
+  _functionQueue: any[]
+  _mbMapRef: any | null
+  _mapRef: any | null
+  _layerGroups: Record<string, any>
+  _activeLayerGroupIds: string[]
+  _layerOptions: Record<string, LayerOpt>
+}
+
+type Actions = {
   getSourceBounds: (sourceId: string) => LngLatBounds | null
-  activeLayerGroupIds: string[]
-  layerGroups: {} | null
-  registerGroup?: (layerGroup: any) => void | null
-  getSourceJson: (id: string) => any
-  selectedFeatures: MapboxGeoJSONFeature[]
-  setLayoutProperty: (layerId: string, property: string, value: any) => Promise<void> | null
-  setPaintProperty: (layerId: string, property: string, value: any) => Promise<void> | null
-  setFilter: (layerId: string, filter: any) => Promise<void> | null
-  setOverlayMessage: (condition: boolean, nmessage: OverlayMessage) => Promise<void> | null
+  getSourceJson: (id: string) => FeatureCollection | null
+  addLayerGroup: (layerId: LayerId, layerConf?: LayerConf) => Promise<void>
+  enableLayerGroup: (layerId: LayerId, layerConf?: LayerConf) => Promise<void>
+  disableLayerGroup: (layerId: LayerId) => Promise<void>
+  toggleLayerGroup: (layerId: LayerId, layerConf?: LayerConf) => Promise<void>
+  addAnyLayerGroup: (layerIdString: string, layerConf?: LayerConfAnyId) => Promise<void>
+  toggleAnyLayerGroup: (layerIdString: string, layerConf?: LayerConfAnyId) => Promise<void>
+  enableAnyLayerGroup: (layerIdString: string, layerConf?: LayerConfAnyId) => Promise<void>
+  disableAnyLayerGroup: (layerIdString: string) => Promise<void>
+  setLayoutProperty: (layer: string, name: string, value: any) => Promise<void>
+  setPaintProperty: (layer: string, name: string, value: any) => Promise<void>
+  setFilter: (layer: string, filter: any[]) => Promise<void>
+  setOverlayMessage: (condition: boolean, message: OverlayMessage) => Promise<void>
   fitBounds: (
     bbox: number[] | LngLatBounds,
     options: { duration?: number; lonExtra?: number; latExtra?: number }
-  ) => Promise<void> | null
-  isDrawEnabled: boolean
-  setIsDrawEnabled: (enabled: boolean) => void
-  // isDrawPolygon: () => void
-  setIsDrawPolygon: (enabled: boolean) => void
-  // addMbStyle?: (style: any) => void
-  popupOpts: PopupOpts | null
+  ) => Promise<any>
+  _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => void
+  _addMbStyle: (id: LayerId, layerConf: LayerConfAnyId, isVisible?: boolean) => Promise<void>
+  _addMbPopup: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => void
+  _addMbStyleToMb: (id: LayerId, layerConf: LayerConfAnyId, isVisible?: boolean) => Promise<void>
+  _addToFunctionQueue: (funcName: string, args: any[], priority?: QueuePriority) => Promise<any>
 }
-
-type Actions = {}
 // export const useMapStore = create<MapState>((set, get) => ({
 export const useMapStore = create<State & Actions>()(
   // Include your additional states and setters...
@@ -98,14 +73,193 @@ export const useMapStore = create<State & Actions>()(
 
   immer((set, get) => {
     return {
-      mapLibraryMode: 'mapbox', // Assume an initial value
+      mapLibraryMode: DEFAULT_MAP_LIBRARY_MODE, // Assume an initial value
       isLoaded: false,
       _functionQueue: [],
       _mbMapRef: null,
       _mapRef: null,
-      _layerGroups,
-      _activeLayerGroupIds,
-      _setGroupVisibility,
+      _layerGroups: {},
+      _activeLayerGroupIds: [],
+      _layerOptions: {},
+
+      _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => {
+        const { _layerGroups, _layerOptions, _mbMapRef } = get()
+        const layerGroup = _layerGroups[layerId]
+
+        for (const layer in layerGroup) {
+          if (_layerOptions[layer].useMb) {
+            _mbMapRef.current?.setLayoutProperty(layer, 'visibility', isVisible ? 'visible' : 'none')
+          } else {
+            layerGroup[layer].setVisible(isVisible)
+          }
+        }
+      },
+
+      _addMbStyle: async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
+        const style = await layerConf.style()
+        const layers: ExtendedAnyLayer[] = style.layers
+        const sourceKeys = Object.keys(style.sources)
+
+        const layerGroup: any = {}
+
+        // After adding the layers using style, find them and add them to the layerGroup
+        //@ts-ignore
+        olms(map, style).then((map) => {
+          map
+            .getLayers()
+            .getArray()
+            .forEach((layer: any) => {
+              const sourceKey = layer.get('mapbox-source')
+              const layerKeys = layer.get('mapbox-layers')
+
+              if (sourceKeys.includes(sourceKey) && layerKeys != null && layerKeys.length > 0) {
+                const conf: ExtendedAnyLayer | undefined = layers.find((l: any) => l.id === layerKeys[0])
+
+                if (conf) {
+                  const layerOpt: LayerOpt = {
+                    id: layerKeys[0],
+                    source: sourceKey,
+                    name: getLayerName(layerKeys[0]),
+                    layerType: getLayerType(layerKeys[0]),
+                    selectable: conf.selectable || false,
+                    multiSelectable: conf.multiSelectable || false,
+                    popup: layerConf.popup || false,
+                    useMb: false,
+                  }
+
+                  assertValidHighlightingConf(layerOpt, layers)
+
+                  layer.set('group', id)
+                  layerGroup[layerKeys[0]] = layer
+
+                  set((state) => {
+                    state.layerOptions[layerKeys[0]] = layerOpt
+                  })
+                } else {
+                  console.error('Could not find layer configuration for layer: ' + layerKeys[0])
+                }
+              }
+            })
+
+          set((state) => {
+            state.layerGroups[id] = layerGroup
+          })
+
+          if (isVisible) {
+            set((state) => {
+              state.activeLayerGroupIds.push(id)
+            })
+          } else {
+            for (const layer in layerGroup) {
+              layerGroup[layer].setVisible(false)
+            }
+          }
+
+          if (layerConf.popup) {
+            set((state) => {
+              state.popups[id] = layerConf.popup
+            })
+          }
+        })
+      },
+
+      _addMbPopup: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => {
+        const { _mbMapRef } = get()
+
+        _mbMapRef.current?.on('click', layer, fn)
+        _mbMapRef.current?.on('mouseenter', layer, () => {
+          if (_mbMapRef.current) {
+            _mbMapRef.current.getCanvas().style.cursor = 'pointer'
+          }
+        })
+        _mbMapRef.current?.on('mouseleave', layer, () => {
+          if (_mbMapRef.current) {
+            _mbMapRef.current.getCanvas().style.cursor = ''
+          }
+        })
+      },
+
+      _addMbStyleToMb: async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
+        const { _addMbPopup, _mbMapRef } = get()
+        const setIsMapPopupOpen = useUIStore((state) => state.setIsMapPopupOpen)
+
+        const style = await layerConf.style()
+
+        try {
+          for (const sourceKey in style.sources) {
+            _mbMapRef.current?.addSource(sourceKey, style.sources[sourceKey])
+          }
+
+          const layerGroup: any = {}
+
+          for (const layer of style.layers) {
+            const layerOpt: LayerOpt = {
+              id: layer.id,
+              source: layer.source,
+              name: getLayerName(layer.id),
+              layerType: getLayerType(layer.id),
+              selectable: layer.selectable || false,
+              multiSelectable: layer.multiSelectable || false,
+              popup: layerConf.popup || false,
+              useMb: true,
+            }
+
+            if (layerOpt.layerType === 'fill') {
+              if (layer.selectable) {
+                if (!style.layers.find((l: any) => l.id === layerOpt.name + '-highlighted')) {
+                  console.error(
+                    "Layer '" + layerOpt.name + "' is selectable but missing the corresponding highlighted layer."
+                  )
+                }
+              }
+              if (layerConf.popup) {
+                const Popup: any = layerConf.popup
+
+                const popupFn = (evt: MapLayerMouseEvent) => {
+                  const features = evt.features || []
+                  const popupOpts: PopupOpts = {
+                    features,
+                    PopupElement: Popup,
+                  }
+
+                  set((state) => {
+                    state.popupOpts = popupOpts
+                  })
+
+                  setIsMapPopupOpen(true)
+                }
+                _addMbPopup(layer.id, popupFn)
+              }
+            }
+
+            assertValidHighlightingConf(layerOpt, style.layers)
+
+            set((state) => {
+              state.layerOptions[layerOpt.id] = layerOpt
+              layerGroup[layer.id] = layer
+            })
+
+            _mbMapRef.current?.addLayer(layer)
+
+            if (isVisible) {
+              _mbMapRef.current?.setLayoutProperty(layer.id, 'visibility', 'visible')
+            } else {
+              _mbMapRef.current?.setLayoutProperty(layer.id, 'visibility', 'none')
+            }
+          }
+
+          if (isVisible) {
+            set((state) => {
+              state.activeLayerGroupIds.push(id)
+              state.layerGroups[id] = layerGroup
+            })
+          }
+        } catch (e: any) {
+          if (!e.message.includes('There is already a source')) {
+            console.error(e)
+          }
+        }
+      },
 
       getSourceBounds: (sourceId: string): LngLatBounds | null => {
         // Query source features for the specified source
@@ -229,7 +383,7 @@ export const useMapStore = create<State & Actions>()(
       },
 
       disableLayerGroup: async (layerId: LayerId) => {
-        const { _mbMapRef, _activeLayerGroupIds } = get()
+        const { _setGroupVisibility, _activeLayerGroupIds } = get()
 
         const _activeLayerGroupIdsCopy = [..._activeLayerGroupIds]
         _activeLayerGroupIdsCopy.splice(_activeLayerGroupIdsCopy.indexOf(layerId), 1)
@@ -302,17 +456,23 @@ export const useMapStore = create<State & Actions>()(
       },
 
       setOverlayMessage: async (condition: boolean, message: OverlayMessage) => {
-        _setOverlayMessage(condition ? message : null)
+        set((state) => {
+          state.overlayMessage = condition ? message : null
+        })
       },
 
       fitBounds: (
         bbox: number[] | LngLatBounds,
-        options: { duration: 1000; lonExtra: 0; latExtra: 0 }
+        {
+          duration = 1000,
+          lonExtra = 0,
+          latExtra = 0,
+        }: { duration?: number; lonExtra?: number; latExtra?: number } = {}
       ): Promise<any> => {
         const { isLoaded, _addToFunctionQueue, _mbMapRef } = get()
 
         if (!isLoaded) {
-          return _addToFunctionQueue('fitBounds', [bbox, options])
+          return _addToFunctionQueue('fitBounds', [bbox, { duration, lonExtra, latExtra }])
         }
 
         let [lonMax, lonMin, latMax, latMin] = [0, 0, 0, 0]
@@ -332,58 +492,85 @@ export const useMapStore = create<State & Actions>()(
           latMin = bbox[3]
         }
 
-        const flyOptions = { duration: options.duration }
+        const flyOptions = { duration: duration }
         const lonDiff = lonMax - lonMin
         const latDiff = latMax - latMin
         _mbMapRef.current?.fitBounds(
           [
-            [lonMin - options.lonExtra * lonDiff, latMin - options.latExtra * latDiff],
-            [lonMax + options.lonExtra * lonDiff, latMax + options.latExtra * latDiff],
+            [lonMin - lonExtra * lonDiff, latMin - latExtra * latDiff],
+            [lonMax + lonExtra * lonDiff, latMax + latExtra * latDiff],
           ],
           flyOptions
         )
 
         return Promise.resolve()
       },
-
-      //   setIsDrawPolygon: (enabled: boolean) => {
-      //     const { isLoaded, _addToFunctionQueue, _mbMapRef } = get()
-
-      //     if (!isLoaded) {
-      //       _addToFunctionQueue('setIsDrawPolygon', [enabled])
-      //       return
-      //     }
-
-      //     // setMapLibraryMode('mapbox')
-
-      //     const draw = new MapboxDraw({
-      //       displayControlsDefault: false,
-      //       // Select which mapbox-gl-draw control buttons to add to the map.
-      //       controls: {
-      //         polygon: true,
-      //         trash: true,
-      //       },
-      //       // Set mapbox-gl-draw to draw by default.
-      //       // The user does not have to click the polygon control button first.
-      //       // defaultMode: 'draw_polygon',
-      //     })
-      //     const source = cloneDeep(_mbMapRef.current?.getStyle().sources[sourceName])
-
-      //     _mbMapRef.current?.removeLayer('carbon-shapes-outline')
-      //     _mbMapRef.current?.removeLayer('carbon-shapes-fill')
-      //     _mbMapRef.current?.removeLayer('carbon-shapes-sym')
-      //     _mbMapRef.current?.removeSource(sourceName)
-
-      //     // console.log(source.data.features)
-      //     _mbMapRef.current?.addControl(draw, 'bottom-right')
-
-      //     //@ts-ignore
-      //     draw.add(source.data)
-
-      //     setDraw(draw)
-      //     setIsDrawEnabled(true)
-      //   },
-      // }
+      // TODO ZONE
+      // const getGeocoder = () => {}
+      // const mapRelocate = () => {}
+      // const mapResetNorth = () => {}
+      // const mapToggleTerrain = () => {}
+      // const mapZoomIn = () => {}
+      // const mapZoomOut = () => {}
     }
   })
 )
+
+//   setIsDrawPolygon: (enabled: boolean) => {
+//     const { isLoaded, _addToFunctionQueue, _mbMapRef } = get()
+
+//     if (!isLoaded) {
+//       _addToFunctionQueue('setIsDrawPolygon', [enabled])
+//       return
+//     }
+
+//     // setMapLibraryMode('mapbox')
+
+//     const draw = new MapboxDraw({
+//       displayControlsDefault: false,
+//       // Select which mapbox-gl-draw control buttons to add to the map.
+//       controls: {
+//         polygon: true,
+//         trash: true,
+//       },
+//       // Set mapbox-gl-draw to draw by default.
+//       // The user does not have to click the polygon control button first.
+//       // defaultMode: 'draw_polygon',
+//     })
+//     const source = cloneDeep(_mbMapRef.current?.getStyle().sources[sourceName])
+
+//     _mbMapRef.current?.removeLayer('carbon-shapes-outline')
+//     _mbMapRef.current?.removeLayer('carbon-shapes-fill')
+//     _mbMapRef.current?.removeLayer('carbon-shapes-sym')
+//     _mbMapRef.current?.removeSource(sourceName)
+
+//     // console.log(source.data.features)
+//     _mbMapRef.current?.addControl(draw, 'bottom-right')
+
+//     //@ts-ignore
+//     draw.add(source.data)
+
+//     setDraw(draw)
+//     setIsDrawEnabled(true)
+//   },
+// }
+
+// implement at some point
+// const setFilter = () => {}
+// const AddMapEventHandler = () => {}
+// const isSourceReady = () => {}
+// const removeMapEventHandler = () => {}
+// const enablePersonalDataset = () => {}
+// const disablePersonalDataset = () => {}
+
+// used in ForestArvometsa.tsx. Not all of these are needed
+// const genericPopupHandler = () => {}
+// const querySourceFeatures = () => {}
+
+// use REDUX for these?
+// const enableGroup = () => {}
+// const disableGroup = () => {}
+// const eetGroupState = () => {}
+// const toggleGroup = () => {}
+// const enableOnlyOneGroup = () => {}
+// const isGroupEnable = () => {}
