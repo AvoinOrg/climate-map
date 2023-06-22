@@ -96,3 +96,5 @@ export interface ILayerOption {
   layerMinzoom?: number | null
   layerMaxzoom?: number | null
 }
+
+export type QueueFunction = { funcName: string; args: any[]; priority?: QueuePriority }

@@ -19,6 +19,7 @@ import {
   QueuePriority,
   LayerConf,
   PopupOpts,
+  QueueFunction,
 } from '#/common/types/map'
 import { layerConfs } from './Layers'
 import { FeatureCollection } from 'geojson'
@@ -32,7 +33,7 @@ type State = {
   mapLibraryMode: MapLibraryMode
   isLoaded: boolean
   // TODO: add type for functionqueue items
-  _functionQueue: any[]
+  _functionQueue: (QueueFunction & { promise: Promise<any> })[]
   _mbMapRef: any | null
   _mapRef: any | null
   _layerGroups: Record<string, any>
@@ -63,7 +64,8 @@ type Actions = {
   _addMbStyle: (id: LayerId, layerConf: LayerConfAnyId, isVisible?: boolean) => Promise<void>
   _addMbPopup: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => void
   _addMbStyleToMb: (id: LayerId, layerConf: LayerConfAnyId, isVisible?: boolean) => Promise<void>
-  _addToFunctionQueue: (funcName: string, args: any[], priority?: QueuePriority) => Promise<any>
+  _addToFunctionQueue: (queueFunction: QueueFunction) => Promise<any>
+  _setFunctionQueue: (functionQueue: QueueFunction[]) => void
 }
 // export const useMapStore = create<MapState>((set, get) => ({
 export const useMapStore = create<State & Actions>()(
@@ -319,7 +321,7 @@ export const useMapStore = create<State & Actions>()(
       },
 
       // ensures that latest state is used in the callback
-      _addToFunctionQueue: (funcName: string, args: any[], priority = QueuePriority.LOW): Promise<any> => {
+      _addToFunctionQueue: (queueFunction: QueueFunction): Promise<any> => {
         // construct a promise that will be manually resolved when the function is called
         let promiseResolve: any, promiseReject: any
         const promise = new Promise((resolve, reject) => {
@@ -327,11 +329,15 @@ export const useMapStore = create<State & Actions>()(
           promiseReject = reject
         })
 
+        if (queueFunction.priority === undefined) {
+          queueFunction.priority = QueuePriority.LOW
+        }
+
         set((state) => {
           state._functionQueue.push({
-            func: funcName,
-            args: args,
-            priority: priority,
+            func: queueFunction.funcName,
+            args: queueFunction.args,
+            priority: queueFunction.priority,
             promise: {
               resolve: promiseResolve,
               reject: promiseReject,
@@ -342,11 +348,21 @@ export const useMapStore = create<State & Actions>()(
         return promise
       },
 
+      _setFunctionQueue: (functionQueue: QueueFunction[]) => {
+        set((state) => {
+          state._functionQueue = functionQueue
+        })
+      },
+
       addLayerGroup: async (layerId: LayerId, layerConf?: LayerConf) => {
         const { isLoaded, _addToFunctionQueue, _addMbStyleToMb, _addMbStyle } = get()
 
         if (!isLoaded) {
-          return _addToFunctionQueue('addLayerGroup', [layerId, layerConf], QueuePriority.HIGH)
+          return _addToFunctionQueue({
+            funcName: 'addLayerGroup',
+            args: [layerId, layerConf],
+            priority: QueuePriority.HIGH,
+          })
         }
 
         // Initialize layer if it doesn't exist
@@ -434,7 +450,7 @@ export const useMapStore = create<State & Actions>()(
         const { isLoaded, _addToFunctionQueue, _mbMapRef } = get()
 
         if (!isLoaded) {
-          return _addToFunctionQueue('setLayoutProperty', [layer, name, value])
+          return _addToFunctionQueue({ funcName: 'setLayoutProperty', args: [layer, name, value] })
         }
         _mbMapRef.current?.setLayoutProperty(layer, name, value)
       },
@@ -442,7 +458,7 @@ export const useMapStore = create<State & Actions>()(
       setPaintProperty: async (layer: string, name: string, value: any): Promise<any> => {
         const { isLoaded, _mbMapRef, _addToFunctionQueue } = get()
         if (!isLoaded) {
-          return _addToFunctionQueue('setPaintProperty', [layer, name, value])
+          return _addToFunctionQueue({ funcName: 'setPaintProperty', args: [layer, name, value] })
         }
         _mbMapRef.current?.setPaintProperty(layer, name, value)
       },
@@ -450,7 +466,7 @@ export const useMapStore = create<State & Actions>()(
       setFilter: async (layer: string, filter: any[]): Promise<any> => {
         const { isLoaded, _mbMapRef, _addToFunctionQueue } = get()
         if (!isLoaded) {
-          return _addToFunctionQueue('setFilter', [layer, filter])
+          return _addToFunctionQueue({ funcName: 'setFilter', args: [layer, filter] })
         }
         _mbMapRef.current?.setFilter(layer, filter)
       },
@@ -472,7 +488,7 @@ export const useMapStore = create<State & Actions>()(
         const { isLoaded, _addToFunctionQueue, _mbMapRef } = get()
 
         if (!isLoaded) {
-          return _addToFunctionQueue('fitBounds', [bbox, { duration, lonExtra, latExtra }])
+          return _addToFunctionQueue({ funcName: 'fitBounds', args: [bbox, { duration, lonExtra, latExtra }] })
         }
 
         let [lonMax, lonMin, latMax, latMin] = [0, 0, 0, 0]
