@@ -1,18 +1,7 @@
 'use client'
 
-import React, { useContext, useState, useEffect } from 'react'
-import {
-  Box,
-  Button,
-  Checkbox,
-  Container,
-  Divider,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  Paper,
-  Select,
-} from '@mui/material'
+import React, { useState, useEffect } from 'react'
+import { Box, Button, Checkbox, Container, FormControlLabel, Paper } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import Link from 'next/link'
 import { Link as MuiLink } from '@mui/material'
@@ -22,9 +11,8 @@ import { getCombinedBounds } from '#/common/utils/map'
 // import * as SelectedFeatureState from './ArvometsaSelectedLayer'
 import { HeaderTable, SimpleTable } from './components/FinlandForestsTable'
 import { CO2_TONS_PER_PERSON, TRADITIONAL_FORESTRY_METHOD, layerOptions, titleRenames } from './constants'
-import { useUIStore } from '#/common/store'
+import { useMapStore, useUIStore } from '#/common/store'
 // import { setSearchPlaceholder } from '../../NavBar/NavBarSearch'
-import { MapContext } from '#/components/Map'
 import { pp } from '#/common/utils/general'
 
 import { useUpdateMapDetails } from './hooks/useUpdateMapDetails'
@@ -86,7 +74,10 @@ const LAYER_TITLE = `Finland's forests`
 // }
 
 const FinlandForests = () => {
-  const { enableLayerGroup, setOverlayMessage, fitBounds } = useContext(MapContext)
+  const enableLayerGroup = useMapStore((state) => state.enableLayerGroup)
+  const setOverlayMessage = useMapStore((state) => state.setOverlayMessage)
+  const fitBounds = useMapStore((state) => state.fitBounds)
+
   const setIsSidebarOpen = useUIStore((state) => state.setIsSidebarOpen)
   const updateMapDetails = useUpdateMapDetails()
   const [hasFeature, setHasFeature] = useState(false)
@@ -232,7 +223,7 @@ const FinlandForests = () => {
 
   const onFitLayerBounds = () => {
     if (options.bounds) {
-      fitBounds(options.bounds, 0.4, 0.15)
+      fitBounds(options.bounds, { lonExtra: 0.4, latExtra: 0.15 })
     }
   }
 
