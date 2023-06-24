@@ -1,10 +1,11 @@
+// TODO: Split into multiple files?
 import { Checkbox, Accordion, AccordionDetails, AccordionSummary, Theme, Typography } from '@mui/material'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import React from 'react'
 import Link from 'next/link'
 
-import { MapContext } from '#/components/Map'
+import { useMapStore } from '#/common/store'
 import { LayerId } from '#/common/types/map'
 
 const styles = {
@@ -24,7 +25,8 @@ interface AOAccordionProps {
 }
 
 export const AOAccordion = ({ layerId, label, content, panelProps }: AOAccordionProps) => {
-  const { activeLayerGroupIds, toggleLayerGroup } = React.useContext(MapContext)
+  const activeLayerGroupIds = useMapStore((state) => state.activeLayerGroupIds)
+  const toggleLayerGroup = useMapStore((state) => state.toggleLayerGroup)
   // const groupEnabled = layerGroups.filter((x) => x.name === groupName).length > 0
 
   return (
@@ -87,9 +89,10 @@ interface LayerToggleControlProps {
   label: string
 }
 
-// USE REDUX HERE, HHMM
+// TODO: toggle state to local storage?
 export const LayerToggleControl = ({ layerId, label }: LayerToggleControlProps) => {
-  const { activeLayerGroupIds, toggleLayerGroup } = React.useContext(MapContext)
+  const activeLayerGroupIds = useMapStore((state) => state.activeLayerGroupIds)
+  const toggleLayerGroup = useMapStore((state) => state.toggleLayerGroup)
 
   // React.useEffect(() => {
   //   if ([isLayerEnabled && activeLayerGroupIds.includes(layerName)]) {
