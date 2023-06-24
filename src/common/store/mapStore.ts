@@ -20,6 +20,7 @@ import {
   LayerConf,
   PopupOpts,
   QueueFunction,
+  FunctionQueue,
 } from '#/common/types/map'
 import { layerConfs } from '#/components/Map/Layers'
 import { FeatureCollection } from 'geojson'
@@ -29,7 +30,7 @@ import { getLayerName, getLayerType, assertValidHighlightingConf } from '#/commo
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
 
-type State = {
+type Vars = {
   mapLibraryMode: MapLibraryMode
   isLoaded: boolean
   overlayMessage: OverlayMessage | null
@@ -38,7 +39,7 @@ type State = {
   activeLayerGroupIds: string[]
   isDrawEnabled: boolean
   _draw: MapboxDraw | null
-  _functionQueue: (QueueFunction & { promise: Promise<any> })[]
+  _functionQueue: FunctionQueue
   _mbMapRef: any | null
   _mapRef: any | null
   _layerGroups: Record<string, any>
@@ -79,22 +80,26 @@ type Actions = {
   _addMbPopup: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => void
   _addMbStyleToMb: (id: LayerId, layerConf: LayerConfAnyId, isVisible?: boolean) => Promise<void>
   _addToFunctionQueue: (queueFunction: QueueFunction) => Promise<any>
-  _setFunctionQueue: (functionQueue: QueueFunction[]) => void
+  _setFunctionQueue: (functionQueue: FunctionQueue) => void
   _setPopupOpts: (popupOpts: PopupOpts) => void
 }
 
-export const useMapStore = create<State & Actions>()(
+type State = Vars & Actions
+
+export const useMapStore = create<State>()(
   // Include your additional states and setters...
 
   // Add your additional actions...
 
   immer((set, get) => {
-    const state: State = {
+    const vars: Vars = {
       mapLibraryMode: DEFAULT_MAP_LIBRARY_MODE, // Assume an initial value
       isLoaded: false,
       overlayMessage: null,
       selectedFeatures: [],
       popupOpts: null,
+      isDrawEnabled: false,
+      _draw: null,
       _functionQueue: [],
       _mbMapRef: null,
       _mapRef: null,
@@ -162,13 +167,13 @@ export const useMapStore = create<State & Actions>()(
       },
 
       setMapLibraryMode: (mode: MapLibraryMode) => {
-        set((state) => {
+        set((state: State) => {
           state.mapLibraryMode = mode
         })
       },
 
       setSelectedFeatures: (features: MapboxGeoJSONFeature[]) => {
-        set((state) => {
+        set((state: State) => {
           state.selectedFeatures = features
         })
       },
@@ -209,7 +214,7 @@ export const useMapStore = create<State & Actions>()(
         if (_layerGroups[layerId]) {
           _setGroupVisibility(layerId, true)
 
-          set((state) => {
+          set((state: State) => {
             state.activeLayerGroupIds.push(layerId)
           })
         } else {
@@ -223,7 +228,7 @@ export const useMapStore = create<State & Actions>()(
         const activeLayerGroupIdsCopy = [...activeLayerGroupIds]
         activeLayerGroupIdsCopy.splice(activeLayerGroupIdsCopy.indexOf(layerId), 1)
 
-        set((state) => {
+        set((state: State) => {
           state.activeLayerGroupIds = state.activeLayerGroupIds.filter((id: string) => id !== layerId)
         })
 
@@ -291,7 +296,7 @@ export const useMapStore = create<State & Actions>()(
       },
 
       setOverlayMessage: async (condition: boolean, message: OverlayMessage) => {
-        set((state) => {
+        set((state: State) => {
           state.overlayMessage = condition ? message : null
         })
       },
@@ -341,27 +346,27 @@ export const useMapStore = create<State & Actions>()(
         return Promise.resolve()
       },
       getGeocoder: () => {
-        // set((state) => {
+        // set((state: State) => {
         // })
       },
       mapRelocate: () => {
-        // set((state) => {
+        // set((state: State) => {
         // })
       },
       mapResetNorth: () => {
-        // set((state) => {
+        // set((state: State) => {
         // })
       },
       mapToggleTerrain: () => {
-        // set((state) => {
+        // set((state: State) => {
         // })
       },
       mapZoomIn: () => {
-        // set((state) => {
+        // set((state: State) => {
         // })
       },
       mapZoomOut: () => {
-        // set((state) => {
+        // set((state: State) => {
         // })
       },
 
@@ -402,14 +407,14 @@ export const useMapStore = create<State & Actions>()(
         //@ts-ignore
         draw.add(source.data)
 
-        set((state) => {
+        set((state: State) => {
           state._draw = draw
           state.isDrawEnabled = true
         })
       },
 
       _setIsLoaded: (isLoaded: boolean) => {
-        set((state) => {
+        set((state: State) => {
           state.isLoaded = isLoaded
         })
       },
@@ -428,7 +433,7 @@ export const useMapStore = create<State & Actions>()(
       },
 
       _setPopupOpts: (popupOpts: PopupOpts) => {
-        set((state) => {
+        set((state: State) => {
           state.popupOpts = popupOpts
         })
       },
@@ -470,8 +475,8 @@ export const useMapStore = create<State & Actions>()(
                   layer.set('group', id)
                   layerGroup[layerKeys[0]] = layer
 
-                  set((state) => {
-                    state.layerOptions[layerKeys[0]] = layerOpt
+                  set((state: State) => {
+                    state._layerOptions[layerKeys[0]] = layerOpt
                   })
                 } else {
                   console.error('Could not find layer configuration for layer: ' + layerKeys[0])
@@ -479,12 +484,12 @@ export const useMapStore = create<State & Actions>()(
               }
             })
 
-          set((state) => {
-            state.layerGroups[id] = layerGroup
+          set((state: State) => {
+            state._layerGroups[id] = layerGroup
           })
 
           if (isVisible) {
-            set((state) => {
+            set((state: State) => {
               state.activeLayerGroupIds.push(id)
             })
           } else {
@@ -493,11 +498,12 @@ export const useMapStore = create<State & Actions>()(
             }
           }
 
-          if (layerConf.popup) {
-            set((state) => {
-              state.popups[id] = layerConf.popup
-            })
-          }
+          // TODO: Figure out olMap popups
+          // if (layerConf.popup) {
+          //   set((state: State) => {
+          //     state.popups[id] = layerConf.popup
+          //   })
+          // }
         })
       },
 
@@ -560,7 +566,7 @@ export const useMapStore = create<State & Actions>()(
                     PopupElement: Popup,
                   }
 
-                  set((state) => {
+                  set((state: State) => {
                     state.popupOpts = popupOpts
                   })
 
@@ -572,8 +578,8 @@ export const useMapStore = create<State & Actions>()(
 
             assertValidHighlightingConf(layerOpt, style.layers)
 
-            set((state) => {
-              state.layerOptions[layerOpt.id] = layerOpt
+            set((state: State) => {
+              state._layerOptions[layerOpt.id] = layerOpt
               layerGroup[layer.id] = layer
             })
 
@@ -587,9 +593,9 @@ export const useMapStore = create<State & Actions>()(
           }
 
           if (isVisible) {
-            set((state) => {
+            set((state: State) => {
               state.activeLayerGroupIds.push(id)
-              state.layerGroups[id] = layerGroup
+              state._layerGroups[id] = layerGroup
             })
           }
         } catch (e: any) {
@@ -611,9 +617,9 @@ export const useMapStore = create<State & Actions>()(
           queueFunction.priority = QueuePriority.LOW
         }
 
-        set((state) => {
+        set((state: State) => {
           state._functionQueue.push({
-            func: queueFunction.funcName,
+            funcName: queueFunction.funcName,
             args: queueFunction.args,
             priority: queueFunction.priority,
             promise: {
@@ -626,14 +632,14 @@ export const useMapStore = create<State & Actions>()(
         return promise
       },
 
-      _setFunctionQueue: (functionQueue: QueueFunction[]) => {
-        set((state) => {
+      _setFunctionQueue: (functionQueue: FunctionQueue) => {
+        set((state: State) => {
           state._functionQueue = functionQueue
         })
       },
     }
 
-    return { ...state, ...actions }
+    return { ...vars, ...actions }
   })
 )
 
