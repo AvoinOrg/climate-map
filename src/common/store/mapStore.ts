@@ -36,6 +36,8 @@ type State = {
   selectedFeatures: MapboxGeoJSONFeature[]
   popupOpts: PopupOpts | null
   activeLayerGroupIds: string[]
+  isDrawEnabled: boolean
+  _draw: MapboxDraw | null
   _functionQueue: (QueueFunction & { promise: Promise<any> })[]
   _mbMapRef: any | null
   _mapRef: any | null
@@ -70,6 +72,7 @@ type Actions = {
   mapToggleTerrain: () => void
   mapZoomIn: () => void
   mapZoomOut: () => void
+  setIsDrawPolygon: (isDrawPolygon: boolean) => void
   _setIsLoaded: { (isLoaded: boolean): void }
   _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => void
   _addMbStyle: (id: LayerId, layerConf: LayerConfAnyId, isVisible?: boolean) => Promise<void>
@@ -362,6 +365,49 @@ export const useMapStore = create<State & Actions>()(
         // })
       },
 
+      setIsDrawPolygon: (isDrawPolygon: boolean) => {
+        const { isLoaded, _addToFunctionQueue, _mbMapRef } = get()
+
+        // TODO: Fix drawing. Figure out which layer to use, and dynamically add it to the map
+        const sourceName = 'carbon-shapes'
+
+        if (!isLoaded) {
+          _addToFunctionQueue({ funcName: 'setIsDrawPolygon', args: [isDrawPolygon] })
+          return
+        }
+
+        // setMapLibraryMode('mapbox')
+
+        const draw = new MapboxDraw({
+          displayControlsDefault: false,
+          // Select which mapbox-gl-draw control buttons to add to the map.
+          controls: {
+            polygon: true,
+            trash: true,
+          },
+          // Set mapbox-gl-draw to draw by default.
+          // The user does not have to click the polygon control button first.
+          // defaultMode: 'draw_polygon',
+        })
+        const source = cloneDeep(_mbMapRef.current?.getStyle().sources[sourceName])
+
+        _mbMapRef.current?.removeLayer('carbon-shapes-outline')
+        _mbMapRef.current?.removeLayer('carbon-shapes-fill')
+        _mbMapRef.current?.removeLayer('carbon-shapes-sym')
+        _mbMapRef.current?.removeSource(sourceName)
+
+        // console.log(source.data.features)
+        _mbMapRef.current?.addControl(draw, 'bottom-right')
+
+        //@ts-ignore
+        draw.add(source.data)
+
+        set((state) => {
+          state._draw = draw
+          state.isDrawEnabled = true
+        })
+      },
+
       _setIsLoaded: (isLoaded: boolean) => {
         set((state) => {
           state.isLoaded = isLoaded
@@ -590,45 +636,6 @@ export const useMapStore = create<State & Actions>()(
     return { ...state, ...actions }
   })
 )
-
-//   setIsDrawPolygon: (enabled: boolean) => {
-//     const { isLoaded, _addToFunctionQueue, _mbMapRef } = get()
-
-//     if (!isLoaded) {
-//       _addToFunctionQueue('setIsDrawPolygon', [enabled])
-//       return
-//     }
-
-//     // setMapLibraryMode('mapbox')
-
-//     const draw = new MapboxDraw({
-//       displayControlsDefault: false,
-//       // Select which mapbox-gl-draw control buttons to add to the map.
-//       controls: {
-//         polygon: true,
-//         trash: true,
-//       },
-//       // Set mapbox-gl-draw to draw by default.
-//       // The user does not have to click the polygon control button first.
-//       // defaultMode: 'draw_polygon',
-//     })
-//     const source = cloneDeep(_mbMapRef.current?.getStyle().sources[sourceName])
-
-//     _mbMapRef.current?.removeLayer('carbon-shapes-outline')
-//     _mbMapRef.current?.removeLayer('carbon-shapes-fill')
-//     _mbMapRef.current?.removeLayer('carbon-shapes-sym')
-//     _mbMapRef.current?.removeSource(sourceName)
-
-//     // console.log(source.data.features)
-//     _mbMapRef.current?.addControl(draw, 'bottom-right')
-
-//     //@ts-ignore
-//     draw.add(source.data)
-
-//     setDraw(draw)
-//     setIsDrawEnabled(true)
-//   },
-// }
 
 // implement at some point
 // const setFilter = () => {}
