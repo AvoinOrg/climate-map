@@ -1,5 +1,3 @@
-import { useContext } from 'react'
-
 import { layerOptions } from '../constants'
 import {
   fiForestsSumMethodAttrs,
@@ -8,10 +6,11 @@ import {
   fiForestsTextfieldExpression,
 } from '../utils'
 import { ForestryMethod, LayerLevel } from '../types'
-import { MapContext } from '#/components/Map'
+import { useMapStore } from '#/common/store'
 
 export const useUpdateMapDetails = () => {
-  const { setLayoutProperty, setPaintProperty } = useContext(MapContext)
+  const setLayoutProperty = useMapStore((state) => state.setLayoutProperty)
+  const setPaintProperty = useMapStore((state) => state.setPaintProperty)
 
   const updateMapDetails = (forestryMethod: ForestryMethod, carbonBalanceDifferenceFlag: boolean) => {
     const co2eValueExpr = fiForestsSumMethodAttrs(forestryMethod, 'cbt')
