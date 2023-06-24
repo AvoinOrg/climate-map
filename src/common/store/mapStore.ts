@@ -64,6 +64,12 @@ type Actions = {
   ) => Promise<any>
   setSelectedFeatures: (features: MapboxGeoJSONFeature[]) => void
   setMapLibraryMode: (mode: MapLibraryMode) => void
+  getGeocoder: () => void
+  mapRelocate: () => void
+  mapResetNorth: () => void
+  mapToggleTerrain: () => void
+  mapZoomIn: () => void
+  mapZoomOut: () => void
   _setIsLoaded: { (isLoaded: boolean): void }
   _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => void
   _addMbStyle: (id: LayerId, layerConf: LayerConfAnyId, isVisible?: boolean) => Promise<void>
@@ -556,13 +562,30 @@ export const useMapStore = create<State & Actions>()(
 
         return Promise.resolve()
       },
-      // TODO ZONE
-      // const getGeocoder = () => {}
-      // const mapRelocate = () => {}
-      // const mapResetNorth = () => {}
-      // const mapToggleTerrain = () => {}
-      // const mapZoomIn = () => {}
-      // const mapZoomOut = () => {}
+      getGeocoder: () => {
+        // set((state) => {
+        // })
+      },
+      mapRelocate: () => {
+        // set((state) => {
+        // })
+      },
+      mapResetNorth: () => {
+        // set((state) => {
+        // })
+      },
+      mapToggleTerrain: () => {
+        // set((state) => {
+        // })
+      },
+      mapZoomIn: () => {
+        // set((state) => {
+        // })
+      },
+      mapZoomOut: () => {
+        // set((state) => {
+        // })
+      },
     }
 
     return { ...state, ...actions }
