@@ -79,7 +79,7 @@ export const useMapStore = create<State & Actions>()(
   // Add your additional actions...
 
   immer((set, get) => {
-    return {
+    const state: State = {
       mapLibraryMode: DEFAULT_MAP_LIBRARY_MODE, // Assume an initial value
       isLoaded: false,
       overlayMessage: null,
@@ -91,7 +91,9 @@ export const useMapStore = create<State & Actions>()(
       _layerGroups: {},
       activeLayerGroupIds: [],
       _layerOptions: {},
+    }
 
+    const actions: Actions = {
       _setIsLoaded: (isLoaded: boolean) => {
         set((state) => {
           state.isLoaded = isLoaded
@@ -555,6 +557,8 @@ export const useMapStore = create<State & Actions>()(
       // const mapZoomIn = () => {}
       // const mapZoomOut = () => {}
     }
+
+    return { ...state, ...actions }
   })
 )
 
