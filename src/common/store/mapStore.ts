@@ -101,197 +101,6 @@ export const useMapStore = create<State & Actions>()(
     }
 
     const actions: Actions = {
-      _setIsLoaded: (isLoaded: boolean) => {
-        set((state) => {
-          state.isLoaded = isLoaded
-        })
-      },
-
-      _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => {
-        const { _layerGroups, _layerOptions, _mbMapRef } = get()
-        const layerGroup = _layerGroups[layerId]
-
-        for (const layer in layerGroup) {
-          if (_layerOptions[layer].useMb) {
-            _mbMapRef.current?.setLayoutProperty(layer, 'visibility', isVisible ? 'visible' : 'none')
-          } else {
-            layerGroup[layer].setVisible(isVisible)
-          }
-        }
-      },
-
-      _setPopupOpts: (popupOpts: PopupOpts) => {
-        set((state) => {
-          state.popupOpts = popupOpts
-        })
-      },
-
-      _addMbStyle: async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
-        const style = await layerConf.style()
-        const layers: ExtendedAnyLayer[] = style.layers
-        const sourceKeys = Object.keys(style.sources)
-
-        const layerGroup: any = {}
-
-        // After adding the layers using style, find them and add them to the layerGroup
-        //@ts-ignore
-        olms(map, style).then((map) => {
-          map
-            .getLayers()
-            .getArray()
-            .forEach((layer: any) => {
-              const sourceKey = layer.get('mapbox-source')
-              const layerKeys = layer.get('mapbox-layers')
-
-              if (sourceKeys.includes(sourceKey) && layerKeys != null && layerKeys.length > 0) {
-                const conf: ExtendedAnyLayer | undefined = layers.find((l: any) => l.id === layerKeys[0])
-
-                if (conf) {
-                  const layerOpt: LayerOpt = {
-                    id: layerKeys[0],
-                    source: sourceKey,
-                    name: getLayerName(layerKeys[0]),
-                    layerType: getLayerType(layerKeys[0]),
-                    selectable: conf.selectable || false,
-                    multiSelectable: conf.multiSelectable || false,
-                    popup: layerConf.popup || false,
-                    useMb: false,
-                  }
-
-                  assertValidHighlightingConf(layerOpt, layers)
-
-                  layer.set('group', id)
-                  layerGroup[layerKeys[0]] = layer
-
-                  set((state) => {
-                    state.layerOptions[layerKeys[0]] = layerOpt
-                  })
-                } else {
-                  console.error('Could not find layer configuration for layer: ' + layerKeys[0])
-                }
-              }
-            })
-
-          set((state) => {
-            state.layerGroups[id] = layerGroup
-          })
-
-          if (isVisible) {
-            set((state) => {
-              state.activeLayerGroupIds.push(id)
-            })
-          } else {
-            for (const layer in layerGroup) {
-              layerGroup[layer].setVisible(false)
-            }
-          }
-
-          if (layerConf.popup) {
-            set((state) => {
-              state.popups[id] = layerConf.popup
-            })
-          }
-        })
-      },
-
-      _addMbPopup: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => {
-        const { _mbMapRef } = get()
-
-        _mbMapRef.current?.on('click', layer, fn)
-        _mbMapRef.current?.on('mouseenter', layer, () => {
-          if (_mbMapRef.current) {
-            _mbMapRef.current.getCanvas().style.cursor = 'pointer'
-          }
-        })
-        _mbMapRef.current?.on('mouseleave', layer, () => {
-          if (_mbMapRef.current) {
-            _mbMapRef.current.getCanvas().style.cursor = ''
-          }
-        })
-      },
-
-      _addMbStyleToMb: async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
-        const { _addMbPopup, _mbMapRef } = get()
-        const setIsMapPopupOpen = useUIStore((state) => state.setIsMapPopupOpen)
-
-        const style = await layerConf.style()
-
-        try {
-          for (const sourceKey in style.sources) {
-            _mbMapRef.current?.addSource(sourceKey, style.sources[sourceKey])
-          }
-
-          const layerGroup: any = {}
-
-          for (const layer of style.layers) {
-            const layerOpt: LayerOpt = {
-              id: layer.id,
-              source: layer.source,
-              name: getLayerName(layer.id),
-              layerType: getLayerType(layer.id),
-              selectable: layer.selectable || false,
-              multiSelectable: layer.multiSelectable || false,
-              popup: layerConf.popup || false,
-              useMb: true,
-            }
-
-            if (layerOpt.layerType === 'fill') {
-              if (layer.selectable) {
-                if (!style.layers.find((l: any) => l.id === layerOpt.name + '-highlighted')) {
-                  console.error(
-                    "Layer '" + layerOpt.name + "' is selectable but missing the corresponding highlighted layer."
-                  )
-                }
-              }
-              if (layerConf.popup) {
-                const Popup: any = layerConf.popup
-
-                const popupFn = (evt: MapLayerMouseEvent) => {
-                  const features = evt.features || []
-                  const popupOpts: PopupOpts = {
-                    features,
-                    PopupElement: Popup,
-                  }
-
-                  set((state) => {
-                    state.popupOpts = popupOpts
-                  })
-
-                  setIsMapPopupOpen(true)
-                }
-                _addMbPopup(layer.id, popupFn)
-              }
-            }
-
-            assertValidHighlightingConf(layerOpt, style.layers)
-
-            set((state) => {
-              state.layerOptions[layerOpt.id] = layerOpt
-              layerGroup[layer.id] = layer
-            })
-
-            _mbMapRef.current?.addLayer(layer)
-
-            if (isVisible) {
-              _mbMapRef.current?.setLayoutProperty(layer.id, 'visibility', 'visible')
-            } else {
-              _mbMapRef.current?.setLayoutProperty(layer.id, 'visibility', 'none')
-            }
-          }
-
-          if (isVisible) {
-            set((state) => {
-              state.activeLayerGroupIds.push(id)
-              state.layerGroups[id] = layerGroup
-            })
-          }
-        } catch (e: any) {
-          if (!e.message.includes('There is already a source')) {
-            console.error(e)
-          }
-        }
-      },
-
       getSourceBounds: (sourceId: string): LngLatBounds | null => {
         // Query source features for the specified source
 
@@ -358,40 +167,6 @@ export const useMapStore = create<State & Actions>()(
       setSelectedFeatures: (features: MapboxGeoJSONFeature[]) => {
         set((state) => {
           state.selectedFeatures = features
-        })
-      },
-
-      // ensures that latest state is used in the callback
-      _addToFunctionQueue: (queueFunction: QueueFunction): Promise<any> => {
-        // construct a promise that will be manually resolved when the function is called
-        let promiseResolve: any, promiseReject: any
-        const promise = new Promise((resolve, reject) => {
-          promiseResolve = resolve
-          promiseReject = reject
-        })
-
-        if (queueFunction.priority === undefined) {
-          queueFunction.priority = QueuePriority.LOW
-        }
-
-        set((state) => {
-          state._functionQueue.push({
-            func: queueFunction.funcName,
-            args: queueFunction.args,
-            priority: queueFunction.priority,
-            promise: {
-              resolve: promiseResolve,
-              reject: promiseReject,
-            },
-          })
-        })
-
-        return promise
-      },
-
-      _setFunctionQueue: (functionQueue: QueueFunction[]) => {
-        set((state) => {
-          state._functionQueue = functionQueue
         })
       },
 
@@ -585,6 +360,230 @@ export const useMapStore = create<State & Actions>()(
       mapZoomOut: () => {
         // set((state) => {
         // })
+      },
+
+      _setIsLoaded: (isLoaded: boolean) => {
+        set((state) => {
+          state.isLoaded = isLoaded
+        })
+      },
+
+      _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => {
+        const { _layerGroups, _layerOptions, _mbMapRef } = get()
+        const layerGroup = _layerGroups[layerId]
+
+        for (const layer in layerGroup) {
+          if (_layerOptions[layer].useMb) {
+            _mbMapRef.current?.setLayoutProperty(layer, 'visibility', isVisible ? 'visible' : 'none')
+          } else {
+            layerGroup[layer].setVisible(isVisible)
+          }
+        }
+      },
+
+      _setPopupOpts: (popupOpts: PopupOpts) => {
+        set((state) => {
+          state.popupOpts = popupOpts
+        })
+      },
+
+      _addMbStyle: async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
+        const style = await layerConf.style()
+        const layers: ExtendedAnyLayer[] = style.layers
+        const sourceKeys = Object.keys(style.sources)
+
+        const layerGroup: any = {}
+
+        // After adding the layers using style, find them and add them to the layerGroup
+        //@ts-ignore
+        olms(map, style).then((map) => {
+          map
+            .getLayers()
+            .getArray()
+            .forEach((layer: any) => {
+              const sourceKey = layer.get('mapbox-source')
+              const layerKeys = layer.get('mapbox-layers')
+
+              if (sourceKeys.includes(sourceKey) && layerKeys != null && layerKeys.length > 0) {
+                const conf: ExtendedAnyLayer | undefined = layers.find((l: any) => l.id === layerKeys[0])
+
+                if (conf) {
+                  const layerOpt: LayerOpt = {
+                    id: layerKeys[0],
+                    source: sourceKey,
+                    name: getLayerName(layerKeys[0]),
+                    layerType: getLayerType(layerKeys[0]),
+                    selectable: conf.selectable || false,
+                    multiSelectable: conf.multiSelectable || false,
+                    popup: layerConf.popup || false,
+                    useMb: false,
+                  }
+
+                  assertValidHighlightingConf(layerOpt, layers)
+
+                  layer.set('group', id)
+                  layerGroup[layerKeys[0]] = layer
+
+                  set((state) => {
+                    state.layerOptions[layerKeys[0]] = layerOpt
+                  })
+                } else {
+                  console.error('Could not find layer configuration for layer: ' + layerKeys[0])
+                }
+              }
+            })
+
+          set((state) => {
+            state.layerGroups[id] = layerGroup
+          })
+
+          if (isVisible) {
+            set((state) => {
+              state.activeLayerGroupIds.push(id)
+            })
+          } else {
+            for (const layer in layerGroup) {
+              layerGroup[layer].setVisible(false)
+            }
+          }
+
+          if (layerConf.popup) {
+            set((state) => {
+              state.popups[id] = layerConf.popup
+            })
+          }
+        })
+      },
+
+      _addMbPopup: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => {
+        const { _mbMapRef } = get()
+
+        _mbMapRef.current?.on('click', layer, fn)
+        _mbMapRef.current?.on('mouseenter', layer, () => {
+          if (_mbMapRef.current) {
+            _mbMapRef.current.getCanvas().style.cursor = 'pointer'
+          }
+        })
+        _mbMapRef.current?.on('mouseleave', layer, () => {
+          if (_mbMapRef.current) {
+            _mbMapRef.current.getCanvas().style.cursor = ''
+          }
+        })
+      },
+
+      _addMbStyleToMb: async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
+        const { _addMbPopup, _mbMapRef } = get()
+        const setIsMapPopupOpen = useUIStore((state) => state.setIsMapPopupOpen)
+
+        const style = await layerConf.style()
+
+        try {
+          for (const sourceKey in style.sources) {
+            _mbMapRef.current?.addSource(sourceKey, style.sources[sourceKey])
+          }
+
+          const layerGroup: any = {}
+
+          for (const layer of style.layers) {
+            const layerOpt: LayerOpt = {
+              id: layer.id,
+              source: layer.source,
+              name: getLayerName(layer.id),
+              layerType: getLayerType(layer.id),
+              selectable: layer.selectable || false,
+              multiSelectable: layer.multiSelectable || false,
+              popup: layerConf.popup || false,
+              useMb: true,
+            }
+
+            if (layerOpt.layerType === 'fill') {
+              if (layer.selectable) {
+                if (!style.layers.find((l: any) => l.id === layerOpt.name + '-highlighted')) {
+                  console.error(
+                    "Layer '" + layerOpt.name + "' is selectable but missing the corresponding highlighted layer."
+                  )
+                }
+              }
+              if (layerConf.popup) {
+                const Popup: any = layerConf.popup
+
+                const popupFn = (evt: MapLayerMouseEvent) => {
+                  const features = evt.features || []
+                  const popupOpts: PopupOpts = {
+                    features,
+                    PopupElement: Popup,
+                  }
+
+                  set((state) => {
+                    state.popupOpts = popupOpts
+                  })
+
+                  setIsMapPopupOpen(true)
+                }
+                _addMbPopup(layer.id, popupFn)
+              }
+            }
+
+            assertValidHighlightingConf(layerOpt, style.layers)
+
+            set((state) => {
+              state.layerOptions[layerOpt.id] = layerOpt
+              layerGroup[layer.id] = layer
+            })
+
+            _mbMapRef.current?.addLayer(layer)
+
+            if (isVisible) {
+              _mbMapRef.current?.setLayoutProperty(layer.id, 'visibility', 'visible')
+            } else {
+              _mbMapRef.current?.setLayoutProperty(layer.id, 'visibility', 'none')
+            }
+          }
+
+          if (isVisible) {
+            set((state) => {
+              state.activeLayerGroupIds.push(id)
+              state.layerGroups[id] = layerGroup
+            })
+          }
+        } catch (e: any) {
+          if (!e.message.includes('There is already a source')) {
+            console.error(e)
+          }
+        }
+      },
+      // ensures that latest state is used in the callback
+      _addToFunctionQueue: (queueFunction: QueueFunction): Promise<any> => {
+        // construct a promise that will be manually resolved when the function is called
+        let promiseResolve: any, promiseReject: any
+        const promise = new Promise((resolve, reject) => {
+          promiseResolve = resolve
+          promiseReject = reject
+        })
+
+        if (queueFunction.priority === undefined) {
+          queueFunction.priority = QueuePriority.LOW
+        }
+
+        set((state) => {
+          state._functionQueue.push({
+            func: queueFunction.funcName,
+            args: queueFunction.args,
+            priority: queueFunction.priority,
+            promise: {
+              resolve: promiseResolve,
+              reject: promiseReject,
+            },
+          })
+        })
+
+        return promise
+      },
+
+      _setFunctionQueue: (functionQueue: QueueFunction[]) => {
+        set((state) => {
+          state._functionQueue = functionQueue
+        })
       },
     }
 
