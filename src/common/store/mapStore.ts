@@ -35,11 +35,11 @@ type State = {
   overlayMessage: OverlayMessage | null
   selectedFeatures: MapboxGeoJSONFeature[]
   popupOpts: PopupOpts | null
+  activeLayerGroupIds: string[]
   _functionQueue: (QueueFunction & { promise: Promise<any> })[]
   _mbMapRef: any | null
   _mapRef: any | null
   _layerGroups: Record<string, any>
-  _activeLayerGroupIds: string[]
   _layerOptions: Record<string, LayerOpt>
 }
 
@@ -89,7 +89,7 @@ export const useMapStore = create<State & Actions>()(
       _mbMapRef: null,
       _mapRef: null,
       _layerGroups: {},
-      _activeLayerGroupIds: [],
+      activeLayerGroupIds: [],
       _layerOptions: {},
 
       _setIsLoaded: (isLoaded: boolean) => {
@@ -425,22 +425,22 @@ export const useMapStore = create<State & Actions>()(
       },
 
       disableLayerGroup: async (layerId: LayerId) => {
-        const { _setGroupVisibility, _activeLayerGroupIds } = get()
+        const { _setGroupVisibility, activeLayerGroupIds } = get()
 
-        const _activeLayerGroupIdsCopy = [..._activeLayerGroupIds]
-        _activeLayerGroupIdsCopy.splice(_activeLayerGroupIdsCopy.indexOf(layerId), 1)
+        const activeLayerGroupIdsCopy = [...activeLayerGroupIds]
+        activeLayerGroupIdsCopy.splice(activeLayerGroupIdsCopy.indexOf(layerId), 1)
 
         set((state) => {
-          state._activeLayerGroupIds = state._activeLayerGroupIds.filter((id: string) => id !== layerId)
+          state.activeLayerGroupIds = state.activeLayerGroupIds.filter((id: string) => id !== layerId)
         })
 
         _setGroupVisibility(layerId, false)
       },
 
       toggleLayerGroup: async (layerId: LayerId, layerConf?: LayerConf) => {
-        const { _activeLayerGroupIds, disableLayerGroup, enableLayerGroup } = get()
+        const { activeLayerGroupIds, disableLayerGroup, enableLayerGroup } = get()
 
-        if (_activeLayerGroupIds.includes(layerId)) {
+        if (activeLayerGroupIds.includes(layerId)) {
           disableLayerGroup(layerId)
         } else {
           enableLayerGroup(layerId, layerConf)
