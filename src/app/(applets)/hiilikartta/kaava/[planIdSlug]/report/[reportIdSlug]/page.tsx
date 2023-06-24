@@ -2,7 +2,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 
 import useStore from '#/common/hooks/useStore'
-import { MapContext } from '#/components/Map'
 import { useUIStore } from '#/common/store'
 
 import { useAppStore } from 'applets/hiilikartta/state/appStore'
