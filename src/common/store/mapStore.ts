@@ -63,6 +63,7 @@ type Actions = {
     options: { duration?: number; lonExtra?: number; latExtra?: number }
   ) => Promise<any>
   setSelectedFeatures: (features: MapboxGeoJSONFeature[]) => void
+  setMapLibraryMode: (mode: MapLibraryMode) => void
   _setIsLoaded: { (isLoaded: boolean): void }
   _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => void
   _addMbStyle: (id: LayerId, layerConf: LayerConfAnyId, isVisible?: boolean) => Promise<void>
@@ -340,6 +341,12 @@ export const useMapStore = create<State & Actions>()(
           console.error(e)
         }
         return null
+      },
+
+      setMapLibraryMode: (mode: MapLibraryMode) => {
+        set((state) => {
+          state.mapLibraryMode = mode
+        })
       },
 
       setSelectedFeatures: (features: MapboxGeoJSONFeature[]) => {
