@@ -98,3 +98,5 @@ export interface ILayerOption {
 }
 
 export type QueueFunction = { funcName: string; args: any[]; priority?: QueuePriority }
+
+export type FunctionQueue = (QueueFunction & { promise: { resolve: any; reject: any } })[]
