@@ -1,9 +1,9 @@
-import { MapContext } from '#/components/Map'
+import { useMapStore } from '#/common/store'
 import { MapboxGeoJSONFeature } from 'mapbox-gl'
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const useFilteredSelectedFeatures = (filterLayers: string[]) => {
-  const { selectedFeatures } = useContext(MapContext)
+  const selectedFeatures = useMapStore((state) => state.selectedFeatures)
   const [filteredFeatures, setFilteredFeatures] = useState<MapboxGeoJSONFeature[]>([])
 
   useEffect(() => {
