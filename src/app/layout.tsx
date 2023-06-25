@@ -34,7 +34,6 @@ const RootLayout = ({
           <ThemeProvider theme={theme}>
             {/* <UserStateProvider> */}
             <CssBaseline>
-              <GroupOrientation />
               {/* <NavBar /> */}
               <Sidebar>{children}</Sidebar>
               {/* <UserModal /> */}
