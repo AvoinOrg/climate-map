@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useContext } from 'react'
+import React from 'react'
 import { styled } from '@mui/material/styles'
 import ButtonGroup from '@mui/material/ButtonGroup'
 import SatelliteIcon from '@mui/icons-material/Satellite'
@@ -8,14 +8,18 @@ import ExploreIcon from '@mui/icons-material/Explore'
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 import GpsFixedIcon from '@mui/icons-material/GpsFixed'
-import EditIcon from '@mui/icons-material/Edit';
+import EditIcon from '@mui/icons-material/Edit'
 
-import { MapContext } from '#/components/Map'
+import { useMapStore } from '#/common/store'
 import { Button } from '@mui/material'
 
 export const GroupOrientation = () => {
-  const { mapToggleTerrain, mapResetNorth, mapZoomIn, mapZoomOut, mapRelocate, setIsDrawPolygon } =
-    useContext(MapContext)
+  const mapToggleTerrain = useMapStore((state) => state.mapToggleTerrain)
+  const mapResetNorth = useMapStore((state) => state.mapResetNorth)
+  const mapZoomIn = useMapStore((state) => state.mapZoomIn)
+  const mapZoomOut = useMapStore((state) => state.mapZoomOut)
+  const mapRelocate = useMapStore((state) => state.mapRelocate)
+  const setIsDrawPolygon = useMapStore((state) => state.setIsDrawPolygon)
 
   return (
     <IconGroup>
