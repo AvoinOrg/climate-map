@@ -9,9 +9,9 @@ import { ThemeProvider } from '@mui/material/styles'
 import theme from '#/common/style/theme'
 import { Sidebar } from '#/components/Sidebar'
 import { NavBar } from '#/components/NavBar'
+import { Map } from '#/components/Map'
 // import { UserModal } from '#/components/Profile'
 // import { UiStateProvider, UserStateProvider } from '#/components/State'
-import { GroupOrientation } from '#/components/Map'
 // import RootStyleRegistry from './emotion'
 
 const RootLayout = ({
@@ -34,9 +34,11 @@ const RootLayout = ({
           <ThemeProvider theme={theme}>
             {/* <UserStateProvider> */}
             <CssBaseline>
-              {/* <NavBar /> */}
-              <Sidebar>{children}</Sidebar>
-              {/* <UserModal /> */}
+              <Map>
+                {/* <NavBar /> */}
+                <Sidebar>{children}</Sidebar>
+                {/* <UserModal /> */}
+              </Map>
             </CssBaseline>
             {/* </UserStateProvider> */}
           </ThemeProvider>
