@@ -3,7 +3,7 @@ import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style'
 import Layer from 'ol/layer/Layer'
 import WebGLVectorLayerRenderer from 'ol/renderer/webgl/VectorLayer'
 import { asArray } from 'ol/color'
-import { packColor } from 'ol/renderer/webgl/shaders'
+// import { packColor } from 'ol/renderer/webgl/shaders'
 import { Geometry, Position } from 'geojson'
 import { LayerType, layerTypes, LayerOpt, ExtendedAnyLayer } from '../types/map'
 
@@ -72,39 +72,39 @@ export const defaultVectorStyleFunction = (feature: any) => {
   return defaultVectorStyles[feature.getGeometry().getType()]
 }
 
-export class WebGLLayer extends Layer {
-  createRenderer = (): any => {
-    return new WebGLVectorLayerRenderer(this, {
-      fill: {
-        attributes: {
-          color: (feature: any) => {
-            const color = asArray(feature.get('COLOR') || '#eee')
-            color[3] = 0.85
-            return packColor(color)
-          },
-          opacity: () => {
-            return 0.6
-          },
-        },
-      },
-      stroke: {
-        attributes: {
-          color: (feature: any) => {
-            const color = [...asArray(feature.get('COLOR') || '#eee')]
-            color.forEach((_, i) => (color[i] = Math.round(color[i] * 0.75))) // darken slightly
-            return packColor(color)
-          },
-          width: () => {
-            return 1.5
-          },
-          opacity: () => {
-            return 1
-          },
-        },
-      },
-    })
-  }
-}
+// export class WebGLLayer extends Layer {
+//   createRenderer = (): any => {
+//     return new WebGLVectorLayerRenderer(this, {
+//       fill: {
+//         attributes: {
+//           color: (feature: any) => {
+//             const color = asArray(feature.get('COLOR') || '#eee')
+//             color[3] = 0.85
+//             return packColor(color)
+//           },
+//           opacity: () => {
+//             return 0.6
+//           },
+//         },
+//       },
+//       stroke: {
+//         attributes: {
+//           color: (feature: any) => {
+//             const color = [...asArray(feature.get('COLOR') || '#eee')]
+//             color.forEach((_, i) => (color[i] = Math.round(color[i] * 0.75))) // darken slightly
+//             return packColor(color)
+//           },
+//           width: () => {
+//             return 1.5
+//           },
+//           opacity: () => {
+//             return 1
+//           },
+//         },
+//       },
+//     })
+//   }
+// }
 
 export const stringToColor = (str: string) => {
   let hash = 0
