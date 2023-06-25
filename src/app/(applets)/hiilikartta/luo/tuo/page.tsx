@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useRef, useContext, useEffect, useState, ChangeEvent } from 'react'
+import React, { useRef, useEffect, useState, ChangeEvent } from 'react'
 import { Button } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import { styled } from '@mui/material/styles'
 
 import { getRoute } from '#/common/utils/routing'
-import { MapContext } from '#/components/Map'
+import { useMapStore } from '#/common/store'
 import { FileType, NewPlanConf } from 'applets/hiilikartta/common/types'
 import { getGeoJsonArea } from '#/common/utils/gis'
 
@@ -16,7 +16,7 @@ import { useAppStore } from 'applets/hiilikartta/state/appStore'
 import { createLayerConf } from '../../common/utils'
 
 const Page = () => {
-  const { addAnyLayerGroup } = useContext(MapContext)
+  const addAnyLayerGroup = useMapStore((state) => state.addAnyLayerGroup)
   const addPlanConf = useAppStore((state) => state.addPlanConf)
   const deletePlanConf = useAppStore((state) => state.deletePlanConf)
   const [fileType, setFileType] = useState<FileType>()
