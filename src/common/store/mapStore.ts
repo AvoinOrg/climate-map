@@ -42,8 +42,8 @@ type Vars = {
   isDrawEnabled: boolean
   _draw: MapboxDraw | null
   _functionQueue: FunctionQueue
-  _mbMapRef: React.RefObject<MbMap | null>
-  _olMapRef: React.RefObject<OlMap | null>
+  _mbMap: MbMap | null
+  _olMap: OlMap | null
   _layerGroups: Record<string, any>
   _layerOptions: Record<string, LayerOpt>
 }
@@ -84,6 +84,7 @@ type Actions = {
   _addToFunctionQueue: (queueFunction: QueueFunction) => Promise<any>
   _setFunctionQueue: (functionQueue: FunctionQueue) => void
   _setPopupOpts: (popupOpts: PopupOpts) => void
+  _setMbMap: (mbMap: MbMap) => void
 }
 
 type State = Vars & Actions
@@ -104,8 +105,8 @@ export const useMapStore = create<State>()(
       activeLayerGroupIds: [],
       _draw: null,
       _functionQueue: [],
-      _mbMapRef: { current: null },
-      _olMapRef: { current: null },
+      _mbMap: null,
+      _olMap: null,
       _layerGroups: {},
       _layerOptions: {},
     }
@@ -114,9 +115,9 @@ export const useMapStore = create<State>()(
       getSourceBounds: (sourceId: string): LngLatBounds | null => {
         // Query source features for the specified source
 
-        const { _mbMapRef, getSourceJson } = get()
+        const { _mbMap, getSourceJson } = get()
 
-        if (!_mbMapRef.current) {
+        if (!_mbMap) {
           return null
         }
 
@@ -126,12 +127,12 @@ export const useMapStore = create<State>()(
         if (sourceFeatures) {
           featureColl = sourceFeatures
         } else {
-          const features = _mbMapRef.current.querySourceFeatures(sourceId)
+          const features = _mbMap.querySourceFeatures(sourceId)
 
           if (features.length > 0 && features[0].geometry) {
             featureColl = { type: 'FeatureCollection', features: features }
           } else {
-            const source = _mbMapRef.current.getSource(sourceId)
+            const source = _mbMap.getSource(sourceId)
             // TODO: check the method of finding the set extent of a source in style. This method is probably deprecated.
             //@ts-ignore
             if (source.tileBounds && source.tileBounds.bounds) {
@@ -158,9 +159,9 @@ export const useMapStore = create<State>()(
 
       getSourceJson: (id: string) => {
         try {
-          const { _mbMapRef } = get()
+          const { _mbMap } = get()
           //@ts-ignore
-          const geojson: FeatureCollection = _mbMapRef.current?.getSource(id)._options.data
+          const geojson: FeatureCollection = _mbMap?.getSource(id)._options.data
           return geojson
         } catch (e) {
           console.error(e)
@@ -275,28 +276,28 @@ export const useMapStore = create<State>()(
       },
 
       setLayoutProperty: async (layer: string, name: string, value: any): Promise<any> => {
-        const { isLoaded, _addToFunctionQueue, _mbMapRef } = get()
+        const { isLoaded, _addToFunctionQueue, _mbMap } = get()
 
         if (!isLoaded) {
           return _addToFunctionQueue({ funcName: 'setLayoutProperty', args: [layer, name, value] })
         }
-        _mbMapRef.current?.setLayoutProperty(layer, name, value)
+        _mbMap?.setLayoutProperty(layer, name, value)
       },
 
       setPaintProperty: async (layer: string, name: string, value: any): Promise<any> => {
-        const { isLoaded, _mbMapRef, _addToFunctionQueue } = get()
+        const { isLoaded, _mbMap, _addToFunctionQueue } = get()
         if (!isLoaded) {
           return _addToFunctionQueue({ funcName: 'setPaintProperty', args: [layer, name, value] })
         }
-        _mbMapRef.current?.setPaintProperty(layer, name, value)
+        _mbMap?.setPaintProperty(layer, name, value)
       },
 
       setFilter: async (layer: string, filter: any[]): Promise<any> => {
-        const { isLoaded, _mbMapRef, _addToFunctionQueue } = get()
+        const { isLoaded, _mbMap, _addToFunctionQueue } = get()
         if (!isLoaded) {
           return _addToFunctionQueue({ funcName: 'setFilter', args: [layer, filter] })
         }
-        _mbMapRef.current?.setFilter(layer, filter)
+        _mbMap?.setFilter(layer, filter)
       },
 
       setOverlayMessage: async (condition: boolean, message: OverlayMessage) => {
@@ -313,7 +314,7 @@ export const useMapStore = create<State>()(
           latExtra = 0,
         }: { duration?: number; lonExtra?: number; latExtra?: number } = {}
       ): Promise<any> => {
-        const { isLoaded, _addToFunctionQueue, _mbMapRef } = get()
+        const { isLoaded, _addToFunctionQueue, _mbMap } = get()
 
         if (!isLoaded) {
           return _addToFunctionQueue({ funcName: 'fitBounds', args: [bbox, { duration, lonExtra, latExtra }] })
@@ -339,7 +340,7 @@ export const useMapStore = create<State>()(
         const flyOptions = { duration: duration }
         const lonDiff = lonMax - lonMin
         const latDiff = latMax - latMin
-        _mbMapRef.current?.fitBounds(
+        _mbMap?.fitBounds(
           [
             [lonMin - lonExtra * lonDiff, latMin - latExtra * latDiff],
             [lonMax + lonExtra * lonDiff, latMax + latExtra * latDiff],
@@ -375,7 +376,7 @@ export const useMapStore = create<State>()(
       },
 
       setIsDrawPolygon: (isDrawPolygon: boolean) => {
-        const { isLoaded, _addToFunctionQueue, _mbMapRef } = get()
+        const { isLoaded, _addToFunctionQueue, _mbMap } = get()
 
         // TODO: Fix drawing. Figure out which layer to use, and dynamically add it to the map
         const sourceName = 'carbon-shapes'
@@ -398,15 +399,15 @@ export const useMapStore = create<State>()(
           // The user does not have to click the polygon control button first.
           // defaultMode: 'draw_polygon',
         })
-        const source = cloneDeep(_mbMapRef.current?.getStyle().sources[sourceName])
+        const source = cloneDeep(_mbMap?.getStyle().sources[sourceName])
 
-        _mbMapRef.current?.removeLayer('carbon-shapes-outline')
-        _mbMapRef.current?.removeLayer('carbon-shapes-fill')
-        _mbMapRef.current?.removeLayer('carbon-shapes-sym')
-        _mbMapRef.current?.removeSource(sourceName)
+        _mbMap?.removeLayer('carbon-shapes-outline')
+        _mbMap?.removeLayer('carbon-shapes-fill')
+        _mbMap?.removeLayer('carbon-shapes-sym')
+        _mbMap?.removeSource(sourceName)
 
         // console.log(source.data.features)
-        _mbMapRef.current?.addControl(draw, 'bottom-right')
+        _mbMap?.addControl(draw, 'bottom-right')
 
         //@ts-ignore
         draw.add(source.data)
@@ -424,12 +425,12 @@ export const useMapStore = create<State>()(
       },
 
       _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => {
-        const { _layerGroups, _layerOptions, _mbMapRef } = get()
+        const { _layerGroups, _layerOptions, _mbMap } = get()
         const layerGroup = _layerGroups[layerId]
 
         for (const layer in layerGroup) {
           if (_layerOptions[layer].useMb) {
-            _mbMapRef.current?.setLayoutProperty(layer, 'visibility', isVisible ? 'visible' : 'none')
+            _mbMap?.setLayoutProperty(layer, 'visibility', isVisible ? 'visible' : 'none')
           } else {
             layerGroup[layer].setVisible(isVisible)
           }
@@ -514,30 +515,30 @@ export const useMapStore = create<State>()(
       },
 
       _addMbPopup: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => {
-        const { _mbMapRef } = get()
+        const { _mbMap } = get()
 
-        _mbMapRef.current?.on('click', layer, fn)
-        _mbMapRef.current?.on('mouseenter', layer, () => {
-          if (_mbMapRef.current) {
-            _mbMapRef.current.getCanvas().style.cursor = 'pointer'
+        _mbMap?.on('click', layer, fn)
+        _mbMap?.on('mouseenter', layer, () => {
+          if (_mbMap) {
+            _mbMap.getCanvas().style.cursor = 'pointer'
           }
         })
-        _mbMapRef.current?.on('mouseleave', layer, () => {
-          if (_mbMapRef.current) {
-            _mbMapRef.current.getCanvas().style.cursor = ''
+        _mbMap?.on('mouseleave', layer, () => {
+          if (_mbMap) {
+            _mbMap.getCanvas().style.cursor = ''
           }
         })
       },
 
       _addMbStyleToMb: async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
-        const { _addMbPopup, _mbMapRef } = get()
+        const { _addMbPopup, _mbMap } = get()
         const setIsMapPopupOpen = useUIStore((state) => state.setIsMapPopupOpen)
 
         const style = await layerConf.style()
 
         try {
           for (const sourceKey in style.sources) {
-            _mbMapRef.current?.addSource(sourceKey, style.sources[sourceKey])
+            _mbMap?.addSource(sourceKey, style.sources[sourceKey])
           }
 
           const layerGroup: any = {}
@@ -591,12 +592,12 @@ export const useMapStore = create<State>()(
               layerGroup[layer.id] = layer
             })
 
-            _mbMapRef.current?.addLayer(layer)
+            _mbMap?.addLayer(layer)
 
             if (isVisible) {
-              _mbMapRef.current?.setLayoutProperty(layer.id, 'visibility', 'visible')
+              _mbMap?.setLayoutProperty(layer.id, 'visibility', 'visible')
             } else {
-              _mbMapRef.current?.setLayoutProperty(layer.id, 'visibility', 'none')
+              _mbMap?.setLayoutProperty(layer.id, 'visibility', 'none')
             }
           }
 
@@ -643,6 +644,12 @@ export const useMapStore = create<State>()(
       _setFunctionQueue: (functionQueue: FunctionQueue) => {
         set((state) => {
           state._functionQueue = functionQueue
+        })
+      },
+
+      _setMbMap: (mbMap: MbMap) => {
+        set((state) => {
+          state._mbMap = mbMap
         })
       },
     }

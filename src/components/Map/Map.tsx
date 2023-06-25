@@ -49,7 +49,8 @@ export const Map = ({ children }: Props) => {
   const mapRef = useRef<OlMap | null>(null)
   const mapLibraryRef = useRef<MapLibraryMode | null>(null)
 
-  const _mbMapRef = useMapStore((state) => state._mbMapRef)
+  const _mbMap = useMapStore((state) => state._mbMap)
+  const _setMbMap = useMapStore((state) => state._setMbMap)
   const mapLibraryMode = useMapStore((state) => state.mapLibraryMode)
   const isLoaded = useMapStore((state) => state.isLoaded)
   const _setIsLoaded = useMapStore((state) => state._setIsLoaded)
@@ -156,15 +157,15 @@ export const Map = ({ children }: Props) => {
       })
     }
 
-    if (_mbMapRef.current && _mbMapRef.current.getStyle()) {
-      const sources = _mbMapRef.current.getStyle().sources
+    if (_mbMap && _mbMap.getStyle()) {
+      const sources = _mbMap.getStyle().sources
       for (const key in sources) {
         newMbMap.addSource(key, sources[key])
       }
-      for (const layer of _mbMapRef.current.getStyle().layers) {
+      for (const layer of _mbMap.getStyle().layers) {
         newMbMap.addLayer(layer)
       }
-      _mbMapRef.current.remove()
+      _mbMap.remove()
     }
 
     const mbSelectionFunction = (e: MapLayerMouseEvent) => {
@@ -283,7 +284,7 @@ export const Map = ({ children }: Props) => {
     switch (mode) {
       case 'mapbox': {
         let newMbMap = initMbMap(viewSettings, false)
-        _mbMapRef.current = newMbMap
+        _setMbMap(newMbMap)
 
         mapLibraryRef.current = 'mapbox'
 
@@ -295,7 +296,7 @@ export const Map = ({ children }: Props) => {
       case 'hybrid': {
         let { newMap, newMbMap } = initHybridMap(viewSettings)
         mapRef.current = newMap
-        _mbMapRef.current = newMbMap
+        _setMbMap(newMbMap)
 
         mapLibraryRef.current = 'hybrid'
 
@@ -317,12 +318,12 @@ export const Map = ({ children }: Props) => {
       _setIsLoaded(false)
 
       if (mapLibraryRef.current === 'mapbox') {
-        const mbCenter = _mbMapRef.current?.getCenter()
+        const mbCenter = _mbMap?.getCenter()
         if (mbCenter != null) {
           center = [mbCenter.lng, mbCenter.lat]
         }
 
-        const mbZoom = _mbMapRef.current?.getZoom()
+        const mbZoom = _mbMap?.getZoom()
         if (mbZoom != null) {
           zoom = mbZoom
         }
@@ -352,7 +353,7 @@ export const Map = ({ children }: Props) => {
 
           if (point != undefined) {
             point = proj.toLonLat(point)
-            _mbMapRef.current?.fire('click', {
+            _mbMap?.fire('click', {
               lngLat: point as mapboxgl.LngLatLike,
             })
           }
@@ -489,7 +490,7 @@ export const Map = ({ children }: Props) => {
             return feature.id
           })
 
-        _mbMapRef.current?.setFilter(getLayerName(id) + '-highlighted', ['in', 'id', ...featureIds])
+        _mbMap?.setFilter(getLayerName(id) + '-highlighted', ['in', 'id', ...featureIds])
       }
 
       setSelectedFeatures(selectedFeaturesCopy)
