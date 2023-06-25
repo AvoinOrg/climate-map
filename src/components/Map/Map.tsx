@@ -55,7 +55,7 @@ export const Map = ({ children }: Props) => {
   const _functionQueue = useMapStore((state) => state._functionQueue)
   const _setFunctionQueue = useMapStore((state) => state._setFunctionQueue)
   const _layerGroups = useMapStore((state) => state._layerGroups)
-  const _activeLayerGroupIds = useMapStore((state) => state._activeLayerGroupIds)
+  const activeLayerGroupIds = useMapStore((state) => state.activeLayerGroupIds)
   const _layerOptions = useMapStore((state) => state._layerOptions)
   const overlayMessage = useMapStore((state) => state.overlayMessage)
   const selectedFeatures = useMapStore((state) => state.selectedFeatures)
@@ -410,7 +410,7 @@ export const Map = ({ children }: Props) => {
       } else {
       }
     }
-  }, [_activeLayerGroupIds, mapLibraryMode, isLoaded, popups])
+  }, [activeLayerGroupIds, mapLibraryMode, isLoaded, popups])
 
   useEffect(() => {
     const filterSelectedFeatures = (
@@ -493,7 +493,7 @@ export const Map = ({ children }: Props) => {
 
       setSelectedFeatures(selectedFeaturesCopy)
     }
-  }, [newlySelectedFeatures, selectedFeatures, _layerOptions, _activeLayerGroupIds, _layerGroups])
+  }, [newlySelectedFeatures, selectedFeatures, _layerOptions, activeLayerGroupIds, _layerGroups])
 
   useEffect(() => {
     // Run queued function once map has loaded
@@ -565,7 +565,7 @@ export const Map = ({ children }: Props) => {
     if (isLoaded) {
       let activeLayerIds: string[] = []
 
-      for (const layerId of _activeLayerGroupIds) {
+      for (const layerId of activeLayerGroupIds) {
         const layerGroupLayers = _layerGroups[layerId]
 
         activeLayerIds = [...activeLayerIds, ...Object.keys(layerGroupLayers)]
@@ -581,7 +581,7 @@ export const Map = ({ children }: Props) => {
         setSelectedFeatures(selectedFeaturesCopy)
       }
     }
-  }, [isLoaded, selectedFeatures, _activeLayerGroupIds, _layerGroups])
+  }, [isLoaded, selectedFeatures, activeLayerGroupIds, _layerGroups])
 
   return (
     <>
