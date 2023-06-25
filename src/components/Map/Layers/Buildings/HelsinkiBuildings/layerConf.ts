@@ -12,13 +12,12 @@ const SERVER_URL = process.env.NEXT_PUBLIC_GEOSERVER_URL
 const id: LayerId = 'helsinki_buildings'
 
 const getStyle = async (): Promise<ExtendedMbStyle> => {
-  const sourceNames = ['helsinki_buildings']
   const sources: any = {}
   let layers: any = []
 
-for (const layerId in layerOptions) {
-  const options = layerOptions[layerId]
-  sources[layerId] = {
+  for (const layerId in layerOptions) {
+    const options = layerOptions[layerId]
+    sources[layerId] = {
       type: 'vector',
       scheme: 'tms',
       tiles: [`${SERVER_URL}/gwc/service/tms/1.0.0/misc:${options.serverId}@EPSG:900913@pbf/{z}/{x}/{y}.pbf`],
@@ -29,20 +28,24 @@ for (const layerId in layerOptions) {
       promoteId: 'id',
     }
 
-  layers = [
-    ...layers,
-    {
+    layers = [
+      ...layers,
+      {
         id: `${layerId}-fill`,
         source: layerId,
         'source-layer': options.serverId,
         type: 'fill',
-        paint: {          
-           'fill-color': [             
-             'match',
-             // ['get', 'c_poltaine'], '1', '#f0afaa', '2', '#f3bcb8', '3', '#f0afaa', '4', '#ffffff', '9', '#68c296',                                         
-             ['get', 'c_kayttark'], '032', 'cyan', '039', 'cyan',                     
-             'gray', // fallback value
-           ],
+        paint: {
+          'fill-color': [
+            'match',
+            // ['get', 'c_poltaine'], '1', '#f0afaa', '2', '#f3bcb8', '3', '#f0afaa', '4', '#ffffff', '9', '#68c296',
+            ['get', 'c_kayttark'],
+            '032',
+            'cyan',
+            '039',
+            'cyan',
+            'gray', // fallback value
+          ],
           'fill-opacity': fillOpacity,
         },
         // paint: {
@@ -51,50 +54,50 @@ for (const layerId in layerOptions) {
         // },
         // ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
         // ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
-    },
-    {
-      id: `${layerId}-outline`,
-      source: layerId,
-      'source-layer': options.serverId,
-      type: 'line',
-      minzoom: 11,
-      paint: {
-        'line-opacity': 0.75,
       },
-      // ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
-      // ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
-    },
-    {
-      id: `${layerId}-symbol`,
-      source: layerId,
-      'source-layer': options.serverId,
-      type: 'symbol',
-      minzoom: 16,
-      paint: {},
-      layout: {
-        'symbol-placement': 'point',
-        'text-font': ['Open Sans Regular'],
-        'text-size': 20,
-        'text-field': [
-          'case',
-          ['has', 'i_raktilav'],
-          [
-            'let',
-            'co2',
-            ['/', ['*', 15, ['to-number', ['get', 'i_raktilav'], 0]], 1000],
+      {
+        id: `${layerId}-outline`,
+        source: layerId,
+        'source-layer': options.serverId,
+        type: 'line',
+        minzoom: 11,
+        paint: {
+          'line-opacity': 0.75,
+        },
+        // ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
+        // ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
+      },
+      {
+        id: `${layerId}-symbol`,
+        source: layerId,
+        'source-layer': options.serverId,
+        type: 'symbol',
+        minzoom: 16,
+        paint: {},
+        layout: {
+          'symbol-placement': 'point',
+          'text-font': ['Open Sans Regular'],
+          'text-size': 20,
+          'text-field': [
+            'case',
+            ['has', 'i_raktilav'],
             [
-              'concat',
-              roundToSignificantDigitsExpr(2, ['var', 'co2']), // kg -> tons
-              ' t CO2e/y',
+              'let',
+              'co2',
+              ['/', ['*', 15, ['to-number', ['get', 'i_raktilav'], 0]], 1000],
+              [
+                'concat',
+                roundToSignificantDigitsExpr(2, ['var', 'co2']), // kg -> tons
+                ' t CO2e/y',
+              ],
             ],
+            '',
           ],
-          '',
-        ],
+        },
+        // ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
+        // ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
       },
-      // ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
-      // ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
-    },    
-  ]
+    ]
   }
   return {
     version: 8,
@@ -102,8 +105,8 @@ for (const layerId in layerOptions) {
     sources: sources,
     layers: layers,
   }
-}   
+}
 
-const layerConf: LayerConf = { id: id, style: getStyle, popup: Popup, useMb: true, }
+const layerConf: LayerConf = { id: id, style: getStyle, popup: Popup, useMb: true }
 
 export default layerConf
