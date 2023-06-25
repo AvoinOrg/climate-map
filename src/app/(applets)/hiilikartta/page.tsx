@@ -1,17 +1,17 @@
 'use client'
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { Box } from '@mui/material'
 
 import useStore from '#/common/hooks/useStore'
 
-import { MapContext } from '#/components/Map'
+import { useMapStore } from '#/common/store'
 import { useAppStore } from './state/appStore'
 import PlanListItem from './components/PlanListItem'
 
 const Page = () => {
   const planConfs = useStore(useAppStore, (state) => state.planConfs)
-  const { setMapLibraryMode } = useContext(MapContext)
+  const setMapLibraryMode = useMapStore((state) => state.setMapLibraryMode)
 
   useEffect(() => {
     setMapLibraryMode('mapbox')
