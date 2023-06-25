@@ -2,12 +2,16 @@ import { map, cloneDeep } from 'lodash-es'
 import olms from 'ol-mapbox-style'
 import turfBbox from '@turf/bbox'
 import { immer } from 'zustand/middleware/immer'
+import { produce } from 'immer'
+import { FeatureCollection } from 'geojson'
+import { create } from 'zustand'
 
-import { MapLayerMouseEvent, Style as MbStyle, LngLatBounds, MapboxGeoJSONFeature } from 'mapbox-gl'
+import { MapLayerMouseEvent, Map as MbMap, LngLatBounds, MapboxGeoJSONFeature } from 'mapbox-gl'
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import { useUIStore } from '#/common/store'
+import { Map as OlMap } from 'ol'
 
 import {
   LayerId,
@@ -23,8 +27,6 @@ import {
   FunctionQueue,
 } from '#/common/types/map'
 import { layerConfs } from '#/components/Map/Layers'
-import { FeatureCollection } from 'geojson'
-import { create } from 'zustand'
 
 import { getLayerName, getLayerType, assertValidHighlightingConf } from '#/common/utils/map'
 
@@ -40,8 +42,8 @@ type Vars = {
   isDrawEnabled: boolean
   _draw: MapboxDraw | null
   _functionQueue: FunctionQueue
-  _mbMapRef: any | null
-  _mapRef: any | null
+  _mbMapRef: React.RefObject<MbMap | null>
+  _olMapRef: React.RefObject<OlMap | null>
   _layerGroups: Record<string, any>
   _layerOptions: Record<string, LayerOpt>
 }
@@ -99,12 +101,12 @@ export const useMapStore = create<State>()(
       selectedFeatures: [],
       popupOpts: null,
       isDrawEnabled: false,
+      activeLayerGroupIds: [],
       _draw: null,
       _functionQueue: [],
-      _mbMapRef: null,
-      _mapRef: null,
+      _mbMapRef: { current: null },
+      _olMapRef: { current: null },
       _layerGroups: {},
-      activeLayerGroupIds: [],
       _layerOptions: {},
     }
 
@@ -167,15 +169,17 @@ export const useMapStore = create<State>()(
       },
 
       setMapLibraryMode: (mode: MapLibraryMode) => {
-        set((state: State) => {
+        set((state) => {
           state.mapLibraryMode = mode
         })
       },
 
       setSelectedFeatures: (features: MapboxGeoJSONFeature[]) => {
-        set((state: State) => {
-          state.selectedFeatures = features
-        })
+        set(
+          produce((draft: State) => {
+            draft.selectedFeatures = features
+          })
+        )
       },
 
       addLayerGroup: async (layerId: LayerId, layerConf?: LayerConf) => {
@@ -214,7 +218,7 @@ export const useMapStore = create<State>()(
         if (_layerGroups[layerId]) {
           _setGroupVisibility(layerId, true)
 
-          set((state: State) => {
+          set((state) => {
             state.activeLayerGroupIds.push(layerId)
           })
         } else {
@@ -228,7 +232,7 @@ export const useMapStore = create<State>()(
         const activeLayerGroupIdsCopy = [...activeLayerGroupIds]
         activeLayerGroupIdsCopy.splice(activeLayerGroupIdsCopy.indexOf(layerId), 1)
 
-        set((state: State) => {
+        set((state) => {
           state.activeLayerGroupIds = state.activeLayerGroupIds.filter((id: string) => id !== layerId)
         })
 
@@ -296,7 +300,7 @@ export const useMapStore = create<State>()(
       },
 
       setOverlayMessage: async (condition: boolean, message: OverlayMessage) => {
-        set((state: State) => {
+        set((state) => {
           state.overlayMessage = condition ? message : null
         })
       },
@@ -346,27 +350,27 @@ export const useMapStore = create<State>()(
         return Promise.resolve()
       },
       getGeocoder: () => {
-        // set((state: State) => {
+        // set((state) => {
         // })
       },
       mapRelocate: () => {
-        // set((state: State) => {
+        // set((state) => {
         // })
       },
       mapResetNorth: () => {
-        // set((state: State) => {
+        // set((state) => {
         // })
       },
       mapToggleTerrain: () => {
-        // set((state: State) => {
+        // set((state) => {
         // })
       },
       mapZoomIn: () => {
-        // set((state: State) => {
+        // set((state) => {
         // })
       },
       mapZoomOut: () => {
-        // set((state: State) => {
+        // set((state) => {
         // })
       },
 
@@ -407,14 +411,14 @@ export const useMapStore = create<State>()(
         //@ts-ignore
         draw.add(source.data)
 
-        set((state: State) => {
+        set((state) => {
           state._draw = draw
           state.isDrawEnabled = true
         })
       },
 
       _setIsLoaded: (isLoaded: boolean) => {
-        set((state: State) => {
+        set((state) => {
           state.isLoaded = isLoaded
         })
       },
@@ -433,9 +437,11 @@ export const useMapStore = create<State>()(
       },
 
       _setPopupOpts: (popupOpts: PopupOpts) => {
-        set((state: State) => {
-          state.popupOpts = popupOpts
-        })
+        set(
+          produce((state) => {
+            state.popupOpts = popupOpts
+          })
+        )
       },
 
       _addMbStyle: async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
@@ -475,7 +481,7 @@ export const useMapStore = create<State>()(
                   layer.set('group', id)
                   layerGroup[layerKeys[0]] = layer
 
-                  set((state: State) => {
+                  set((state) => {
                     state._layerOptions[layerKeys[0]] = layerOpt
                   })
                 } else {
@@ -484,12 +490,12 @@ export const useMapStore = create<State>()(
               }
             })
 
-          set((state: State) => {
+          set((state) => {
             state._layerGroups[id] = layerGroup
           })
 
           if (isVisible) {
-            set((state: State) => {
+            set((state) => {
               state.activeLayerGroupIds.push(id)
             })
           } else {
@@ -500,7 +506,7 @@ export const useMapStore = create<State>()(
 
           // TODO: Figure out olMap popups
           // if (layerConf.popup) {
-          //   set((state: State) => {
+          //   set((state) => {
           //     state.popups[id] = layerConf.popup
           //   })
           // }
@@ -566,9 +572,11 @@ export const useMapStore = create<State>()(
                     PopupElement: Popup,
                   }
 
-                  set((state: State) => {
-                    state.popupOpts = popupOpts
-                  })
+                  set(
+                    produce((state) => {
+                      state.popupOpts = popupOpts
+                    })
+                  )
 
                   setIsMapPopupOpen(true)
                 }
@@ -578,7 +586,7 @@ export const useMapStore = create<State>()(
 
             assertValidHighlightingConf(layerOpt, style.layers)
 
-            set((state: State) => {
+            set((state) => {
               state._layerOptions[layerOpt.id] = layerOpt
               layerGroup[layer.id] = layer
             })
@@ -593,7 +601,7 @@ export const useMapStore = create<State>()(
           }
 
           if (isVisible) {
-            set((state: State) => {
+            set((state) => {
               state.activeLayerGroupIds.push(id)
               state._layerGroups[id] = layerGroup
             })
@@ -617,7 +625,7 @@ export const useMapStore = create<State>()(
           queueFunction.priority = QueuePriority.LOW
         }
 
-        set((state: State) => {
+        set((state) => {
           state._functionQueue.push({
             funcName: queueFunction.funcName,
             args: queueFunction.args,
@@ -633,7 +641,7 @@ export const useMapStore = create<State>()(
       },
 
       _setFunctionQueue: (functionQueue: FunctionQueue) => {
-        set((state: State) => {
+        set((state) => {
           state._functionQueue = functionQueue
         })
       },
