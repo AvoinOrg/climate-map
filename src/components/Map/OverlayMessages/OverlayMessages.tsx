@@ -1,11 +1,11 @@
 import React from 'react'
 import { Box } from '@mui/system'
 
-import { MapContext } from '#/components/Map'
+import { useMapStore } from '#/common/store'
 import { OverlayMessage } from '#/common/types/map'
 
 export const OverlayMessages = ({ message }: { message: OverlayMessage | null }) => {
-  const { activeLayerGroupIds } = React.useContext(MapContext)
+  const activeLayerGroupIds = useMapStore((state) => state.activeLayerGroupIds)
 
   let isActive = false
 
