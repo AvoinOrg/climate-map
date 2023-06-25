@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Box, Button } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import { styled } from '@mui/material/styles'
@@ -21,11 +21,11 @@ import useStore from '#/common/hooks/useStore'
 import { useAppStore } from 'applets/hiilikartta/state/appStore'
 import { PlanConf } from 'applets/hiilikartta/common/types'
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import { MapContext } from '#/components/Map'
+import { useMapStore } from '#/common/store'
 import { getPlanLayerId } from 'applets/hiilikartta/common/utils'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
-  const { getSourceJson } = useContext(MapContext)
+  const getSourceJson = useMapStore((state) => state.getSourceJson)
   const planConf = useStore(useAppStore, (state) => state.planConfs[params.planIdSlug])
   const addReportToPlan = useAppStore((state) => state.addReportToPlan)
   const [isLoaded, setIsLoaded] = useState(false)
