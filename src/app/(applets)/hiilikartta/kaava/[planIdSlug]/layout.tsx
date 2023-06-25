@@ -1,15 +1,16 @@
 'use client'
-import React, { useContext, useEffect } from 'react'
+import React, { useEffect } from 'react'
 
-import useStore from '#/common/hooks/useStore'
-import { MapContext } from '#/components/Map'
+import { useMapStore } from '#/common/store'
 
 import { useAppStore } from 'applets/hiilikartta/state/appStore'
 import { getPlanLayerId } from 'applets/hiilikartta/common/utils'
 
 const Layout = ({ params, children }: { params: { planIdSlug: string }; children: React.ReactNode }) => {
   // const planConf = useStore(useAppStore, (state) => state.planConfs)
-  const { enableAnyLayerGroup, getSourceBounds, fitBounds } = useContext(MapContext)
+  const enableAnyLayerGroup = useMapStore((state) => state.enableAnyLayerGroup)
+  const getSourceBounds = useMapStore((state) => state.getSourceBounds)
+  const fitBounds = useMapStore((state) => state.fitBounds)
 
   useEffect(() => {
     const planLayerId = getPlanLayerId(params.planIdSlug)
