@@ -532,7 +532,7 @@ export const useMapStore = create<State>()(
 
       _addMbStyleToMb: async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
         const { _addMbPopup, _mbMap } = get()
-        const setIsMapPopupOpen = useUIStore((state) => state.setIsMapPopupOpen)
+        const setIsMapPopupOpen = useUIStore.getState().setIsMapPopupOpen
 
         const style = await layerConf.style()
 
