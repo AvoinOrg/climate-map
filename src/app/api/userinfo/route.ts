@@ -1,8 +1,9 @@
 import { getToken } from 'next-auth/jwt'
 
-import type { NextApiRequest, NextApiResponse } from 'next'
+import type { NextApiRequest } from 'next'
+import { NextResponse } from 'next/server'
 
-const getDataFromUserInfo = (req: NextApiRequest, res: NextApiResponse, token: string) => {
+const getDataFromUserInfo = (_req: NextApiRequest, token: {}) => {
   const userInfoEndpoint = `${process.env.ZITADEL_ISSUER}/oidc/v1/userinfo`
 
   return fetch(userInfoEndpoint, {
@@ -13,27 +14,30 @@ const getDataFromUserInfo = (req: NextApiRequest, res: NextApiResponse, token: s
     method: 'GET',
   })
     .then((resp) => {
-      return resp.json()
-    })
-    .then((resp) => {
-      return res.status(200).send(resp)
+      return NextResponse.json(resp)
     })
     .catch((error) => {
-      return res.status(500).send(error)
+      return new Response(error, {
+        status: 500,
+      })
     })
 }
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+const handler = async (req: NextApiRequest) => {
   const token = await getToken({ req })
   if (!token?.accessToken) {
-    return res.status(401).end()
+    return new Response(null, {
+      status: 401,
+    })
   }
 
   switch (req.method) {
     case 'GET':
-      return getDataFromUserInfo(req, res, token.accessToken)
+      return getDataFromUserInfo(req, token?.accessToken)
     default:
-      return res.status(405).end()
+      return new Response(null, {
+        status: 405,
+      })
   }
 }
 
