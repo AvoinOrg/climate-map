@@ -10,7 +10,7 @@ import 'ol/ol.css'
 import '#/common/style/mapbox.css'
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 
-import { pickBy, uniq } from 'lodash-es'
+import { isEqual, pickBy, uniq } from 'lodash-es'
 
 import React, { useState, useRef, useEffect } from 'react'
 import Box from '@mui/material/Box'
@@ -464,22 +464,24 @@ export const Map = ({ children }: Props) => {
       return selectedFeaturesCopy
     }
 
-    if (newlySelectedFeatures.length > 0) {
-      setNewlySelectedFeatures([])
+    // Set a filter matching selected features by FIPS codes
+    // to activate the 'counties-highlighted' layer.
+    const selectedFeaturesCopy = filterSelectedFeatures(_layerOptions, selectedFeatures, newlySelectedFeatures)
 
-      // Set a filter matching selected features by FIPS codes
-      // to activate the 'counties-highlighted' layer.
-      const selectedFeaturesCopy = filterSelectedFeatures(_layerOptions, selectedFeatures, newlySelectedFeatures)
-
+    // TODO: "selectedFeaturesCopy" is calculated twice for each update, which
+    // is not great. However, this allows direct manipulation of
+    // "selectedFeatures" from other components. Make smarter later.
+    if (!isEqual(selectedFeatures, selectedFeaturesCopy)) {
       let selectedLayerIds: string[] = []
       selectedFeaturesCopy.map((feature) => {
         selectedLayerIds.push(feature.layer.id)
       })
 
-      // add layer ids from the previous selection
-      selectedFeatures.map((feature) => {
-        selectedLayerIds.push(feature.layer.id)
-      })
+      if (selectedFeaturesCopy)
+        // add layer ids from the previous selection
+        selectedFeatures.map((feature) => {
+          selectedLayerIds.push(feature.layer.id)
+        })
 
       selectedLayerIds = uniq(selectedLayerIds)
 
@@ -494,6 +496,7 @@ export const Map = ({ children }: Props) => {
       }
 
       setSelectedFeatures(selectedFeaturesCopy)
+      setNewlySelectedFeatures([])
     }
   }, [newlySelectedFeatures, selectedFeatures, _layerOptions, activeLayerGroupIds, _layerGroups])
 
