@@ -1,26 +1,24 @@
 import { getToken } from 'next-auth/jwt'
-
 import type { NextApiRequest } from 'next'
 import { NextResponse } from 'next/server'
+import axios from 'axios'
 
-const getDataFromUserInfo = (_req: NextApiRequest, token: {}) => {
-  const userInfoEndpoint = `${process.env.ZITADEL_ISSUER}/oidc/v1/userinfo`
+const getDataFromUserInfo = async (_req: NextApiRequest, token: {}) => {
+  try {
+    const response = await axios.get(`${process.env.ZITADEL_ISSUER}/oidc/v1/userinfo`, {
+      headers: {
+        authorization: `Bearer ${token}`,
+        'content-type': 'application/json',
+      },
+    })
+    return NextResponse.json(response.data) // Axios automatically parses the JSON
+  } catch (error) {
+    console.error(error)
 
-  return fetch(userInfoEndpoint, {
-    headers: {
-      authorization: `Bearer ${token}`,
-      'content-type': 'application/json',
-    },
-    method: 'GET',
-  })
-    .then((resp) => {
-      return NextResponse.json(resp)
+    return new Response(error?.toString() || null, {
+      status: 500,
     })
-    .catch((error) => {
-      return new Response(error, {
-        status: 500,
-      })
-    })
+  }
 }
 
 const handler = async (req: NextApiRequest) => {
@@ -33,7 +31,7 @@ const handler = async (req: NextApiRequest) => {
 
   switch (req.method) {
     case 'GET':
-      return getDataFromUserInfo(req, token?.accessToken)
+      return await getDataFromUserInfo(req, token?.accessToken)
     default:
       return new Response(null, {
         status: 405,
