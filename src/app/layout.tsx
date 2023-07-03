@@ -5,6 +5,7 @@ import '#/common/style/index.css'
 import React, { useEffect, useState } from 'react'
 import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
+import { SessionProvider } from 'next-auth/react'
 
 import theme from '#/common/style/theme'
 import { Sidebar } from '#/components/Sidebar'
@@ -31,17 +32,7 @@ const RootLayout = ({
       <body>
         {/* <RootStyleRegistry> */}
         {isHydrated && (
-          <ThemeProvider theme={theme}>
-            {/* <UserStateProvider> */}
-            <CssBaseline>
-              <Map>
-                {/* <NavBar /> */}
-                <Sidebar>{children}</Sidebar>
-                {/* <UserModal /> */}
-              </Map>
-            </CssBaseline>
-            {/* </UserStateProvider> */}
-          </ThemeProvider>
+          <SessionProvider>
         )}
         {/* </RootStyleRegistry> */}
       </body>
