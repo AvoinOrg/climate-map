@@ -3,7 +3,7 @@ import { JWT } from 'next-auth/jwt'
 import ZitadelProvider from 'next-auth/providers/zitadel'
 import { Issuer } from 'openid-client'
 
-async function refreshAccessToken(token: JWT): Promise<JWT> {
+const refreshAccessToken = async (token: JWT): Promise<JWT> => {
   try {
     const issuer = await Issuer.discover(process.env.ZITADEL_ISSUER ?? '')
     const client = new issuer.Client({
