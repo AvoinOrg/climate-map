@@ -52,7 +52,6 @@ export const NavBar = () => {
             height: '100px',
             backgroundColor: 'white',
             margin: 'auto 0 0 0',
-            position: 'absolute',
             bottom: 0,
           })}
         ></Box>
