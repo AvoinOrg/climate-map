@@ -3,6 +3,8 @@
 import React from 'react'
 import { Box, Collapse } from '@mui/material'
 
+import { SIDEBAR_CLOSED_WIDTH } from '#/common/style/theme/constants'
+
 interface Props {
   open: boolean
   children: React.ReactNode
@@ -10,7 +12,7 @@ interface Props {
 
 const Drawer = ({ open, children }: Props) => {
   return (
-    <Collapse collapsedSize={100} orientation={'horizontal'} in={open}>
+    <Collapse collapsedSize={SIDEBAR_CLOSED_WIDTH} orientation={'horizontal'} in={open}>
       <Box
         sx={{
           // width: open ? 'auto' : 100,
