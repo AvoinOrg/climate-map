@@ -41,9 +41,9 @@ const RootLayout = ({
                 {/* <UserStateProvider> */}
                 <CssBaseline>
                   <Map>
-                    {/* <NavBar /> */}
                     <Sidebar>{children}</Sidebar>
                     {/* <UserModal /> */}
+                    <NavBar />
                   </Map>
                 </CssBaseline>
                 {/* </UserStateProvider> */}
