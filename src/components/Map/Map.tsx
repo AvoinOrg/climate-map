@@ -44,6 +44,7 @@ const DEFAULT_ZOOM = 5
 
 export const Map = ({ children }: Props) => {
   const setIsMapPopupOpen = useUIStore((state) => state.setIsMapPopupOpen)
+  const isSidebarOpen = useUIStore((state) => state.isSidebarOpen)
 
   const mapDivRef = useRef<HTMLDivElement>()
   const mapRef = useRef<OlMap | null>(null)
@@ -593,6 +594,12 @@ export const Map = ({ children }: Props) => {
       }
     }
   }, [isLoaded, selectedFeatures, activeLayerGroupIds, _layerGroups])
+
+  useEffect(() => {
+    if (isLoaded) {
+      _mbMap?.resize()
+    }
+  }, [isSidebarOpen, isLoaded])
 
   return (
     <>
