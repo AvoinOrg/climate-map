@@ -24,6 +24,14 @@ declare module '@mui/material/styles' {
   interface TypographyVariantsOptions {
     buttonSmall?: React.CSSProperties
   }
+
+  interface ZIndex {
+    popup: number
+  }
+
+  interface ThemeOptions {
+    zIndex?: Partial<ZIndex> | undefined
+  }
 }
 
 declare module '@mui/material/Typography' {
