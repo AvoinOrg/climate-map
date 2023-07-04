@@ -7,12 +7,13 @@ import { SvgIcon } from '@mui/material'
 //   </svg>
 // )
 
-const HamburgerOpen = (props: any) => (
+const Sandwich = (props: any) => (
   <SvgIcon {...props}>
-    <svg width={44} height={16} fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <path fill="#000" d="M0 0h44v6H0zM0 10h44v6H0z" />
+    <svg width="44" height="16" viewBox="0 0 44 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="44" height="6" fill="black" />
+      <rect y="10" width="44" height="6" fill="black" />
     </svg>
   </SvgIcon>
 )
 
-export default HamburgerOpen
+export default Sandwich
