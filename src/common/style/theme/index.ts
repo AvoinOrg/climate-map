@@ -90,6 +90,7 @@ const zIndex = {
   drawer: 1100,
   appBar: 1300,
   mobileStepper: 1000,
+  popup: 1350,
   tooltip: 1500,
 }
 
