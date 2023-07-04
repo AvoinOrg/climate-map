@@ -129,7 +129,7 @@ export const Map = ({ children }: Props) => {
             tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
             tileSize: 256,
             attribution:
-              'Map tiles by <a target="_top" rel="noopener" href="https://tile.openstreetmap.org/">OpenStreetMap tile servers</a>, under the <a target="_top" rel="noopener" href="https://operations.osmfoundation.org/policies/tiles/">tile usage policy</a>. Data by <a target="_top" rel="noopener" href="http://openstreetmap.org">OpenStreetMap</a>',
+              '© <a target="_top" rel="noopener" href="https://openstreetmap.org/">OpenStreetMap</a>, under the <a target="_top" rel="noopener" href="https://operations.osmfoundation.org/policies/tiles/">tile usage policy</a>.',
           },
         },
         layers: [
@@ -147,7 +147,7 @@ export const Map = ({ children }: Props) => {
         style: style,
         center: viewSettings.center, // starting position [lng, lat]
         zoom: viewSettings.zoom, // starting zoom
-        attributionControl: true,
+        attributionControl: false,
         // transformRequest: (url) => {
         //   return {
         //     url: url,
@@ -155,6 +155,12 @@ export const Map = ({ children }: Props) => {
         //   };
         // },
       })
+
+      newMbMap.addControl(
+        new mapboxgl.AttributionControl({
+          compact: true,
+        })
+      )
     }
 
     if (_mbMap && _mbMap.getStyle()) {
@@ -607,11 +613,7 @@ export const Map = ({ children }: Props) => {
         id="map"
         className={'ol-map'}
         sx={{
-          position: 'absolute !important',
-          top: 0,
-          bottom: 0,
-          width: '100vw',
-          height: '100vh',
+          flexGrow: 1,
           overflow: 'hidden',
           ...(mapLibraryMode === 'hybrid' && { '.ol-scale-line': { right: '8px', left: 'auto', bottom: '26px' } }),
           // pointerEvents: 'none',
