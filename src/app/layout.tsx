@@ -7,6 +7,7 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
 import { SessionProvider } from 'next-auth/react'
 import { QueryClientProvider, QueryClient } from 'react-query'
+import { Box } from '@mui/material'
 
 import theme from '#/common/style/theme'
 import { Sidebar } from '#/components/Sidebar'
@@ -40,11 +41,13 @@ const RootLayout = ({
               <ThemeProvider theme={theme}>
                 {/* <UserStateProvider> */}
                 <CssBaseline>
-                  <Map>
-                    <Sidebar>{children}</Sidebar>
-                    {/* <UserModal /> */}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+                    <Map>
+                      <Sidebar>{children}</Sidebar>
+                      {/* <UserModal /> */}
+                    </Map>
                     <NavBar />
-                  </Map>
+                  </Box>
                 </CssBaseline>
                 {/* </UserStateProvider> */}
               </ThemeProvider>
