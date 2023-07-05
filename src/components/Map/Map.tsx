@@ -620,7 +620,11 @@ export const Map = ({ children }: Props) => {
         id="map"
         className={'ol-map'}
         sx={{
-          flexGrow: 1,
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
           overflow: 'hidden',
           ...(mapLibraryMode === 'hybrid' && { '.ol-scale-line': { right: '8px', left: 'auto', bottom: '26px' } }),
           // pointerEvents: 'none',
