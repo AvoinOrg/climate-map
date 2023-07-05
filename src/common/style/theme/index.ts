@@ -198,6 +198,26 @@ const components = {
       },
     },
   },
+  MuiCssBaseline: {
+    styleOverrides: {
+      '*': {
+        scrollbarWidth: 'thin',
+        scrollbarColor: 'transparent transparent',
+        '&::-webkit-scrollbar': {
+          width: '10px',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: 'transparent',
+        },
+        '&:hover': {
+          scrollbarColor: 'darkgray lightgray',
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'darkgray',
+          },
+        },
+      },
+    },
+  },
 }
 
 export default createTheme({ palette, components, typography, zIndex, shape })
