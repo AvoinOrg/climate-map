@@ -43,12 +43,17 @@ const RootLayout = ({
                 <CssBaseline>
                   <Box
                     className="layout-container"
-                    sx={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'black' }}
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: '100vh',
+                      backgroundColor: 'black',
+                      position: 'relative',
+                      alignItems: 'flex-start',
+                    }}
                   >
-                    <Map>
-                      <Sidebar>{children}</Sidebar>
-                      {/* <UserModal /> */}
-                    </Map>
+                    <Map>{/* <UserModal /> */}</Map>
+                    <Sidebar>{children}</Sidebar>
                     <NavBar />
                   </Box>
                 </CssBaseline>
