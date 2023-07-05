@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Box } from '@mui/material'
 
 import { useUIStore } from '#/common/store'
@@ -8,6 +8,7 @@ import { MapPopup } from '../Map/MapPopup'
 import { useMapStore } from '#/common/store'
 import Drawer from './Drawer'
 import PopupDrawer from './PopupDrawer'
+import { SidebarHeader } from '#/components/Sidebar'
 
 export const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const isSidebarOpen = useUIStore((state) => state.isSidebarOpen)
@@ -15,6 +16,13 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const mode = useUIStore((state) => state.mode)
   const setIsMapPopupOpen = useUIStore((state) => state.setIsMapPopupOpen)
   const popupOpts = useMapStore((state) => state.popupOpts)
+  const setSidebarHeaderElementSetter = useUIStore((state) => state.setSidebarHeaderElementSetter)
+
+  const [sidebarHeader, setSidebarHeader] = useState(<SidebarHeader title={'avoin map'}></SidebarHeader>)
+
+  useEffect(() => {
+    setSidebarHeaderElementSetter(setSidebarHeader)
+  }, [])
 
   return (
     <Box
@@ -29,7 +37,10 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
     >
       {mode === 'side' && (
         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-          <Drawer open={isSidebarOpen}>{children}</Drawer>
+          <Drawer open={isSidebarOpen}>
+            {sidebarHeader}
+            {children}
+          </Drawer>
 
           <PopupDrawer open={isMapPopupOpen}>
             <Box
