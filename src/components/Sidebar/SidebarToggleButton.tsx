@@ -23,11 +23,20 @@ const SidebarToggleButton = ({ sx }: Props) => {
       onClick={toggleSidebar}
       sx={(theme) => ({
         margin: '0 0 0 0',
+        p: 3,
+        pl: 5,
         display: 'flex',
         '&:hover': {
           backgroundColor: 'transparent',
         },
-        ...(!isSidebarOpen && { height: '110vh', alignItems: 'flex-start', width: SIDEBAR_CLOSED_WIDTH + 'px' }),
+        ...(!isSidebarOpen && {
+          height: '100vh',
+          alignItems: 'flex-start',
+          width: SIDEBAR_CLOSED_WIDTH + 'px',
+          p: 0,
+          pl: 0,
+        }),
+        transition: 'padding 0.1s',
         ...sx,
       })}
       disableRipple={true}
@@ -36,15 +45,15 @@ const SidebarToggleButton = ({ sx }: Props) => {
       disabled={isSidebarDisabled}
       size="large"
     >
-      {isSidebarOpen ? <MySandwich /> : <MySandwich sx={{ transform: 'rotate(90deg)', margin: '35px 2px 0 0' }} />}
+      {isSidebarOpen ? <MySandwich /> : <MySandwich sx={{ transform: 'rotate(90deg)', margin: '35px 0 0 0' }} />}
     </Button>
   )
 }
 
 const MySandwich = styled(Sandwich)(({ theme }) => ({
-  margin: '25px 0 0 25px',
-  width: '80px',
-  transition: 'transform 0.2s, margin 0.2s',
+  margin: '0',
+  width: '50px',
+  transition: 'transform 0.1s, margin 0.1s',
 }))
 
 export default SidebarToggleButton
