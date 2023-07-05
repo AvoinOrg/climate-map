@@ -41,7 +41,10 @@ const RootLayout = ({
               <ThemeProvider theme={theme}>
                 {/* <UserStateProvider> */}
                 <CssBaseline>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+                  <Box
+                    className="layout-container"
+                    sx={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'black' }}
+                  >
                     <Map>
                       <Sidebar>{children}</Sidebar>
                       {/* <UserModal /> */}
