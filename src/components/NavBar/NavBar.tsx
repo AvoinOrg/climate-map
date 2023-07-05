@@ -45,6 +45,7 @@ export const NavBar = () => {
     <>
       {isSidebarOpen && (
         <Box
+          className="navbar-container"
           sx={(theme) => ({
             zIndex: theme.zIndex.appBar,
             width: '100%',
