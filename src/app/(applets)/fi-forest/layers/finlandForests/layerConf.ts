@@ -9,7 +9,6 @@ import {
   fiForestsCumulativeCO2eValueExpr,
   fiForestsTextfieldExpression,
 } from '#/app/(applets)/fi-forest/utils'
-import Popup from './Popup'
 
 const SERVER_URL = process.env.NEXT_PUBLIC_GEOSERVER_URL
 
@@ -109,7 +108,6 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
 const layerConf: LayerConf = {
   id: id,
   style: getStyle,
-  popup: Popup,
   useMb: true,
 }
 
