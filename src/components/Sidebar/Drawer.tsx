@@ -12,7 +12,7 @@ interface Props {
 
 const Drawer = ({ open, children }: Props) => {
   return (
-    <Collapse collapsedSize={SIDEBAR_CLOSED_WIDTH} orientation={'horizontal'} in={open}>
+    <Collapse collapsedSize={SIDEBAR_CLOSED_WIDTH} orientation={'horizontal'} in={open} timeout={200}>
       <Box
         sx={{
           // width: open ? 'auto' : 100,
