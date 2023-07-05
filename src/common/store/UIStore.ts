@@ -20,6 +20,8 @@ interface UIState {
   setSignupFunnelStep: (value: number) => void
   notifications: NotificationMessage[]
   notify: (message: NotificationMessage) => void
+  isNavbarOpen: boolean
+  setIsNavbarOpen: (value: boolean) => void
   setSidebarHeaderElement: null | ((value: React.JSX.Element) => void)
   setSidebarHeaderElementSetter: (setter: (value: React.JSX.Element) => void) => void
 }
@@ -39,6 +41,8 @@ export const useUIStore = create<UIState>((set, get) => ({
   setModalState: (value) => set({ modalState: value }),
   signupFunnelStep: 0,
   setSignupFunnelStep: (value) => set({ signupFunnelStep: value }),
+  isNavbarOpen: true,
+  setIsNavbarOpen: (value) => set({ isNavbarOpen: value }),
   setSidebarHeaderElement: null,
   setSidebarHeaderElementSetter: (setter) => set({ setSidebarHeaderElement: setter }),
   notifications: [],
