@@ -14,14 +14,14 @@ const Drawer = ({ open, children }: Props) => {
   return (
     <Collapse collapsedSize={SIDEBAR_CLOSED_WIDTH} orientation={'horizontal'} in={open} timeout={200}>
       <Box
-        sx={{
+        sx={(theme) => ({
           // width: open ? 'auto' : 100,
           overflowX: 'hidden',
           // position: 'absolute',
           // transition: `all ${TRANSITION_DURATION}ms cubic-bezier(0, 0, 0.2, 1) 0ms`,
           transition: 'width 1s linear !important',
-          zIndex: 99999,
-        }}
+          zIndex: theme.zIndex.drawer,
+        })}
       >
         {children}
       </Box>
