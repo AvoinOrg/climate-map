@@ -26,13 +26,15 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <Box
+      className="sidebar-container"
       sx={{
-        position: 'absolute',
         zIndex: 1200,
         backgroundColor: 'white',
         width: 'auto',
-        display: 'inline-block',
         height: '100%',
+        display: 'inline-flex',
+        flexDirection: 'column',
+        flexGrow: 1,
       }}
     >
       {mode === 'side' && (
