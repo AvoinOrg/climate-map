@@ -30,11 +30,11 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       sx={{
         zIndex: 1200,
         backgroundColor: 'white',
-        width: 'auto',
-        height: '100%',
-        display: 'inline-flex',
+        minHeight: 0,
+        width: 'max-content',
+        display: 'flex',
         flexDirection: 'column',
-        flexGrow: 1,
+        flex: 1,
       }}
     >
       {mode === 'side' && (
