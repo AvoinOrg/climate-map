@@ -7,10 +7,10 @@ import '@mui/material/styles/createPalette'
 
 declare module '@mui/material/styles/createPalette' {
   interface Palette {
-    grays: PaletteColor
+    neutral: PaletteColor
   }
   interface PaletteOptions {
-    grays: PaletteColorOptions
+    neutral: PaletteColorOptions
   }
 }
 
@@ -66,7 +66,7 @@ export const arimo = Arimo({
 const palette = {
   primary: { main: '#C7C9B8', dark: '#AFB29A', light: '#D7D9CC', lighter: '#EBECE6' },
   secondary: { dark: '#274AFF', main: '#5d77ff', light: '#b3bfff' },
-  grays: {
+  neutral: {
     main: '#D9D9D9',
     light: '#F6F4F4',
     dark: '#A0A0A0',
