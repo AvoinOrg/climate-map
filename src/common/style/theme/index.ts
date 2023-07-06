@@ -199,6 +199,8 @@ const components = {
             backgroundColor: 'darkgray',
           },
         },
+        boxSizing: 'border-box',
+        borderCollapse: 'collapse',
       },
     },
   },
