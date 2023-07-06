@@ -41,21 +41,21 @@ const RootLayout = ({
               <ThemeProvider theme={theme}>
                 {/* <UserStateProvider> */}
                 <CssBaseline>
-                  <Box
-                    className="layout-container"
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      height: '100vh',
-                      backgroundColor: 'black',
-                      position: 'relative',
-                      alignItems: 'flex-start',
-                    }}
-                  >
-                    <Map>{/* <UserModal /> */}</Map>
-                    <Sidebar>{children}</Sidebar>
-                    <NavBar />
-                  </Box>
+                  <Map>
+                    {/* <UserModal /> */}
+                    <Box
+                      className="layout-container"
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        height: '100vh',
+                        width: '100vw',
+                      }}
+                    >
+                      <Sidebar>{children}</Sidebar>
+                      <NavBar />
+                    </Box>
+                  </Map>
                 </CssBaseline>
                 {/* </UserStateProvider> */}
               </ThemeProvider>
