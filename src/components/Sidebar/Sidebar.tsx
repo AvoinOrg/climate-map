@@ -41,7 +41,21 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
           <Drawer open={isSidebarOpen}>
             {sidebarHeader}
-            {children}
+            <Box
+              className="sidebar-children-container"
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                direction: 'rtl',
+                overflowY: 'scroll',
+                '& > :not(style)': {
+                  // apply to direct children that aren't style tags
+                  direction: 'ltr',
+                },
+              }}
+            >
+              {children}
+            </Box>
           </Drawer>
 
           <PopupDrawer open={isMapPopupOpen}>
