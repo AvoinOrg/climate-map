@@ -1,17 +1,16 @@
-import { createTheme } from '@mui/material/styles'
+import { createTheme, PaletteColor, PaletteColorOptions } from '@mui/material/styles'
 import { TypographyOptions } from '@mui/material/styles/createTypography'
 import { Roboto, Raleway } from '@next/font/google'
 import '@mui/material/styles/createPalette'
 
 //extending palette to add background color
+
 declare module '@mui/material/styles/createPalette' {
   interface Palette {
-    tertiary: PaletteColor
-    quaternary: PaletteColor
+    grays: PaletteColor
   }
   interface PaletteOptions {
-    tertiary: PaletteColorOptions
-    quaternary: PaletteColorOptions
+    grays: PaletteColorOptions
   }
 }
 
@@ -73,19 +72,17 @@ export const raleway = Raleway({
 })
 
 const palette = {
-  primary: { main: '#0B2027' },
-  secondary: { main: 'rgba(175, 178, 154, 0.5)', dark: '#AFB29A', light: 'rgba(246, 244, 244, 1)' },
-  tertiary: {
-    main: '#D3DBD8',
-    light: '#F5FBEF',
+  primary: { main: '#C7C9B8', dark: '#AFB29A', light: '#D7D9CC', lighter: '#EBECE6' },
+  secondary: { dark: '#274AFF', main: '#5d77ff', light: '#b3bfff' },
+  grays: {
+    main: '#D9D9D9',
+    light: '#F6F4F4',
     dark: '#A0A0A0',
+    darker: '#000000',
+    lighter: '#FFFFFF',
   },
-  quaternary: {
-    main: '#F4F4F4',
-    light: '#FFFFFF',
-  },
-  info: { main: '#EEA243' },
-  warning: { main: '#F5FBEF' },
+  info: { dark: '#EA7101', main: '#F09C4D' },
+  warning: { main: '#EA7101' },
 }
 
 const shape = {
