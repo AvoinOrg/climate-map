@@ -194,9 +194,9 @@ const components = {
           backgroundColor: 'transparent',
         },
         '&:hover': {
-          scrollbarColor: `${palette.primary.dark} ${palette.primary.light}`,
+          scrollbarColor: `${palette.neutral.darker} ${palette.neutral.dark}`,
           '&::-webkit-scrollbar-thumb': {
-            backgroundColor: palette.primary.light,
+            backgroundColor: palette.neutral.dark,
           },
         },
         boxSizing: 'border-box',
