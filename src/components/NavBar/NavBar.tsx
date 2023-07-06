@@ -51,9 +51,11 @@ export const NavBar = () => {
             width: '100%',
             minWidth: '200px',
             height: '100px',
-            backgroundColor: 'white',
+            backgroundColor: theme.palette.primary.main,
             margin: 'auto 0 0 0',
             bottom: 0,
+            border: 1,
+            borderColor: theme.palette.primary.dark,
           })}
         ></Box>
       )}
