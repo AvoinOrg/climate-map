@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
-import { Box, Collapse } from '@mui/material'
+import React, { useState, useEffect } from 'react'
+import { Box } from '@mui/material'
 
 import { SIDEBAR_CLOSED_WIDTH } from '#/common/style/theme/constants'
 
@@ -11,21 +11,25 @@ interface Props {
 }
 
 const Drawer = ({ open, children }: Props) => {
+  const [width, setWidth] = useState(open ? 'auto' : SIDEBAR_CLOSED_WIDTH)
+
+  useEffect(() => {
+    setWidth(open ? 'auto' : SIDEBAR_CLOSED_WIDTH)
+  }, [open])
+
   return (
-    <Collapse collapsedSize={SIDEBAR_CLOSED_WIDTH} orientation={'horizontal'} in={open} timeout={200}>
-      <Box
-        sx={(theme) => ({
-          // width: open ? 'auto' : 100,
-          overflowX: 'hidden',
-          // position: 'absolute',
-          // transition: `all ${TRANSITION_DURATION}ms cubic-bezier(0, 0, 0.2, 1) 0ms`,
-          transition: 'width 1s linear !important',
-          zIndex: theme.zIndex.drawer,
-        })}
-      >
-        {children}
-      </Box>
-    </Collapse>
+    <Box
+      sx={(theme) => ({
+        width: width, // controlled by state
+        transition: 'width 200ms linear',
+        zIndex: theme.zIndex.drawer,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden', // Hide overflowing content
+      })}
+    >
+      {children}
+    </Box>
   )
 }
 
