@@ -19,6 +19,7 @@ const Drawer = ({ open, children }: Props) => {
 
   return (
     <Box
+      className="drawer-container"
       sx={(theme) => ({
         width: width, // controlled by state
         transition: 'width 200ms linear',
@@ -26,6 +27,8 @@ const Drawer = ({ open, children }: Props) => {
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden', // Hide overflowing content
+        border: 1,
+        borderColor: 'primary.dark',
       })}
     >
       {children}
