@@ -14,7 +14,7 @@ const SidebarHeader = ({ children, title }: Props) => {
         p: 0,
         pr: 3,
         pb: 3,
-        backgroundColor: 'primary.lighter',
+        backgroundColor: 'neutral.light',
         display: 'flex',
         border: 1,
         borderColor: 'primary.dark',
