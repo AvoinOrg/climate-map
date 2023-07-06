@@ -38,7 +38,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       }}
     >
       {mode === 'side' && (
-        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0 }}>
           <Drawer open={isSidebarOpen}>
             {sidebarHeader}
             <Box
