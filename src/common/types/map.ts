@@ -27,6 +27,7 @@ export type LayerOpts = {
 export interface AnyLayerAddOptions {
   layerConf?: LayerConfAnyId
   after?: LayerId | string
+  before?: LayerId | string
   isHidden?: boolean
 }
 
