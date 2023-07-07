@@ -18,6 +18,7 @@ const SidebarHeader = ({ children, title }: Props) => {
         display: 'flex',
         border: 1,
         borderColor: 'primary.dark',
+        flexDirection: 'column',
       }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', flexGrow: 1 }}>
@@ -26,7 +27,7 @@ const SidebarHeader = ({ children, title }: Props) => {
           {title}
         </Typography>
       </Box>
-      {children}
+      <Box sx={{ ml: 3 }}>{children}</Box>
     </Box>
   )
 }
