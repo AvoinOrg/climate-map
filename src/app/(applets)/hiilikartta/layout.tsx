@@ -1,19 +1,30 @@
 'use client'
 
-import React from 'react'
-import { Box, Button } from '@mui/material'
-import { styled } from '@mui/material/styles'
+import React, { useLayoutEffect } from 'react'
+import { Box } from '@mui/material'
 
 import { routeTree } from './common/routes'
 import { SidebarHeader } from '#/components/Sidebar'
 import { BreadcrumbNav } from '../../../components/Sidebar'
+import { useUIStore } from '#/common/store'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
+  const setSidebarHeaderElement = useUIStore((state) => state.setSidebarHeaderElement)
+
+  const SidebarHeaderElement = (
+    <SidebarHeader title={'Hiilikartta'}>
+      <BreadcrumbNav routeTree={routeTree}></BreadcrumbNav>
+    </SidebarHeader>
+  )
+
+  useLayoutEffect(() => {
+    if (setSidebarHeaderElement != null) {
+      setSidebarHeaderElement(SidebarHeaderElement)
+    }
+  }, [setSidebarHeaderElement])
+
   return (
     <>
-      <SidebarHeader title={'Hiilikartta'}>
-        <BreadcrumbNav routeTree={routeTree}></BreadcrumbNav>
-      </SidebarHeader>
       <Box sx={{ padding: '35px 30px 100px 30px', minWidth: '400px', display: 'flex', flexDirection: 'column' }}>
         {children}
       </Box>
