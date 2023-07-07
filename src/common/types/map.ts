@@ -24,14 +24,13 @@ export type LayerOpts = {
   [key: string]: LayerOpt
 }
 
-export type LayerAddOptions = {
-  layerConf?: LayerConf
-  after?: string
+export interface AnyLayerAddOptions {
+  layerConf?: LayerConfAnyId
+  after?: LayerId | string
 }
 
-export type AnyLayerAddOptions = {
-  layerConf?: LayerConfAnyId
-  after?: string
+export interface LayerAddOptions extends AnyLayerAddOptions {
+  layerConf?: LayerConf
 }
 
 export type LayerId =
