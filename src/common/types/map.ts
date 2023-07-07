@@ -43,6 +43,7 @@ export type LayerId =
   | 'mangrove_forests'
   | 'gfw_tree_plantations'
   | 'fi_forests'
+  | 'terramonitor'
 
 export type ExtendedAnyLayer = AnyLayer & {
   source: string
