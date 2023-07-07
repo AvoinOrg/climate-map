@@ -2,8 +2,8 @@ import * as React from 'react'
 import type { SVGProps } from 'react'
 const SvgTerrain = (props: SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={23} height={23} fill="none" {...props}>
-    <path stroke="#000" strokeWidth={2} d="M1 1h21v21H1z" />
-    <path stroke="#000" strokeWidth={2} d="M10 4c0 3-2.5 6-6 6M7 4c0 1.5-1.25 3-3 3" />
+    <path stroke="currentColor" strokeWidth={2} d="M1 1h21v21H1z" />
+    <path stroke="currentColor" strokeWidth={2} d="M10 4c0 3-2.5 6-6 6M7 4c0 1.5-1.25 3-3 3" />
     <g fill="#000">
       <mask id="terrain_svg__a" width={17} height={9} x={3} y={10} maskUnits="userSpaceOnUse">
         <path fill="#fff" d="M3 10h17v9H3z" />
