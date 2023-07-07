@@ -43,6 +43,8 @@ export const useUIStore = create<UIState>((set, get) => ({
   setSignupFunnelStep: (value) => set({ signupFunnelStep: value }),
   isNavbarOpen: true,
   setIsNavbarOpen: (value) => set({ isNavbarOpen: value }),
+  // These two allow dynamic changing of the sidebar header from other components
+  // TODO: Figure out a better way to do this
   setSidebarHeaderElement: null,
   setSidebarHeaderElementSetter: (setter) => set({ setSidebarHeaderElement: setter }),
   notifications: [],
