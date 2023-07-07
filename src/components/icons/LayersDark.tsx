@@ -17,7 +17,7 @@ const SvgLayersDark = (props: SVGProps<SVGSVGElement>) => (
     </mask>
     <g mask="url(#layers-dark_svg__a)">
       <path
-        fill="#1C1B1F"
+        fill="currentColor"
         d="M11.5 24.096 0 15.161l1.722-1.323 9.778 7.57 9.778-7.57L23 15.16l-11.5 8.935Zm0-6.225L0 8.935 11.5 0 23 8.935l-11.5 8.936Z"
       />
     </g>
