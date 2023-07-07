@@ -6,6 +6,16 @@ import '@mui/material/styles/createPalette'
 //extending palette to add background color
 
 declare module '@mui/material/styles/createPalette' {
+  interface PaletteColor {
+    lighter?: string
+    darker?: string
+  }
+
+  interface SimplePaletteColorOptions {
+    lighter?: string
+    darker?: string
+  }
+
   interface Palette {
     neutral: PaletteColor
   }
