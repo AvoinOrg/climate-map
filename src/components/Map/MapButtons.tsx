@@ -13,7 +13,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import { useMapStore } from '#/common/store'
 import { Button } from '@mui/material'
 
-export const GroupOrientation = () => {
+export const MapButtons = () => {
   const mapToggleTerrain = useMapStore((state) => state.mapToggleTerrain)
   const mapResetNorth = useMapStore((state) => state.mapResetNorth)
   const mapZoomIn = useMapStore((state) => state.mapZoomIn)

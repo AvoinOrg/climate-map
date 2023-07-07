@@ -33,7 +33,7 @@ import { useMapStore } from '../../common/store'
 import { LayerOpt, LayerOpts, MapLibraryMode, QueuePriority, PopupOpts } from '#/common/types/map'
 import { getLayerName } from '#/common/utils/map'
 import { OverlayMessages } from './OverlayMessages'
-import { GroupOrientation } from './MapButtons'
+import { MapButtons } from './MapButtons'
 
 interface Props {
   children?: React.ReactNode
@@ -634,7 +634,7 @@ export const Map = ({ children }: Props) => {
         }}
       ></Box>
       <OverlayMessages message={overlayMessage}></OverlayMessages>
-      <GroupOrientation></GroupOrientation>
+      <MapButtons></MapButtons>
       {children}
     </>
   )

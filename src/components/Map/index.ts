@@ -1,4 +1,4 @@
 import { Map } from './Map'
-import { GroupOrientation } from './MapButtons'
+import { MapButtons } from './MapButtons'
 
-export { Map, GroupOrientation }
+export { Map, MapButtons }
