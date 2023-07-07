@@ -381,8 +381,8 @@ export const useMapStore = create<State>()(
       },
 
       mapToggleTerrain: () => {
-        // set((state) => {
-        // })
+        const { toggleLayerGroup } = get()
+        toggleLayerGroup('terramonitor', { after: 'osm' })
       },
       mapZoomIn: () => {
         // set((state) => {
