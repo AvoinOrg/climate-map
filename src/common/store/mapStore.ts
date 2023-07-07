@@ -391,8 +391,8 @@ export const useMapStore = create<State>()(
       },
 
       mapZoomOut: () => {
-        // set((state) => {
-        // })
+        const { _mbMap } = get()
+        _mbMap?.zoomOut()
       },
 
       setIsDrawPolygon: (isDrawPolygon: boolean) => {
