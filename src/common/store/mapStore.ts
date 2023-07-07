@@ -376,9 +376,10 @@ export const useMapStore = create<State>()(
         // })
       },
       mapResetNorth: () => {
-        // set((state) => {
-        // })
+        const { _mbMap } = get()
+        _mbMap?.resetNorth()
       },
+
       mapToggleTerrain: () => {
         // set((state) => {
         // })
