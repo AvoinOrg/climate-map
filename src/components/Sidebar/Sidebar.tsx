@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useLayoutEffect, useState } from 'react'
 import { Box } from '@mui/material'
 
 import { useUIStore } from '#/common/store'
@@ -18,9 +18,11 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const popupOpts = useMapStore((state) => state.popupOpts)
   const setSidebarHeaderElementSetter = useUIStore((state) => state.setSidebarHeaderElementSetter)
 
-  const [sidebarHeader, setSidebarHeader] = useState(<SidebarHeader title={'avoin map'}></SidebarHeader>)
+  // Initialize with empty header title to make the change of header smoother
+  const [sidebarHeader, setSidebarHeader] = useState(<SidebarHeader title={''}></SidebarHeader>)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    setSidebarHeader(<SidebarHeader title={'avoin map'}></SidebarHeader>)
     setSidebarHeaderElementSetter(setSidebarHeader)
   }, [])
 
