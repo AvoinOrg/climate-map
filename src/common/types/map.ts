@@ -24,6 +24,16 @@ export type LayerOpts = {
   [key: string]: LayerOpt
 }
 
+export type LayerAddOptions = {
+  layerConf?: LayerConf
+  after?: string
+}
+
+export type AnyLayerAddOptions = {
+  layerConf?: LayerConfAnyId
+  after?: string
+}
+
 export type LayerId =
   | 'building_energy_certs'
   | 'no2'
