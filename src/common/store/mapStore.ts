@@ -6,7 +6,7 @@ import { produce } from 'immer'
 import { FeatureCollection } from 'geojson'
 import { create } from 'zustand'
 
-import { MapLayerMouseEvent, Map as MbMap, LngLatBounds, MapboxGeoJSONFeature } from 'mapbox-gl'
+import { MapLayerMouseEvent, Map as MbMap, LngLatBounds, MapboxGeoJSONFeature, AnyLayer } from 'mapbox-gl'
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
@@ -25,6 +25,8 @@ import {
   PopupOpts,
   QueueFunction,
   FunctionQueue,
+  LayerAddOptions,
+  AnyLayerAddOptions,
 } from '#/common/types/map'
 import { layerConfs } from '#/components/Map/Layers'
 
@@ -51,13 +53,13 @@ type Vars = {
 type Actions = {
   getSourceBounds: (sourceId: string) => LngLatBounds | null
   getSourceJson: (id: string) => FeatureCollection | null
-  addLayerGroup: (layerId: LayerId, layerConf?: LayerConf) => Promise<void>
-  enableLayerGroup: (layerId: LayerId, layerConf?: LayerConf) => Promise<void>
+  addLayerGroup: (layerId: LayerId, options?: LayerAddOptions) => Promise<void>
+  enableLayerGroup: (layerId: LayerId, options?: LayerAddOptions) => Promise<void>
   disableLayerGroup: (layerId: LayerId) => Promise<void>
-  toggleLayerGroup: (layerId: LayerId, layerConf?: LayerConf) => Promise<void>
-  addAnyLayerGroup: (layerIdString: string, layerConf?: LayerConfAnyId) => Promise<void>
-  toggleAnyLayerGroup: (layerIdString: string, layerConf?: LayerConfAnyId) => Promise<void>
-  enableAnyLayerGroup: (layerIdString: string, layerConf?: LayerConfAnyId) => Promise<void>
+  toggleLayerGroup: (layerId: LayerId, options?: LayerAddOptions) => Promise<void>
+  addAnyLayerGroup: (layerIdString: string, options?: AnyLayerAddOptions) => Promise<void>
+  toggleAnyLayerGroup: (layerIdString: string, options?: AnyLayerAddOptions) => Promise<void>
+  enableAnyLayerGroup: (layerIdString: string, options?: AnyLayerAddOptions) => Promise<void>
   disableAnyLayerGroup: (layerIdString: string) => Promise<void>
   setLayoutProperty: (layer: string, name: string, value: any) => Promise<void>
   setPaintProperty: (layer: string, name: string, value: any) => Promise<void>
@@ -183,19 +185,19 @@ export const useMapStore = create<State>()(
         )
       },
 
-      addLayerGroup: async (layerId: LayerId, layerConf?: LayerConf) => {
+      addLayerGroup: async (layerId: LayerId, options?: LayerAddOptions) => {
         const { isLoaded, _addToFunctionQueue, _addMbStyleToMb, _addMbStyle } = get()
 
         if (!isLoaded) {
           return _addToFunctionQueue({
             funcName: 'addLayerGroup',
-            args: [layerId, layerConf],
+            args: [layerId, options],
             priority: QueuePriority.HIGH,
           })
         }
 
         // Initialize layer if it doesn't exist
-        let conf = layerConf
+        let conf = options?.layerConf
 
         if (!conf) {
           conf = layerConfs.find((el: LayerConfAnyId) => {
@@ -214,7 +216,7 @@ export const useMapStore = create<State>()(
         }
       },
 
-      enableLayerGroup: async (layerId: LayerId, layerConf?: LayerConf) => {
+      enableLayerGroup: async (layerId: LayerId, options?: LayerAddOptions) => {
         const { _layerGroups, _setGroupVisibility, addLayerGroup } = get()
         if (_layerGroups[layerId]) {
           _setGroupVisibility(layerId, true)
@@ -223,7 +225,7 @@ export const useMapStore = create<State>()(
             state.activeLayerGroupIds.push(layerId)
           })
         } else {
-          addLayerGroup(layerId, layerConf)
+          addLayerGroup(layerId, options)
         }
       },
 
@@ -240,33 +242,48 @@ export const useMapStore = create<State>()(
         _setGroupVisibility(layerId, false)
       },
 
-      toggleLayerGroup: async (layerId: LayerId, layerConf?: LayerConf) => {
+      toggleLayerGroup: async (layerId: LayerId, options?: LayerAddOptions) => {
         const { activeLayerGroupIds, disableLayerGroup, enableLayerGroup } = get()
 
         if (activeLayerGroupIds.includes(layerId)) {
           disableLayerGroup(layerId)
         } else {
-          enableLayerGroup(layerId, layerConf)
+          enableLayerGroup(layerId, options)
         }
       },
 
       // these are used used for layers with dynamic ids
-      addAnyLayerGroup: async (layerIdString: string, layerConf?: LayerConfAnyId) => {
+      addAnyLayerGroup: async (layerIdString: string, options?: AnyLayerAddOptions) => {
         const { addLayerGroup } = get()
-        // @ts-ignore
-        addLayerGroup(layerIdString as LayerId, layerConf)
+
+        try {
+          addLayerGroup(layerIdString as LayerId, options as LayerAddOptions)
+        } catch (e) {
+          'Unable to add layer with id: ' + layerIdString
+          console.error(e)
+        }
       },
 
-      toggleAnyLayerGroup: async (layerIdString: string, layerConf?: LayerConfAnyId) => {
+      toggleAnyLayerGroup: async (layerIdString: string, options?: AnyLayerAddOptions) => {
         const { toggleLayerGroup } = get()
-        // @ts-ignore
-        toggleLayerGroup(layerIdString as LayerId, layerConf)
+
+        try {
+          toggleLayerGroup(layerIdString as LayerId, options as LayerAddOptions)
+        } catch (e) {
+          'Unable to toggle layer with id: ' + layerIdString
+          console.error(e)
+        }
       },
 
-      enableAnyLayerGroup: async (layerIdString: string, layerConf?: LayerConfAnyId) => {
+      enableAnyLayerGroup: async (layerIdString: string, options?: AnyLayerAddOptions) => {
         const { enableLayerGroup } = get()
-        // @ts-ignore
-        enableLayerGroup(layerIdString as LayerId, layerConf)
+
+        try {
+          enableLayerGroup(layerIdString as LayerId, options as LayerAddOptions)
+        } catch (e) {
+          'Unable to enable layer with id: ' + layerIdString
+          console.error(e)
+        }
       },
 
       disableAnyLayerGroup: async (layerIdString: string) => {
