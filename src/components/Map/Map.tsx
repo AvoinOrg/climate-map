@@ -525,7 +525,7 @@ export const Map = ({ children }: Props) => {
   }, [isLoaded, isMapReady, isMbMapReady, mapLibraryMode])
 
   useEffect(() => {
-    // Run queued function once map has loaded
+    // Run queued functions once map has loaded
     if (isLoaded && _functionQueue.length > 0) {
       let functionsToCall: any[] = []
       let _newFunctionQueue: any[] = []
