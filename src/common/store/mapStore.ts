@@ -80,9 +80,9 @@ type Actions = {
   setIsDrawPolygon: (isDrawPolygon: boolean) => void
   _setIsLoaded: { (isLoaded: boolean): void }
   _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => void
-  _addMbStyle: (id: LayerId, layerConf: LayerConfAnyId, isVisible?: boolean) => Promise<void>
+  _addMbStyle: (id: LayerId, options: LayerAddOptionsWithConf) => Promise<void>
   _addMbPopup: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => void
-  _addMbStyleToMb: (id: LayerId, layerConf: LayerConfAnyId, isVisible?: boolean) => Promise<void>
+  _addMbStyleToMb: (id: LayerId, options: LayerAddOptionsWithConf) => Promise<void>
   _addToFunctionQueue: (queueFunction: QueueFunction) => Promise<any>
   _setFunctionQueue: (functionQueue: FunctionQueue) => void
   _setPopupOpts: (popupOpts: PopupOpts) => void
@@ -197,19 +197,19 @@ export const useMapStore = create<State>()(
         }
 
         // Initialize layer if it doesn't exist
-        let conf = options?.layerConf
+        const opts = options || {}
 
-        if (!conf) {
-          conf = layerConfs.find((el: LayerConfAnyId) => {
+        if (!opts.layerConf) {
+          opts.layerConf = layerConfs.find((el: LayerConfAnyId) => {
             return el.id === layerId
           })
         }
 
-        if (conf) {
-          if (conf.useMb == null || conf.useMb) {
-            await _addMbStyleToMb(layerId, conf)
+        if (opts.layerConf) {
+          if (opts.layerConf.useMb == null || opts.layerConf.useMb) {
+            await _addMbStyleToMb(layerId, opts as LayerAddOptionsWithConf)
           } else {
-            await _addMbStyle(layerId, conf)
+            await _addMbStyle(layerId, opts as LayerAddOptionsWithConf)
           }
         } else {
           console.error('No layer config found for id: ' + layerId)
@@ -465,8 +465,8 @@ export const useMapStore = create<State>()(
         )
       },
 
-      _addMbStyle: async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
-        const style = await layerConf.style()
+      _addMbStyle: async (id: LayerId, options: LayerAddOptionsWithConf) => {
+        const style = await options.layerConf.style()
         const layers: ExtendedAnyLayer[] = style.layers
         const sourceKeys = Object.keys(style.sources)
 
@@ -493,7 +493,7 @@ export const useMapStore = create<State>()(
                     layerType: getLayerType(layerKeys[0]),
                     selectable: conf.selectable || false,
                     multiSelectable: conf.multiSelectable || false,
-                    popup: layerConf.popup || false,
+                    popup: options.layerConf.popup || false,
                     useMb: false,
                   }
 
@@ -515,7 +515,7 @@ export const useMapStore = create<State>()(
             state._layerGroups[id] = layerGroup
           })
 
-          if (isVisible) {
+          if (!options.isHidden) {
             set((state) => {
               state.activeLayerGroupIds.push(id)
             })
@@ -550,11 +550,11 @@ export const useMapStore = create<State>()(
         })
       },
 
-      _addMbStyleToMb: async (id: LayerId, layerConf: LayerConfAnyId, isVisible: boolean = true) => {
+      _addMbStyleToMb: async (id: LayerId, options: LayerAddOptionsWithConf) => {
         const { _addMbPopup, _mbMap } = get()
         const setIsMapPopupOpen = useUIStore.getState().setIsMapPopupOpen
 
-        const style = await layerConf.style()
+        const style = await options.layerConf.style()
 
         try {
           for (const sourceKey in style.sources) {
@@ -571,7 +571,7 @@ export const useMapStore = create<State>()(
               layerType: getLayerType(layer.id),
               selectable: layer.selectable || false,
               multiSelectable: layer.multiSelectable || false,
-              popup: layerConf.popup || false,
+              popup: options.layerConf.popup || false,
               useMb: true,
             }
 
@@ -583,8 +583,8 @@ export const useMapStore = create<State>()(
                   )
                 }
               }
-              if (layerConf.popup) {
-                const Popup: any = layerConf.popup
+              if (options.layerConf.popup) {
+                const Popup: any = options.layerConf.popup
 
                 const popupFn = (evt: MapLayerMouseEvent) => {
                   const features = evt.features || []
@@ -614,14 +614,14 @@ export const useMapStore = create<State>()(
 
             _mbMap?.addLayer(layer)
 
-            if (isVisible) {
+            if (!options.isHidden) {
               _mbMap?.setLayoutProperty(layer.id, 'visibility', 'visible')
             } else {
               _mbMap?.setLayoutProperty(layer.id, 'visibility', 'none')
             }
           }
 
-          if (isVisible) {
+          if (!options.isHidden) {
             set((state) => {
               state.activeLayerGroupIds.push(id)
               state._layerGroups[id] = layerGroup
