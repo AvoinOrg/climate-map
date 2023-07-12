@@ -1,6 +1,8 @@
 import { Style as MbStyle, AnyLayer, MapboxGeoJSONFeature } from 'mapbox-gl'
 import Feature from 'ol/Feature'
 import { ReactNode } from 'react'
+
+import { Actions as MapStoreActions } from '#/common/store/mapStore'
 // interface mapFunctions {}
 
 export type PopupProps = { features: PopupFeature[] }
@@ -113,6 +115,8 @@ export interface ILayerOption {
   layerMaxzoom?: number | null
 }
 
-export type QueueFunction = { funcName: string; args: any[]; priority?: QueuePriority }
+export type QueueFunctionFuncName = keyof MapStoreActions
+
+export type QueueFunction = { funcName: QueueFunctionFuncName; args: any[]; priority?: QueuePriority }
 
 export type FunctionQueue = (QueueFunction & { promise: { resolve: any; reject: any } })[]
