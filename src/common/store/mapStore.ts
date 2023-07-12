@@ -42,6 +42,7 @@ export type Vars = {
   popupOpts: PopupOpts | null
   activeLayerGroupIds: string[]
   isDrawEnabled: boolean
+  _isMapReady: boolean
   _draw: MapboxDraw | null
   _functionQueue: FunctionQueue
   _mbMap: MbMap | null
@@ -79,6 +80,7 @@ export type Actions = {
   mapZoomOut: () => void
   setIsDrawPolygon: (isDrawPolygon: boolean) => void
   _setIsLoaded: { (isLoaded: boolean): void }
+  _setIsMapReady: { (isMapReady: boolean): void }
   _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => void
   _addMbStyle: (id: LayerId, options: LayerAddOptionsWithConf) => Promise<void>
   _addMbPopup: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => void
@@ -108,6 +110,7 @@ export const useMapStore = create<State>()(
       popupOpts: null,
       isDrawEnabled: false,
       activeLayerGroupIds: [],
+      _isMapReady: false,
       _draw: null,
       _functionQueue: [],
       _mbMap: null,
@@ -444,6 +447,12 @@ export const useMapStore = create<State>()(
       _setIsLoaded: (isLoaded: boolean) => {
         set((state) => {
           state.isLoaded = isLoaded
+        })
+      },
+
+      _setIsMapReady: (isMapReady: boolean) => {
+        set((state) => {
+          state._isMapReady = isMapReady
         })
       },
 
