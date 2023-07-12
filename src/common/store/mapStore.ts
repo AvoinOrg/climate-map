@@ -88,6 +88,7 @@ type Actions = {
   _setPopupOpts: (popupOpts: PopupOpts) => void
   _setMbMap: (mbMap: MbMap) => void
   _findFirstMatchingLayer: (id: LayerId | string) => string | null
+  _findLastMatchingLayer: (id: LayerId | string) => string | null
 }
 
 type State = Vars & Actions
@@ -674,7 +675,8 @@ export const useMapStore = create<State>()(
         })
       },
 
-      // finds the first layer that starts with the given id
+      // Finds the first layer that starts with the given id. Mapbox renders
+      // layers in order, last layer in array being on top.
       _findFirstMatchingLayer: (id: string) => {
         const { _mbMap } = get()
 
@@ -684,6 +686,28 @@ export const useMapStore = create<State>()(
           if (layers) {
             let firstMatch = layers.find((l) => l.id.startsWith(id))
             return firstMatch ? firstMatch.id : null
+          }
+        }
+
+        return null
+      },
+
+      // Finds the last layer that starts with the given id
+      _findLastMatchingLayer: (id: string) => {
+        const { _mbMap } = get()
+
+        if (_mbMap) {
+          const layers = _mbMap.getStyle().layers
+
+          if (layers) {
+            let lastMatch: string | null = null
+            layers.forEach((layer) => {
+              if (layer.id.startsWith(id)) {
+                lastMatch = layer.id
+              }
+            })
+
+            return lastMatch
           }
         }
 
