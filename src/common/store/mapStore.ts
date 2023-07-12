@@ -34,7 +34,7 @@ import { getLayerName, getLayerType, assertValidHighlightingConf } from '#/commo
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
 
-type Vars = {
+export type Vars = {
   mapLibraryMode: MapLibraryMode
   isLoaded: boolean
   overlayMessage: OverlayMessage | null
@@ -50,7 +50,7 @@ type Vars = {
   _layerOptions: Record<string, LayerOpt>
 }
 
-type Actions = {
+export type Actions = {
   getSourceBounds: (sourceId: string) => LngLatBounds | null
   getSourceJson: (id: string) => FeatureCollection | null
   addLayerGroup: (layerId: LayerId, options?: LayerAddOptions) => Promise<void>
@@ -92,7 +92,7 @@ type Actions = {
   _findLastMatchingLayer: (id: LayerId | string) => string | null
 }
 
-type State = Vars & Actions
+export type State = Vars & Actions
 
 export const useMapStore = create<State>()(
   // Include your additional states and setters...
