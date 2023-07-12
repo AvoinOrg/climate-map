@@ -617,22 +617,40 @@ export const useMapStore = create<State>()(
               layerGroup[layer.id] = layer
             })
 
-            if (options.after) {
+            // Logic: if the layer is added before, add the first layer before the neighboring layer
+            // The consecutive layers are added after the first layer
+            // In Mapbox, the last layer is rendered on top.
+            if (options.isAddedBefore) {
+              // if layerInsertId is null, this is the first layer to be added
               if (layerInsertId == null) {
-                layerInsertId = _findLastMatchingLayer(options.after)
-              }
-              layerInsertId ? _addLayerAfter(layer, layerInsertId) : _mbMap?.addLayer(layer)
-              layerInsertId = layer.id
-            } else if (options.before) {
-              if (layerInsertId == null) {
-                layerInsertId = _findFirstMatchingLayer(options.before)
-                _mbMap?.addLayer(layer, options.before)
+                layerInsertId = layer.id
+
+                if (options.neighboringLayerId != null) {
+                  const beforeLayer = _findFirstMatchingLayer(options.neighboringLayerId)
+                  _mbMap?.addLayer(layer, beforeLayer || undefined)
+                } else {
+                  const firstLayerId = _mbMap?.getStyle().layers[0].id
+                  // add layer before the first layer, if there is one
+                  _mbMap?.addLayer(layer, firstLayerId || undefined)
+                }
               } else {
                 _addLayerAfter(layer, layerInsertId)
+                layerInsertId = layer.id
               }
-              layerInsertId = layer.id
+              // If the layer is added after, add the first layer after the neighboring layer
+              // The consecutive layers are added after the first layer
             } else {
-              _mbMap?.addLayer(layer)
+              if (layerInsertId == null) {
+                if (options.neighboringLayerId != null) {
+                  layerInsertId = _findLastMatchingLayer(options.neighboringLayerId)
+                }
+                if (layerInsertId != null) {
+                  _addLayerAfter(layer, layerInsertId)
+                } else {
+                  _mbMap?.addLayer(layer)
+                }
+                layerInsertId = layer.id
+              }
             }
 
             if (!options.isHidden) {
