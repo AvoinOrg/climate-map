@@ -21,7 +21,6 @@ import {
   OverlayMessage,
   MapLibraryMode,
   QueuePriority,
-  LayerConf,
   PopupOpts,
   QueueFunction,
   FunctionQueue,
@@ -555,10 +554,12 @@ export const useMapStore = create<State>()(
       },
 
       _addMbStyleToMb: async (id: LayerId, options: LayerAddOptionsWithConf) => {
-        const { _addMbPopup, _mbMap } = get()
+        const { _addMbPopup, _mbMap, _addLayerAfter, _findFirstMatchingLayer, _findLastMatchingLayer } = get()
         const setIsMapPopupOpen = useUIStore.getState().setIsMapPopupOpen
 
         const style = await options.layerConf.style()
+
+        let layerInsertId: string | null = null
 
         try {
           for (const sourceKey in style.sources) {
@@ -616,7 +617,23 @@ export const useMapStore = create<State>()(
               layerGroup[layer.id] = layer
             })
 
-            _mbMap?.addLayer(layer)
+            if (options.after) {
+              if (layerInsertId == null) {
+                layerInsertId = _findLastMatchingLayer(options.after)
+              }
+              layerInsertId ? _addLayerAfter(layer, layerInsertId) : _mbMap?.addLayer(layer)
+              layerInsertId = layer.id
+            } else if (options.before) {
+              if (layerInsertId == null) {
+                layerInsertId = _findFirstMatchingLayer(options.before)
+                _mbMap?.addLayer(layer, options.before)
+              } else {
+                _addLayerAfter(layer, layerInsertId)
+              }
+              layerInsertId = layer.id
+            } else {
+              _mbMap?.addLayer(layer)
+            }
 
             if (!options.isHidden) {
               _mbMap?.setLayoutProperty(layer.id, 'visibility', 'visible')
