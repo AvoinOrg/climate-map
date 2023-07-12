@@ -87,6 +87,7 @@ type Actions = {
   _setFunctionQueue: (functionQueue: FunctionQueue) => void
   _setPopupOpts: (popupOpts: PopupOpts) => void
   _setMbMap: (mbMap: MbMap) => void
+  _findFirstMatchingLayer: (id: LayerId | string) => string | null
 }
 
 type State = Vars & Actions
@@ -671,6 +672,22 @@ export const useMapStore = create<State>()(
         set((state) => {
           state._mbMap = mbMap
         })
+      },
+
+      // finds the first layer that starts with the given id
+      _findFirstMatchingLayer: (id: string) => {
+        const { _mbMap } = get()
+
+        if (_mbMap) {
+          const layers = _mbMap.getStyle().layers
+
+          if (layers) {
+            let firstMatch = layers.find((l) => l.id.startsWith(id))
+            return firstMatch ? firstMatch.id : null
+          }
+        }
+
+        return null
       },
     }
 
