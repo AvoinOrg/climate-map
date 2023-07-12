@@ -30,7 +30,7 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import { useUIStore } from '../../common/store'
 import { useMapStore } from '../../common/store'
 
-import { LayerOpt, LayerOpts, MapLibraryMode, QueuePriority, PopupOpts } from '#/common/types/map'
+import { LayerOpt, LayerOpts, MapLibraryMode, QueuePriority, PopupOpts, FunctionQueue } from '#/common/types/map'
 import { getLayerName } from '#/common/utils/map'
 import { OverlayMessages } from './OverlayMessages'
 import { MapButtons } from './MapButtons'
@@ -63,6 +63,7 @@ export const Map = ({ children }: Props) => {
   const overlayMessage = useMapStore((state) => state.overlayMessage)
   const selectedFeatures = useMapStore((state) => state.selectedFeatures)
   const setSelectedFeatures = useMapStore((state) => state.setSelectedFeatures)
+  const storeValues = useMapStore()
 
   const [isMapReady, setIsMapReady] = useState(false)
   const [isMbMapReady, setIsMbMapReady] = useState(false)
@@ -527,8 +528,8 @@ export const Map = ({ children }: Props) => {
   useEffect(() => {
     // Run queued functions once map has loaded
     if (isLoaded && _functionQueue.length > 0) {
-      let functionsToCall: any[] = []
-      let _newFunctionQueue: any[] = []
+      let functionsToCall: FunctionQueue = []
+      let _newFunctionQueue: FunctionQueue = []
 
       // reverse the QueuePriority enum array, since we want to call the highest priority functions first
       let priorityArr = Object.values(QueuePriority)
@@ -547,13 +548,13 @@ export const Map = ({ children }: Props) => {
         await Promise.all(
           functionsToCall.map((call) => {
             try {
-              // @ts-ignore
-              return values[call.func](...call.args)
+              // casting to any because TS can't infer the actual parameters of the function
+              const func = storeValues[call.funcName] as (...args: any[]) => any
+              return func(...call.args)
             } catch (e) {
-              console.error("Couldn't run queued map function", call.func, call.args)
+              console.error("Couldn't run queued map function", call.funcName, call.args)
               console.error(e)
               call.promise.reject()
-              call.promise = null
               return null
             }
           })
