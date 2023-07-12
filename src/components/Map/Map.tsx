@@ -508,7 +508,6 @@ export const Map = ({ children }: Props) => {
   }, [newlySelectedFeatures, selectedFeatures, _layerOptions, activeLayerGroupIds, _layerGroups])
 
   useEffect(() => {
-    // Run queued function once map has loaded
     if (!isLoaded) {
       switch (mapLibraryMode) {
         case 'mapbox': {
