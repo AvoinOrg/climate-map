@@ -27,6 +27,7 @@ import {
   FunctionQueue,
   LayerAddOptions,
   AnyLayerAddOptions,
+  LayerAddOptionsWithConf,
 } from '#/common/types/map'
 import { layerConfs } from '#/components/Map/Layers'
 
