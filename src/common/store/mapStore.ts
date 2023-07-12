@@ -87,6 +87,7 @@ type Actions = {
   _setFunctionQueue: (functionQueue: FunctionQueue) => void
   _setPopupOpts: (popupOpts: PopupOpts) => void
   _setMbMap: (mbMap: MbMap) => void
+  _addLayerAfter: (layer: AnyLayer, afterId: string) => void
   _findFirstMatchingLayer: (id: LayerId | string) => string | null
   _findLastMatchingLayer: (id: LayerId | string) => string | null
 }
@@ -712,6 +713,29 @@ export const useMapStore = create<State>()(
         }
 
         return null
+      },
+
+      _addLayerAfter: (layer: AnyLayer, afterId: string) => {
+        const { _mbMap } = get()
+
+        const layers = _mbMap?.getStyle().layers
+
+        if (layers) {
+          // Find the index of the 'after' layer
+          const index = layers.findIndex((l) => l.id === afterId)
+
+          // If the 'after' layer was found and it's not the last layer
+          if (index !== -1 && index < layers.length - 1) {
+            // Get the ID of the layer after the 'after' layer
+            const beforeId = layers[index + 1].id
+
+            // Add the new layer before that layer, effectively adding it after the 'after' layer
+            _mbMap?.addLayer(layer, beforeId)
+          } else {
+            // If the 'after' layer wasn't found or it's the last layer, just add the new layer
+            _mbMap?.addLayer(layer)
+          }
+        }
       },
     }
 
