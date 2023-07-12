@@ -715,16 +715,16 @@ export const useMapStore = create<State>()(
         return null
       },
 
+      // The default mapbox addLayer function can only specify a
+      // layer to be added before another layer.
       _addLayerAfter: (layer: AnyLayer, afterId: string) => {
         const { _mbMap } = get()
 
         const layers = _mbMap?.getStyle().layers
 
         if (layers) {
-          // Find the index of the 'after' layer
           const index = layers.findIndex((l) => l.id === afterId)
 
-          // If the 'after' layer was found and it's not the last layer
           if (index !== -1 && index < layers.length - 1) {
             // Get the ID of the layer after the 'after' layer
             const beforeId = layers[index + 1].id
