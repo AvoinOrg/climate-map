@@ -45,6 +45,7 @@ export type Vars = {
   _isMapReady: boolean
   _draw: MapboxDraw | null
   _functionQueue: FunctionQueue
+  _isFunctionQueueExecuting: boolean
   _mbMap: MbMap | null
   _olMap: OlMap | null
   _layerGroups: Record<string, any>
@@ -87,6 +88,7 @@ export type Actions = {
   _addMbStyleToMb: (id: LayerId, options: LayerAddOptionsWithConf) => Promise<void>
   _addToFunctionQueue: (queueFunction: QueueFunction) => Promise<any>
   _setFunctionQueue: (functionQueue: FunctionQueue) => void
+  _setIsFunctionQueueExecuting: (isExecuting: boolean) => void
   _setPopupOpts: (popupOpts: PopupOpts) => void
   _setMbMap: (mbMap: MbMap) => void
   _addLayerAfter: (layer: AnyLayer, afterId: string) => void
@@ -113,6 +115,7 @@ export const useMapStore = create<State>()(
       _isMapReady: false,
       _draw: null,
       _functionQueue: [],
+      _isFunctionQueueExecuting: false,
       _mbMap: null,
       _olMap: null,
       _layerGroups: {},
@@ -712,6 +715,12 @@ export const useMapStore = create<State>()(
       _setFunctionQueue: (functionQueue: FunctionQueue) => {
         set((state) => {
           state._functionQueue = functionQueue
+        })
+      },
+
+      _setIsFunctionQueueExecuting: (isExecuting: boolean) => {
+        set((state) => {
+          state._isFunctionQueueExecuting = isExecuting
         })
       },
 
