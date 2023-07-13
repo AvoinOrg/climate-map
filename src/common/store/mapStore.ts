@@ -88,6 +88,7 @@ export type Actions = {
   _addMbStyleToMb: (id: LayerId, options: LayerAddOptionsWithConf) => Promise<void>
   _addToFunctionQueue: (queueFunction: QueueFunction) => Promise<any>
   _setFunctionQueue: (functionQueue: FunctionQueue) => void
+  _executeFunctionQueue: (callback?: () => void) => Promise<void>
   _setIsFunctionQueueExecuting: (isExecuting: boolean) => void
   _setPopupOpts: (popupOpts: PopupOpts) => void
   _setMbMap: (mbMap: MbMap) => void
@@ -722,6 +723,72 @@ export const useMapStore = create<State>()(
         set((state) => {
           state._isFunctionQueueExecuting = isExecuting
         })
+      },
+
+      _executeFunctionQueue: async (callback?: () => void) => {
+        const { _isFunctionQueueExecuting, _setIsFunctionQueueExecuting } = get()
+
+        if (!_isFunctionQueueExecuting) {
+          _setIsFunctionQueueExecuting(true)
+        } else {
+          throw new Error('Function queue is already executing.')
+        }
+
+        const loopThroughQueuePriorityLevels = async (functionQueue: FunctionQueue) => {
+          const store = get()
+          let functionsToCall: FunctionQueue = []
+
+          let priorityArr = Object.values(QueuePriority)
+          priorityArr = priorityArr.reverse().splice(0, priorityArr.length / 2)
+
+          for (let i in priorityArr) {
+            functionsToCall = functionsToCall.concat(functionQueue.filter((f) => f.priority === priorityArr[i]))
+
+            if (functionsToCall.length > 0) {
+              store._setFunctionQueue(store._functionQueue.filter((f) => !functionsToCall.includes(f)))
+              break
+            }
+          }
+
+          const callFuncs = async () => {
+            await Promise.all(
+              functionsToCall.map((call) => {
+                try {
+                  // casting to any because TS can't infer the actual parameters of the function
+                  const func = store[call.funcName] as (...args: any[]) => any
+                  return func(...call.args)
+                } catch (e) {
+                  console.error("Couldn't run queued map function", call.funcName, call.args)
+                  console.error(e)
+                  call.promise.reject()
+                  return null
+                }
+              })
+            )
+
+            functionsToCall.forEach((call) => {
+              if (call.promise != null) {
+                call.promise.resolve()
+              }
+            })
+          }
+
+          await callFuncs()
+        }
+
+        while (true) {
+          const _functionQueue = get()._functionQueue
+
+          if (_functionQueue.length === 0) {
+            break
+          }
+          loopThroughQueuePriorityLevels(_functionQueue)
+        }
+
+        callback && (await callback())
+        _setIsFunctionQueueExecuting(false)
+
+        return
       },
 
       _setMbMap: (mbMap: MbMap) => {
