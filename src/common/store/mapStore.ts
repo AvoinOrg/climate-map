@@ -56,7 +56,7 @@ export type Vars = {
 export type Actions = {
   getSourceBounds: (sourceId: string) => LngLatBounds | null
   getSourceJson: (id: string) => FeatureCollection | null
-  addLayerGroup: (layerId: LayerId, options?: LayerAddOptions) => Promise<void>
+  addLayerGroup: (layerId: LayerId, options?: LayerAddOptions, queueOptions?: QueueOptions) => Promise<void>
   enableLayerGroup: (layerId: LayerId, options?: LayerAddOptions) => Promise<void>
   disableLayerGroup: (layerId: LayerId) => Promise<void>
   toggleLayerGroup: (layerId: LayerId, options?: LayerAddOptions) => Promise<void>
@@ -232,16 +232,8 @@ export const useMapStore = create<State>()(
         )
       },
 
-      addLayerGroup: async (layerId: LayerId, options?: LayerAddOptions) => {
-        const { isLoaded, _addToFunctionQueue, _addMbStyleToMb, _addMbStyle } = get()
-
-        if (!isLoaded) {
-          return _addToFunctionQueue({
-            funcName: 'addLayerGroup',
-            args: [layerId, options],
-            priority: QueuePriority.HIGH,
-          })
-        }
+      addLayerGroup: queueableFnInit(async (layerId: LayerId, options?: LayerAddOptions) => {
+        const { _addMbStyleToMb, _addMbStyle } = get()
 
         // Initialize layer if it doesn't exist
         const opts = options || {}
@@ -261,7 +253,7 @@ export const useMapStore = create<State>()(
         } else {
           console.error('No layer config found for id: ' + layerId)
         }
-      },
+      }),
 
       enableLayerGroup: async (layerId: LayerId, options?: LayerAddOptions) => {
         const { _layerGroups, _setGroupVisibility, addLayerGroup } = get()
