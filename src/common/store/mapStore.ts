@@ -232,28 +232,31 @@ export const useMapStore = create<State>()(
         )
       },
 
-      addLayerGroup: queueableFnInit(async (layerId: LayerId, options?: LayerAddOptions) => {
-        const { _addMbStyleToMb, _addMbStyle } = get()
+      addLayerGroup: queueableFnInit(
+        async (layerId: LayerId, options?: LayerAddOptions) => {
+          const { _addMbStyleToMb, _addMbStyle } = get()
 
-        // Initialize layer if it doesn't exist
-        const opts = options || {}
+          // Initialize layer if it doesn't exist
+          const opts = options || {}
 
-        if (!opts.layerConf) {
-          opts.layerConf = layerConfs.find((el: LayerConfAnyId) => {
-            return el.id === layerId
-          })
-        }
-
-        if (opts.layerConf) {
-          if (opts.layerConf.useMb == null || opts.layerConf.useMb) {
-            await _addMbStyleToMb(layerId, opts as LayerAddOptionsWithConf)
-          } else {
-            await _addMbStyle(layerId, opts as LayerAddOptionsWithConf)
+          if (!opts.layerConf) {
+            opts.layerConf = layerConfs.find((el: LayerConfAnyId) => {
+              return el.id === layerId
+            })
           }
-        } else {
-          console.error('No layer config found for id: ' + layerId)
-        }
-      }),
+
+          if (opts.layerConf) {
+            if (opts.layerConf.useMb == null || opts.layerConf.useMb) {
+              await _addMbStyleToMb(layerId, opts as LayerAddOptionsWithConf)
+            } else {
+              await _addMbStyle(layerId, opts as LayerAddOptionsWithConf)
+            }
+          } else {
+            console.error('No layer config found for id: ' + layerId)
+          }
+        },
+        { priority: QueuePriority.HIGH }
+      ),
 
       enableLayerGroup: async (layerId: LayerId, options?: LayerAddOptions) => {
         const { _layerGroups, _setGroupVisibility, addLayerGroup } = get()
