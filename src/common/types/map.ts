@@ -115,6 +115,11 @@ export interface ILayerOption {
   layerMaxzoom?: number | null
 }
 
+export type QueueOptions = {
+  skipQueue?: boolean
+  priority?: QueuePriority
+}
+
 export type QueueFunctionFuncName = keyof MapStoreActions
 
 export type QueueFunction = { funcName: QueueFunctionFuncName; args: any[]; priority?: QueuePriority }
