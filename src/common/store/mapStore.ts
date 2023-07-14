@@ -80,7 +80,7 @@ export type Actions = {
   mapToggleTerrain: () => void
   mapZoomIn: () => void
   mapZoomOut: () => void
-  setIsDrawPolygon: (isDrawPolygon: boolean) => void
+  setIsDrawPolygon: (isDrawPolygon: boolean) => Promise<void>
   _setIsLoaded: { (isLoaded: boolean): void }
   _setIsMapReady: { (isMapReady: boolean): void }
   _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => void
@@ -331,30 +331,23 @@ export const useMapStore = create<State>()(
         disableLayerGroup(layerIdString as LayerId)
       },
 
-      setLayoutProperty: async (layer: string, name: string, value: any): Promise<any> => {
-        const { isLoaded, _addToFunctionQueue, _mbMap } = get()
+      setLayoutProperty: queueableFnInit(async (layer: string, name: string, value: any): Promise<any> => {
+        const { _mbMap } = get()
 
-        if (!isLoaded) {
-          return _addToFunctionQueue({ funcName: 'setLayoutProperty', args: [layer, name, value] })
-        }
         _mbMap?.setLayoutProperty(layer, name, value)
-      },
+      }),
 
-      setPaintProperty: async (layer: string, name: string, value: any): Promise<any> => {
-        const { isLoaded, _mbMap, _addToFunctionQueue } = get()
-        if (!isLoaded) {
-          return _addToFunctionQueue({ funcName: 'setPaintProperty', args: [layer, name, value] })
-        }
+      setPaintProperty: queueableFnInit(async (layer: string, name: string, value: any): Promise<any> => {
+        const { _mbMap } = get()
+
         _mbMap?.setPaintProperty(layer, name, value)
-      },
+      }),
 
-      setFilter: async (layer: string, filter: any[]): Promise<any> => {
-        const { isLoaded, _mbMap, _addToFunctionQueue } = get()
-        if (!isLoaded) {
-          return _addToFunctionQueue({ funcName: 'setFilter', args: [layer, filter] })
-        }
+      setFilter: queueableFnInit(async (layer: string, filter: any[]): Promise<any> => {
+        const { _mbMap } = get()
+
         _mbMap?.setFilter(layer, filter)
-      },
+      }),
 
       setOverlayMessage: async (condition: boolean, message: OverlayMessage) => {
         set((state) => {
@@ -362,50 +355,48 @@ export const useMapStore = create<State>()(
         })
       },
 
-      fitBounds: (
-        bbox: number[] | LngLatBounds,
-        {
-          duration = 1000,
-          lonExtra = 0,
-          latExtra = 0,
-        }: { duration?: number; lonExtra?: number; latExtra?: number } = {}
-      ): Promise<any> => {
-        const { isLoaded, _addToFunctionQueue, _mbMap } = get()
+      fitBounds: queueableFnInit(
+        (
+          bbox: number[] | LngLatBounds,
+          {
+            duration = 1000,
+            lonExtra = 0,
+            latExtra = 0,
+          }: { duration?: number; lonExtra?: number; latExtra?: number } = {}
+        ): Promise<void> => {
+          const { _mbMap } = get()
 
-        if (!isLoaded) {
-          return _addToFunctionQueue({ funcName: 'fitBounds', args: [bbox, { duration, lonExtra, latExtra }] })
+          let [lonMax, lonMin, latMax, latMin] = [0, 0, 0, 0]
+
+          if (bbox instanceof LngLatBounds) {
+            const southWest = bbox.getSouthWest()
+            const northEast = bbox.getNorthEast()
+
+            lonMax = northEast.lng
+            lonMin = southWest.lng
+            latMax = northEast.lat
+            latMin = southWest.lat
+          } else {
+            lonMax = bbox[0]
+            lonMin = bbox[1]
+            latMax = bbox[2]
+            latMin = bbox[3]
+          }
+
+          const flyOptions = { duration: duration }
+          const lonDiff = lonMax - lonMin
+          const latDiff = latMax - latMin
+          _mbMap?.fitBounds(
+            [
+              [lonMin - lonExtra * lonDiff, latMin - latExtra * latDiff],
+              [lonMax + lonExtra * lonDiff, latMax + latExtra * latDiff],
+            ],
+            flyOptions
+          )
+
+          return Promise.resolve()
         }
-
-        let [lonMax, lonMin, latMax, latMin] = [0, 0, 0, 0]
-
-        if (bbox instanceof LngLatBounds) {
-          const southWest = bbox.getSouthWest()
-          const northEast = bbox.getNorthEast()
-
-          lonMax = northEast.lng
-          lonMin = southWest.lng
-          latMax = northEast.lat
-          latMin = southWest.lat
-        } else {
-          lonMax = bbox[0]
-          lonMin = bbox[1]
-          latMax = bbox[2]
-          latMin = bbox[3]
-        }
-
-        const flyOptions = { duration: duration }
-        const lonDiff = lonMax - lonMin
-        const latDiff = latMax - latMin
-        _mbMap?.fitBounds(
-          [
-            [lonMin - lonExtra * lonDiff, latMin - latExtra * latDiff],
-            [lonMax + lonExtra * lonDiff, latMax + latExtra * latDiff],
-          ],
-          flyOptions
-        )
-
-        return Promise.resolve()
-      },
+      ),
       getGeocoder: () => {
         // set((state) => {
         // })
@@ -434,18 +425,11 @@ export const useMapStore = create<State>()(
         _mbMap?.zoomOut()
       },
 
-      setIsDrawPolygon: (isDrawPolygon: boolean) => {
-        const { isLoaded, _addToFunctionQueue, _mbMap } = get()
+      setIsDrawPolygon: queueableFnInit(async (isDrawPolygon: boolean) => {
+        const { _mbMap } = get()
 
         // TODO: Fix drawing. Figure out which layer to use, and dynamically add it to the map
         const sourceName = 'carbon-shapes'
-
-        if (!isLoaded) {
-          _addToFunctionQueue({ funcName: 'setIsDrawPolygon', args: [isDrawPolygon] })
-          return
-        }
-
-        // setMapLibraryMode('mapbox')
 
         const draw = new MapboxDraw({
           displayControlsDefault: false,
@@ -475,7 +459,9 @@ export const useMapStore = create<State>()(
           state._draw = draw
           state.isDrawEnabled = true
         })
-      },
+
+        return
+      }),
 
       _setIsLoaded: (isLoaded: boolean) => {
         set((state) => {
