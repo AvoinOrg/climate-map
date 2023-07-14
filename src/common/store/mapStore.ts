@@ -27,6 +27,7 @@ import {
   LayerAddOptions,
   AnyLayerAddOptions,
   LayerAddOptionsWithConf,
+  QueueOptions,
 } from '#/common/types/map'
 import { layerConfs } from '#/components/Map/Layers'
 
@@ -121,6 +122,42 @@ export const useMapStore = create<State>()(
       _olMap: null,
       _layerGroups: {},
       _layerOptions: {},
+    }
+
+    const queueableFnInit = <A1 extends any[], A2 extends [queueOptions?: QueueOptions]>(
+      fn: (...args: A1) => Promise<void>,
+      queueOptions?: QueueOptions
+    ) => {
+      const queueableFn = (fnWithArgs: { fn: (...args: A1) => Promise<void>; args: A1 }, qOpts: QueueOptions) => {
+        const { isLoaded, _addToFunctionQueue } = get()
+
+        if (!isLoaded && !qOpts.skipQueue) {
+          return _addToFunctionQueue({ fn: fnWithArgs.fn, args: fnWithArgs.args, priority: qOpts.priority })
+        }
+
+        return fnWithArgs.fn(...fnWithArgs.args)
+      }
+
+      return new Proxy(fn, {
+        apply(_target, _thisArg, args) {
+          const fnArgs = args.slice(0, fn.length) as A1
+
+          // initialize queue options with values from the function initialization.
+          // If they don't exist, use the default values.
+          const qOpts: QueueOptions = {
+            skipQueue: queueOptions?.skipQueue != null ? queueOptions?.skipQueue : false,
+            priority: queueOptions?.priority != null ? queueOptions?.priority : QueuePriority.LOW,
+          }
+
+          // Overwrite queue options with values from the function call.
+          if (fn.length < args.length) {
+            const qArgs = args[fn.length] as QueueOptions
+            qOpts.skipQueue = qArgs?.skipQueue != null ? qArgs?.skipQueue : qOpts.skipQueue
+            qOpts.priority = qArgs?.priority != null ? qArgs?.priority : qOpts.priority
+          }
+          queueableFn({ fn: fn, args: fnArgs }, qOpts)
+        },
+      }) as unknown as (...args: [...A1, ...A2]) => Promise<void>
     }
 
     const actions: Actions = {
