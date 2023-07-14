@@ -737,7 +737,7 @@ export const useMapStore = create<State>()(
 
         set((state) => {
           state._functionQueue.push({
-            funcName: queueFunction.funcName,
+            fn: queueFunction.fn,
             args: queueFunction.args,
             priority: queueFunction.priority,
             promise: {
