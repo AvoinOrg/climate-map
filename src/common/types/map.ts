@@ -122,6 +122,10 @@ export type QueueOptions = {
 
 export type QueueFunctionFuncName = keyof MapStoreActions
 
-export type QueueFunction = { funcName: QueueFunctionFuncName; args: any[]; priority?: QueuePriority }
+export type QueueFunction = {
+  fn: (...args: any) => Promise<void>
+  args: any[]
+  priority?: QueuePriority
+}
 
 export type FunctionQueue = (QueueFunction & { promise: { resolve: any; reject: any } })[]
