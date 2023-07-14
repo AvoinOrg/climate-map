@@ -64,10 +64,10 @@ export type Actions = {
   toggleAnyLayerGroup: (layerIdString: string, options?: AnyLayerAddOptions) => Promise<void>
   enableAnyLayerGroup: (layerIdString: string, options?: AnyLayerAddOptions) => Promise<void>
   disableAnyLayerGroup: (layerIdString: string) => Promise<void>
-  setLayoutProperty: (layer: string, name: string, value: any) => Promise<void>
-  setPaintProperty: (layer: string, name: string, value: any) => Promise<void>
-  setFilter: (layer: string, filter: any[]) => Promise<void>
-  setOverlayMessage: (condition: boolean, message: OverlayMessage) => Promise<void>
+  setLayoutProperty: (layer: string, name: string, value: any, queueOptions?: QueueOptions) => Promise<void>
+  setPaintProperty: (layer: string, name: string, value: any, queueOptions?: QueueOptions) => Promise<void>
+  setFilter: (layer: string, filter: any[], queueOptions?: QueueOptions) => Promise<void>
+  setOverlayMessage: (condition: boolean, message: OverlayMessage, queueOptions?: QueueOptions) => Promise<void>
   fitBounds: (
     bbox: number[] | LngLatBounds,
     options: { duration?: number; lonExtra?: number; latExtra?: number }
