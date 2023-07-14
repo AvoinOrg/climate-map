@@ -17,7 +17,7 @@ import { pp } from '#/common/utils/general'
 
 import { useUpdateMapDetails } from './hooks/useUpdateMapDetails'
 import { getTotals, getDatasetAttributes, getChartTitle, getNpvText, getChartProps, getUnitPerArea } from './utils'
-import { finlandForests } from './layers'
+import { finlandForests as layerConf } from './layers'
 import useFilteredSelectedFeatures from '#/common/hooks/useFilteredSelectedFeatures'
 import { FinlandForestsChart } from './components/FinlandForestsChart'
 import { ForestryMethod } from './types'
@@ -85,7 +85,7 @@ const FinlandForests = () => {
   const filteredFeatures = useFilteredSelectedFeatures(Object.keys(layerOptions).map((x) => `${x}-fill`))
 
   useEffect(() => {
-    enableLayerGroup('fi_forests', finlandForests)
+    enableLayerGroup('fi_forests', { layerConf })
   }, [])
 
   useEffect(() => {
