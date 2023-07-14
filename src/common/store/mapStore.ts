@@ -648,30 +648,28 @@ export const useMapStore = create<State>()(
               layerGroup[layer.id] = layer
             })
 
-            // Logic: if the layer is added before, add the first layer before the neighboring layer
-            // The consecutive layers are added after the first layer
-            // In Mapbox, the last layer is rendered on top.
-            if (options.isAddedBefore) {
-              // if layerInsertId is null, this is the first layer to be added
-              if (layerInsertId == null) {
-                layerInsertId = layer.id
-
+            // if layerInsertId is null, this is the first layer to be added
+            if (layerInsertId == null) {
+              // if the layer is added before, add the first layer before the neighboring layer
+              // The consecutive layers are added after the first layer
+              // In Mapbox, the last layer is rendered on top.
+              if (options.isAddedBefore) {
                 if (options.neighboringLayerId != null) {
                   const beforeLayer = _findFirstMatchingLayer(options.neighboringLayerId)
                   _mbMap?.addLayer(layer, beforeLayer || undefined)
                 } else {
-                  const firstLayerId = _mbMap?.getStyle().layers[0].id
-                  // add layer before the first layer, if there is one
-                  _mbMap?.addLayer(layer, firstLayerId || undefined)
+                  const mapLayers = _mbMap?.getStyle().layers
+                  if (mapLayers && mapLayers.length > 0) {
+                    // add layer before the first layer, if there is one
+                    _mbMap?.addLayer(layer, mapLayers[0].id)
+                  } else {
+                    // or if not, just add it normally
+                    _mbMap?.addLayer(layer)
+                  }
                 }
-              } else {
-                _addLayerAfter(layer, layerInsertId)
-                layerInsertId = layer.id
               }
               // If the layer is added after, add the first layer after the neighboring layer
-              // The consecutive layers are added after the first layer
-            } else {
-              if (layerInsertId == null) {
+              else {
                 if (options.neighboringLayerId != null) {
                   layerInsertId = _findLastMatchingLayer(options.neighboringLayerId)
                 }
@@ -680,9 +678,15 @@ export const useMapStore = create<State>()(
                 } else {
                   _mbMap?.addLayer(layer)
                 }
-                layerInsertId = layer.id
               }
             }
+            // the consecutive layers are added after the first layer
+            else {
+              _addLayerAfter(layer, layerInsertId)
+              layerInsertId = layer.id
+            }
+
+            layerInsertId = layer.id
 
             if (!options.isHidden) {
               _mbMap?.setLayoutProperty(layer.id, 'visibility', 'visible')
