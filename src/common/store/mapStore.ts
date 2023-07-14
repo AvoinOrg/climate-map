@@ -756,7 +756,7 @@ export const useMapStore = create<State>()(
           throw new Error('Function queue is already executing.')
         }
 
-        const loopThroughQueuePriorityLevels = async (functionQueue: FunctionQueue) => {
+        const loopThroughQueuePriorityLevels = async (functionQueue: FunctionQueue): Promise<void> => {
           const store = get()
           let functionsToCall: FunctionQueue = []
 
@@ -777,10 +777,9 @@ export const useMapStore = create<State>()(
               functionsToCall.map((call) => {
                 try {
                   // casting to any because TS can't infer the actual parameters of the function
-                  const func = store[call.funcName] as (...args: any[]) => any
-                  return func(...call.args)
+                  return call.fn(...call.args)
                 } catch (e) {
-                  console.error("Couldn't run queued map function", call.funcName, call.args)
+                  console.error("Couldn't run queued map function", call.fn, call.args)
                   console.error(e)
                   call.promise.reject()
                   return null
@@ -796,6 +795,8 @@ export const useMapStore = create<State>()(
           }
 
           await callFuncs()
+
+          return
         }
 
         while (true) {
@@ -804,7 +805,7 @@ export const useMapStore = create<State>()(
           if (_functionQueue.length === 0) {
             break
           }
-          loopThroughQueuePriorityLevels(_functionQueue)
+          await loopThroughQueuePriorityLevels(_functionQueue)
         }
 
         callback && (await callback())
