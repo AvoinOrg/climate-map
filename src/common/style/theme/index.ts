@@ -192,6 +192,13 @@ const components = {
       },
     },
   },
+  MuiButton: {
+    styleOverrides: {
+      root: {
+        textTransform: 'none',
+      },
+    },
+  },
   MuiCssBaseline: {
     styleOverrides: {
       '*': {
