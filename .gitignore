@@ -131,7 +131,7 @@ yarn-error.log*
 
 .env
 
-/public/dyn
+/public
 
 out
 .next
