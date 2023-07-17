@@ -55,15 +55,17 @@ export const Map = ({ children }: Props) => {
   const mapLibraryMode = useMapStore((state) => state.mapLibraryMode)
   const isLoaded = useMapStore((state) => state.isLoaded)
   const _setIsLoaded = useMapStore((state) => state._setIsLoaded)
+  const _isMapReady = useMapStore((state) => state._isMapReady)
+  const _setIsMapReady = useMapStore((state) => state._setIsMapReady)
   const _functionQueue = useMapStore((state) => state._functionQueue)
-  const _setFunctionQueue = useMapStore((state) => state._setFunctionQueue)
+  const _executeFunctionQueue = useMapStore((state) => state._executeFunctionQueue)
   const _layerGroups = useMapStore((state) => state._layerGroups)
   const activeLayerGroupIds = useMapStore((state) => state.activeLayerGroupIds)
   const _layerOptions = useMapStore((state) => state._layerOptions)
   const overlayMessage = useMapStore((state) => state.overlayMessage)
   const selectedFeatures = useMapStore((state) => state.selectedFeatures)
   const setSelectedFeatures = useMapStore((state) => state.setSelectedFeatures)
-  const storeValues = useMapStore()
+  const _isFunctionQueueExecuting = useMapStore((state) => state._isFunctionQueueExecuting)
 
   const [isMapReady, setIsMapReady] = useState(false)
   const [isMbMapReady, setIsMbMapReady] = useState(false)
@@ -264,7 +266,6 @@ export const Map = ({ children }: Props) => {
     const newMap = new OlMap(options)
 
     newMap.once('rendercomplete', () => {
-      setIsMapReady(true)
       newMap.setTarget(mapDivRef.current)
 
       const overlay = new Overlay({
@@ -283,6 +284,8 @@ export const Map = ({ children }: Props) => {
       setPopupOnClose(() => onclick)
 
       newMap.addOverlay(overlay)
+
+      _setIsMapReady(true)
     })
 
     return { newMap, newMbMap }
@@ -323,7 +326,7 @@ export const Map = ({ children }: Props) => {
     if (!mapLibraryRef.current) {
       return initMapMode(mapLibraryMode, { center, zoom })
     } else if (mapLibraryRef.current !== mapLibraryMode) {
-      _setIsLoaded(false)
+      _setIsMapReady(false)
 
       if (mapLibraryRef.current === 'mapbox') {
         const mbCenter = _mbMap?.getCenter()
@@ -351,7 +354,7 @@ export const Map = ({ children }: Props) => {
   }, [mapLibraryMode])
 
   useEffect(() => {
-    if (isLoaded) {
+    if (isMapReady) {
       if (mapLibraryRef.current !== 'mapbox') {
         // remove the old callback and create a new one each time state is updated
         unByKey(popupKey)
@@ -506,19 +509,19 @@ export const Map = ({ children }: Props) => {
       setSelectedFeatures(selectedFeaturesCopy)
       setNewlySelectedFeatures([])
     }
-  }, [newlySelectedFeatures, selectedFeatures, _layerOptions, activeLayerGroupIds, _layerGroups])
+  }, [newlySelectedFeatures, _layerOptions, activeLayerGroupIds, _layerGroups])
 
   useEffect(() => {
     if (!isLoaded) {
       switch (mapLibraryMode) {
         case 'mapbox': {
           if (isMbMapReady) {
-            _setIsLoaded(true)
+            _setIsMapReady(true)
           }
         }
         case 'hybrid': {
           if (isMbMapReady && isMapReady) {
-            _setIsLoaded(true)
+            _setIsMapReady(true)
           }
         }
       }
@@ -527,51 +530,10 @@ export const Map = ({ children }: Props) => {
 
   useEffect(() => {
     // Run queued functions once map has loaded
-    if (isLoaded && _functionQueue.length > 0) {
-      let functionsToCall: FunctionQueue = []
-      let _newFunctionQueue: FunctionQueue = []
-
-      // reverse the QueuePriority enum array, since we want to call the highest priority functions first
-      let priorityArr = Object.values(QueuePriority)
-      priorityArr = priorityArr.reverse().splice(0, priorityArr.length / 2)
-
-      for (let i in priorityArr) {
-        functionsToCall = functionsToCall.concat(_functionQueue.filter((f) => f.priority === priorityArr[i]))
-
-        if (functionsToCall.length > 0) {
-          _newFunctionQueue = _functionQueue.filter((f) => !functionsToCall.includes(f))
-          break
-        }
-      }
-
-      const callFuncs = async () => {
-        await Promise.all(
-          functionsToCall.map((call) => {
-            try {
-              // casting to any because TS can't infer the actual parameters of the function
-              const func = storeValues[call.funcName] as (...args: any[]) => any
-              return func(...call.args)
-            } catch (e) {
-              console.error("Couldn't run queued map function", call.funcName, call.args)
-              console.error(e)
-              call.promise.reject()
-              return null
-            }
-          })
-        )
-
-        functionsToCall.forEach((call) => {
-          if (call.promise != null) {
-            call.promise.resolve()
-          }
-        })
-
-        _setFunctionQueue(_newFunctionQueue)
-      }
-
-      callFuncs()
+    if (_isMapReady && !_isFunctionQueueExecuting && !isLoaded) {
+      _executeFunctionQueue(() => _setIsLoaded(true))
     }
-  }, [isLoaded, _functionQueue])
+  }, [_isMapReady, _functionQueue, _isFunctionQueueExecuting, isLoaded])
 
   useEffect(() => {
     if (isLoaded) {

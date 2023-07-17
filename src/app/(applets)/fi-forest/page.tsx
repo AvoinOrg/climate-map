@@ -5,6 +5,7 @@ import { Box, Button, Checkbox, Container, FormControlLabel, Paper } from '@mui/
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import Link from 'next/link'
 import { Link as MuiLink } from '@mui/material'
+import Image from 'next/image'
 
 import { getCombinedBounds } from '#/common/utils/map'
 // import { setOverlayMessage } from '../../OverlayMessages/OverlayMessages'
@@ -115,6 +116,7 @@ const FinlandForests = () => {
   // const { layer, feature, bounds } = useObservable(SelectedFeatureState.selectedFeatures)
   // const hasFeature = selectedFeatures.length > 0
 
+  // TODO: Why does commenting this out make the fill colors work?
   useEffect(() => {
     // Eliminate confusing options (all zeroes)
     if (forestryMethod === TRADITIONAL_FORESTRY_METHOD && carbonBalanceDifferenceFlag) {
@@ -256,7 +258,7 @@ const FinlandForests = () => {
                 }),
           }}
         >
-          <Paper className="grid-col1" elevation={5} style={{ width: '400px' }}>
+          <Paper className="grid-col1" elevation={5} sx={{ width: '400px' }}>
             <Container>
               {/* TODO: enable headerTable */}
               <HeaderTable
@@ -341,7 +343,14 @@ const FinlandForests = () => {
                 <br />
                 <a href="https://arvometsa.fi">
                   {/* TODO: fix logo */}
-                  {/* <img alt="Arvometsä" src={arvometsaLogo} style={{ height: '120px' }} /> */}
+                  <Image
+                    alt="Arvometsä"
+                    src={'/app/(applets)/fi-forest/assets/arvometsa_logo.png'}
+                    width={0}
+                    height={0}
+                    sizes="100vw"
+                    style={{ width: '100%', height: 'auto' }} // optional
+                  />
                 </a>
               </p>
             </Container>
