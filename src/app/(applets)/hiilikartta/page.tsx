@@ -1,13 +1,16 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { Box } from '@mui/material'
+import { Box, Button } from '@mui/material'
+import Link from 'next/link'
 
 import useStore from '#/common/hooks/useStore'
+import { getRoute } from '#/common/utils/routing'
 
 import { useMapStore } from '#/common/store'
 import { useAppStore } from './state/appStore'
 import PlanListItem from './components/PlanListItem'
+import { routeTree } from 'applets/hiilikartta/common/routes'
 
 const Page = () => {
   const planConfs = useStore(useAppStore, (state) => state.planConfs)
@@ -19,6 +22,11 @@ const Page = () => {
 
   return (
     <>
+      <Box>
+        <Link href={getRoute(routeTree.create, routeTree)}>
+          <Box sx={{ typography: 'h2', textAlign: 'start' }}>LUO KAAVA & LASKE HIILIARVOT</Box>
+        </Link>
+      </Box>
       {planConfs != null && Object.keys(planConfs).length > 0 && (
         <>
           <Box component="p">Omat kaavat</Box>
