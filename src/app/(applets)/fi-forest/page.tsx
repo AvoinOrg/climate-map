@@ -345,7 +345,7 @@ const FinlandForests = () => {
                   {/* TODO: fix logo */}
                   <Image
                     alt="Arvometsä"
-                    src={'/app/(applets)/fi-forest/assets/arvometsa_logo.png'}
+                    src={'/fi-forest/arvometsa_logo.png'}
                     width={0}
                     height={0}
                     sizes="100vw"
