@@ -25,7 +25,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
-      <Box sx={{ padding: '35px 30px 100px 30px', minWidth: '400px', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ padding: '35px 30px 100px 30px', width: '400px', display: 'flex', flexDirection: 'column' }}>
         {children}
       </Box>
     </>
