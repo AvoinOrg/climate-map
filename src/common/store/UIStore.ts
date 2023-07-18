@@ -24,6 +24,8 @@ interface UIState {
   setIsNavbarOpen: (value: boolean) => void
   setSidebarHeaderElement: null | ((value: React.JSX.Element) => void)
   setSidebarHeaderElementSetter: (setter: (value: React.JSX.Element) => void) => void
+  isLoginModalOpen: boolean
+  setIsLoginModalOpen: (isOpen: boolean) => void
 }
 
 export const useUIStore = create<UIState>((set, get) => ({
@@ -35,12 +37,10 @@ export const useUIStore = create<UIState>((set, get) => ({
   setIsSidebarDisabled: (value) => set({ isSidebarDisabled: value }),
   isMapPopupOpen: false,
   setIsMapPopupOpen: (value) => set({ isMapPopupOpen: value }),
-  profileState: 'none',
-  setProfileState: (value) => set({ profileState: value }),
-  modalState: 'none',
-  setModalState: (value) => set({ modalState: value }),
-  signupFunnelStep: 0,
-  setSignupFunnelStep: (value) => set({ signupFunnelStep: value }),
+  isLoginModalOpen: false,
+  setIsLoginModalOpen: (isOpen: boolean) => {
+    set({ isLoginModalOpen: isOpen })
+  },
   isNavbarOpen: true,
   setIsNavbarOpen: (value) => set({ isNavbarOpen: value }),
   // These two allow dynamic changing of the sidebar header from other components
