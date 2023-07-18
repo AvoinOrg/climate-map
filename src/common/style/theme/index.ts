@@ -198,7 +198,7 @@ const components = {
         textTransform: 'none',
       },
     },
-  },
+  } as const,
   MuiCssBaseline: {
     styleOverrides: {
       '*': {
