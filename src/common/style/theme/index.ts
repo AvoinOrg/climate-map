@@ -92,13 +92,13 @@ const shape = {
 }
 
 const zIndex = {
-  modal: 1200,
-  snackbar: 1400,
-  drawer: 1100,
-  appBar: 1300,
+  modal: 1500,
+  snackbar: 1600,
+  drawer: 1400,
+  appBar: 1400,
   mobileStepper: 1000,
-  popup: 1350,
-  tooltip: 1500,
+  popup: 1500,
+  tooltip: 1450,
 }
 
 const fonts = {
