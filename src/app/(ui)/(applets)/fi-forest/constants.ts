@@ -1,4 +1,4 @@
-import { ILayerOptions, ForestryMethod, LayerLevel } from '#/app/(applets)/fi-forest/types'
+import { ILayerOptions, ForestryMethod, LayerLevel } from 'applets/fi-forest/types'
 
 export const layerOptions: ILayerOptions = {
   [LayerLevel.Country]: { minzoom: 0, maxzoom: 5, serverId: 'country', layerMinzoom: 0, layerMaxzoom: 5 },
