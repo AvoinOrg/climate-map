@@ -2,13 +2,13 @@ import { Expression } from 'mapbox-gl'
 
 import { fillOpacity } from '#/common/utils/map'
 import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
-import { layerOptions } from '#/app/(applets)/fi-forest/constants'
-import { LayerLevel } from '#/app/(applets)/fi-forest/types'
+import { layerOptions } from 'applets/fi-forest/constants'
+import { LayerLevel } from 'applets/fi-forest/types'
 import {
   fiForestsAreaCO2FillColor,
   fiForestsCumulativeCO2eValueExpr,
   fiForestsTextfieldExpression,
-} from '#/app/(applets)/fi-forest/utils'
+} from 'applets/fi-forest/utils'
 
 const SERVER_URL = process.env.NEXT_PUBLIC_GEOSERVER_URL
 
