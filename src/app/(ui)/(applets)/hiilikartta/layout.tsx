@@ -5,7 +5,7 @@ import { Box } from '@mui/material'
 
 import { routeTree } from './common/routes'
 import { SidebarHeader } from '#/components/Sidebar'
-import { BreadcrumbNav } from '../../../components/Sidebar'
+import { BreadcrumbNav } from '#/components/Sidebar'
 import { useUIStore } from '#/common/store'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
