@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useLayoutEffect, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Box } from '@mui/material'
 
 import { useUIStore } from '#/common/store'
@@ -17,20 +17,39 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const setIsMapPopupOpen = useUIStore((state) => state.setIsMapPopupOpen)
   const popupOpts = useMapStore((state) => state.popupOpts)
   const setSidebarHeaderElementSetter = useUIStore((state) => state.setSidebarHeaderElementSetter)
+  const setSidebarWidth = useUIStore((state) => state.setSidebarWidth)
 
   // Initialize with empty header title to make the change of header smoother
   const [sidebarHeader, setSidebarHeader] = useState(<SidebarHeader title={''}></SidebarHeader>)
+  const sidebarRef = useRef()
 
   useLayoutEffect(() => {
     setSidebarHeader(<SidebarHeader title={'avoin map'}></SidebarHeader>)
     setSidebarHeaderElementSetter(setSidebarHeader)
   }, [])
 
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver((entries) => {
+      setSidebarWidth(entries[0].contentRect.width)
+    })
+
+    if (sidebarRef.current) {
+      resizeObserver.observe(sidebarRef.current)
+    }
+
+    return () => {
+      if (sidebarRef.current) {
+        resizeObserver.unobserve(sidebarRef.current)
+      }
+    }
+  }, [])
+
   return (
     <Box
+      ref={sidebarRef}
       className="sidebar-container"
       sx={{
-        zIndex: 1200,
+        zIndex: 'drawer',
         backgroundColor: 'white',
         minHeight: 0,
         width: 'max-content',
