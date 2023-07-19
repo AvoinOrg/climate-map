@@ -11,6 +11,7 @@ interface Vars {
   notifications: NotificationMessage[]
   isNavbarOpen: boolean
   isLoginModalOpen: boolean
+  sidebarWidth: number | undefined
 }
 
 interface Actions {
@@ -23,6 +24,7 @@ interface Actions {
   setSidebarHeaderElement: undefined | ((value: React.JSX.Element) => void)
   setSidebarHeaderElementSetter: (setter: (value: React.JSX.Element) => void) => void
   setIsLoginModalOpen: (isOpen: boolean) => void
+  setSidebarWidth: (pixels: number) => void
 }
 
 type State = Vars & Actions
@@ -36,6 +38,7 @@ export const useUIStore = create<State>((set, get) => {
     isLoginModalOpen: false,
     isNavbarOpen: true,
     notifications: [],
+    sidebarWidth: undefined,
   }
   const actions: Actions = {
     setIsSidebarOpen: (value) => set({ isSidebarOpen: value }),
@@ -56,6 +59,9 @@ export const useUIStore = create<State>((set, get) => {
     // TODO: Figure out a better way to do this
     setSidebarHeaderElement: undefined,
     setSidebarHeaderElementSetter: (setter) => set({ setSidebarHeaderElement: setter }),
+    setSidebarWidth(pixels: number) {
+      set({ sidebarWidth: pixels })
+    },
     notify: (message) => {
       const newNotification: any = {}
       const index = new Date().getTime()
