@@ -18,7 +18,7 @@
     "baseUrl": ".",
     "outDir": "build/",
     "paths": {
-      "applets/*": ["src/app/(applets)/*"],
+      "applets/*": ["src/app/(ui)/(applets)/*"],
       "#/*": ["src/*"]
     },
     //    "strict": true,
