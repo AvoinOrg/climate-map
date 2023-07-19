@@ -11,7 +11,7 @@ import theme from '#/common/style/theme'
 import { Sidebar } from '#/components/Sidebar'
 import { NavBar } from '#/components/NavBar'
 import { Map } from '#/components/Map'
-// import { LoginModal } from '#/components/Modal'
+import { LoginModal } from '#/components/Modal'
 // import { UserModal } from '#/components/Profile'
 // import { UiStateProvider, UserStateProvider } from '#/components/State'
 // import RootStyleRegistry from './emotion'
@@ -42,7 +42,7 @@ const Layout = ({
             <Sidebar>{children}</Sidebar>
             <NavBar />
           </Box>
-          {/* <LoginModal></LoginModal> */}
+          <LoginModal></LoginModal>
         </Map>
       </CssBaseline>
       {/* </UserStateProvider> */}
