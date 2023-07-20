@@ -3175,6 +3175,33 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tolgee/core@npm:5.10.1":
+  version: 5.10.1
+  resolution: "@tolgee/core@npm:5.10.1"
+  checksum: b7e96854f06caf1557d7f1c06a79788d5bcc8dafb6833751dde3167ee0e98632adf1291fa7befbad8c8bdf93e6967df8a4672fd9ba1f570a5c494a720020f456
+  languageName: node
+  linkType: hard
+
+"@tolgee/react@npm:^5.10.1":
+  version: 5.10.1
+  resolution: "@tolgee/react@npm:5.10.1"
+  dependencies:
+    "@tolgee/web": 5.10.1
+  peerDependencies:
+    react: ^16.14.0 || ^17.0.1 || ^18.1.0
+  checksum: 5503fc075b3c6c00df2dcce846c0fbc43dd410f08dbfdf3bcadd5688f2f25d23e391df3716037bb140af7fbad6623e260433d397a478102440e01c120cd3e54e
+  languageName: node
+  linkType: hard
+
+"@tolgee/web@npm:5.10.1":
+  version: 5.10.1
+  resolution: "@tolgee/web@npm:5.10.1"
+  dependencies:
+    "@tolgee/core": 5.10.1
+  checksum: 89cb0451c391cae2f7b2c3ac0b5b925887767eb4eb5bf18b3e12e33efb52a69ccde4ff349c420e192925fd96ad890c08a6f620cc26ddb866ec6eb0fb68f4a064
+  languageName: node
+  linkType: hard
+
 "@tootallnate/once@npm:2":
   version: 2.0.0
   resolution: "@tootallnate/once@npm:2.0.0"
@@ -6643,6 +6670,7 @@ __metadata:
     "@pmmmwh/react-refresh-webpack-plugin": ^0.5.10
     "@testing-library/jest-dom": ^5.16.5
     "@testing-library/react": ^14.0.0
+    "@tolgee/react": ^5.10.1
     "@turf/boolean-within": ^6.5.0
     "@turf/helpers": ^6.5.0
     "@turf/meta": ^6.5.0

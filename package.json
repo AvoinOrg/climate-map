@@ -41,6 +41,7 @@
     "@next/bundle-analyzer": "^13.2.4",
     "@next/font": "canary",
     "@ngageoint/geopackage": "^4.2.3",
+    "@tolgee/react": "^5.10.1",
     "@turf/boolean-within": "^6.5.0",
     "@turf/helpers": "^6.5.0",
     "@turf/meta": "^6.5.0",
