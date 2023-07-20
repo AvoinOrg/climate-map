@@ -35,6 +35,11 @@ const nextConfig = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
+  // i18n: {
+  //   locales: ['en', 'fi'],
+  //   localeDetection: true,
+  //   defaultLocale: 'en',
+  // },
   webpack: (config, { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }) => {
     // Important: return the modified config
 

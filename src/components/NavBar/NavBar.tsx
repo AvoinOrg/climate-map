@@ -3,6 +3,7 @@
 import React from 'react'
 import { Box, Button } from '@mui/material'
 import { styled } from '@mui/material/styles'
+import { T } from '@tolgee/react'
 
 import { useUIStore } from '#/common/store'
 
@@ -56,7 +57,7 @@ export const NavBar = () => {
         >
           <Box sx={{ display: 'flex', flexDirection: 'row' }}>
             <Button sx={{ color: 'neutral.lighter', typography: 'h3' }} onClick={() => setIsLoginModalOpen(true)}>
-              Kirjaudu
+              <T keyName="navbar.login" />
             </Button>
           </Box>
         </Box>
