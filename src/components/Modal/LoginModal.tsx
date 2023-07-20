@@ -66,7 +66,17 @@ export const LoginModal = () => {
         <Close sx={{ fontSize: '1.5rem' }} />
       </IconButton>
 
-      <Box>{/* TODO: add login content once zitadel supports proper custom login */}</Box>
+      <Box
+        component="iframe"
+        src="/login" // URL of the site you want to embed
+        title="My iframe Example" // A title for the iframe
+        sx={{
+          border: 0,
+          width: '100%',
+          height: '100%', // Set the height to 100%
+          overflow: 'hidden', // Do not allow the iframe to scroll
+        }}
+      />
     </Box>
   )
 }
