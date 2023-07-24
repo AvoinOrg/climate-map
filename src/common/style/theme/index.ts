@@ -1,6 +1,6 @@
-import { createTheme, PaletteColor, PaletteColorOptions, Shadows, ThemeOptions } from '@mui/material/styles'
+import { createTheme, Shadows, ThemeOptions } from '@mui/material/styles'
 import { TypographyOptions } from '@mui/material/styles/createTypography'
-import { Arimo, Raleway } from '@next/font/google'
+import { Arimo } from '@next/font/google'
 import '@mui/material/styles/createPalette'
 
 //extending palette to add background color
