@@ -36,7 +36,7 @@ const Layout = ({
       <CssBaseline>
         <TolgeeProvider
           tolgee={tolgee}
-          fallback="Loading..." // loading fallback
+          fallback="" // loading fallback
         >
           <Map>
             {/* <UserModal /> */}
