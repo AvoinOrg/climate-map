@@ -4,13 +4,11 @@ import '#/common/style/index.css'
 
 import React, { useEffect, useState } from 'react'
 import { SessionProvider } from 'next-auth/react'
-import { QueryClientProvider, QueryClient } from 'react-query'
+import { SWRProvider } from '#/components/utils/SWRProvider'
 
 // import { UserModal } from '#/components/Profile'
 // import { UiStateProvider, UserStateProvider } from '#/components/State'
 // import RootStyleRegistry from './emotion'
-
-const queryClient = new QueryClient()
 
 const RootLayout = ({
   // Layouts must accept a children prop.
@@ -30,7 +28,7 @@ const RootLayout = ({
         {/* <RootStyleRegistry> */}
         {isHydrated && (
           <SessionProvider>
-            <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+            <SWRProvider>{children}</SWRProvider>
           </SessionProvider>
         )}
         {/* </RootStyleRegistry> */}
