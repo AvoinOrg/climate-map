@@ -1,4 +1,4 @@
-import { createTheme, PaletteColor, PaletteColorOptions } from '@mui/material/styles'
+import { createTheme, PaletteColor, PaletteColorOptions, Shadows, ThemeOptions } from '@mui/material/styles'
 import { TypographyOptions } from '@mui/material/styles/createTypography'
 import { Arimo, Raleway } from '@next/font/google'
 import '@mui/material/styles/createPalette'
@@ -55,6 +55,8 @@ declare module '@mui/material/styles/createTypography' {
     body7?: React.CSSProperties
   }
 }
+
+const defaultTheme = createTheme()
 
 export const arimo = Arimo({
   weight: ['400', '500', '700'],
@@ -182,6 +184,10 @@ const typography: TypographyOptions = {
   },
 }
 
+const defaultShadows: ThemeOptions['shadows'] = [...defaultTheme.shadows]
+
+const shadows = defaultShadows.map(() => 'none') as Shadows
+
 const components = {
   MuiTableRow: {
     styleOverrides: {
@@ -223,4 +229,4 @@ const components = {
   },
 }
 
-export default createTheme({ palette, components, typography, zIndex, shape })
+export default createTheme({ palette, components, typography, zIndex, shape, shadows })
