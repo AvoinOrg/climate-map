@@ -5,7 +5,7 @@ import axios from 'axios'
 
 const getDataFromUserInfo = async (_req: NextApiRequest, token: {}) => {
   try {
-    const response = await axios.get(`${process.env.ZITADEL_ISSUER}/oidc/v1/userinfo`, {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_ZITADEL_ISSUER}/oidc/v1/userinfo`, {
       headers: {
         authorization: `Bearer ${token}`,
         'content-type': 'application/json',

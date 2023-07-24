@@ -30,14 +30,14 @@ const refreshAccessToken = async (token: JWT): Promise<JWT> => {
 }
 
 const options = () => {
-  if (!process.env.ZITADEL_ISSUER) throw new Error('ZITADEL_ISSUER is not set')
+  if (!process.env.NEXT_PUBLIC_ZITADEL_ISSUER) throw new Error('ZITADEL_ISSUER is not set')
   if (!process.env.ZITADEL_CLIENT_ID) throw new Error('ZITADEL_CLIENT_ID is not set')
   if (!process.env.ZITADEL_CLIENT_SECRET) throw new Error('ZITADEL_CLIENT_SECRET is not set')
 
   return {
     providers: [
       ZitadelProvider({
-        issuer: process.env.ZITADEL_ISSUER,
+        issuer: process.env.NEXT_PUBLIC_ZITADEL_ISSUER,
         clientId: process.env.ZITADEL_CLIENT_ID,
         clientSecret: process.env.ZITADEL_CLIENT_SECRET,
         // for accessing Zitadel APIs or other additional information
