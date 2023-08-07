@@ -48,7 +48,7 @@ const Page = () => {
 
     try {
       const layerConf = createLayerConf(json, planConf.id, colName)
-      await addAnyLayerGroup(layerConf.id, layerConf)
+      await addAnyLayerGroup(layerConf.id, { layerConf })
     } catch (e) {
       deletePlanConf(planConf.id)
       console.error(e)
