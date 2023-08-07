@@ -1,21 +1,35 @@
 'use client'
 
-import React, { useLayoutEffect } from 'react'
+import React, { useEffect, useLayoutEffect } from 'react'
 import { Box } from '@mui/material'
 
 import { routeTree } from './common/routes'
 import { SidebarHeader } from '#/components/Sidebar'
 import { BreadcrumbNav } from '#/components/Sidebar'
 import { useUIStore } from '#/common/store'
+import { useTolgee } from '@tolgee/react'
+
+const tolgeeNs = 'hiilikartta'
+const tolgeeLang = 'fi'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
-  const setSidebarHeaderElement = useUIStore((state) => state.setSidebarHeaderElement)
+  const tolgee = useTolgee(["update"])
+  const setSidebarHeaderElement = useUIStore(
+    (state) => state.setSidebarHeaderElement
+  )
 
   const SidebarHeaderElement = (
     <SidebarHeader title={'Hiilikartta'}>
       <BreadcrumbNav routeTree={routeTree}></BreadcrumbNav>
     </SidebarHeader>
   )
+
+  useEffect(() => {
+    if (tolgee.isLoaded()) {
+      tolgee.addActiveNs(tolgeeNs)
+      tolgee.changeLanguage(tolgeeLang)
+    }
+  }, [tolgee.isLoaded()])
 
   useLayoutEffect(() => {
     if (setSidebarHeaderElement != null) {
@@ -25,9 +39,22 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
-      <Box sx={{ padding: '35px 30px 100px 30px', width: '400px', display: 'flex', flexDirection: 'column' }}>
-        {children}
-      </Box>
+      {tolgee
+        .getAllRecords()
+        .some(
+          (item) => item.namespace === tolgeeNs && item.language === tolgeeLang
+        ) && (
+        <Box
+          sx={{
+            padding: '35px 30px 100px 30px',
+            width: '400px',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {children}
+        </Box>
+      )}
     </>
   )
 }
