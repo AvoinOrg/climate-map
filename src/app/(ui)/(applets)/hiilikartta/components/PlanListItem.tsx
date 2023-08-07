@@ -25,7 +25,7 @@ const PlanListItem = ({ planConf }: Props) => {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        backgroundColor: theme.palette.tertiary.main,
+        backgroundColor: theme.palette.neutral.main,
         margin: "0 0 15px 0"
       })}
     >
