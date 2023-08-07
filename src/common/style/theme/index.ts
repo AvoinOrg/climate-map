@@ -76,7 +76,12 @@ export const arimo = Arimo({
 })
 
 const palette = {
-  primary: { main: '#C7C9B8', dark: '#AFB29A', light: '#D7D9CC', lighter: '#EBECE6' },
+  primary: {
+    main: '#C7C9B8',
+    dark: '#AFB29A',
+    light: '#D7D9CC',
+    lighter: '#EBECE6',
+  },
   secondary: { dark: '#274AFF', main: '#5d77ff', light: '#b3bfff' },
   neutral: {
     main: '#D9D9D9',
@@ -199,6 +204,25 @@ const components = {
     },
   },
   MuiButton: {
+    variants: [
+      {
+        props: { variant: 'contained' },
+        style: {
+          backgroundColor: palette.neutral.light, // Replace with your desired color for the button
+          borderColor: palette.neutral.main,
+          color: palette.neutral.darker,
+        },
+      },
+      {
+        props: { variant: 'outlined' },
+        style: {
+          backgroundColor: palette.neutral.light, // Replace with your desired color for the button
+          borderColor: palette.neutral.main,
+          color: palette.neutral.darker,
+          boxShadow: '1px 1px 7px 0px #EEECEC',
+        },
+      },
+    ],
     styleOverrides: {
       root: {
         textTransform: 'none',
@@ -229,4 +253,11 @@ const components = {
   },
 }
 
-export default createTheme({ palette, components, typography, zIndex, shape, shadows })
+export default createTheme({
+  palette,
+  components,
+  typography,
+  zIndex,
+  shape,
+  shadows,
+})
