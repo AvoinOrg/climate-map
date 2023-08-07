@@ -18,7 +18,8 @@ import { LoginModal } from '#/components/Modal'
 // import RootStyleRegistry from './emotion'
 
 const tolgee = Tolgee().use(DevTools()).use(FormatSimple()).init({
-  language: 'fi',
+  language: 'en',
+  defaultNs: 'avoin-map',
   apiUrl: process.env.NEXT_PUBLIC_TOLGEE_API_URL,
   apiKey: process.env.NEXT_PUBLIC_TOLGEE_API_KEY,
 })
