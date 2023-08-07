@@ -99,26 +99,34 @@ const Page = () => {
 
   return (
     <>
-      <UploadButton variant="outlined" component="label">
+      <Button
+        variant="outlined"
+        component="label"
+        sx={(theme) => ({
+          width: '100%',
+          height: '60px',
+          margin: '0 0 15px 0',
+          backgroundColor: theme.palette.neutral.light,
+          borderColor: theme.palette.neutral.main,
+          color: theme.palette.neutral.darker,
+        })}
+      >
         {fileName ? fileName : 'Valitse tiedosto'}
-        <input hidden accept=".zip, .gpkg" multiple type="file" onChange={handleFileInput} ref={inputRef} />
-      </UploadButton>
-      {fileType === 'gpkg' && arrayBuffer && <GpkgInit fileBuffer={arrayBuffer} onFinish={handleFinish}></GpkgInit>}
+        <input
+          hidden
+          accept=".zip, .gpkg"
+          multiple
+          type="file"
+          onChange={handleFileInput}
+          ref={inputRef}
+        />
+      </Button>
+      {fileType === 'gpkg' && arrayBuffer && (
+        <GpkgInit fileBuffer={arrayBuffer} onFinish={handleFinish}></GpkgInit>
+      )}
       {/* {res && <p>{JSON.stringify(res)}</p>} */}
     </>
   )
 }
-
-const BigMenuButton = styled(Button)<{ component?: string }>({
-  width: '100%',
-  height: '60px',
-  margin: '0 0 15px 0',
-})
-
-const UploadButton = styled(Button)<{ component?: string }>({
-  width: '100%',
-  height: '60px',
-  margin: '0 0 15px 0',
-})
 
 export default Page
