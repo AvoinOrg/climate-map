@@ -11,6 +11,7 @@ import { useMapStore } from '#/common/store'
 import { useAppStore } from './state/appStore'
 import PlanListItem from './components/PlanListItem'
 import { routeTree } from 'applets/hiilikartta/common/routes'
+import { T } from '@tolgee/react'
 
 const Page = () => {
   const planConfs = useStore(useAppStore, (state) => state.planConfs)
@@ -24,7 +25,9 @@ const Page = () => {
     <>
       <Box>
         <Link href={getRoute(routeTree.create, routeTree)}>
-          <Box sx={{ typography: 'h2', textAlign: 'start' }}>LUO KAAVA & LASKE HIILIARVOT</Box>
+          <Box sx={{ typography: 'h2', textAlign: 'start' }}>
+            <T keyName={'sidebar.main.add-new'} ns='hiilikartta'></T>
+          </Box>
         </Link>
       </Box>
       {planConfs != null && Object.keys(planConfs).length > 0 && (
