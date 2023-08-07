@@ -7,6 +7,7 @@ import { styled } from '@mui/material/styles'
 import { getRoute } from '#/common/utils/routing'
 import Link from 'next/link'
 import { Link as MuiLink } from '@mui/material'
+import { T } from '@tolgee/react'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
 
@@ -19,11 +20,13 @@ const Page = () => {
         component={Link}
       >
         <BigMenuButton variant="contained" component="label">
-          Tuo uusi kaavatiedosto
+          <T keyName={'sidebar.create.upload'} ns={'hiilikartta'}></T>
         </BigMenuButton>
       </MuiLink>
 
-      <BigMenuButton variant="contained">Piirrä kaava</BigMenuButton>
+      <BigMenuButton variant="contained">
+        <T keyName={'sidebar.create.draw-new'} ns={'hiilikartta'}></T>
+      </BigMenuButton>
     </>
   )
 }
