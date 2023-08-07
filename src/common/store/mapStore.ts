@@ -6,7 +6,13 @@ import { produce } from 'immer'
 import { FeatureCollection } from 'geojson'
 import { create } from 'zustand'
 
-import { MapLayerMouseEvent, Map as MbMap, LngLatBounds, MapboxGeoJSONFeature, AnyLayer } from 'mapbox-gl'
+import {
+  MapLayerMouseEvent,
+  Map as MbMap,
+  LngLatBounds,
+  MapboxGeoJSONFeature,
+  AnyLayer,
+} from 'mapbox-gl'
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
@@ -31,7 +37,11 @@ import {
 } from '#/common/types/map'
 import { layerConfs } from '#/components/Map/Layers'
 
-import { getLayerName, getLayerType, assertValidHighlightingConf } from '#/common/utils/map'
+import {
+  getLayerName,
+  getLayerType,
+  assertValidHighlightingConf,
+} from '#/common/utils/map'
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
 
@@ -56,18 +66,55 @@ export type Vars = {
 export type Actions = {
   getSourceBounds: (sourceId: string) => LngLatBounds | null
   getSourceJson: (id: string) => FeatureCollection | null
-  addLayerGroup: (layerId: LayerId, options?: LayerAddOptions, queueOptions?: QueueOptions) => Promise<void>
-  enableLayerGroup: (layerId: LayerId, options?: LayerAddOptions) => Promise<void>
+  addLayerGroup: (
+    layerId: LayerId,
+    options?: LayerAddOptions,
+    queueOptions?: QueueOptions
+  ) => Promise<void>
+  enableLayerGroup: (
+    layerId: LayerId,
+    options?: LayerAddOptions
+  ) => Promise<void>
   disableLayerGroup: (layerId: LayerId) => Promise<void>
-  toggleLayerGroup: (layerId: LayerId, options?: LayerAddOptions) => Promise<void>
-  addAnyLayerGroup: (layerIdString: string, options?: AnyLayerAddOptions) => Promise<void>
-  toggleAnyLayerGroup: (layerIdString: string, options?: AnyLayerAddOptions) => Promise<void>
-  enableAnyLayerGroup: (layerIdString: string, options?: AnyLayerAddOptions) => Promise<void>
+  toggleLayerGroup: (
+    layerId: LayerId,
+    options?: LayerAddOptions
+  ) => Promise<void>
+  addAnyLayerGroup: (
+    layerIdString: string,
+    options?: AnyLayerAddOptions
+  ) => Promise<void>
+  toggleAnyLayerGroup: (
+    layerIdString: string,
+    options?: AnyLayerAddOptions
+  ) => Promise<void>
+  enableAnyLayerGroup: (
+    layerIdString: string,
+    options?: AnyLayerAddOptions
+  ) => Promise<void>
   disableAnyLayerGroup: (layerIdString: string) => Promise<void>
-  setLayoutProperty: (layer: string, name: string, value: any, queueOptions?: QueueOptions) => Promise<void>
-  setPaintProperty: (layer: string, name: string, value: any, queueOptions?: QueueOptions) => Promise<void>
-  setFilter: (layer: string, filter: any[], queueOptions?: QueueOptions) => Promise<void>
-  setOverlayMessage: (condition: boolean, message: OverlayMessage, queueOptions?: QueueOptions) => Promise<void>
+  setLayoutProperty: (
+    layer: string,
+    name: string,
+    value: any,
+    queueOptions?: QueueOptions
+  ) => Promise<void>
+  setPaintProperty: (
+    layer: string,
+    name: string,
+    value: any,
+    queueOptions?: QueueOptions
+  ) => Promise<void>
+  setFilter: (
+    layer: string,
+    filter: any[],
+    queueOptions?: QueueOptions
+  ) => Promise<void>
+  setOverlayMessage: (
+    condition: boolean,
+    message: OverlayMessage,
+    queueOptions?: QueueOptions
+  ) => Promise<void>
   fitBounds: (
     bbox: number[] | LngLatBounds,
     options: { duration?: number; lonExtra?: number; latExtra?: number }
@@ -85,8 +132,14 @@ export type Actions = {
   _setIsMapReady: { (isMapReady: boolean): void }
   _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => void
   _addMbStyle: (id: LayerId, options: LayerAddOptionsWithConf) => Promise<void>
-  _addMbPopup: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => void
-  _addMbStyleToMb: (id: LayerId, options: LayerAddOptionsWithConf) => Promise<void>
+  _addMbPopup: (
+    layer: string | string[],
+    fn: (e: MapLayerMouseEvent) => void
+  ) => void
+  _addMbStyleToMb: (
+    id: LayerId,
+    options: LayerAddOptionsWithConf
+  ) => Promise<void>
   _addToFunctionQueue: (queueFunction: QueueFunction) => Promise<any>
   _setFunctionQueue: (functionQueue: FunctionQueue) => void
   _executeFunctionQueue: (callback?: () => void) => Promise<void>
@@ -124,15 +177,25 @@ export const useMapStore = create<State>()(
       _layerOptions: {},
     }
 
-    const queueableFnInit = <A1 extends any[], A2 extends [queueOptions?: QueueOptions]>(
+    const queueableFnInit = <
+      A1 extends any[],
+      A2 extends [queueOptions?: QueueOptions]
+    >(
       fn: (...args: A1) => Promise<void>,
       queueOptions?: QueueOptions
     ) => {
-      const queueableFn = (fnWithArgs: { fn: (...args: A1) => Promise<void>; args: A1 }, qOpts: QueueOptions) => {
+      const queueableFn = (
+        fnWithArgs: { fn: (...args: A1) => Promise<void>; args: A1 },
+        qOpts: QueueOptions
+      ) => {
         const { isLoaded, _addToFunctionQueue } = get()
 
         if (!isLoaded && !qOpts.skipQueue) {
-          return _addToFunctionQueue({ fn: fnWithArgs.fn, args: fnWithArgs.args, priority: qOpts.priority })
+          return _addToFunctionQueue({
+            fn: fnWithArgs.fn,
+            args: fnWithArgs.args,
+            priority: qOpts.priority,
+          })
         }
 
         return fnWithArgs.fn(...fnWithArgs.args)
@@ -145,15 +208,21 @@ export const useMapStore = create<State>()(
           // initialize queue options with values from the function initialization.
           // If they don't exist, use the default values.
           const qOpts: QueueOptions = {
-            skipQueue: queueOptions?.skipQueue != null ? queueOptions?.skipQueue : false,
-            priority: queueOptions?.priority != null ? queueOptions?.priority : QueuePriority.LOW,
+            skipQueue:
+              queueOptions?.skipQueue != null ? queueOptions?.skipQueue : false,
+            priority:
+              queueOptions?.priority != null
+                ? queueOptions?.priority
+                : QueuePriority.LOW,
           }
 
           // Overwrite queue options with values from the function call.
           if (fn.length < args.length) {
             const qArgs = args[fn.length] as QueueOptions
-            qOpts.skipQueue = qArgs?.skipQueue != null ? qArgs?.skipQueue : qOpts.skipQueue
-            qOpts.priority = qArgs?.priority != null ? qArgs?.priority : qOpts.priority
+            qOpts.skipQueue =
+              qArgs?.skipQueue != null ? qArgs?.skipQueue : qOpts.skipQueue
+            qOpts.priority =
+              qArgs?.priority != null ? qArgs?.priority : qOpts.priority
           }
           queueableFn({ fn: fn, args: fnArgs }, qOpts)
         },
@@ -163,47 +232,55 @@ export const useMapStore = create<State>()(
     const actions: Actions = {
       getSourceBounds: (sourceId: string): LngLatBounds | null => {
         // Query source features for the specified source
+        try {
+          const { _mbMap, getSourceJson } = get()
 
-        const { _mbMap, getSourceJson } = get()
+          if (!_mbMap) {
+            return null
+          }
 
-        if (!_mbMap) {
-          return null
-        }
+          let featureColl: FeatureCollection | null = null
 
-        let featureColl: FeatureCollection | null = null
-
-        const sourceFeatures = getSourceJson(sourceId)
-        if (sourceFeatures) {
-          featureColl = sourceFeatures
-        } else {
-          const features = _mbMap.querySourceFeatures(sourceId)
-
-          if (features.length > 0 && features[0].geometry) {
-            featureColl = { type: 'FeatureCollection', features: features }
+          const sourceFeatures = getSourceJson(sourceId)
+          if (sourceFeatures) {
+            featureColl = sourceFeatures
           } else {
-            const source = _mbMap.getSource(sourceId)
-            // TODO: check the method of finding the set extent of a source in style. This method is probably deprecated.
-            //@ts-ignore
-            if (source.tileBounds && source.tileBounds.bounds) {
+            const features = _mbMap.querySourceFeatures(sourceId)
+
+            if (features.length > 0 && features[0].geometry) {
+              featureColl = { type: 'FeatureCollection', features: features }
+            } else {
+              const source = _mbMap.getSource(sourceId)
+              // TODO: check the method of finding the set extent of a source in style. This method is probably deprecated.
               //@ts-ignore
-              return source.tileBounds.bounds
+              if (source && source.tileBounds && source.tileBounds.bounds) {
+                //@ts-ignore
+                return source.tileBounds.bounds
+              }
             }
           }
-        }
 
-        if (!featureColl) {
+          if (!featureColl) {
+            return null
+          }
+
+          const bbox = turfBbox(featureColl)
+
+          if (bbox.includes(Infinity) || bbox.includes(-Infinity)) {
+            return null
+          }
+          // Convert Turf.js bbox to Mapbox LngLatBounds
+          const bounds = new mapboxgl.LngLatBounds(
+            [bbox[0], bbox[1]], // [west, south] or [minX, minY]
+            [bbox[2], bbox[3]] // [east, north] or [maxX, maxY]
+          )
+
+          return bounds
+        } catch (e) {
+          console.error("Couldn't get source bounds")
+          console.error(e)
           return null
         }
-
-        const bbox = turfBbox(featureColl)
-
-        // Convert Turf.js bbox to Mapbox LngLatBounds
-        const bounds = new mapboxgl.LngLatBounds(
-          [bbox[0], bbox[1]], // [west, south] or [minX, minY]
-          [bbox[2], bbox[3]] // [east, north] or [maxX, maxY]
-        )
-
-        return bounds
       },
 
       getSourceJson: (id: string) => {
@@ -275,17 +352,23 @@ export const useMapStore = create<State>()(
         const { _setGroupVisibility, activeLayerGroupIds } = get()
 
         const activeLayerGroupIdsCopy = [...activeLayerGroupIds]
-        activeLayerGroupIdsCopy.splice(activeLayerGroupIdsCopy.indexOf(layerId), 1)
+        activeLayerGroupIdsCopy.splice(
+          activeLayerGroupIdsCopy.indexOf(layerId),
+          1
+        )
 
         set((state) => {
-          state.activeLayerGroupIds = state.activeLayerGroupIds.filter((id: string) => id !== layerId)
+          state.activeLayerGroupIds = state.activeLayerGroupIds.filter(
+            (id: string) => id !== layerId
+          )
         })
 
         _setGroupVisibility(layerId, false)
       },
 
       toggleLayerGroup: async (layerId: LayerId, options?: LayerAddOptions) => {
-        const { activeLayerGroupIds, disableLayerGroup, enableLayerGroup } = get()
+        const { activeLayerGroupIds, disableLayerGroup, enableLayerGroup } =
+          get()
 
         if (activeLayerGroupIds.includes(layerId)) {
           disableLayerGroup(layerId)
@@ -295,7 +378,10 @@ export const useMapStore = create<State>()(
       },
 
       // these are used used for layers with dynamic ids
-      addAnyLayerGroup: async (layerIdString: string, options?: AnyLayerAddOptions) => {
+      addAnyLayerGroup: async (
+        layerIdString: string,
+        options?: AnyLayerAddOptions
+      ) => {
         const { addLayerGroup } = get()
 
         try {
@@ -306,7 +392,10 @@ export const useMapStore = create<State>()(
         }
       },
 
-      toggleAnyLayerGroup: async (layerIdString: string, options?: AnyLayerAddOptions) => {
+      toggleAnyLayerGroup: async (
+        layerIdString: string,
+        options?: AnyLayerAddOptions
+      ) => {
         const { toggleLayerGroup } = get()
 
         try {
@@ -317,7 +406,10 @@ export const useMapStore = create<State>()(
         }
       },
 
-      enableAnyLayerGroup: async (layerIdString: string, options?: AnyLayerAddOptions) => {
+      enableAnyLayerGroup: async (
+        layerIdString: string,
+        options?: AnyLayerAddOptions
+      ) => {
         const { enableLayerGroup } = get()
 
         try {
@@ -334,25 +426,34 @@ export const useMapStore = create<State>()(
         disableLayerGroup(layerIdString as LayerId)
       },
 
-      setLayoutProperty: queueableFnInit(async (layer: string, name: string, value: any): Promise<any> => {
-        const { _mbMap } = get()
+      setLayoutProperty: queueableFnInit(
+        async (layer: string, name: string, value: any): Promise<any> => {
+          const { _mbMap } = get()
 
-        _mbMap?.setLayoutProperty(layer, name, value)
-      }),
+          _mbMap?.setLayoutProperty(layer, name, value)
+        }
+      ),
 
-      setPaintProperty: queueableFnInit(async (layer: string, name: string, value: any): Promise<any> => {
-        const { _mbMap } = get()
+      setPaintProperty: queueableFnInit(
+        async (layer: string, name: string, value: any): Promise<any> => {
+          const { _mbMap } = get()
 
-        _mbMap?.setPaintProperty(layer, name, value)
-      }),
+          _mbMap?.setPaintProperty(layer, name, value)
+        }
+      ),
 
-      setFilter: queueableFnInit(async (layer: string, filter: any[]): Promise<any> => {
-        const { _mbMap } = get()
+      setFilter: queueableFnInit(
+        async (layer: string, filter: any[]): Promise<any> => {
+          const { _mbMap } = get()
 
-        _mbMap?.setFilter(layer, filter)
-      }),
+          _mbMap?.setFilter(layer, filter)
+        }
+      ),
 
-      setOverlayMessage: async (condition: boolean, message: OverlayMessage) => {
+      setOverlayMessage: async (
+        condition: boolean,
+        message: OverlayMessage
+      ) => {
         set((state) => {
           state.overlayMessage = condition ? message : null
         })
@@ -415,7 +516,10 @@ export const useMapStore = create<State>()(
 
       mapToggleTerrain: () => {
         const { toggleLayerGroup } = get()
-        toggleLayerGroup('terramonitor', { isAddedBefore: false, neighboringLayerId: 'osm' })
+        toggleLayerGroup('terramonitor', {
+          isAddedBefore: false,
+          neighboringLayerId: 'osm',
+        })
       },
 
       mapZoomIn: () => {
@@ -484,7 +588,11 @@ export const useMapStore = create<State>()(
 
         for (const layer in layerGroup) {
           if (_layerOptions[layer].useMb) {
-            _mbMap?.setLayoutProperty(layer, 'visibility', isVisible ? 'visible' : 'none')
+            _mbMap?.setLayoutProperty(
+              layer,
+              'visibility',
+              isVisible ? 'visible' : 'none'
+            )
           } else {
             layerGroup[layer].setVisible(isVisible)
           }
@@ -516,8 +624,14 @@ export const useMapStore = create<State>()(
               const sourceKey = layer.get('mapbox-source')
               const layerKeys = layer.get('mapbox-layers')
 
-              if (sourceKeys.includes(sourceKey) && layerKeys != null && layerKeys.length > 0) {
-                const conf: ExtendedAnyLayer | undefined = layers.find((l: any) => l.id === layerKeys[0])
+              if (
+                sourceKeys.includes(sourceKey) &&
+                layerKeys != null &&
+                layerKeys.length > 0
+              ) {
+                const conf: ExtendedAnyLayer | undefined = layers.find(
+                  (l: any) => l.id === layerKeys[0]
+                )
 
                 if (conf) {
                   const layerOpt: LayerOpt = {
@@ -540,7 +654,10 @@ export const useMapStore = create<State>()(
                     state._layerOptions[layerKeys[0]] = layerOpt
                   })
                 } else {
-                  console.error('Could not find layer configuration for layer: ' + layerKeys[0])
+                  console.error(
+                    'Could not find layer configuration for layer: ' +
+                      layerKeys[0]
+                  )
                 }
               }
             })
@@ -568,7 +685,10 @@ export const useMapStore = create<State>()(
         })
       },
 
-      _addMbPopup: (layer: string | string[], fn: (e: MapLayerMouseEvent) => void) => {
+      _addMbPopup: (
+        layer: string | string[],
+        fn: (e: MapLayerMouseEvent) => void
+      ) => {
         const { _mbMap } = get()
 
         _mbMap?.on('click', layer, fn)
@@ -584,8 +704,17 @@ export const useMapStore = create<State>()(
         })
       },
 
-      _addMbStyleToMb: async (id: LayerId, options: LayerAddOptionsWithConf) => {
-        const { _addMbPopup, _mbMap, _addLayerAfter, _findFirstMatchingLayer, _findLastMatchingLayer } = get()
+      _addMbStyleToMb: async (
+        id: LayerId,
+        options: LayerAddOptionsWithConf
+      ) => {
+        const {
+          _addMbPopup,
+          _mbMap,
+          _addLayerAfter,
+          _findFirstMatchingLayer,
+          _findLastMatchingLayer,
+        } = get()
         const setIsMapPopupOpen = useUIStore.getState().setIsMapPopupOpen
 
         const style = await options.layerConf.style()
@@ -613,9 +742,15 @@ export const useMapStore = create<State>()(
 
             if (layerOpt.layerType === 'fill') {
               if (layer.selectable) {
-                if (!style.layers.find((l: any) => l.id === layerOpt.name + '-highlighted')) {
+                if (
+                  !style.layers.find(
+                    (l: any) => l.id === layerOpt.name + '-highlighted'
+                  )
+                ) {
                   console.error(
-                    "Layer '" + layerOpt.name + "' is selectable but missing the corresponding highlighted layer."
+                    "Layer '" +
+                      layerOpt.name +
+                      "' is selectable but missing the corresponding highlighted layer."
                   )
                 }
               }
@@ -655,7 +790,9 @@ export const useMapStore = create<State>()(
               // In Mapbox, the last layer is rendered on top.
               if (options.isAddedBefore) {
                 if (options.neighboringLayerId != null) {
-                  const beforeLayer = _findFirstMatchingLayer(options.neighboringLayerId)
+                  const beforeLayer = _findFirstMatchingLayer(
+                    options.neighboringLayerId
+                  )
                   _mbMap?.addLayer(layer, beforeLayer || undefined)
                 } else {
                   const mapLayers = _mbMap?.getStyle().layers
@@ -671,7 +808,9 @@ export const useMapStore = create<State>()(
               // If the layer is added after, add the first layer after the neighboring layer
               else {
                 if (options.neighboringLayerId != null) {
-                  layerInsertId = _findLastMatchingLayer(options.neighboringLayerId)
+                  layerInsertId = _findLastMatchingLayer(
+                    options.neighboringLayerId
+                  )
                 }
                 if (layerInsertId != null) {
                   _addLayerAfter(layer, layerInsertId)
@@ -748,7 +887,8 @@ export const useMapStore = create<State>()(
       },
 
       _executeFunctionQueue: async (callback?: () => void) => {
-        const { _isFunctionQueueExecuting, _setIsFunctionQueueExecuting } = get()
+        const { _isFunctionQueueExecuting, _setIsFunctionQueueExecuting } =
+          get()
 
         if (!_isFunctionQueueExecuting) {
           _setIsFunctionQueueExecuting(true)
@@ -756,7 +896,9 @@ export const useMapStore = create<State>()(
           throw new Error('Function queue is already executing.')
         }
 
-        const loopThroughQueuePriorityLevels = async (functionQueue: FunctionQueue): Promise<void> => {
+        const loopThroughQueuePriorityLevels = async (
+          functionQueue: FunctionQueue
+        ): Promise<void> => {
           const store = get()
           let functionsToCall: FunctionQueue = []
 
@@ -764,10 +906,14 @@ export const useMapStore = create<State>()(
           priorityArr = priorityArr.reverse().splice(0, priorityArr.length / 2)
 
           for (let i in priorityArr) {
-            functionsToCall = functionsToCall.concat(functionQueue.filter((f) => f.priority === priorityArr[i]))
+            functionsToCall = functionsToCall.concat(
+              functionQueue.filter((f) => f.priority === priorityArr[i])
+            )
 
             if (functionsToCall.length > 0) {
-              store._setFunctionQueue(store._functionQueue.filter((f) => !functionsToCall.includes(f)))
+              store._setFunctionQueue(
+                store._functionQueue.filter((f) => !functionsToCall.includes(f))
+              )
               break
             }
           }
@@ -779,7 +925,11 @@ export const useMapStore = create<State>()(
                   // casting to any because TS can't infer the actual parameters of the function
                   return call.fn(...call.args)
                 } catch (e) {
-                  console.error("Couldn't run queued map function", call.fn, call.args)
+                  console.error(
+                    "Couldn't run queued map function",
+                    call.fn,
+                    call.args
+                  )
                   console.error(e)
                   call.promise.reject()
                   return null
