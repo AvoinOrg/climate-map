@@ -106,9 +106,6 @@ const Page = () => {
           width: '100%',
           height: '60px',
           margin: '0 0 15px 0',
-          backgroundColor: theme.palette.neutral.light,
-          borderColor: theme.palette.neutral.main,
-          color: theme.palette.neutral.darker,
         })}
       >
         {fileName ? fileName : 'Valitse tiedosto'}
