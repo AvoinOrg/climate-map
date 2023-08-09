@@ -5,6 +5,7 @@ import { immer } from 'zustand/middleware/immer'
 import { produce } from 'immer'
 import { FeatureCollection } from 'geojson'
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 import {
   MapLayerMouseEvent,
@@ -61,6 +62,9 @@ export type Vars = {
   _olMap: OlMap | null
   _layerGroups: Record<string, any>
   _layerOptions: Record<string, LayerOpt>
+  _customLayerConfs: Record<string, LayerConfAnyId>
+  _isHydrated: boolean
+  _hydrationData: { activeLayerGroupIds: string[] }
 }
 
 export type Actions = {
@@ -1023,18 +1027,48 @@ export const useMapStore = create<State>()(
             // Get the ID of the layer after the 'after' layer
             const beforeId = layers[index + 1].id
 
-            // Add the new layer before that layer, effectively adding it after the 'after' layer
-            _mbMap?.addLayer(layer, beforeId)
-          } else {
-            // If the 'after' layer wasn't found or it's the last layer, just add the new layer
-            _mbMap?.addLayer(layer)
+        _addCustomLayerConf: (id: string, conf: LayerConfAnyId) => {
+          set((state) => {
+            state._customLayerConfs[id] = conf
+          })
+        },
+
+        _removeCustomLayerConf: (id: string) => {
+          set((state) => {
+            delete state._customLayerConfs[id]
+          })
+        },
+
+        _runHydrationActions: async () => {
+          const { _setIsHydrated, _hydrationData, enableAnyLayerGroup } = get()
+
+          _hydrationData.activeLayerGroupIds.map((id) =>
+            enableAnyLayerGroup(id)
+          )
+
+          _setIsHydrated(true)
+        },
+      }
+
+      return { ...vars, ...actions }
+    }),
+    {
+      name: 'mapStorage', // name of item in the storage (must be unique)
+      storage: createJSONStorage(() => sessionStorage), // (optional) by default the 'localStorage' is used
+      partialize: (state: State) => ({
+        _hydrationData: { activeLayerGroupIds: state.activeLayerGroupIds },
+        _customLayerConfs: state._customLayerConfs,
+      }),
+      onRehydrateStorage: (state) => {
+        return (state, error) => {
+          if (error) {
+            console.log('an error happened during hydration', error)
           }
+          state?._runHydrationActions()
         }
       },
     }
-
-    return { ...vars, ...actions }
-  })
+  )
 )
 
 // implement at some point
