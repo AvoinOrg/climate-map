@@ -28,6 +28,8 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const getSourceJson = useMapStore((state) => state.getSourceJson)
   const planConf = useStore(useAppStore, (state) => state.planConfs[params.planIdSlug])
   const addReportToPlan = useAppStore((state) => state.addReportToPlan)
+  const deletePlanConf = useAppStore((state) => state.deletePlanConf)
+
   const [isLoaded, setIsLoaded] = useState(false)
   const router = useRouter()
 
@@ -63,7 +65,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const handleDeleteClick = async () => {
     if (planConf) {
       router.push(getRoute(routeTree, routeTree))
-      useAppStore((state) => state.deletePlanConf(planConf.id))
+      deletePlanConf(planConf.id)
     }
   }
 
