@@ -1,7 +1,14 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Box, Button, Checkbox, Container, FormControlLabel, Paper } from '@mui/material'
+import {
+  Box,
+  Button,
+  Checkbox,
+  Container,
+  FormControlLabel,
+  Paper,
+} from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import Link from 'next/link'
 import { Link as MuiLink } from '@mui/material'
@@ -11,13 +18,25 @@ import { getCombinedBounds } from '#/common/utils/map'
 // import { setOverlayMessage } from '../../OverlayMessages/OverlayMessages'
 // import * as SelectedFeatureState from './ArvometsaSelectedLayer'
 import { HeaderTable, SimpleTable } from './components/FinlandForestsTable'
-import { CO2_TONS_PER_PERSON, TRADITIONAL_FORESTRY_METHOD, layerOptions, titleRenames } from './constants'
+import {
+  CO2_TONS_PER_PERSON,
+  TRADITIONAL_FORESTRY_METHOD,
+  layerOptions,
+  titleRenames,
+} from './constants'
 import { useMapStore, useUIStore } from '#/common/store'
 // import { setSearchPlaceholder } from '../../NavBar/NavBarSearch'
 import { pp } from '#/common/utils/general'
 
 import { useUpdateMapDetails } from './hooks/useUpdateMapDetails'
-import { getTotals, getDatasetAttributes, getChartTitle, getNpvText, getChartProps, getUnitPerArea } from './utils'
+import {
+  getTotals,
+  getDatasetAttributes,
+  getChartTitle,
+  getNpvText,
+  getChartProps,
+  getUnitPerArea,
+} from './utils'
 import { finlandForests as layerConf } from './layers'
 import useFilteredSelectedFeatures from '#/common/hooks/useFilteredSelectedFeatures'
 import { FinlandForestsChart } from './components/FinlandForestsChart'
@@ -83,7 +102,9 @@ const FinlandForests = () => {
   const updateMapDetails = useUpdateMapDetails()
   const [hasFeature, setHasFeature] = useState(false)
   const [options, setOptions] = useState<any>(null)
-  const filteredFeatures = useFilteredSelectedFeatures(Object.keys(layerOptions).map((x) => `${x}-fill`))
+  const filteredFeatures = useFilteredSelectedFeatures(
+    Object.keys(layerOptions).map((x) => `${x}-fill`)
+  )
 
   useEffect(() => {
     enableLayerGroup('fi_forests', { layerConf })
@@ -96,10 +117,13 @@ const FinlandForests = () => {
 
   const [reportPanelOpen, setReportPanelOpen] = useState(true)
 
-  const [forestryMethod, setForestryMethod] = useState<ForestryMethod>(ForestryMethod.jatkuva)
+  const [forestryMethod, setForestryMethod] = useState<ForestryMethod>(
+    ForestryMethod.jatkuva
+  )
   const [perHectareFlag, setPerHectareFlag] = useState(true)
   const [cumulativeFlag, setCumulativeFlag] = useState(true)
-  const [carbonBalanceDifferenceFlag, setCarbonBalanceDifferenceFlag] = useState(true)
+  const [carbonBalanceDifferenceFlag, setCarbonBalanceDifferenceFlag] =
+    useState(true)
 
   // Analytics.setParams({
   //   reportPanelOpen,
@@ -119,7 +143,10 @@ const FinlandForests = () => {
   // TODO: Why does commenting this out make the fill colors work?
   useEffect(() => {
     // Eliminate confusing options (all zeroes)
-    if (forestryMethod === TRADITIONAL_FORESTRY_METHOD && carbonBalanceDifferenceFlag) {
+    if (
+      forestryMethod === TRADITIONAL_FORESTRY_METHOD &&
+      carbonBalanceDifferenceFlag
+    ) {
       setCarbonBalanceDifferenceFlag(false)
     }
     updateMapDetails(forestryMethod, carbonBalanceDifferenceFlag)
@@ -141,42 +168,84 @@ const FinlandForests = () => {
     const newOptions: any = {}
     const allFeatureProps = filteredFeatures.map((x) => x.properties)
 
-    newOptions.totals = getTotals(forestryMethod, perHectareFlag, allFeatureProps)
+    newOptions.totals = getTotals(
+      forestryMethod,
+      perHectareFlag,
+      allFeatureProps
+    )
 
-    const attrValues = getDatasetAttributes(forestryMethod, cumulativeFlag, newOptions.totals)
+    const attrValues = getDatasetAttributes(
+      forestryMethod,
+      cumulativeFlag,
+      newOptions.totals
+    )
 
     if (carbonBalanceDifferenceFlag) {
-      const traditional = getDatasetAttributes(TRADITIONAL_FORESTRY_METHOD, cumulativeFlag, newOptions.totals)
+      const traditional = getDatasetAttributes(
+        TRADITIONAL_FORESTRY_METHOD,
+        cumulativeFlag,
+        newOptions.totals
+      )
       for (const attr in attrValues) {
-        attrValues[attr] = attrValues[attr].map((v: number, i: number) => v - traditional[attr][i])
+        attrValues[attr] = attrValues[attr].map(
+          (v: number, i: number) => v - traditional[attr][i]
+        )
       }
     }
 
     const selectedLayersOfFeatures = filteredFeatures.map((x) => x.layer)
 
     const title = getChartTitle(selectedLayersOfFeatures, allFeatureProps)
-    newOptions.npvText = getNpvText(carbonBalanceDifferenceFlag, perHectareFlag, newOptions.totals, forestryMethod)
+    newOptions.npvText = getNpvText(
+      carbonBalanceDifferenceFlag,
+      perHectareFlag,
+      newOptions.totals,
+      forestryMethod
+    )
 
-    newOptions.cbt = getChartProps('cbt', cumulativeFlag, perHectareFlag, attrValues)
-    newOptions.bio = getChartProps('bio', cumulativeFlag, perHectareFlag, attrValues)
-    newOptions.wood = getChartProps('harvested-wood', cumulativeFlag, perHectareFlag, attrValues)
+    newOptions.cbt = getChartProps(
+      'cbt',
+      cumulativeFlag,
+      perHectareFlag,
+      attrValues
+    )
+    newOptions.bio = getChartProps(
+      'bio',
+      cumulativeFlag,
+      perHectareFlag,
+      attrValues
+    )
+    newOptions.wood = getChartProps(
+      'harvested-wood',
+      cumulativeFlag,
+      perHectareFlag,
+      attrValues
+    )
 
     const getAverageCarbonBalanceFigure = (totals: any) => {
       const averageCarbonBalanceDecade =
         totals[`f${forestryMethod}_cbt1_area_mult_sum`] -
-        (carbonBalanceDifferenceFlag ? totals[`f${TRADITIONAL_FORESTRY_METHOD}_cbt1_area_mult_sum`] : 0)
+        (carbonBalanceDifferenceFlag
+          ? totals[`f${TRADITIONAL_FORESTRY_METHOD}_cbt1_area_mult_sum`]
+          : 0)
       // per decade -> per year
       return averageCarbonBalanceDecade / 10
     }
 
-    const averageCarbonBalance = getAverageCarbonBalanceFigure(newOptions.totals)
+    const averageCarbonBalance = getAverageCarbonBalanceFigure(
+      newOptions.totals
+    )
     const unit = perHectareFlag ? 'tons CO₂e/ha/y' : 'tons CO₂e/y'
     newOptions.averageCarbonBalanceText = isNaN(averageCarbonBalance)
       ? ''
-      : `${averageCarbonBalance > 0 ? '+' : ''}${pp(averageCarbonBalance, 2)} ${unit}`
+      : `${averageCarbonBalance > 0 ? '+' : ''}${pp(
+          averageCarbonBalance,
+          2
+        )} ${unit}`
 
     const totalsOverall = getTotals(forestryMethod, false, allFeatureProps)
-    newOptions.averageCarbonBalanceOverall = getAverageCarbonBalanceFigure(totalsOverall)
+    newOptions.averageCarbonBalanceOverall =
+      getAverageCarbonBalanceFigure(totalsOverall)
 
     newOptions.headerTitle = titleRenames[title] || title
     const headerOnClick = () => {
@@ -185,7 +254,10 @@ const FinlandForests = () => {
     newOptions.headerRows = [
       {
         name: (
-          <div onClick={headerOnClick} style={{ cursor: hasFeature ? 'initial' : 'pointer' }}>
+          <div
+            onClick={headerOnClick}
+            style={{ cursor: hasFeature ? 'initial' : 'pointer' }}
+          >
             {newOptions.headerTitle}
             {!hasFeature && (
               <span>
@@ -212,12 +284,16 @@ const FinlandForests = () => {
     cumulativeFlag,
   ])
 
-  const onChangeCheckbox = (callback: React.Dispatch<React.SetStateAction<boolean>>) => {
+  const onChangeCheckbox = (
+    callback: React.Dispatch<React.SetStateAction<boolean>>
+  ) => {
     return (event: any) => {
       callback((event.target as HTMLInputElement).checked)
     }
   }
-  const onChangeValue = (callback: React.Dispatch<React.SetStateAction<any>>) => {
+  const onChangeValue = (
+    callback: React.Dispatch<React.SetStateAction<any>>
+  ) => {
     return (event: any) => {
       callback((event.target as HTMLInputElement).value)
     }
@@ -263,7 +339,15 @@ const FinlandForests = () => {
               {/* TODO: enable headerTable */}
               <HeaderTable
                 title={
-                  <MuiLink href="/" sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }} component={Link}>
+                  <MuiLink
+                    href="/"
+                    sx={{
+                      display: 'flex',
+                      color: 'inherit',
+                      textDecoration: 'none',
+                    }}
+                    component={Link}
+                  >
                     <ExpandMoreIcon style={{ transform: 'rotate(90deg)' }} />
                     {LAYER_TITLE}
                   </MuiLink>
@@ -287,22 +371,37 @@ const FinlandForests = () => {
               <br />
               <SimpleTable
                 rows={[
-                  { name: 'Forest area', value: `${pp(options.totals.f_area, 3)} ha` },
+                  {
+                    name: 'Forest area',
+                    value: `${pp(options.totals.f_area, 3)} ha`,
+                  },
                   // { name: 'Main tree species', value: 'Pine' },
                   // { name: 'Forest age', value: `${pp(123, 2)} years` },
                   // { name: 'Biomass volume', value: `${pp(123.45, 2)} m³/ha` },
-                  { name: 'Average carbon balance*', value: options.averageCarbonBalanceText },
-                  { name: 'Net present value (3% discounting)', value: options.npvText },
+                  {
+                    name: 'Average carbon balance*',
+                    value: options.averageCarbonBalanceText,
+                  },
+                  {
+                    name: 'Net present value (3% discounting)',
+                    value: options.npvText,
+                  },
                 ]}
               />
               {/* area stats */}
               <p>* Assuming even-age forestry</p>
               <p>
-                * Carbon balance means changes in soil, trees, and wood products. When the carbon balance is positive,
-                more carbon is being stored than released.
+                * Carbon balance means changes in soil, trees, and wood
+                products. When the carbon balance is positive, more carbon is
+                being stored than released.
               </p>
               <p hidden={!hasFeature}>
-                Equals {pp(options.averageCarbonBalanceOverall / CO2_TONS_PER_PERSON, 1)} times average 👤 CO2 emissions
+                Equals{' '}
+                {pp(
+                  options.averageCarbonBalanceOverall / CO2_TONS_PER_PERSON,
+                  1
+                )}{' '}
+                times average 👤 CO2 emissions
               </p>
               <h1>Forestry projections</h1>
               <hr />
@@ -311,8 +410,14 @@ const FinlandForests = () => {
                 value={forestryMethod}
                 options={[
                   { value: ForestryMethod.eihakata, label: 'No cuttings' },
-                  { value: ForestryMethod.jatkuva, label: 'Continuous cover forestry' },
-                  { value: ForestryMethod.tasaikainen, label: 'Thin from below - extended rotation' },
+                  {
+                    value: ForestryMethod.jatkuva,
+                    label: 'Continuous cover forestry',
+                  },
+                  {
+                    value: ForestryMethod.tasaikainen,
+                    label: 'Thin from below - extended rotation',
+                  },
                   { value: ForestryMethod.vapaa, label: 'Unrestricted' },
                 ]}
                 onChange={(event) => {
@@ -356,7 +461,11 @@ const FinlandForests = () => {
             </Container>
           </Paper>
 
-          <Paper sx={{ gridArea: '2 / 2 / 3 / 3', paddingBottom: '20px' }} elevation={2} hidden={!options.showReport}>
+          <Paper
+            sx={{ gridArea: '2 / 2 / 3 / 3', paddingBottom: '20px' }}
+            elevation={2}
+            hidden={!options.showReport}
+          >
             <Container>
               <Paper>
                 <FormControlLabel
@@ -382,18 +491,21 @@ const FinlandForests = () => {
               <abbr title="Carbon dioxide equivalent">
                 CO<sub>2</sub>eq
               </abbr>{' '}
-              carbon balance ({getUnitPerArea('cbt', cumulativeFlag, perHectareFlag)})
+              carbon balance (
+              {getUnitPerArea('cbt', cumulativeFlag, perHectareFlag)})
               <FinlandForestsChart {...options.cbt} />
               <br />
               Forest carbon stock
               <br />
               <small>
-                in {getUnitPerArea('bio', cumulativeFlag, perHectareFlag)}; multiply by 3.67 to get CO<sub>2</sub>eq
-                amounts
+                in {getUnitPerArea('bio', cumulativeFlag, perHectareFlag)};
+                multiply by 3.67 to get CO<sub>2</sub>eq amounts
               </small>
               <FinlandForestsChart {...options.bio} />
               <br />
-              Harvested wood ({getUnitPerArea('harvested-wood', cumulativeFlag, perHectareFlag)})
+              Harvested wood (
+              {getUnitPerArea('harvested-wood', cumulativeFlag, perHectareFlag)}
+              )
               <FinlandForestsChart {...options.wood} />
               <br />
               <Button
@@ -406,7 +518,11 @@ const FinlandForests = () => {
               </Button>
               <br />
               <br />
-              <Button variant="contained" color="secondary" onClick={() => setReportPanelOpen(false)}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => setReportPanelOpen(false)}
+              >
                 Close report
               </Button>
             </Container>
