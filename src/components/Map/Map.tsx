@@ -56,6 +56,7 @@ export const Map = ({ children }: Props) => {
   const isLoaded = useMapStore((state) => state.isLoaded)
   const _setIsLoaded = useMapStore((state) => state._setIsLoaded)
   const _isMapReady = useMapStore((state) => state._isMapReady)
+  const _isHydrated = useMapStore((state) => state._isHydrated)
   const _setIsMapReady = useMapStore((state) => state._setIsMapReady)
   const _functionQueue = useMapStore((state) => state._functionQueue)
   const _executeFunctionQueue = useMapStore((state) => state._executeFunctionQueue)
@@ -530,10 +531,16 @@ export const Map = ({ children }: Props) => {
 
   useEffect(() => {
     // Run queued functions once map has loaded
-    if (_isMapReady && !_isFunctionQueueExecuting && !isLoaded) {
+    if (_isMapReady && !_isFunctionQueueExecuting && !isLoaded && _isHydrated) {
       _executeFunctionQueue(() => _setIsLoaded(true))
     }
-  }, [_isMapReady, _functionQueue, _isFunctionQueueExecuting, isLoaded])
+  }, [
+    _isMapReady,
+    _isHydrated,
+    _functionQueue,
+    _isFunctionQueueExecuting,
+    isLoaded,
+  ])
 
   useEffect(() => {
     if (isLoaded) {
