@@ -26,7 +26,10 @@ import { getPlanLayerId } from 'applets/hiilikartta/common/utils'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const getSourceJson = useMapStore((state) => state.getSourceJson)
-  const planConf = useStore(useAppStore, (state) => state.planConfs[params.planIdSlug])
+  const planConf = useStore(
+    useAppStore,
+    (state) => state.planConfs[params.planIdSlug]
+  )
   const addReportToPlan = useAppStore((state) => state.addReportToPlan)
   const deletePlanConf = useAppStore((state) => state.deletePlanConf)
 
@@ -48,15 +51,22 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
 
       // const response = await useFileUploadMutation("http://localhost:8000/calculate", uploadFile)
 
-      const response = await axios.post('http://localhost:8000/calculate', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
+      const response = await axios.post(
+        'http://localhost:8000/calculate',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      )
 
       if (addReportToPlan) {
         const report = await addReportToPlan(params.planIdSlug, response.data)
-        const route = getRoute(routeTree.plan.report, routeTree, [params.planIdSlug, report.id])
+        const route = getRoute(routeTree.plan.report, routeTree, [
+          params.planIdSlug,
+          report.id,
+        ])
         router.push(route)
       }
     }
@@ -81,7 +91,14 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     <>
       {isLoaded && planConf && (
         <>
-          <Box sx={(theme) => ({ typography: theme.typography.h6, margin: '80px 0 0 0' })}>{planConf.name}</Box>
+          <Box
+            sx={(theme) => ({
+              typography: theme.typography.h6,
+              margin: '80px 0 0 0',
+            })}
+          >
+            {planConf.name}
+          </Box>
           {/* <MuiLink
             href={getRoute(routeTree.plan.settings, routeTree, [planConf.id])}
             sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
