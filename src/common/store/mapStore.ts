@@ -1,3 +1,6 @@
+// The map store is a zustand store that manages the map state.
+// A lot of the logic is split between this file and the Map component.
+
 import { map, cloneDeep } from 'lodash-es'
 import olms from 'ol-mapbox-style'
 import turfBbox from '@turf/bbox'
@@ -48,28 +51,45 @@ import {
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
 
 export type Vars = {
+  // Whether to use mapbox, openlayers, or both.
+  // Currently only "mapbox" is ever used as the mode.
   mapLibraryMode: MapLibraryMode
+  // Whether the map is ready to be interacted with.
   isLoaded: boolean
+  // An overlay message over the map
   overlayMessage: OverlayMessage | null
   selectedFeatures: MapboxGeoJSONFeature[]
+  // Options for popup windows, when clicking a feature on the map
   popupOpts: PopupOpts | null
   activeLayerGroupIds: string[]
+  // Whether user has activated drawing mode
   isDrawEnabled: boolean
   mapContext: string
+  // The below are internal variables.
+  // isMapReady is after the internal map object is ready to be interacted with,
+  // but before the map functions are ready to be used by external components.
   _isMapReady: boolean
   _draw: MapboxDraw | null
+  // A queue where functions are added before the map is loaded.
+  // Executed after mapIsReady.
   _functionQueue: FunctionQueue
+  // A variable to prevent bugs when executing function queue.
   _isFunctionQueueExecuting: boolean
+  // mapbox map object
   _mbMap: MbMap | null
+  // openlayers map object
   _olMap: OlMap | null
+  // A single UI layer has often multiple layers which are grouped together.
   _layerGroups: Record<string, any>
   _layerOptions: Record<string, LayerOpt>
+  // For storing user customised or uploaded layer configurations.
   _customLayerConfs: Record<string, LayerConfAnyId>
   _isHydrated: boolean
   _hydrationData: { activeLayerGroupIds: string[] }
 }
 
 export type Actions = {
+  // Bounds of the source of a layer, e.g. the features in a geojson object
   getSourceBounds: (sourceId: string) => LngLatBounds | null
   getSourceJson: (id: string) => FeatureCollection | null
   addLayerGroup: (
@@ -86,6 +106,8 @@ export type Actions = {
     layerId: LayerId,
     options?: LayerAddOptions
   ) => Promise<void>
+  // AnyLayerGroup allows adding layerGroups with custom ids,
+  // e.g., uploaded custom layers with generated ids.
   addAnyLayerGroup: (
     layerIdString: string,
     options?: AnyLayerAddOptions
@@ -111,6 +133,7 @@ export type Actions = {
     value: any,
     queueOptions?: QueueOptions
   ) => Promise<void>
+  // Only show specific features in a layer
   setFilter: (
     layer: string,
     filter: any[],
@@ -154,6 +177,7 @@ export type Actions = {
   _setIsFunctionQueueExecuting: (isExecuting: boolean) => void
   _setPopupOpts: (popupOpts: PopupOpts) => void
   _setMbMap: (mbMap: MbMap) => void
+  // Adds a layer after the specified layer id.
   _addLayerAfter: (layer: AnyLayer, afterId: string) => void
   _findFirstMatchingLayer: (id: LayerId | string) => string | null
   _findLastMatchingLayer: (id: LayerId | string) => string | null
