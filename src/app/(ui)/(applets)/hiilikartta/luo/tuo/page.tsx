@@ -15,7 +15,7 @@ import { useAppStore } from 'applets/hiilikartta/state/appStore'
 import { createLayerConf } from '../../common/utils'
 
 const Page = () => {
-  const addAnyLayerGroup = useMapStore((state) => state.addAnyLayerGroup)
+  const addCustomLayerGroup = useMapStore((state) => state.addCustomLayerGroup)
   const addPlanConf = useAppStore((state) => state.addPlanConf)
   const deletePlanConf = useAppStore((state) => state.deletePlanConf)
   const [fileType, setFileType] = useState<FileType>()
@@ -47,7 +47,7 @@ const Page = () => {
 
     try {
       const layerConf = createLayerConf(json, planConf.id, colName)
-      await addAnyLayerGroup(layerConf.id, { layerConf })
+      await addCustomLayerGroup(layerConf.id, { layerConf })
     } catch (e) {
       deletePlanConf(planConf.id)
       console.error(e)

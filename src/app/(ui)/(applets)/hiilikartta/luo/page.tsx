@@ -21,7 +21,7 @@ const Page = () => {
 
   const addPlanConf = useAppStore((state) => state.addPlanConf)
   const deletePlanConf = useAppStore((state) => state.deletePlanConf)
-  const addAnyLayerGroup = useMapStore((state) => state.addAnyLayerGroup)
+  const addCustomLayerGroup = useMapStore((state) => state.addCustomLayerGroup)
 
   const initializePlan = async () => {
     const colName = 'area_codes'
@@ -43,7 +43,7 @@ const Page = () => {
 
     try {
       const layerConf = createLayerConf(json, planConf.id, colName)
-      await addAnyLayerGroup(layerConf.id, { layerConf })
+      await addCustomLayerGroup(layerConf.id, { layerConf })
     } catch (e) {
       deletePlanConf(planConf.id)
       console.error(e)

@@ -8,13 +8,13 @@ import { getPlanLayerId } from 'applets/hiilikartta/common/utils'
 
 const Layout = ({ params, children }: { params: { planIdSlug: string }; children: React.ReactNode }) => {
   // const planConf = useStore(useAppStore, (state) => state.planConfs)
-  const enableAnyLayerGroup = useMapStore((state) => state.enableAnyLayerGroup)
+  const enableCustomLayerGroup = useMapStore((state) => state.enableCustomLayerGroup)
   const getSourceBounds = useMapStore((state) => state.getSourceBounds)
   const fitBounds = useMapStore((state) => state.fitBounds)
 
   useEffect(() => {
     const planLayerId = getPlanLayerId(params.planIdSlug)
-    enableAnyLayerGroup(planLayerId)
+    enableCustomLayerGroup(planLayerId)
     const bounds = getSourceBounds(planLayerId)
     if (bounds) {
       fitBounds(bounds, { duration: 2000, latExtra: 0.5, lonExtra: 0.5 })

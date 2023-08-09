@@ -32,18 +32,18 @@ export type LayerOpts = {
   [key: string]: LayerOpt
 }
 
-export interface AnyLayerAddOptions {
+export interface CustomLayerGroupAddOptions {
   layerConf?: LayerConfAnyId
   isAddedBefore?: boolean
   neighboringLayerId?: LayerId | string
   isHidden?: boolean
 }
 
-export interface LayerAddOptions extends AnyLayerAddOptions {
+export interface LayerGroupAddOptions extends CustomLayerGroupAddOptions {
   layerConf?: LayerConf
 }
 
-export interface LayerAddOptionsWithConf extends LayerAddOptions {
+export interface LayerGroupAddOptionsWithConf extends LayerGroupAddOptions {
   layerConf: LayerConf
 }
 

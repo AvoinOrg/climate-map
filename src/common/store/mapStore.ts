@@ -34,9 +34,9 @@ import {
   PopupOpts,
   QueueFunction,
   FunctionQueue,
-  LayerAddOptions,
-  AnyLayerAddOptions,
-  LayerAddOptionsWithConf,
+  LayerGroupAddOptions,
+  CustomLayerGroupAddOptions,
+  LayerGroupAddOptionsWithConf,
   QueueOptions,
   MapContext,
 } from '#/common/types/map'
@@ -94,33 +94,33 @@ export type Actions = {
   getSourceJson: (id: string) => FeatureCollection | null
   addLayerGroup: (
     layerId: LayerId,
-    options?: LayerAddOptions,
+    options?: LayerGroupAddOptions,
     queueOptions?: QueueOptions
   ) => Promise<void>
   enableLayerGroup: (
     layerId: LayerId,
-    options?: LayerAddOptions
+    options?: LayerGroupAddOptions
   ) => Promise<void>
   disableLayerGroup: (layerId: LayerId) => Promise<void>
   toggleLayerGroup: (
     layerId: LayerId,
-    options?: LayerAddOptions
+    options?: LayerGroupAddOptions
   ) => Promise<void>
   // AnyLayerGroup allows adding layerGroups with custom ids,
   // e.g., uploaded custom layers with generated ids.
-  addAnyLayerGroup: (
+  addCustomLayerGroup: (
     layerIdString: string,
-    options?: AnyLayerAddOptions
+    options?: CustomLayerGroupAddOptions
   ) => Promise<void>
-  toggleAnyLayerGroup: (
+  toggleCustomLayerGroup: (
     layerIdString: string,
-    options?: AnyLayerAddOptions
+    options?: CustomLayerGroupAddOptions
   ) => Promise<void>
-  enableAnyLayerGroup: (
+  enableCustomLayerGroup: (
     layerIdString: string,
-    options?: AnyLayerAddOptions
+    options?: CustomLayerGroupAddOptions
   ) => Promise<void>
-  disableAnyLayerGroup: (layerIdString: string) => Promise<void>
+  disableCustomLayerGroup: (layerIdString: string) => Promise<void>
   setLayoutProperty: (
     layer: string,
     name: string,
@@ -162,14 +162,14 @@ export type Actions = {
   _setIsLoaded: { (isLoaded: boolean): void }
   _setIsMapReady: { (isMapReady: boolean): void }
   _setGroupVisibility: (layerId: LayerId, isVisible: boolean) => void
-  _addMbStyle: (id: LayerId, options: LayerAddOptionsWithConf) => Promise<void>
+  _addMbStyle: (id: LayerId, options: LayerGroupAddOptionsWithConf) => Promise<void>
   _addMbPopup: (
     layer: string | string[],
     fn: (e: MapLayerMouseEvent) => void
   ) => void
   _addMbStyleToMb: (
     id: LayerId,
-    options: LayerAddOptionsWithConf
+    options: LayerGroupAddOptionsWithConf
   ) => Promise<void>
   _addToFunctionQueue: (queueFunction: QueueFunction) => Promise<any>
   _setFunctionQueue: (functionQueue: FunctionQueue) => void
@@ -353,7 +353,7 @@ export const useMapStore = create<State>()(
         },
 
         addLayerGroup: queueableFnInit(
-          async (layerId: LayerId, options?: AnyLayerAddOptions) => {
+          async (layerId: LayerId, options?: CustomLayerGroupAddOptions) => {
             const { _addMbStyleToMb, _addMbStyle, _customLayerConfs } = get()
 
             // Initialize layer if it doesn't exist
@@ -371,9 +371,9 @@ export const useMapStore = create<State>()(
 
             if (opts.layerConf) {
               if (opts.layerConf.useMb == null || opts.layerConf.useMb) {
-                await _addMbStyleToMb(layerId, opts as LayerAddOptionsWithConf)
+                await _addMbStyleToMb(layerId, opts as LayerGroupAddOptionsWithConf)
               } else {
-                await _addMbStyle(layerId, opts as LayerAddOptionsWithConf)
+                await _addMbStyle(layerId, opts as LayerGroupAddOptionsWithConf)
               }
             } else {
               console.error('No layer config found for id: ' + layerId)
@@ -384,7 +384,7 @@ export const useMapStore = create<State>()(
 
         enableLayerGroup: async (
           layerId: LayerId,
-          options?: LayerAddOptions
+          options?: LayerGroupAddOptions
         ) => {
           const { _layerGroups, _setGroupVisibility, addLayerGroup } = get()
           if (_layerGroups[layerId]) {
@@ -418,7 +418,7 @@ export const useMapStore = create<State>()(
 
         toggleLayerGroup: async (
           layerId: LayerId,
-          options?: LayerAddOptions
+          options?: LayerGroupAddOptions
         ) => {
           const { activeLayerGroupIds, disableLayerGroup, enableLayerGroup } =
             get()
@@ -431,30 +431,30 @@ export const useMapStore = create<State>()(
         },
 
         // these are used used for layers with dynamic ids
-        addAnyLayerGroup: async (
+        addCustomLayerGroup: async (
           layerIdString: string,
-          options?: AnyLayerAddOptions
+          options?: CustomLayerGroupAddOptions
         ) => {
           const { addLayerGroup } = get()
 
           try {
-            addLayerGroup(layerIdString as LayerId, options as LayerAddOptions)
+            addLayerGroup(layerIdString as LayerId, options as LayerGroupAddOptions)
           } catch (e) {
             'Unable to add layer with id: ' + layerIdString
             console.error(e)
           }
         },
 
-        toggleAnyLayerGroup: async (
+        toggleCustomLayerGroup: async (
           layerIdString: string,
-          options?: AnyLayerAddOptions
+          options?: CustomLayerGroupAddOptions
         ) => {
           const { toggleLayerGroup } = get()
 
           try {
             toggleLayerGroup(
               layerIdString as LayerId,
-              options as LayerAddOptions
+              options as LayerGroupAddOptions
             )
           } catch (e) {
             'Unable to toggle layer with id: ' + layerIdString
@@ -462,16 +462,16 @@ export const useMapStore = create<State>()(
           }
         },
 
-        enableAnyLayerGroup: async (
+        enableCustomLayerGroup: async (
           layerIdString: string,
-          options?: AnyLayerAddOptions
+          options?: CustomLayerGroupAddOptions
         ) => {
           const { enableLayerGroup } = get()
 
           try {
             enableLayerGroup(
               layerIdString as LayerId,
-              options as LayerAddOptions
+              options as LayerGroupAddOptions
             )
           } catch (e) {
             'Unable to enable layer with id: ' + layerIdString
@@ -479,7 +479,7 @@ export const useMapStore = create<State>()(
           }
         },
 
-        disableAnyLayerGroup: async (layerIdString: string) => {
+        disableCustomLayerGroup: async (layerIdString: string) => {
           const { disableLayerGroup } = get()
 
           disableLayerGroup(layerIdString as LayerId)
@@ -678,7 +678,7 @@ export const useMapStore = create<State>()(
           )
         },
 
-        _addMbStyle: async (id: LayerId, options: LayerAddOptionsWithConf) => {
+        _addMbStyle: async (id: LayerId, options: LayerGroupAddOptionsWithConf) => {
           const style = await options.layerConf.style()
           const layers: ExtendedAnyLayer[] = style.layers
           const sourceKeys = Object.keys(style.sources)
@@ -777,7 +777,7 @@ export const useMapStore = create<State>()(
 
         _addMbStyleToMb: async (
           id: LayerId,
-          options: LayerAddOptionsWithConf
+          options: LayerGroupAddOptionsWithConf
         ) => {
           const {
             _addMbPopup,
@@ -1120,10 +1120,10 @@ export const useMapStore = create<State>()(
         },
 
         _runHydrationActions: async () => {
-          const { _setIsHydrated, _hydrationData, enableAnyLayerGroup } = get()
+          const { _setIsHydrated, _hydrationData, enableCustomLayerGroup } = get()
 
           _hydrationData.activeLayerGroupIds.map((id) =>
-            enableAnyLayerGroup(id)
+            enableCustomLayerGroup(id)
           )
 
           _setIsHydrated(true)
