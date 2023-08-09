@@ -1,8 +1,8 @@
 import { RasterSource } from 'mapbox-gl'
 
-import { LayerId, LayerConf, ExtendedMbStyle, ExtendedAnyLayer } from '#/common/types/map'
+import { LayerGroupId, LayerConf, ExtendedMbStyle, ExtendedAnyLayer } from '#/common/types/map'
 
-const id: LayerId = 'zonation'
+const id: LayerGroupId = 'zonation'
 
 const zonationVersions = [1, 2, 3, 4, 5, 6]
 

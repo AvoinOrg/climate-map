@@ -186,30 +186,30 @@ export const positionToLngLatLike = (position: Position): mapboxgl.LngLatLike =>
   return { lng: position[0], lat: position[1] }
 }
 
-export const getLayerType = (layerId: string): LayerType => {
-  const suffix = layerId.split('-').slice(-1)[0]
+export const getLayerType = (layerGroupId: string): LayerType => {
+  const suffix = layerGroupId.split('-').slice(-1)[0]
   if (layerTypes.includes(suffix)) {
     return suffix as LayerType
   }
 
   console.error(
-    'Invalid layer type: "' + suffix + '" for layer: ' + layerId + '". Valid types are: ' + layerTypes.join(', ')
+    'Invalid layer type: "' + suffix + '" for layer: ' + layerGroupId + '". Valid types are: ' + layerTypes.join(', ')
   )
   return 'invalid'
 }
 
-export const getLayerName = (layerId: string): LayerType => {
-  const layerIdSplitArr = layerId.split('-')
-  if (layerIdSplitArr.length > 2) {
+export const getLayerName = (layerGroupId: string): LayerType => {
+  const layerGroupIdSplitArr = layerGroupId.split('-')
+  if (layerGroupIdSplitArr.length > 2) {
     console.error('Invalid layer id. Only use hyphen ("-") to separate the LayerType-suffix from the rest of the id.')
   }
 
-  const name = layerIdSplitArr.slice(0, -1).join('-')
+  const name = layerGroupIdSplitArr.slice(0, -1).join('-')
   if (name.length > 0) {
     return name
   }
 
-  return layerId
+  return layerGroupId
 }
 
 export const assertValidHighlightingConf = (layerOpt: LayerOpt, layers: ExtendedAnyLayer[]) => {

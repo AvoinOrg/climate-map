@@ -1,6 +1,6 @@
-import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
+import { LayerGroupId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 
-const id: LayerId = 'mangrove_forests'
+const id: LayerGroupId = 'mangrove_forests'
 
 const getStyle = async (): Promise<ExtendedMbStyle> => {
   return {

@@ -1,7 +1,7 @@
 // import { Style as MbStyle } from 'mapbox-gl'
 
 import { fillOpacity, roundToSignificantDigitsExpr } from '#/common/utils/map'
-import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
+import { LayerGroupId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import { layerOptions } from './constants'
 import _ from 'lodash'
 
@@ -9,15 +9,15 @@ import Popup from './Popup'
 
 const SERVER_URL = process.env.NEXT_PUBLIC_GEOSERVER_URL
 
-const id: LayerId = 'helsinki_buildings'
+const id: LayerGroupId = 'helsinki_buildings'
 
 const getStyle = async (): Promise<ExtendedMbStyle> => {
   const sources: any = {}
   let layers: any = []
 
-  for (const layerId in layerOptions) {
-    const options = layerOptions[layerId]
-    sources[layerId] = {
+  for (const layerGroupId in layerOptions) {
+    const options = layerOptions[layerGroupId]
+    sources[layerGroupId] = {
       type: 'vector',
       scheme: 'tms',
       tiles: [`${SERVER_URL}/gwc/service/tms/1.0.0/misc:${options.serverId}@EPSG:900913@pbf/{z}/{x}/{y}.pbf`],
@@ -31,8 +31,8 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
     layers = [
       ...layers,
       {
-        id: `${layerId}-fill`,
-        source: layerId,
+        id: `${layerGroupId}-fill`,
+        source: layerGroupId,
         'source-layer': options.serverId,
         type: 'fill',
         paint: {
@@ -50,14 +50,14 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         },
         // paint: {
         //  'fill-color': fiForestsAreaCO2FillColor(fiForestsCumulativeCO2eValueExpr),
-        //  'fill-opacity': layerId === 'parcel' ? 1 : fillOpacity,
+        //  'fill-opacity': layerGroupId === 'parcel' ? 1 : fillOpacity,
         // },
         // ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
         // ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
       },
       {
-        id: `${layerId}-outline`,
-        source: layerId,
+        id: `${layerGroupId}-outline`,
+        source: layerGroupId,
         'source-layer': options.serverId,
         type: 'line',
         minzoom: 11,
@@ -68,8 +68,8 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         // ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
       },
       {
-        id: `${layerId}-symbol`,
-        source: layerId,
+        id: `${layerGroupId}-symbol`,
+        source: layerGroupId,
         'source-layer': options.serverId,
         type: 'symbol',
         minzoom: 16,

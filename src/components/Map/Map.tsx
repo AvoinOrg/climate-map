@@ -493,7 +493,7 @@ export const Map = ({ children }: Props) => {
       let selectedFeaturesCopy = [...selectedFeatures]
 
       for (const feature of newlySelectedFeaturesCopy) {
-        const layerId = feature.layer.id
+        const layerGroupId = feature.layer.id
 
         // if the feature is already selected, unselect
         if (selectedFeaturesCopy.find((f) => f.id === feature.id)) {
@@ -504,7 +504,7 @@ export const Map = ({ children }: Props) => {
         }
 
         // if the layer is not multi-selectable, unselect all other features from that layer
-        if (!_layerOptions[layerId].multiSelectable) {
+        if (!_layerOptions[layerGroupId].multiSelectable) {
           selectedFeaturesCopy = selectedFeaturesCopy.filter(
             (f) => f.layer.id !== feature.layer.id
           )
@@ -528,20 +528,20 @@ export const Map = ({ children }: Props) => {
     // is not great. However, this allows direct manipulation of
     // "selectedFeatures" from other components. Make smarter later.
     if (!isEqual(selectedFeatures, selectedFeaturesCopy)) {
-      let selectedLayerIds: string[] = []
+      let selectedLayerGroupIds: string[] = []
       selectedFeaturesCopy.map((feature) => {
-        selectedLayerIds.push(feature.layer.id)
+        selectedLayerGroupIds.push(feature.layer.id)
       })
 
       if (selectedFeaturesCopy)
         // add layer ids from the previous selection
         selectedFeatures.map((feature) => {
-          selectedLayerIds.push(feature.layer.id)
+          selectedLayerGroupIds.push(feature.layer.id)
         })
 
-      selectedLayerIds = uniq(selectedLayerIds)
+      selectedLayerGroupIds = uniq(selectedLayerGroupIds)
 
-      for (const id of selectedLayerIds) {
+      for (const id of selectedLayerGroupIds) {
         const featureIds = selectedFeaturesCopy
           .filter((f) => f.layer.id === id)
           .map((feature) => {
@@ -592,18 +592,18 @@ export const Map = ({ children }: Props) => {
 
   useEffect(() => {
     if (isLoaded) {
-      let activeLayerIds: string[] = []
+      let activeLayerGroupIds: string[] = []
 
-      for (const layerId of activeLayerGroupIds) {
-        const layerGroupLayers = _layerGroups[layerId]
+      for (const layerGroupId of activeLayerGroupIds) {
+        const layerGroupLayers = _layerGroups[layerGroupId]
 
-        activeLayerIds = [...activeLayerIds, ...Object.keys(layerGroupLayers)]
+        activeLayerGroupIds = [...activeLayerGroupIds, ...Object.keys(layerGroupLayers)]
       }
 
       let selectedFeaturesCopy = [...selectedFeatures]
 
       selectedFeaturesCopy = selectedFeaturesCopy.filter((feature) => {
-        return activeLayerIds.includes(feature.layer.id)
+        return activeLayerGroupIds.includes(feature.layer.id)
       })
 
       if (selectedFeaturesCopy.length !== selectedFeatures.length) {

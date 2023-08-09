@@ -3,7 +3,7 @@ import { map, uniq } from 'lodash-es'
 import { getColorExpressionArrForValues } from '#/common/utils/map'
 import { ExtendedMbStyle, LayerConfAnyId } from '#/common/types/map'
 
-export const getPlanLayerId = (planId: string) => {
+export const getPlanLayerGroupId = (planId: string) => {
   return `${planId}_zoning_plan`
 }
 
@@ -11,7 +11,7 @@ export const createLayerConf = (json: any, planId: string, featureColorCol: stri
   const uniqueVals = uniq(map(json.features, 'properties.' + featureColorCol))
   const colorArr = getColorExpressionArrForValues(uniqueVals)
 
-  const sourceId = getPlanLayerId(planId)
+  const sourceId = getPlanLayerGroupId(planId)
 
   const getStyle = async (): Promise<ExtendedMbStyle> => {
     return {

@@ -4,7 +4,7 @@ import React, { useEffect } from 'react'
 import { useMapStore } from '#/common/store'
 
 import { useAppStore } from 'applets/hiilikartta/state/appStore'
-import { getPlanLayerId } from 'applets/hiilikartta/common/utils'
+import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
 
 const Layout = ({ params, children }: { params: { planIdSlug: string }; children: React.ReactNode }) => {
   // const planConf = useStore(useAppStore, (state) => state.planConfs)
@@ -13,9 +13,9 @@ const Layout = ({ params, children }: { params: { planIdSlug: string }; children
   const fitBounds = useMapStore((state) => state.fitBounds)
 
   useEffect(() => {
-    const planLayerId = getPlanLayerId(params.planIdSlug)
-    enableCustomLayerGroup(planLayerId)
-    const bounds = getSourceBounds(planLayerId)
+    const planLayerGroupId = getPlanLayerGroupId(params.planIdSlug)
+    enableCustomLayerGroup(planLayerGroupId)
+    const bounds = getSourceBounds(planLayerGroupId)
     if (bounds) {
       fitBounds(bounds, { duration: 2000, latExtra: 0.5, lonExtra: 0.5 })
     }

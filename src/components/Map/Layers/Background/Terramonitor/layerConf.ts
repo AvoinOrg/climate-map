@@ -1,8 +1,8 @@
 import { Expression } from 'mapbox-gl'
 
-import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
+import { LayerGroupId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 
-const id: LayerId = 'terramonitor'
+const id: LayerGroupId = 'terramonitor'
 
 const getStyle = async (): Promise<ExtendedMbStyle> => {
   return {

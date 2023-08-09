@@ -1,7 +1,7 @@
 import { fillOpacity } from '#/common/utils/map'
-import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
+import { LayerGroupId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 
-const id: LayerId = 'snow_cover_loss'
+const id: LayerGroupId = 'snow_cover_loss'
 
 const snowCoverLossDays = ['-', ['get', 'avg_snow_cover_1980_1990'], ['get', 'avg_snow_cover_1996_2016']]
 

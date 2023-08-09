@@ -1,8 +1,8 @@
-import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
+import { LayerGroupId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import { fillOpacity } from '#/common/utils/map'
 import Popup from './Popup'
 
-const id: LayerId = 'gfw_tree_plantations'
+const id: LayerGroupId = 'gfw_tree_plantations'
 
 const getStyle = async (): Promise<ExtendedMbStyle> => {
   return {

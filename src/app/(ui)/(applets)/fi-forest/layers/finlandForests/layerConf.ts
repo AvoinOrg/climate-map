@@ -1,7 +1,7 @@
 import { Expression } from 'mapbox-gl'
 
 import { fillOpacity } from '#/common/utils/map'
-import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
+import { LayerGroupId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import { layerOptions } from 'applets/fi-forest/constants'
 import { LayerLevel } from 'applets/fi-forest/types'
 import {
@@ -12,15 +12,15 @@ import {
 
 const SERVER_URL = process.env.NEXT_PUBLIC_GEOSERVER_URL
 
-const id: LayerId = 'fi_forests'
+const id: LayerGroupId = 'fi_forests'
 
 const getStyle = async (): Promise<ExtendedMbStyle> => {
   const sources: any = {}
   let layers: any = []
 
-  for (const layerId in layerOptions) {
-    const options = layerOptions[layerId]
-    sources[layerId] = {
+  for (const layerGroupId in layerOptions) {
+    const options = layerOptions[layerGroupId]
+    sources[layerGroupId] = {
       type: 'vector',
       scheme: 'tms',
       tiles: [`${SERVER_URL}/gwc/service/tms/1.0.0/forest:${options.serverId}@EPSG:900913@pbf/{z}/{x}/{y}.pbf`],
@@ -34,13 +34,13 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
     layers = [
       ...layers,
       {
-        id: `${layerId}-fill`,
-        source: layerId,
+        id: `${layerGroupId}-fill`,
+        source: layerGroupId,
         'source-layer': options.serverId,
         type: 'fill',
         paint: {
           'fill-color': fiForestsAreaCO2FillColor(fiForestsCumulativeCO2eValueExpr),
-          'fill-opacity': layerId === 'parcel' ? 1 : fillOpacity,
+          'fill-opacity': layerGroupId === 'parcel' ? 1 : fillOpacity,
         },
         ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
         ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
@@ -49,8 +49,8 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         BEFORE: 'FILL',
       },
       {
-        id: `${layerId}-outline`,
-        source: layerId,
+        id: `${layerGroupId}-outline`,
+        source: layerGroupId,
         'source-layer': options.serverId,
         type: 'line',
         paint: {
@@ -61,8 +61,8 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         BEFORE: 'OUTLINE',
       },
       {
-        id: `${layerId}-highlighted`,
-        source: layerId,
+        id: `${layerGroupId}-highlighted`,
+        source: layerGroupId,
         'source-layer': options.serverId,
         type: 'fill',
         paint: {
@@ -75,11 +75,11 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
         ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
       },
-      ...(layerId === LayerLevel.Parcel
+      ...(layerGroupId === LayerLevel.Parcel
         ? [
             {
-              id: `${layerId}-symbol`,
-              source: layerId,
+              id: `${layerGroupId}-symbol`,
+              source: layerGroupId,
               'source-layer': options.serverId,
               type: 'symbol',
               paint: {},

@@ -5,7 +5,7 @@ import useStore from '#/common/hooks/useStore'
 import { useUIStore } from '#/common/store'
 
 import { useAppStore } from 'applets/hiilikartta/state/appStore'
-import { getPlanLayerId } from 'applets/hiilikartta/common/utils'
+import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
 import { Box, Typography } from '@mui/material'
 import { styled } from '@mui/system'
 import { pp } from '#/common/utils/general'
@@ -27,9 +27,9 @@ const Page = ({ params }: { params: { planIdSlug: string; reportIdSlug: string }
   }, [report])
 
   // useEffect(() => {
-  //   const planLayerId = getPlanLayerId(params.planIdSlug)
-  //   enableCustomLayerGroup(planLayerId)
-  //   const bounds = getSourceBounds(planLayerId)
+  //   const planLayerGroupId = getPlanLayerGroupId(params.planIdSlug)
+  //   enableCustomLayerGroup(planLayerGroupId)
+  //   const bounds = getSourceBounds(planLayerGroupId)
   //   if (bounds) {
   //     fitBounds(bounds, { duration: 2000, latExtra: 0.5, lonExtra: 0.5 })
   //   }

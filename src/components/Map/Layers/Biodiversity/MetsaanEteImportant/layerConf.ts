@@ -1,10 +1,10 @@
 import axios from 'axios'
 import { Style as MbStyle, Expression } from 'mapbox-gl'
 
-import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
+import { LayerGroupId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import { fillOpacity } from '#/common/utils/map'
 
-const id: LayerId = 'metsaan_ete_important'
+const id: LayerGroupId = 'metsaan_ete_important'
 
 const getStyle = async (): Promise<ExtendedMbStyle> => {
   const { data } = await axios.get('ete_codes.json')

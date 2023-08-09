@@ -20,10 +20,10 @@ const FiZonationContent = () => (
 const BiodiversityContent = () => {
   return (
     <Box sx={{ width: '100%' }}>
-      <AOAccordion layerId={'metsaan_ete_basic'} label={'Potential METSO areas'} content={null} />
-      <AOAccordion layerId={'metsaan_ete_important'} label={'Especially Important Habitats'} content={null} />
-      <AOAccordion layerId={'zonation'} label={'Areas important to biodiversity'} content={<FiZonationContent />} />
-      <AOAccordion layerId={'natura2000'} label={'Natura 2000'} content={null} />
+      <AOAccordion layerGroupId={'metsaan_ete_basic'} label={'Potential METSO areas'} content={null} />
+      <AOAccordion layerGroupId={'metsaan_ete_important'} label={'Especially Important Habitats'} content={null} />
+      <AOAccordion layerGroupId={'zonation'} label={'Areas important to biodiversity'} content={<FiZonationContent />} />
+      <AOAccordion layerGroupId={'natura2000'} label={'Natura 2000'} content={null} />
     </Box>
   )
 }

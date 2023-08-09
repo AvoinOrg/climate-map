@@ -22,7 +22,7 @@ import { useAppStore } from 'applets/hiilikartta/state/appStore'
 import { PlanConf } from 'applets/hiilikartta/common/types'
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { useMapStore } from '#/common/store'
-import { getPlanLayerId } from 'applets/hiilikartta/common/utils'
+import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const getSourceJson = useMapStore((state) => state.getSourceJson)
@@ -38,7 +38,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
 
   const handleSubmit = async () => {
     if (planConf) {
-      const json = getSourceJson(getPlanLayerId(planConf.id))
+      const json = getSourceJson(getPlanLayerGroupId(planConf.id))
 
       const zip = new JSZip()
       zip.file('file', JSON.stringify(json))

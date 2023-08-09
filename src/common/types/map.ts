@@ -35,7 +35,7 @@ export type LayerOpts = {
 export interface CustomLayerGroupAddOptions {
   layerConf?: LayerConfAnyId
   isAddedBefore?: boolean
-  neighboringLayerId?: LayerId | string
+  neighboringLayerGroupId?: LayerGroupId | string
   isHidden?: boolean
 }
 
@@ -47,7 +47,7 @@ export interface LayerGroupAddOptionsWithConf extends LayerGroupAddOptions {
   layerConf: LayerConf
 }
 
-export type LayerId =
+export type LayerGroupId =
   | 'building_energy_certs'
   | 'no2'
   | 'snow_cover_loss'
@@ -86,7 +86,7 @@ export type LayerConfAnyId = {
 }
 
 export interface LayerConf extends LayerConfAnyId {
-  id: LayerId
+  id: LayerGroupId
 }
 
 // For checking if layer name adheres to LayerType, in runtime
@@ -100,7 +100,7 @@ export const layerTypes: readonly string[] = [
 
 export type LayerType = (typeof layerTypes)[number] | 'invalid'
 
-export type OverlayMessage = { message: string | null; layerGroupId: LayerId }
+export type OverlayMessage = { message: string | null; layerGroupId: LayerGroupId }
 
 export type MapLibraryMode = 'hybrid' | 'mapbox'
 

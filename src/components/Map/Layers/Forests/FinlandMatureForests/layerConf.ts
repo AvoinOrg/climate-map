@@ -1,10 +1,10 @@
 import { Expression } from 'mapbox-gl'
 
-import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
+import { LayerGroupId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import { metsaanFiTreeSpecies } from './constants'
 import Popup from './Popup'
 
-const id: LayerId = 'fi_mature_forests'
+const id: LayerGroupId = 'fi_mature_forests'
 
 const fillRegenerationFelling: Expression = [
   'case',

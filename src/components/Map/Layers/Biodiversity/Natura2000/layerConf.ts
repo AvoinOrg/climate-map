@@ -1,6 +1,6 @@
-import { LayerId, LayerConf, ExtendedMbStyle, ExtendedAnyLayer } from '#/common/types/map'
+import { LayerGroupId, LayerConf, ExtendedMbStyle, ExtendedAnyLayer } from '#/common/types/map'
 
-const id: LayerId = 'natura2000'
+const id: LayerGroupId = 'natura2000'
 
 const natura2000Mappings = {
   natura2000_sac: { layer: 'NaturaSAC_alueet', color: 'cyan' },
