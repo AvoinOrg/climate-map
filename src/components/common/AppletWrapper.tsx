@@ -54,7 +54,7 @@ const AppletWrapper = ({
   const isTolgeeReady = () => {
     if (
       localizationNamespace != null &&
-      tolgee
+      !tolgee
         .getAllRecords()
         .some((item) => item.namespace === localizationNamespace)
     ) {
