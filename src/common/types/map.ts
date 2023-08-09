@@ -9,7 +9,13 @@ export type PopupProps = { features: PopupFeature[] }
 
 export type Popup = (props: PopupProps) => ReactNode
 
-export type SourceType = 'geojson' | 'vector' | 'raster' | 'image' | 'video' | 'canvas'
+export type SourceType =
+  | 'geojson'
+  | 'vector'
+  | 'raster'
+  | 'image'
+  | 'video'
+  | 'canvas'
 
 export type LayerOpt = {
   id: string
@@ -84,7 +90,13 @@ export interface LayerConf extends LayerConfAnyId {
 }
 
 // For checking if layer name adheres to LayerType, in runtime
-export const layerTypes: readonly string[] = ['fill', 'highlighted', 'outline', 'symbol', 'raster']
+export const layerTypes: readonly string[] = [
+  'fill',
+  'highlighted',
+  'outline',
+  'symbol',
+  'raster',
+]
 
 export type LayerType = (typeof layerTypes)[number] | 'invalid'
 
@@ -128,4 +140,8 @@ export type QueueFunction = {
   priority?: QueuePriority
 }
 
-export type FunctionQueue = (QueueFunction & { promise: { resolve: any; reject: any } })[]
+export type FunctionQueue = (QueueFunction & {
+  promise: { resolve: any; reject: any }
+})[]
+
+export type MapContext = 'main' | string
