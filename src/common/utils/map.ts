@@ -221,3 +221,19 @@ export const assertValidHighlightingConf = (layerOpt: LayerOpt, layers: Extended
     }
   }
 }
+
+// A helper function for resolving a style
+// that can be either a style object or
+// a function returning a style object.
+export const resolveMbStyle = async (
+  mbStyle: ExtendedMbStyleOrFn
+): Promise<ExtendedMbStyle> => {
+  let style: ExtendedMbStyle
+  if (typeof mbStyle === 'function') {
+    style = await mbStyle()
+  } else {
+    style = mbStyle
+  }
+
+  return style
+}
