@@ -82,10 +82,13 @@ export type Vars = {
   // A single UI layer has often multiple layers which are grouped together.
   _layerGroups: Record<string, any>
   _layerOptions: Record<string, LayerOpt>
-  // For storing user customised or uploaded layer configurations.
-  _customLayerConfs: Record<string, LayerConfAnyId>
+  // For persisting user customised or uploaded layer configurations.
+  _persistingLayerGroupAddOptions: Record<string, CustomLayerGroupAddOptions>
   _isHydrated: boolean
-  _hydrationData: { activeLayerGroupIds: string[] }
+  _hydrationData: {
+    activeLayerGroupIds: string[]
+    persistingLayerGroupAddOptions: Record<string, CustomLayerGroupAddOptions>
+  }
 }
 
 export type Actions = {
@@ -162,7 +165,10 @@ export type Actions = {
   _setIsLoaded: { (isLoaded: boolean): void }
   _setIsMapReady: { (isMapReady: boolean): void }
   _setGroupVisibility: (layerGroupId: LayerGroupId, isVisible: boolean) => void
-  _addMbStyle: (id: LayerGroupId, options: LayerGroupAddOptionsWithConf) => Promise<void>
+  _addMbStyle: (
+    id: LayerGroupId,
+    options: LayerGroupAddOptionsWithConf
+  ) => Promise<void>
   _addMbPopup: (
     layer: string | string[],
     fn: (e: MapLayerMouseEvent) => void
@@ -182,8 +188,11 @@ export type Actions = {
   _findFirstMatchingLayer: (id: LayerGroupId | string) => string | null
   _findLastMatchingLayer: (id: LayerGroupId | string) => string | null
   _runHydrationActions: () => void
-  _addCustomLayerConf: (layerGroupId: string, conf: LayerConfAnyId) => void
-  _removeCustomLayerConf: (layerGroupId: string) => void
+  _addPersistingLayerGroupAddOptions: (
+    layerGroupId: string,
+    customLayerGroupAddOptions: CustomLayerGroupAddOptions
+  ) => void
+  _removePersistingLayerGroupAddOptions: (layerGroupId: string) => void
 }
 
 export type State = Vars & Actions
@@ -212,11 +221,15 @@ export const useMapStore = create<State>()(
         _olMap: null,
         _layerGroups: {},
         _layerOptions: {},
-        _customLayerConfs: {},
         _isHydrated: false,
-        _hydrationData: { activeLayerGroupIds: [] },
+        _persistingLayerGroupAddOptions: {},
+        _hydrationData: {
+          activeLayerGroupIds: [],
+          persistingLayerGroupAddOptions: {},
+        },
       }
 
+      // A boilerplate for functions that are queued until the map object is ready
       const queueableFnInit = <
         A1 extends any[],
         A2 extends [queueOptions?: QueueOptions]
@@ -357,14 +370,26 @@ export const useMapStore = create<State>()(
         // component. Solution:
         // make "options" mandatory, and always supply a layerConf from the calling function.
         addLayerGroup: queueableFnInit(
-          async (layerGroupId: LayerGroupId, options?: CustomLayerGroupAddOptions) => {
-            const { _addMbStyleToMb, _addMbStyle, _customLayerConfs } = get()
+          async (
+            layerGroupId: LayerGroupId,
+            options?: CustomLayerGroupAddOptions
+          ) => {
+            const {
+              _addMbStyleToMb,
+              _addMbStyle,
+              _persistingLayerGroupAddOptions,
+              _addPersistingLayerGroupAddOptions,
+            } = get()
 
             // Initialize layer if it doesn't exist
-            const opts = options || {}
+            let opts = options || {}
+
+            if (opts.persist) {
+              _addPersistingLayerGroupAddOptions(layerGroupId, opts)
+            }
 
             if (!opts.layerConf) {
-              opts.layerConf = _customLayerConfs[layerGroupId]
+              opts = _persistingLayerGroupAddOptions[layerGroupId]
             }
 
             if (!opts.layerConf) {
@@ -375,9 +400,15 @@ export const useMapStore = create<State>()(
 
             if (opts.layerConf) {
               if (opts.layerConf.useMb == null || opts.layerConf.useMb) {
-                await _addMbStyleToMb(layerGroupId, opts as LayerGroupAddOptionsWithConf)
+                await _addMbStyleToMb(
+                  layerGroupId,
+                  opts as LayerGroupAddOptionsWithConf
+                )
               } else {
-                await _addMbStyle(layerGroupId, opts as LayerGroupAddOptionsWithConf)
+                await _addMbStyle(
+                  layerGroupId,
+                  opts as LayerGroupAddOptionsWithConf
+                )
               }
             } else {
               console.error('No layer config found for id: ' + layerGroupId)
@@ -442,7 +473,10 @@ export const useMapStore = create<State>()(
           const { addLayerGroup } = get()
 
           try {
-            addLayerGroup(layerGroupIdString as LayerGroupId, options as LayerGroupAddOptions)
+            addLayerGroup(
+              layerGroupIdString as LayerGroupId,
+              options as LayerGroupAddOptions
+            )
           } catch (e) {
             'Unable to add layer with id: ' + layerGroupIdString
             console.error(e)
@@ -657,7 +691,10 @@ export const useMapStore = create<State>()(
           })
         },
 
-        _setGroupVisibility: (layerGroupId: LayerGroupId, isVisible: boolean) => {
+        _setGroupVisibility: (
+          layerGroupId: LayerGroupId,
+          isVisible: boolean
+        ) => {
           const { _layerGroups, _layerOptions, _mbMap } = get()
           const layerGroup = _layerGroups[layerGroupId]
 
@@ -682,7 +719,10 @@ export const useMapStore = create<State>()(
           )
         },
 
-        _addMbStyle: async (id: LayerGroupId, options: LayerGroupAddOptionsWithConf) => {
+        _addMbStyle: async (
+          id: LayerGroupId,
+          options: LayerGroupAddOptionsWithConf
+        ) => {
           const style = await options.layerConf.style()
           const layers: ExtendedAnyLayer[] = style.layers
           const sourceKeys = Object.keys(style.sources)
@@ -1141,7 +1181,7 @@ export const useMapStore = create<State>()(
       storage: createJSONStorage(() => sessionStorage), // (optional) by default the 'localStorage' is used
       partialize: (state: State) => ({
         _hydrationData: { activeLayerGroupIds: state.activeLayerGroupIds },
-        _customLayerConfs: state._customLayerConfs,
+        _persistingLayerGroupAddOptions: state._persistingLayerGroupAddOptions,
       }),
       onRehydrateStorage: (state) => {
         return (state, error) => {
