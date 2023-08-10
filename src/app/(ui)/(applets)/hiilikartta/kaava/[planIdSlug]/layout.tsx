@@ -3,7 +3,7 @@ import React, { useEffect } from 'react'
 
 import { useMapStore } from '#/common/store'
 
-import { useAppStore } from 'applets/hiilikartta/state/appStore'
+// import { useAppStore } from 'applets/hiilikartta/state/appStore'
 import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
 
 const Layout = ({ params, children }: { params: { planIdSlug: string }; children: React.ReactNode }) => {
