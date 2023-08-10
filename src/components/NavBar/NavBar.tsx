@@ -1,40 +1,15 @@
 'use client'
 
 import React from 'react'
-import { Box, Button } from '@mui/material'
+import { Box } from '@mui/material'
 import { styled } from '@mui/material/styles'
-import { T } from '@tolgee/react'
 
 import { useUIStore } from '#/common/store'
-
-// const openWindow = () => {
-//   const width = 500
-//   const height = 600
-//   const left = window.screen.width / 2 - width / 2
-//   const top = window.screen.height / 2 - height / 2
-
-//   const url = '/login' // replace with the actual Zitadel login URL
-//   const options = `
-//   toolbar=no,
-//   location=no,
-//   directories=no,
-//   status=no,
-//   menubar=no,
-//   scrollbars=no,
-//   resizable=no,
-//   width=${width},
-//   height=${height},
-//   top=${top},
-//   left=${left}
-// `
-
-//   window.open(url, '_blank', options)
-// }
+import UserButtons from './UserButtons'
 
 export const NavBar = () => {
-  // const { isLoggedIn }: any = React.useContext(UserStateContext)
   const isSidebarOpen = useUIStore((state) => state.isSidebarOpen)
-  const setIsLoginModalOpen = useUIStore((state) => state.setIsLoginModalOpen)
+
   return (
     <>
       {isSidebarOpen && (
@@ -56,9 +31,7 @@ export const NavBar = () => {
           })}
         >
           <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-            <Button sx={{ color: 'neutral.lighter', typography: 'h3' }} onClick={() => setIsLoginModalOpen(true)}>
-              <T keyName="navbar.login" />
-            </Button>
+            <UserButtons></UserButtons>
           </Box>
         </Box>
       )}
