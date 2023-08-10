@@ -21,12 +21,17 @@ const Layout = ({
   const fitBounds = useMapStore((state) => state.fitBounds)
 
   useEffect(() => {
+    const getAndFitBounds = async () => {
+      const bounds = await getSourceBounds(planLayerGroupId)
+      if (bounds) {
+        fitBounds(bounds, { duration: 2000, latExtra: 0.5, lonExtra: 0.5 })
+      }
+    }
+
     const planLayerGroupId = getPlanLayerGroupId(params.planIdSlug)
     enableSerializableLayerGroup(planLayerGroupId)
-    const bounds = getSourceBounds(planLayerGroupId)
-    if (bounds) {
-      fitBounds(bounds, { duration: 2000, latExtra: 0.5, lonExtra: 0.5 })
-    }
+
+    getAndFitBounds()
   }, [])
 
   // useEffect(() => {
