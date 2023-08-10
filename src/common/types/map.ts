@@ -37,6 +37,8 @@ export interface CustomLayerGroupAddOptions {
   isAddedBefore?: boolean
   neighboringLayerGroupId?: LayerGroupId | string
   isHidden?: boolean
+  persist?: boolean
+  mapContext?: MapContext
 }
 
 export interface LayerGroupAddOptions extends CustomLayerGroupAddOptions {
@@ -100,7 +102,10 @@ export const layerTypes: readonly string[] = [
 
 export type LayerType = (typeof layerTypes)[number] | 'invalid'
 
-export type OverlayMessage = { message: string | null; layerGroupId: LayerGroupId }
+export type OverlayMessage = {
+  message: string | null
+  layerGroupId: LayerGroupId
+}
 
 export type MapLibraryMode = 'hybrid' | 'mapbox'
 
