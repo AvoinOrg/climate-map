@@ -64,7 +64,7 @@ export type Vars = {
   activeLayerGroupIds: string[]
   // Whether user has activated drawing mode
   isDrawEnabled: boolean
-  mapContext: string
+  mapContext: MapContext
   // The below are internal variables.
   // isMapReady is after the internal map object is ready to be interacted with,
   // but before the map functions are ready to be used by external components.
@@ -379,6 +379,7 @@ export const useMapStore = create<State>()(
               _addMbStyle,
               _persistingLayerGroupAddOptions,
               _addPersistingLayerGroupAddOptions,
+              mapContext,
             } = get()
 
             // Initialize layer if it doesn't exist
@@ -399,6 +400,9 @@ export const useMapStore = create<State>()(
             }
 
             if (opts.layerConf) {
+              if (opts.mapContext == null) {
+                opts.mapContext = mapContext
+              }
               if (opts.layerConf.useMb == null || opts.layerConf.useMb) {
                 await _addMbStyleToMb(
                   layerGroupId,
