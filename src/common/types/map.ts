@@ -85,13 +85,13 @@ export type ExtendedMbStyle = MbStyle & {
 
 type BaseLayerConf = {
   id: string
-  style?: ExtendedMbStyle | (() => Promise<ExtendedMbStyle>)
+  style: ExtendedMbStyle | (() => Promise<ExtendedMbStyle>)
   useMb?: boolean
 }
 
 // SerializableLayerConf is used for hydration.
 export interface SerializableLayerConf extends BaseLayerConf {
-  style?: ExtendedMbStyle
+  style: ExtendedMbStyle
 }
 
 export interface LayerConf extends BaseLayerConf {
