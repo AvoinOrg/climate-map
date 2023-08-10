@@ -329,7 +329,6 @@ export const Map = ({ children }: Props) => {
     switch (mode) {
       case 'mapbox': {
         let newMbMap = initMbMap(viewSettings, false)
-        console.log(newMbMap)
         _setMbMap(newMbMap)
 
         mapLibraryRef.current = 'mapbox'
