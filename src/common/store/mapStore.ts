@@ -251,17 +251,17 @@ export const useMapStore = create<State>()(
         fn: (...args: A1) => Promise<any>,
         queueOptions?: QueueOptions
       ) => {
-        const queueableFn = (
+        const queueableFn = async (
           fnWithArgs: { fn: (...args: A1) => Promise<any>; args: A1 },
-          qOpts: QueueOptions
+          queueOptions: QueueOptions
         ) => {
           const { isLoaded, _addToFunctionQueue } = get()
 
-          if (!isLoaded && !qOpts.skipQueue) {
+          if (!isLoaded && !queueOptions.skipQueue) {
             return _addToFunctionQueue({
               fn: fnWithArgs.fn,
               args: fnWithArgs.args,
-              priority: qOpts.priority,
+              priority: queueOptions.priority,
             })
           }
 
@@ -293,7 +293,7 @@ export const useMapStore = create<State>()(
               qOpts.priority =
                 qArgs?.priority != null ? qArgs?.priority : qOpts.priority
             }
-            queueableFn({ fn: fn, args: fnArgs }, qOpts)
+            return queueableFn({ fn: fn, args: fnArgs }, qOpts)
           },
         }) as unknown as (...args: [...A1, ...A2]) => Promise<any>
       }
@@ -1072,10 +1072,12 @@ export const useMapStore = create<State>()(
 
             const callFuncs = async () => {
               await Promise.all(
-                functionsToCall.map((call) => {
+                functionsToCall.map(async (call) => {
                   try {
-                    // casting to any because TS can't infer the actual parameters of the function
-                    return call.fn(...call.args)
+                    const result = await call.fn(...call.args)
+                    if (call.promise != null) {
+                      call.promise.resolve(result)
+                    }
                   } catch (e) {
                     console.error(
                       "Couldn't run queued map function",
@@ -1083,20 +1085,18 @@ export const useMapStore = create<State>()(
                       call.args
                     )
                     console.error(e)
-                    call.promise.reject()
+                    call.promise.reject(new Error('Function execution failed'))
                     return null
                   }
                 })
               )
-
-              functionsToCall.forEach((call) => {
-                if (call.promise != null) {
-                  call.promise.resolve()
-                }
-              })
             }
 
-            await callFuncs()
+            try {
+              await callFuncs()
+            } catch (e) {
+              console.error('Error running the queued functions: ', e)
+            }
 
             return
           }
