@@ -1151,15 +1151,19 @@ export const useMapStore = create<State>()(
           }
         },
 
-        _addCustomLayerConf: (id: string, conf: LayerConfAnyId) => {
+        _addPersistingLayerGroupAddOptions: (
+          id: string,
+          customLayerGroupAddOptions: CustomLayerGroupAddOptions
+        ) => {
           set((state) => {
-            state._customLayerConfs[id] = conf
+            state._persistingLayerGroupAddOptions[id] =
+              customLayerGroupAddOptions
           })
         },
 
-        _removeCustomLayerConf: (id: string) => {
+        _removePersistingLayerGroupAddOptions: (id: string) => {
           set((state) => {
-            delete state._customLayerConfs[id]
+            delete state._persistingLayerGroupAddOptions[id]
           })
         },
 
