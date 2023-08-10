@@ -23,11 +23,14 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
     sources[layerGroupId] = {
       type: 'vector',
       scheme: 'tms',
-      tiles: [`${SERVER_URL}/gwc/service/tms/1.0.0/forest:${options.serverId}@EPSG:900913@pbf/{z}/{x}/{y}.pbf`],
+      tiles: [
+        `${SERVER_URL}/gwc/service/tms/1.0.0/forest:${options.serverId}@EPSG:900913@pbf/{z}/{x}/{y}.pbf`,
+      ],
       minzoom: options.minzoom,
       maxzoom: options.maxzoom,
       bounds: [19, 59, 32, 71], // Finland
-      attribution: '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
+      attribution:
+        '<a href="https://www.metsaan.fi">© Finnish Forest Centre</a>',
       promoteId: 'id',
     }
 
@@ -39,7 +42,9 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
         'source-layer': options.serverId,
         type: 'fill',
         paint: {
-          'fill-color': fiForestsAreaCO2FillColor(fiForestsCumulativeCO2eValueExpr),
+          'fill-color': fiForestsAreaCO2FillColor(
+            fiForestsCumulativeCO2eValueExpr
+          ),
           'fill-opacity': layerGroupId === 'parcel' ? 1 : fillOpacity,
         },
         ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
@@ -87,10 +92,16 @@ const getStyle = async (): Promise<ExtendedMbStyle> => {
                 'text-size': 20,
                 'symbol-placement': 'point',
                 'text-font': ['Open Sans Regular'],
-                'text-field': fiForestsTextfieldExpression(fiForestsCumulativeCO2eValueExpr),
+                'text-field': fiForestsTextfieldExpression(
+                  fiForestsCumulativeCO2eValueExpr
+                ),
               },
-              ...(options.layerMinzoom != null && { minzoom: options.layerMinzoom }),
-              ...(options.layerMaxzoom != null && { maxzoom: options.layerMaxzoom }),
+              ...(options.layerMinzoom != null && {
+                minzoom: options.layerMinzoom,
+              }),
+              ...(options.layerMaxzoom != null && {
+                maxzoom: options.layerMaxzoom,
+              }),
             },
           ]
         : []),
