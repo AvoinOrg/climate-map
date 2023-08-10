@@ -101,8 +101,14 @@ export type Vars = {
 
 export type Actions = {
   // Bounds of the source of a layer, e.g. the features in a geojson object
-  getSourceBounds: (sourceId: string) => LngLatBounds | null
-  getSourceJson: (id: string) => FeatureCollection | null
+  getSourceBounds: (
+    sourceId: string,
+    queueOptions?: QueueOptions
+  ) => Promise<LngLatBounds | null>
+  getSourceJson: (
+    id: string,
+    queueOptions?: QueueOptions
+  ) => Promise<FeatureCollection | null>
   addLayerGroup: (
     layerGroupId: LayerGroupId,
     options?: LayerGroupAddOptions,
@@ -305,7 +311,10 @@ export const useMapStore = create<State>()(
 
               let featureColl: FeatureCollection | null = null
 
-              const sourceFeatures = await getSourceJson(sourceId)
+              const sourceFeatures = await getSourceJson(sourceId, {
+                skipQueue: true,
+              })
+
               if (sourceFeatures) {
                 featureColl = sourceFeatures
               } else {
