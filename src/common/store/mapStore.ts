@@ -385,6 +385,10 @@ export const useMapStore = create<State>()(
             // Initialize layer if it doesn't exist
             let opts = options || {}
 
+            if (opts.mapContext == null) {
+              opts.mapContext = mapContext
+            }
+
             if (opts.persist) {
               _addPersistingLayerGroupAddOptions(layerGroupId, opts)
             }
@@ -400,9 +404,6 @@ export const useMapStore = create<State>()(
             }
 
             if (opts.layerConf) {
-              if (opts.mapContext == null) {
-                opts.mapContext = mapContext
-              }
               if (opts.layerConf.useMb == null || opts.layerConf.useMb) {
                 await _addMbStyleToMb(
                   layerGroupId,
