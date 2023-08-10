@@ -83,16 +83,18 @@ export type ExtendedMbStyle = MbStyle & {
   layers: ExtendedAnyLayer[]
 }
 
-export type SerializableLayerConf = {
+type BaseLayerConf = {
   id: string
-  style: ExtendedMbStyle
+  style?: ExtendedMbStyle | (() => Promise<ExtendedMbStyle>)
   useMb?: boolean
 }
 
-// popup is restricted to LayerConf, because
-//
-export interface LayerConf extends SerializableLayerConf {
-  id: LayerGroupId
+// SerializableLayerConf is used for hydration.
+export interface SerializableLayerConf extends BaseLayerConf {
+  style?: ExtendedMbStyle
+}
+
+export interface LayerConf extends BaseLayerConf {
   popup?: Popup
 }
 
