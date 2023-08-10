@@ -5,7 +5,14 @@ import WebGLVectorLayerRenderer from 'ol/renderer/webgl/VectorLayer'
 import { asArray } from 'ol/color'
 // import { packColor } from 'ol/renderer/webgl/shaders'
 import { Geometry, Position } from 'geojson'
-import { LayerType, layerTypes, LayerOpt, ExtendedAnyLayer } from '../types/map'
+import {
+  LayerType,
+  layerTypes,
+  LayerOpt,
+  ExtendedAnyLayer,
+  ExtendedMbStyleOrFn,
+  ExtendedMbStyle,
+} from '../types/map'
 
 export const fillOpacity = 0.65
 
@@ -133,7 +140,10 @@ export const getColorExpressionArrForValues = (values: any[]) => {
 }
 
 // NB: By using the '/' operator instead of '*', we get rid of float bugs like 1.2000000000004.
-export const roundToSignificantDigitsPosExpr = (n: number, expr: Expression) => [
+export const roundToSignificantDigitsPosExpr = (
+  n: number,
+  expr: Expression
+) => [
   // Multiply back by true scale
   '/',
   // Round to two significant digits:
@@ -156,12 +166,19 @@ export const getCombinedBounds = (features: MapboxGeoJSONFeature[]) => {
   })
 
   return coords.reduce(
-    ([a1, b1, c1, d1], [a2, b2, c2, d2]) => [Math.min(a1, a2), Math.min(b1, b2), Math.max(c1, c2), Math.max(d1, d2)],
+    ([a1, b1, c1, d1], [a2, b2, c2, d2]) => [
+      Math.min(a1, a2),
+      Math.min(b1, b2),
+      Math.max(c1, c2),
+      Math.max(d1, d2),
+    ],
     [999, 999, -999, -999] // fallback bounds
   )
 }
 
-export const getCoordinateFromGeometry = (geometry: Geometry): Position | null => {
+export const getCoordinateFromGeometry = (
+  geometry: Geometry
+): Position | null => {
   switch (geometry.type) {
     case 'Point':
       return geometry.coordinates as Position
@@ -182,7 +199,9 @@ export const getCoordinateFromGeometry = (geometry: Geometry): Position | null =
   }
 }
 
-export const positionToLngLatLike = (position: Position): mapboxgl.LngLatLike => {
+export const positionToLngLatLike = (
+  position: Position
+): mapboxgl.LngLatLike => {
   return { lng: position[0], lat: position[1] }
 }
 
@@ -193,7 +212,12 @@ export const getLayerType = (layerGroupId: string): LayerType => {
   }
 
   console.error(
-    'Invalid layer type: "' + suffix + '" for layer: ' + layerGroupId + '". Valid types are: ' + layerTypes.join(', ')
+    'Invalid layer type: "' +
+      suffix +
+      '" for layer: ' +
+      layerGroupId +
+      '". Valid types are: ' +
+      layerTypes.join(', ')
   )
   return 'invalid'
 }
@@ -201,7 +225,9 @@ export const getLayerType = (layerGroupId: string): LayerType => {
 export const getLayerName = (layerGroupId: string): LayerType => {
   const layerGroupIdSplitArr = layerGroupId.split('-')
   if (layerGroupIdSplitArr.length > 2) {
-    console.error('Invalid layer id. Only use hyphen ("-") to separate the LayerType-suffix from the rest of the id.')
+    console.error(
+      'Invalid layer id. Only use hyphen ("-") to separate the LayerType-suffix from the rest of the id.'
+    )
   }
 
   const name = layerGroupIdSplitArr.slice(0, -1).join('-')
@@ -212,11 +238,18 @@ export const getLayerName = (layerGroupId: string): LayerType => {
   return layerGroupId
 }
 
-export const assertValidHighlightingConf = (layerOpt: LayerOpt, layers: ExtendedAnyLayer[]) => {
+export const assertValidHighlightingConf = (
+  layerOpt: LayerOpt,
+  layers: ExtendedAnyLayer[]
+) => {
   if (layerOpt.layerType === 'fill') {
     if (layerOpt.selectable) {
       if (!layers.find((l: any) => l.id === layerOpt.name + '-highlighted')) {
-        console.error("Layer '" + layerOpt.name + "' is selectable but missing the corresponding highlighted layer.")
+        console.error(
+          "Layer '" +
+            layerOpt.name +
+            "' is selectable but missing the corresponding highlighted layer."
+        )
       }
     }
   }
