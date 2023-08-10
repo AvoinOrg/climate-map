@@ -352,6 +352,10 @@ export const useMapStore = create<State>()(
           )
         },
 
+        // TODO: The logic of this function is getting too complex. Now we have
+        // LayerConfs fetched from the common storage and LayerConfs supplied by the calling
+        // component. Solution:
+        // make "options" mandatory, and always supply a layerConf from the calling function.
         addLayerGroup: queueableFnInit(
           async (layerGroupId: LayerGroupId, options?: CustomLayerGroupAddOptions) => {
             const { _addMbStyleToMb, _addMbStyle, _customLayerConfs } = get()
