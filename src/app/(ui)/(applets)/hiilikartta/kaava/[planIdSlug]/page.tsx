@@ -38,7 +38,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
 
   const handleSubmit = async () => {
     if (planConf) {
-      const json = getSourceJson(getPlanLayerGroupId(planConf.id))
+      const json = await getSourceJson(getPlanLayerGroupId(planConf.id))
 
       const zip = new JSZip()
       zip.file('file', JSON.stringify(json))
