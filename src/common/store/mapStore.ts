@@ -242,11 +242,11 @@ export const useMapStore = create<State>()(
         A1 extends any[],
         A2 extends [queueOptions?: QueueOptions]
       >(
-        fn: (...args: A1) => Promise<void>,
+        fn: (...args: A1) => Promise<any>,
         queueOptions?: QueueOptions
       ) => {
         const queueableFn = (
-          fnWithArgs: { fn: (...args: A1) => Promise<void>; args: A1 },
+          fnWithArgs: { fn: (...args: A1) => Promise<any>; args: A1 },
           qOpts: QueueOptions
         ) => {
           const { isLoaded, _addToFunctionQueue } = get()
@@ -289,7 +289,7 @@ export const useMapStore = create<State>()(
             }
             queueableFn({ fn: fn, args: fnArgs }, qOpts)
           },
-        }) as unknown as (...args: [...A1, ...A2]) => Promise<void>
+        }) as unknown as (...args: [...A1, ...A2]) => Promise<any>
       }
 
       const actions: Actions = {
