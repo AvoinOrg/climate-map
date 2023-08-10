@@ -1168,11 +1168,36 @@ export const useMapStore = create<State>()(
         },
 
         _runHydrationActions: async () => {
-          const { _setIsHydrated, _hydrationData, enableCustomLayerGroup } = get()
+          const { _setIsHydrated, _hydrationData, enableCustomLayerGroup } =
+            get()
 
-          _hydrationData.activeLayerGroupIds.map((id) =>
-            enableCustomLayerGroup(id)
+          // clone for local mutating without updating the store
+          const activeLayerGroupIds = cloneDeep(
+            _hydrationData.activeLayerGroupIds
           )
+
+          Object.keys(_hydrationData.persistingLayerGroupAddOptions).forEach(
+            (key) => {
+              const opts = _hydrationData.persistingLayerGroupAddOptions[key]
+              opts.isHidden = true
+
+              if (activeLayerGroupIds.find((id) => id === key)) {
+                opts.isHidden = false
+
+                // remove from activeLayerGroupIds so it doesn't get enabled twice
+                activeLayerGroupIds.splice(
+                  activeLayerGroupIds.findIndex((id) => id === key),
+                  1
+                )
+              }
+
+              enableCustomLayerGroup(key, opts)
+            }
+          )
+
+          activeLayerGroupIds.map((id) => {
+            enableCustomLayerGroup(id)
+          })
 
           _setIsHydrated(true)
         },
