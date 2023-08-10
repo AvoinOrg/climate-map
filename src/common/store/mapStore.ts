@@ -395,16 +395,10 @@ export const useMapStore = create<State>()(
               opts.mapContext = mapContext
             }
 
-            console.log('addLayerGroup')
-
             if (opts.persist) {
-              console.log('fuck muna')
               _addPersistingLayerGroupAddOptions(layerGroupId, opts)
             }
             const { _persistingLayerGroupAddOptions } = get()
-
-            console.log(_persistingLayerGroupAddOptions)
-            console.log(JSON.stringify(_persistingLayerGroupAddOptions))
 
             if (!opts.layerConf) {
               opts = _persistingLayerGroupAddOptions[layerGroupId]
