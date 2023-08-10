@@ -32,8 +32,9 @@ export type LayerOpts = {
   [key: string]: LayerOpt
 }
 
-export interface CustomLayerGroupAddOptions {
-  layerConf?: LayerConfAnyId
+// Compatible with hydration.
+export interface SerializableLayerGroupAddOptions {
+  layerConf?: SerializableLayerConf
   isAddedBefore?: boolean
   neighboringLayerGroupId?: LayerGroupId | string
   isHidden?: boolean
@@ -41,8 +42,10 @@ export interface CustomLayerGroupAddOptions {
   mapContext?: MapContext
 }
 
-export interface LayerGroupAddOptions extends CustomLayerGroupAddOptions {
+// Not compatible with hydration. Includes a possible popup function within layerConf.
+export interface LayerGroupAddOptions extends SerializableLayerGroupAddOptions {
   layerConf?: LayerConf
+  persist?: false
 }
 
 export interface LayerGroupAddOptionsWithConf extends LayerGroupAddOptions {
@@ -80,15 +83,17 @@ export type ExtendedMbStyle = MbStyle & {
   layers: ExtendedAnyLayer[]
 }
 
-export type LayerConfAnyId = {
+export type SerializableLayerConf = {
   id: string
-  style: () => Promise<ExtendedMbStyle>
-  popup?: Popup
+  style: ExtendedMbStyle
   useMb?: boolean
 }
 
-export interface LayerConf extends LayerConfAnyId {
+// popup is restricted to LayerConf, because
+//
+export interface LayerConf extends SerializableLayerConf {
   id: LayerGroupId
+  popup?: Popup
 }
 
 // For checking if layer name adheres to LayerType, in runtime
