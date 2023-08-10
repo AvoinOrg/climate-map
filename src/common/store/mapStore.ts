@@ -39,6 +39,7 @@ import {
   LayerGroupAddOptionsWithConf,
   QueueOptions,
   MapContext,
+  LayerConf,
 } from '#/common/types/map'
 import { layerConfs } from '#/components/Map/Layers'
 
@@ -379,7 +380,7 @@ export const useMapStore = create<State>()(
         addLayerGroup: queueableFnInit(
           async (
             layerGroupId: LayerGroupId,
-            options?: SerializableLayerGroupAddOptions
+            options?: LayerGroupAddOptions | SerializableLayerGroupAddOptions
           ) => {
             const {
               _addMbStyleToMb,
@@ -406,7 +407,7 @@ export const useMapStore = create<State>()(
             }
 
             if (!opts.layerConf) {
-              opts.layerConf = layerConfs.find((el: SerializableLayerConf) => {
+              opts.layerConf = layerConfs.find((el: LayerConf) => {
                 return el.id === layerGroupId
               })
             }
