@@ -21,7 +21,7 @@ const Page = () => {
 
   const addPlanConf = useAppStore((state) => state.addPlanConf)
   const deletePlanConf = useAppStore((state) => state.deletePlanConf)
-  const addCustomLayerGroup = useMapStore((state) => state.addCustomLayerGroup)
+  const addSerializableLayerGroup = useMapStore((state) => state.addSerializableLayerGroup)
 
   const initializePlan = async () => {
     const colName = 'area_codes'
@@ -43,7 +43,7 @@ const Page = () => {
 
     try {
       const layerConf = createLayerConf(json, planConf.id, colName)
-      await addCustomLayerGroup(layerConf.id, { layerConf, persist: true })
+      await addSerializableLayerGroup(layerConf.id, { layerConf, persist: true })
     } catch (e) {
       deletePlanConf(planConf.id)
       console.error(e)

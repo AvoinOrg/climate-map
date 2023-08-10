@@ -25,7 +25,7 @@ import { Map as OlMap } from 'ol'
 
 import {
   LayerGroupId,
-  LayerConfAnyId,
+  SerializableLayerConf,
   LayerOpt,
   ExtendedAnyLayer,
   OverlayMessage,
@@ -35,7 +35,7 @@ import {
   QueueFunction,
   FunctionQueue,
   LayerGroupAddOptions,
-  CustomLayerGroupAddOptions,
+  SerializableLayerGroupAddOptions,
   LayerGroupAddOptionsWithConf,
   QueueOptions,
   MapContext,
@@ -83,11 +83,17 @@ export type Vars = {
   _layerGroups: Record<string, any>
   _layerOptions: Record<string, LayerOpt>
   // For persisting user customised or uploaded layer configurations.
-  _persistingLayerGroupAddOptions: Record<string, CustomLayerGroupAddOptions>
+  _persistingLayerGroupAddOptions: Record<
+    string,
+    SerializableLayerGroupAddOptions
+  >
   _isHydrated: boolean
   _hydrationData: {
     activeLayerGroupIds: string[]
-    persistingLayerGroupAddOptions: Record<string, CustomLayerGroupAddOptions>
+    persistingLayerGroupAddOptions: Record<
+      string,
+      SerializableLayerGroupAddOptions
+    >
   }
 }
 
@@ -111,19 +117,19 @@ export type Actions = {
   ) => Promise<void>
   // AnyLayerGroup allows adding layerGroups with custom ids,
   // e.g., uploaded custom layers with generated ids.
-  addCustomLayerGroup: (
+  addSerializableLayerGroup: (
     layerGroupIdString: string,
-    options?: CustomLayerGroupAddOptions
+    options?: SerializableLayerGroupAddOptions
   ) => Promise<void>
-  toggleCustomLayerGroup: (
+  toggleSerializableLayerGroup: (
     layerGroupIdString: string,
-    options?: CustomLayerGroupAddOptions
+    options?: SerializableLayerGroupAddOptions
   ) => Promise<void>
-  enableCustomLayerGroup: (
+  enableSerializableLayerGroup: (
     layerGroupIdString: string,
-    options?: CustomLayerGroupAddOptions
+    options?: SerializableLayerGroupAddOptions
   ) => Promise<void>
-  disableCustomLayerGroup: (layerGroupIdString: string) => Promise<void>
+  disableSerializableLayerGroup: (layerGroupIdString: string) => Promise<void>
   setLayoutProperty: (
     layer: string,
     name: string,
@@ -190,7 +196,7 @@ export type Actions = {
   _runHydrationActions: () => void
   _addPersistingLayerGroupAddOptions: (
     layerGroupId: string,
-    customLayerGroupAddOptions: CustomLayerGroupAddOptions
+    serializableLayerGroupAddOptions: SerializableLayerGroupAddOptions
   ) => void
   _removePersistingLayerGroupAddOptions: (layerGroupId: string) => void
 }
@@ -372,12 +378,12 @@ export const useMapStore = create<State>()(
         addLayerGroup: queueableFnInit(
           async (
             layerGroupId: LayerGroupId,
-            options?: CustomLayerGroupAddOptions
+            options?: SerializableLayerGroupAddOptions
           ) => {
             const {
               _addMbStyleToMb,
               _addMbStyle,
-              _persistingLayerGroupAddOptions,
+              // _persistingLayerGroupAddOptions,
               _addPersistingLayerGroupAddOptions,
               mapContext,
             } = get()
@@ -389,16 +395,23 @@ export const useMapStore = create<State>()(
               opts.mapContext = mapContext
             }
 
+            console.log('addLayerGroup')
+
             if (opts.persist) {
+              console.log('fuck muna')
               _addPersistingLayerGroupAddOptions(layerGroupId, opts)
             }
+            const { _persistingLayerGroupAddOptions } = get()
+
+            console.log(_persistingLayerGroupAddOptions)
+            console.log(JSON.stringify(_persistingLayerGroupAddOptions))
 
             if (!opts.layerConf) {
               opts = _persistingLayerGroupAddOptions[layerGroupId]
             }
 
             if (!opts.layerConf) {
-              opts.layerConf = layerConfs.find((el: LayerConfAnyId) => {
+              opts.layerConf = layerConfs.find((el: SerializableLayerConf) => {
                 return el.id === layerGroupId
               })
             }
@@ -471,9 +484,9 @@ export const useMapStore = create<State>()(
         },
 
         // these are used used for layers with dynamic ids
-        addCustomLayerGroup: async (
+        addSerializableLayerGroup: async (
           layerGroupIdString: string,
-          options?: CustomLayerGroupAddOptions
+          options?: SerializableLayerGroupAddOptions
         ) => {
           const { addLayerGroup } = get()
 
@@ -488,9 +501,9 @@ export const useMapStore = create<State>()(
           }
         },
 
-        toggleCustomLayerGroup: async (
+        toggleSerializableLayerGroup: async (
           layerGroupIdString: string,
-          options?: CustomLayerGroupAddOptions
+          options?: SerializableLayerGroupAddOptions
         ) => {
           const { toggleLayerGroup } = get()
 
@@ -505,9 +518,9 @@ export const useMapStore = create<State>()(
           }
         },
 
-        enableCustomLayerGroup: async (
+        enableSerializableLayerGroup: async (
           layerGroupIdString: string,
-          options?: CustomLayerGroupAddOptions
+          options?: SerializableLayerGroupAddOptions
         ) => {
           const { enableLayerGroup } = get()
 
@@ -522,7 +535,7 @@ export const useMapStore = create<State>()(
           }
         },
 
-        disableCustomLayerGroup: async (layerGroupIdString: string) => {
+        disableSerializableLayerGroup: async (layerGroupIdString: string) => {
           const { disableLayerGroup } = get()
 
           disableLayerGroup(layerGroupIdString as LayerGroupId)
@@ -1158,11 +1171,13 @@ export const useMapStore = create<State>()(
 
         _addPersistingLayerGroupAddOptions: (
           id: string,
-          customLayerGroupAddOptions: CustomLayerGroupAddOptions
+          serializableLayerGroupAddOptions: SerializableLayerGroupAddOptions
         ) => {
+          // TODO: Find a better fix for this, instead of casting to any
+          // For some reason immer doesn't like the Mapbox Source object type
           set((state) => {
             state._persistingLayerGroupAddOptions[id] =
-              customLayerGroupAddOptions
+              serializableLayerGroupAddOptions as any
           })
         },
 
@@ -1173,8 +1188,11 @@ export const useMapStore = create<State>()(
         },
 
         _runHydrationActions: async () => {
-          const { _setIsHydrated, _hydrationData, enableCustomLayerGroup } =
-            get()
+          const {
+            _setIsHydrated,
+            _hydrationData,
+            enableSerializableLayerGroup,
+          } = get()
 
           // clone for local mutating without updating the store
           const activeLayerGroupIds = cloneDeep(
@@ -1196,12 +1214,12 @@ export const useMapStore = create<State>()(
                 )
               }
 
-              enableCustomLayerGroup(key, opts)
+              enableSerializableLayerGroup(key, opts)
             }
           )
 
           activeLayerGroupIds.map((id) => {
-            enableCustomLayerGroup(id)
+            enableSerializableLayerGroup(id)
           })
 
           _setIsHydrated(true)
