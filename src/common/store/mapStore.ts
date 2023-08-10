@@ -293,71 +293,80 @@ export const useMapStore = create<State>()(
       }
 
       const actions: Actions = {
-        getSourceBounds: (sourceId: string): LngLatBounds | null => {
-          // Query source features for the specified source
-          try {
-            const { _mbMap, getSourceJson } = get()
+        getSourceBounds: queueableFnInit(
+          async (sourceId: string): Promise<LngLatBounds | null> => {
+            // Query source features for the specified source
+            try {
+              const { _mbMap, getSourceJson } = get()
 
-            if (!_mbMap) {
-              return null
-            }
+              if (!_mbMap) {
+                return null
+              }
 
-            let featureColl: FeatureCollection | null = null
+              let featureColl: FeatureCollection | null = null
 
-            const sourceFeatures = getSourceJson(sourceId)
-            if (sourceFeatures) {
-              featureColl = sourceFeatures
-            } else {
-              const features = _mbMap.querySourceFeatures(sourceId)
-
-              if (features.length > 0 && features[0].geometry) {
-                featureColl = { type: 'FeatureCollection', features: features }
+              const sourceFeatures = await getSourceJson(sourceId)
+              if (sourceFeatures) {
+                featureColl = sourceFeatures
               } else {
-                const source = _mbMap.getSource(sourceId)
-                // TODO: check the method of finding the set extent of a source in style. This method is probably deprecated.
-                //@ts-ignore
-                if (source && source.tileBounds && source.tileBounds.bounds) {
+                const features = _mbMap.querySourceFeatures(sourceId)
+
+                if (features.length > 0 && features[0].geometry) {
+                  featureColl = {
+                    type: 'FeatureCollection',
+                    features: features,
+                  }
+                } else {
+                  const source = _mbMap.getSource(sourceId)
+                  // TODO: check the method of finding the set extent of a source in style. This method is probably deprecated.
                   //@ts-ignore
-                  return source.tileBounds.bounds
+                  if (source && source.tileBounds && source.tileBounds.bounds) {
+                    //@ts-ignore
+                    return source.tileBounds.bounds
+                  }
                 }
               }
-            }
 
-            if (!featureColl) {
+              if (!featureColl) {
+                return null
+              }
+
+              const bbox = turfBbox(featureColl)
+
+              if (bbox.includes(Infinity) || bbox.includes(-Infinity)) {
+                return null
+              }
+              // Convert Turf.js bbox to Mapbox LngLatBounds
+              const bounds = new mapboxgl.LngLatBounds(
+                [bbox[0], bbox[1]], // [west, south] or [minX, minY]
+                [bbox[2], bbox[3]] // [east, north] or [maxX, maxY]
+              )
+
+              return bounds
+            } catch (e) {
+              console.error("Couldn't get source bounds")
+              console.error(e)
               return null
             }
+          },
+          { priority: QueuePriority.HIGH }
+        ),
 
-            const bbox = turfBbox(featureColl)
-
-            if (bbox.includes(Infinity) || bbox.includes(-Infinity)) {
-              return null
+        getSourceJson: queueableFnInit(
+          async (id: string): Promise<FeatureCollection | null> => {
+            try {
+              const { _mbMap } = get()
+              const geojson: FeatureCollection =
+                //@ts-ignore
+                _mbMap?.getSource(id)._options.data
+              return geojson
+            } catch (e) {
+              console.error(e)
             }
-            // Convert Turf.js bbox to Mapbox LngLatBounds
-            const bounds = new mapboxgl.LngLatBounds(
-              [bbox[0], bbox[1]], // [west, south] or [minX, minY]
-              [bbox[2], bbox[3]] // [east, north] or [maxX, maxY]
-            )
-
-            return bounds
-          } catch (e) {
-            console.error("Couldn't get source bounds")
-            console.error(e)
             return null
-          }
-        },
-
-        getSourceJson: (id: string) => {
-          try {
-            const { _mbMap } = get()
-            const geojson: FeatureCollection =
-              //@ts-ignore
-              _mbMap?.getSource(id)._options.data
-            return geojson
-          } catch (e) {
-            console.error(e)
-          }
-          return null
-        },
+          },
+          { priority: QueuePriority.LOW }
+        ),
 
         setMapLibraryMode: (mode: MapLibraryMode) => {
           set((state) => {
