@@ -46,6 +46,7 @@ import {
   getLayerName,
   getLayerType,
   assertValidHighlightingConf,
+  resolveMbStyle,
 } from '#/common/utils/map'
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
@@ -735,7 +736,8 @@ export const useMapStore = create<State>()(
           id: LayerGroupId,
           options: LayerGroupAddOptionsWithConf
         ) => {
-          const style = await options.layerConf.style()
+          const style = await resolveMbStyle(options.layerConf.style)
+
           const layers: ExtendedAnyLayer[] = style.layers
           const sourceKeys = Object.keys(style.sources)
 
@@ -844,7 +846,7 @@ export const useMapStore = create<State>()(
           } = get()
           const setIsMapPopupOpen = useUIStore.getState().setIsMapPopupOpen
 
-          const style = await options.layerConf.style()
+          const style = await resolveMbStyle(options.layerConf.style)
 
           let layerInsertId: string | null = null
 
