@@ -6,9 +6,17 @@ import { useMapStore } from '#/common/store'
 // import { useAppStore } from 'applets/hiilikartta/state/appStore'
 import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
 
-const Layout = ({ params, children }: { params: { planIdSlug: string }; children: React.ReactNode }) => {
+const Layout = ({
+  params,
+  children,
+}: {
+  params: { planIdSlug: string }
+  children: React.ReactNode
+}) => {
   // const planConf = useStore(useAppStore, (state) => state.planConfs)
-  const enableSerializableLayerGroup = useMapStore((state) => state.enableSerializableLayerGroup)
+  const enableSerializableLayerGroup = useMapStore(
+    (state) => state.enableSerializableLayerGroup
+  )
   const getSourceBounds = useMapStore((state) => state.getSourceBounds)
   const fitBounds = useMapStore((state) => state.fitBounds)
 
