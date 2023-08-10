@@ -358,7 +358,7 @@ export const useMapStore = create<State>()(
               return null
             }
           },
-          { priority: QueuePriority.HIGH }
+          { priority: QueuePriority.LOW }
         ),
 
         getSourceJson: queueableFnInit(
