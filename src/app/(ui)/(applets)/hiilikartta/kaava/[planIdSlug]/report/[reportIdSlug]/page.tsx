@@ -28,7 +28,7 @@ const Page = ({ params }: { params: { planIdSlug: string; reportIdSlug: string }
 
   // useEffect(() => {
   //   const planLayerGroupId = getPlanLayerGroupId(params.planIdSlug)
-  //   enableCustomLayerGroup(planLayerGroupId)
+  //   enableSerializableLayerGroup(planLayerGroupId)
   //   const bounds = getSourceBounds(planLayerGroupId)
   //   if (bounds) {
   //     fitBounds(bounds, { duration: 2000, latExtra: 0.5, lonExtra: 0.5 })
