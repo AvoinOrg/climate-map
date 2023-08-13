@@ -59,6 +59,8 @@ export interface LayerGroupAddOptionsWithConf extends LayerGroupAddOptions {
   layerConf: LayerConf
 }
 
+// TODO: Remove this enforced id names and the list of layerGroupConf imports.
+// Make functions submit their own layerGroupConfs.
 export type LayerGroupId =
   | 'building_energy_certs'
   | 'no2'
@@ -94,6 +96,7 @@ export type ExtendedMbStyleOrFn =
   | ExtendedMbStyle
   | (() => Promise<ExtendedMbStyle>)
 
+// TODO: Rename all these from layerConf to layerGroupConf
 type BaseLayerConf = {
   id: string
   style: ExtendedMbStyleOrFn
