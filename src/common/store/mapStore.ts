@@ -1221,25 +1221,49 @@ export const useMapStore = create<State>()(
 
           Object.keys(_hydrationData.persistingLayerGroupAddOptions).forEach(
             (key) => {
-              const opts = _hydrationData.persistingLayerGroupAddOptions[key]
-              opts.isHidden = true
+              try {
+                const opts = cloneDeep(
+                  _hydrationData.persistingLayerGroupAddOptions[key]
+                )
+                opts.isHidden = true
 
-              if (activeLayerGroupIds.find((id) => id === key)) {
-                opts.isHidden = false
+                if (activeLayerGroupIds.find((id) => id === key)) {
+                  opts.isHidden = false
 
-                // remove from activeLayerGroupIds so it doesn't get enabled twice
-                activeLayerGroupIds.splice(
-                  activeLayerGroupIds.findIndex((id) => id === key),
-                  1
+                  // remove from activeLayerGroupIds so it doesn't get enabled twice
+                  activeLayerGroupIds.splice(
+                    activeLayerGroupIds.findIndex((id) => id === key),
+
+                    1
+                  )
+                }
+
+                enableSerializableLayerGroup(key, opts, {
+                  priority: QueuePriority.HIGH,
+                })
+              } catch (e) {
+                console.error(
+                  'Error enabling custom layer group from storage: ',
+                  key,
+                  _hydrationData.persistingLayerGroupAddOptions[key],
+                  e
                 )
               }
-
-              enableSerializableLayerGroup(key, opts)
             }
           )
 
           activeLayerGroupIds.map((id) => {
-            enableSerializableLayerGroup(id)
+            try {
+              enableSerializableLayerGroup(id, undefined, {
+                priority: QueuePriority.HIGH,
+              })
+            } catch (e) {
+              console.error(
+                'Error enabling active layer group from storage: ',
+                id,
+                e
+              )
+            }
           })
 
           _setIsHydrated(true)
