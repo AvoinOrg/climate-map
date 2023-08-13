@@ -451,7 +451,7 @@ export const useMapStore = create<State>()(
               console.error('No layer config found for id: ' + layerGroupId)
             }
           },
-          { priority: QueuePriority.HIGH }
+          { priority: QueuePriority.MEDIUM_HIGH }
         ),
 
         enableLayerGroup: async (
