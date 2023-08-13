@@ -32,9 +32,8 @@ export type LayerOpts = {
   [key: string]: LayerOpt
 }
 
-// Compatible with hydration.
-export interface SerializableLayerGroupAddOptions {
-  layerConf?: SerializableLayerConf
+interface BaseLayerGroupAddOptions {
+  layerConf?: SerializableLayerConf | LayerConf
   isAddedBefore?: boolean
   neighboringLayerGroupId?: LayerGroupId | string
   isHidden?: boolean
@@ -42,8 +41,16 @@ export interface SerializableLayerGroupAddOptions {
   mapContext?: MapContext
 }
 
+// Compatible with hydration.
+export interface SerializableLayerGroupAddOptions
+  extends BaseLayerGroupAddOptions {
+  layerConf?: SerializableLayerConf
+}
+
 // Not compatible with hydration. Includes a possible popup function within layerConf.
-export interface LayerGroupAddOptions extends SerializableLayerGroupAddOptions {
+// TODO: Make layerConf required. Currently, it is optional because layerConf can be
+// imported by mapStore directly, which is not clean.
+export interface LayerGroupAddOptions extends BaseLayerGroupAddOptions {
   layerConf?: LayerConf
   persist?: false
 }
