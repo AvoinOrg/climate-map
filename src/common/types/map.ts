@@ -83,9 +83,13 @@ export type ExtendedMbStyle = MbStyle & {
   layers: ExtendedAnyLayer[]
 }
 
+export type ExtendedMbStyleOrFn =
+  | ExtendedMbStyle
+  | (() => Promise<ExtendedMbStyle>)
+
 type BaseLayerConf = {
   id: string
-  style: ExtendedMbStyle | (() => Promise<ExtendedMbStyle>)
+  style: ExtendedMbStyleOrFn
   useMb?: boolean
 }
 
