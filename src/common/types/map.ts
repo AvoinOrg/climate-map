@@ -116,10 +116,13 @@ export type OverlayMessage = {
 
 export type MapLibraryMode = 'hybrid' | 'mapbox'
 
+// Queue priority is used to determine the order in which functions are executed.
+// Low priority functions, such as layer styling, might depend on high priority functions.
 export enum QueuePriority {
-  LOW = 0,
-  MEDIUM = 1,
-  HIGH = 2,
+  LOW = 1, // layer styling, other stuff that can wait
+  MEDIUM = 2,
+  MEDIUM_HIGH = 3, // adding layers
+  HIGH = 4, // for hydration and other vital stuff
 }
 
 export interface PopupOpts {
