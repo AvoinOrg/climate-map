@@ -103,63 +103,68 @@ export type Actions = {
   // Bounds of the source of a layer, e.g. the features in a geojson object
   getSourceBounds: (
     sourceId: string,
-    queueOptions?: QueueOptions
+    _queueOptions?: QueueOptions
   ) => Promise<LngLatBounds | null>
   getSourceJson: (
     id: string,
-    queueOptions?: QueueOptions
+    _queueOptions?: QueueOptions
   ) => Promise<FeatureCollection | null>
   addLayerGroup: (
     layerGroupId: LayerGroupId,
     options?: LayerGroupAddOptions,
-    queueOptions?: QueueOptions
+    _queueOptions?: QueueOptions
   ) => Promise<void>
   enableLayerGroup: (
     layerGroupId: LayerGroupId,
-    options?: LayerGroupAddOptions
+    options?: LayerGroupAddOptions,
+    _queueOptions?: QueueOptions
   ) => Promise<void>
   disableLayerGroup: (layerGroupId: LayerGroupId) => Promise<void>
   toggleLayerGroup: (
     layerGroupId: LayerGroupId,
-    options?: LayerGroupAddOptions
+    options?: LayerGroupAddOptions,
+    _queueOptions?: QueueOptions
   ) => Promise<void>
   // AnyLayerGroup allows adding layerGroups with custom ids,
   // e.g., uploaded custom layers with generated ids.
   addSerializableLayerGroup: (
     layerGroupIdString: string,
-    options?: SerializableLayerGroupAddOptions
+    options?: SerializableLayerGroupAddOptions,
+    _queueOptions?: QueueOptions
   ) => Promise<void>
   toggleSerializableLayerGroup: (
     layerGroupIdString: string,
-    options?: SerializableLayerGroupAddOptions
+    options?: SerializableLayerGroupAddOptions,
+    _queueOptions?: QueueOptions
   ) => Promise<void>
   enableSerializableLayerGroup: (
     layerGroupIdString: string,
-    options?: SerializableLayerGroupAddOptions
+    options?: SerializableLayerGroupAddOptions,
+    _queueOptions?: QueueOptions
   ) => Promise<void>
   disableSerializableLayerGroup: (layerGroupIdString: string) => Promise<void>
   setLayoutProperty: (
     layer: string,
     name: string,
     value: any,
-    queueOptions?: QueueOptions
+    _queueOptions?: QueueOptions
   ) => Promise<void>
   setPaintProperty: (
     layer: string,
     name: string,
     value: any,
-    queueOptions?: QueueOptions
+    _queueOptions?: QueueOptions
   ) => Promise<void>
   // Only show specific features in a layer
   setFilter: (
     layer: string,
     filter: any[],
-    queueOptions?: QueueOptions
+    _queueOptions?: QueueOptions
   ) => Promise<void>
   setOverlayMessage: (
     condition: boolean,
     message: OverlayMessage,
-    queueOptions?: QueueOptions
+    _queueOptions?: QueueOptions
   ) => Promise<void>
   fitBounds: (
     bbox: number[] | LngLatBounds,
