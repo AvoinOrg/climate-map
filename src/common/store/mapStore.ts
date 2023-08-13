@@ -473,7 +473,7 @@ export const useMapStore = create<State>()(
         disableLayerGroup: async (layerGroupId: LayerGroupId) => {
           const { _setGroupVisibility, activeLayerGroupIds } = get()
 
-          if (activeLayerGroupIds.includes(layerGroupId)) {
+          if (!activeLayerGroupIds.includes(layerGroupId)) {
             throw new Error(
               "Unable to disable layer group that isn't enabled: " +
                 layerGroupId

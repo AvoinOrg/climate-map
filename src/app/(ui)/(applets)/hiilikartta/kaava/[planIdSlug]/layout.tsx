@@ -17,6 +17,9 @@ const Layout = ({
   const enableSerializableLayerGroup = useMapStore(
     (state) => state.enableSerializableLayerGroup
   )
+  const disableSerializableLayerGroup = useMapStore(
+    (state) => state.disableSerializableLayerGroup
+  )
   const getSourceBounds = useMapStore((state) => state.getSourceBounds)
   const fitBounds = useMapStore((state) => state.fitBounds)
 
@@ -32,6 +35,14 @@ const Layout = ({
     enableSerializableLayerGroup(planLayerGroupId)
 
     getAndFitBounds()
+
+    return () => {
+      try {
+        disableSerializableLayerGroup(planLayerGroupId)
+      } catch (e) {
+        // if it fails, the layer is (most likely) already disabled/removed
+      }
+    }
   }, [])
 
   // useEffect(() => {
