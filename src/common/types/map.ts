@@ -17,7 +17,15 @@ export type SourceType =
   | 'video'
   | 'canvas'
 
-export type LayerOpt = {
+export type LayerGroupOptions = {
+  id: string
+  mapContext: MapContext
+  isHidden: boolean
+  persist: boolean
+  layers: LayerOptionsObj
+}
+
+export type LayerOptions = {
   id: string
   source: string
   name: string
@@ -28,8 +36,8 @@ export type LayerOpt = {
   useMb: boolean
 }
 
-export type LayerOpts = {
-  [key: string]: LayerOpt
+export type LayerOptionsObj = {
+  [key: string]: LayerOptions
 }
 
 interface BaseLayerGroupAddOptions {
