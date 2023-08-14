@@ -459,6 +459,7 @@ export const useMapStore = create<State>()(
           options?: LayerGroupAddOptions
         ) => {
           const { _layerGroups, _setGroupVisibility, addLayerGroup } = get()
+
           if (_layerGroups[layerGroupId]) {
             _setGroupVisibility(layerGroupId, true)
 
