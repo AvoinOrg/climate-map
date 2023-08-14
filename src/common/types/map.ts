@@ -33,12 +33,12 @@ export type LayerOpts = {
 }
 
 interface BaseLayerGroupAddOptions {
+  mapContext: MapContext
   layerConf?: SerializableLayerConf | LayerConf
   isAddedBefore?: boolean
   neighboringLayerGroupId?: LayerGroupId | string
   isHidden?: boolean
   persist?: boolean
-  mapContext?: MapContext
 }
 
 // Compatible with hydration.
@@ -56,7 +56,7 @@ export interface LayerGroupAddOptions extends BaseLayerGroupAddOptions {
 }
 
 export interface LayerGroupAddOptionsWithConf extends LayerGroupAddOptions {
-  layerConf: LayerConf
+  layerConf: LayerConf | SerializableLayerConf
 }
 
 // TODO: Remove this enforced id names and the list of layerGroupConf imports.
