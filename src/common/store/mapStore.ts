@@ -1268,6 +1268,13 @@ export const useMapStore = create<State>()(
           })
 
           _setIsHydrated(true)
+
+          set((state) => {
+            state._hydrationData = {
+              activeLayerGroupIds: [],
+              persistingLayerGroupAddOptions: {},
+            }
+          })
         },
       }
 
