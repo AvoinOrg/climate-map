@@ -173,4 +173,4 @@ export type FunctionQueue = (QueueFunction & {
   promise: { resolve: any; reject: any }
 })[]
 
-export type MapContext = 'main' | string
+export type MapContext = 'main' | 'any' | string
