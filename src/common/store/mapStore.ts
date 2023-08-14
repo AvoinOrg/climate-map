@@ -82,8 +82,8 @@ export type Vars = {
   // openlayers map object
   _olMap: OlMap | null
   // A single UI layer has often multiple layers which are grouped together.
-  _layerGroups: Record<string, any>
-  _layerOptions: Record<string, LayerOpt>
+  // For quickly access a layer group by its id.
+  _layerInstances: Record<string, AnyLayer>
   // For persisting user customised or uploaded layer configurations.
   _persistingLayerGroupAddOptions: Record<
     string,
@@ -239,7 +239,7 @@ export const useMapStore = create<State>()(
         _mbMap: null,
         _olMap: null,
         _layerGroups: {},
-        _layerOptions: {},
+        _layerInstances: {},
         _isHydrated: false,
         _persistingLayerGroupAddOptions: {},
         _hydrationData: {
@@ -934,8 +934,7 @@ export const useMapStore = create<State>()(
               assertValidHighlightingConf(layerOpt, style.layers)
 
               set((state) => {
-                state._layerOptions[layerOpt.id] = layerOpt
-                layerGroup[layer.id] = layer
+                state._layerInstances[layer.id] = layer
               })
 
               // if layerInsertId is null, this is the first layer to be added
