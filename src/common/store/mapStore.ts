@@ -991,9 +991,12 @@ export const useMapStore = create<State>()(
             if (!options.isHidden) {
               set((state) => {
                 state.activeLayerGroupIds.push(id)
-                state._layerGroups[id] = layerGroup
               })
             }
+
+            set((state) => {
+              state._layerGroups[id] = layerGroup
+            })
           } catch (e: any) {
             if (!e.message.includes('There is already a source')) {
               console.error(e)
