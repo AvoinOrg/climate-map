@@ -1,9 +1,9 @@
 import { Expression } from 'mapbox-gl'
 
-import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
+import { LayerGroupId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 import { fillOpacity } from '#/common/utils/map'
 
-const id: LayerId = 'metsaan_ete_basic'
+const id: LayerGroupId = 'metsaan_ete_basic'
 
 const eteBasicLabels: Expression = [
   'match',

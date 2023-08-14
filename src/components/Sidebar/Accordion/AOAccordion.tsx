@@ -6,7 +6,7 @@ import React from 'react'
 import Link from 'next/link'
 
 import { useMapStore } from '#/common/store'
-import { LayerId } from '#/common/types/map'
+import { LayerGroupId } from '#/common/types/map'
 
 const styles = {
   heading: {
@@ -18,13 +18,13 @@ const styles = {
 }
 
 interface AOAccordionProps {
-  layerId: LayerId
+  layerGroupId: LayerGroupId
   label: string
   content?: any
   panelProps?: any
 }
 
-export const AOAccordion = ({ layerId, label, content, panelProps }: AOAccordionProps) => {
+export const AOAccordion = ({ layerGroupId, label, content, panelProps }: AOAccordionProps) => {
   const activeLayerGroupIds = useMapStore((state) => state.activeLayerGroupIds)
   const toggleLayerGroup = useMapStore((state) => state.toggleLayerGroup)
   // const groupEnabled = layerGroups.filter((x) => x.name === groupName).length > 0
@@ -37,12 +37,12 @@ export const AOAccordion = ({ layerId, label, content, panelProps }: AOAccordion
             event.stopPropagation()
           }}
           onChange={(_event) => {
-            toggleLayerGroup(layerId)
+            toggleLayerGroup(layerGroupId)
           }}
           onFocus={(event) => event.stopPropagation()}
           control={<Checkbox />}
           label={label}
-          checked={activeLayerGroupIds.includes(layerId)}
+          checked={activeLayerGroupIds.includes(layerGroupId)}
         />
         {/* <Typography className={classes.heading}>{label}</Typography> */}
       </AccordionSummary>
@@ -85,12 +85,12 @@ export const AOProfileAccordion = ({ onClick, label }: any) => {
 }
 
 interface LayerToggleControlProps {
-  layerId: LayerId
+  layerGroupId: LayerGroupId
   label: string
 }
 
 // TODO: toggle state to local storage?
-export const LayerToggleControl = ({ layerId, label }: LayerToggleControlProps) => {
+export const LayerToggleControl = ({ layerGroupId, label }: LayerToggleControlProps) => {
   const activeLayerGroupIds = useMapStore((state) => state.activeLayerGroupIds)
   const toggleLayerGroup = useMapStore((state) => state.toggleLayerGroup)
 
@@ -106,12 +106,12 @@ export const LayerToggleControl = ({ layerId, label }: LayerToggleControlProps) 
         event.stopPropagation()
       }}
       onChange={(_event) => {
-        toggleLayerGroup(layerId)
+        toggleLayerGroup(layerGroupId)
       }}
       onFocus={(event) => event.stopPropagation()}
       control={<Checkbox />}
       label={label}
-      checked={activeLayerGroupIds.includes(layerId)}
+      checked={activeLayerGroupIds.includes(layerGroupId)}
     />
   )
 }

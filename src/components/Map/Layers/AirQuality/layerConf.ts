@@ -1,8 +1,8 @@
 "use client"
 
-import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
+import { LayerGroupId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 
-const id: LayerId = 'no2'
+const id: LayerGroupId = 'no2'
 
 // TODO: Figure out what the tilesets are, and how the timestampHour affects the tiles
 // const no2Tileset = Number.parseInt(window.location.search.substring(1), 10) || 0

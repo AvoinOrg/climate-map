@@ -1,6 +1,6 @@
-import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
+import { LayerGroupId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 
-const id: LayerId = 'cifor_peatdepth'
+const id: LayerGroupId = 'cifor_peatdepth'
 
 const getStyle = async (): Promise<ExtendedMbStyle> => {
   return {

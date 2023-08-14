@@ -1,13 +1,21 @@
 import { Style as MbStyle, AnyLayer, MapboxGeoJSONFeature } from 'mapbox-gl'
 import Feature from 'ol/Feature'
 import { ReactNode } from 'react'
+
+import { Actions as MapStoreActions } from '#/common/store/mapStore'
 // interface mapFunctions {}
 
 export type PopupProps = { features: PopupFeature[] }
 
 export type Popup = (props: PopupProps) => ReactNode
 
-export type SourceType = 'geojson' | 'vector' | 'raster' | 'image' | 'video' | 'canvas'
+export type SourceType =
+  | 'geojson'
+  | 'vector'
+  | 'raster'
+  | 'image'
+  | 'video'
+  | 'canvas'
 
 export type LayerOpt = {
   id: string
@@ -24,7 +32,36 @@ export type LayerOpts = {
   [key: string]: LayerOpt
 }
 
-export type LayerId =
+interface BaseLayerGroupAddOptions {
+  layerConf?: SerializableLayerConf | LayerConf
+  isAddedBefore?: boolean
+  neighboringLayerGroupId?: LayerGroupId | string
+  isHidden?: boolean
+  persist?: boolean
+  mapContext?: MapContext
+}
+
+// Compatible with hydration.
+export interface SerializableLayerGroupAddOptions
+  extends BaseLayerGroupAddOptions {
+  layerConf?: SerializableLayerConf
+}
+
+// Not compatible with hydration. Includes a possible popup function within layerConf.
+// TODO: Make layerConf required. Currently, it is optional because layerConf can be
+// imported by mapStore directly, which is not clean.
+export interface LayerGroupAddOptions extends BaseLayerGroupAddOptions {
+  layerConf?: LayerConf
+  persist?: false
+}
+
+export interface LayerGroupAddOptionsWithConf extends LayerGroupAddOptions {
+  layerConf: LayerConf
+}
+
+// TODO: Remove this enforced id names and the list of layerGroupConf imports.
+// Make functions submit their own layerGroupConfs.
+export type LayerGroupId =
   | 'building_energy_certs'
   | 'no2'
   | 'snow_cover_loss'
@@ -43,6 +80,7 @@ export type LayerId =
   | 'mangrove_forests'
   | 'gfw_tree_plantations'
   | 'fi_forests'
+  | 'terramonitor'
 
 export type ExtendedAnyLayer = AnyLayer & {
   source: string
@@ -54,30 +92,51 @@ export type ExtendedMbStyle = MbStyle & {
   layers: ExtendedAnyLayer[]
 }
 
-export type LayerConfAnyId = {
+export type ExtendedMbStyleOrFn =
+  | ExtendedMbStyle
+  | (() => Promise<ExtendedMbStyle>)
+
+// TODO: Rename all these from layerConf to layerGroupConf
+type BaseLayerConf = {
   id: string
-  style: () => Promise<ExtendedMbStyle>
-  popup?: Popup
+  style: ExtendedMbStyleOrFn
   useMb?: boolean
 }
 
-export interface LayerConf extends LayerConfAnyId {
-  id: LayerId
+// SerializableLayerConf is used for hydration.
+export interface SerializableLayerConf extends BaseLayerConf {
+  style: ExtendedMbStyle
+}
+
+export interface LayerConf extends BaseLayerConf {
+  popup?: Popup
 }
 
 // For checking if layer name adheres to LayerType, in runtime
-export const layerTypes: readonly string[] = ['fill', 'highlighted', 'outline', 'symbol', 'raster']
+export const layerTypes: readonly string[] = [
+  'fill',
+  'highlighted',
+  'outline',
+  'symbol',
+  'raster',
+]
 
 export type LayerType = (typeof layerTypes)[number] | 'invalid'
 
-export type OverlayMessage = { message: string | null; layerGroupId: LayerId }
+export type OverlayMessage = {
+  message: string | null
+  layerGroupId: LayerGroupId
+}
 
 export type MapLibraryMode = 'hybrid' | 'mapbox'
 
+// Queue priority is used to determine the order in which functions are executed.
+// Low priority functions, such as layer styling, might depend on high priority functions.
 export enum QueuePriority {
-  LOW = 0,
-  MEDIUM = 1,
-  HIGH = 2,
+  LOW = 1, // layer styling, other stuff that can wait
+  MEDIUM = 2,
+  MEDIUM_HIGH = 3, // adding layers
+  HIGH = 4, // for hydration and other vital stuff
 }
 
 export interface PopupOpts {
@@ -97,6 +156,21 @@ export interface ILayerOption {
   layerMaxzoom?: number | null
 }
 
-export type QueueFunction = { funcName: string; args: any[]; priority?: QueuePriority }
+export type QueueOptions = {
+  skipQueue?: boolean
+  priority?: QueuePriority
+}
 
-export type FunctionQueue = (QueueFunction & { promise: { resolve: any; reject: any } })[]
+export type QueueFunctionFuncName = keyof MapStoreActions
+
+export type QueueFunction = {
+  fn: (...args: any) => Promise<void>
+  args: any[]
+  priority?: QueuePriority
+}
+
+export type FunctionQueue = (QueueFunction & {
+  promise: { resolve: any; reject: any }
+})[]
+
+export type MapContext = 'main' | string

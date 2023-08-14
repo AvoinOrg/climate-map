@@ -1,17 +1,26 @@
-import { createTheme } from '@mui/material/styles'
+import { createTheme, Shadows, ThemeOptions } from '@mui/material/styles'
 import { TypographyOptions } from '@mui/material/styles/createTypography'
-import { Roboto, Raleway } from '@next/font/google'
+import { Arimo } from '@next/font/google'
 import '@mui/material/styles/createPalette'
 
 //extending palette to add background color
+
 declare module '@mui/material/styles/createPalette' {
+  interface PaletteColor {
+    lighter?: string
+    darker?: string
+  }
+
+  interface SimplePaletteColorOptions {
+    lighter?: string
+    darker?: string
+  }
+
   interface Palette {
-    tertiary: PaletteColor
-    quaternary: PaletteColor
+    neutral: PaletteColor
   }
   interface PaletteOptions {
-    tertiary: PaletteColorOptions
-    quaternary: PaletteColorOptions
+    neutral: PaletteColorOptions
   }
 }
 
@@ -24,6 +33,14 @@ declare module '@mui/material/styles' {
   interface TypographyVariantsOptions {
     buttonSmall?: React.CSSProperties
   }
+
+  interface ZIndex {
+    popup: number
+  }
+
+  interface ThemeOptions {
+    zIndex?: Partial<ZIndex> | undefined
+  }
 }
 
 declare module '@mui/material/Typography' {
@@ -32,27 +49,21 @@ declare module '@mui/material/Typography' {
   }
 }
 
-export const roboto = Roboto({
-  weight: ['300', '400', '500', '700'],
-  subsets: ['latin'],
-  display: 'swap',
-  fallback: [
-    'BlinkMacSystemFont',
-    'Segoe UI',
-    'Oxygen',
-    'Ubuntu',
-    'Cantarell',
-    'Fira Sans',
-    'Droid Sans',
-    'Helvetica Neue',
-  ],
-})
+declare module '@mui/material/styles/createTypography' {
+  interface TypographyOptions {
+    h7?: React.CSSProperties
+    body7?: React.CSSProperties
+  }
+}
 
-export const raleway = Raleway({
-  weight: ['500', '700'],
+const defaultTheme = createTheme()
+
+export const arimo = Arimo({
+  weight: ['400', '500', '700'],
   subsets: ['latin'],
   display: 'swap',
   fallback: [
+    'Arial',
     'BlinkMacSystemFont',
     'Segoe UI',
     'Oxygen',
@@ -65,19 +76,22 @@ export const raleway = Raleway({
 })
 
 const palette = {
-  primary: { main: '#0B2027' },
-  secondary: { main: 'rgba(175, 178, 154, 0.5)', dark: '#AFB29A', light: 'rgba(246, 244, 244, 1)' },
-  tertiary: {
-    main: '#D3DBD8',
-    light: '#F5FBEF',
+  primary: {
+    main: '#C7C9B8',
+    dark: '#AFB29A',
+    light: '#D7D9CC',
+    lighter: '#EBECE6',
+  },
+  secondary: { dark: '#274AFF', main: '#5d77ff', light: '#b3bfff' },
+  neutral: {
+    main: '#D9D9D9',
+    light: '#F6F4F4',
     dark: '#A0A0A0',
+    darker: '#000000',
+    lighter: '#FFFFFF',
   },
-  quaternary: {
-    main: '#F4F4F4',
-    light: '#FFFFFF',
-  },
-  info: { main: '#EEA243' },
-  warning: { main: '#F5FBEF' },
+  info: { dark: '#EA7101', main: '#F09C4D' },
+  warning: { main: '#EA7101' },
 }
 
 const shape = {
@@ -85,99 +99,99 @@ const shape = {
 }
 
 const zIndex = {
-  modal: 1200,
-  snackbar: 1400,
-  drawer: 1100,
-  appBar: 1300,
+  modal: 1500,
+  snackbar: 1600,
+  drawer: 1400,
+  appBar: 1400,
   mobileStepper: 1000,
-  tooltip: 1500,
+  popup: 1500,
+  tooltip: 1450,
 }
 
 const fonts = {
-  0: roboto.style.fontFamily,
-  1: raleway.style.fontFamily,
+  primary: arimo.style.fontFamily,
 }
 
 const typography: TypographyOptions = {
+  fontFamily: fonts.primary,
   body1: {
-    fontFamily: fonts[0],
+    fontFamily: fonts.primary,
+    fontSize: '0.875rem',
+    fontWeight: 700,
+    lineHeight: 'normal',
+    letterSpacing: '0.0875rem',
   },
   body2: {
-    fontFamily: fonts[1],
-  },
-  h1: {
-    color: 'rgba(0, 0, 0, 0.87)',
-    fontFamily: fonts[0],
-    lineHeight: '1.35417em',
-    fontSize: '1.5rem',
+    fontFamily: fonts.primary,
+    fontSize: '0.875rem',
     fontWeight: 400,
+    lineHeight: 'normal',
+    letterSpacing: '0.0875rem',
   },
-  button: {
-    textTransform: 'none',
-    color: 'rgba(0, 0, 0, 0.87)',
-    fontFamily: fonts[0],
-    fontSize: '1rem',
-    fontWeight: 500,
-  },
-  buttonSmall: {
-    textTransform: 'none',
-    color: 'rgba(0, 0, 0, 0.87)',
-    fontFamily: fonts[0],
-    fontSize: '1rem',
-    fontWeight: 500,
-  },
-  caption: {
-    color: 'rgba(0, 0, 0, 0.54)',
-    fontFamily: fonts[0],
-    lineHeight: '1.375em',
+  body7: {
+    fontFamily: fonts.primary,
     fontSize: '0.75rem',
     fontWeight: 400,
+    lineHeight: 'normal',
+    letterSpacing: '0.075rem',
+  },
+  h1: {
+    fontFamily: fonts.primary,
+    fontSize: '1.5rem',
+    fontWeight: 700,
+    lineHeight: 'normal',
+    letterSpacing: '0.15rem',
   },
   h2: {
-    color: 'rgba(0, 0, 0, 0.87)',
-    fontFamily: fonts[0],
-    lineHeight: '1.16667em',
-    fontSize: '1.3125rem',
+    fontFamily: fonts.primary,
+    fontSize: '1.125rem',
     fontWeight: 700,
-    letterSpacing: '0.1em',
+    lineHeight: 'normal',
+    letterSpacing: '0.1125rem',
   },
   h3: {
-    color: 'rgba(0, 0, 0, 0.87)',
-    fontFamily: fonts[0],
-    lineHeight: '1.16667em',
-    fontSize: '1.3125rem',
+    fontFamily: fonts.primary,
+    fontSize: '1rem',
     fontWeight: 700,
-    letterSpacing: '0.1em',
+    lineHeight: '1.625rem',
+    letterSpacing: '0.1rem',
   },
-
   h4: {
-    color: 'rgba(0, 0, 0, 0.87)',
-    fontFamily: fonts[0],
-    lineHeight: '1.5em',
-    fontSize: '1.2rem',
-    fontWeight: 700,
-    letterSpacing: '0.1em',
+    fontFamily: fonts.primary,
+    fontSize: '1rem',
+    fontWeight: 400,
+    lineHeight: '1.625rem',
+    letterSpacing: '0.1rem',
   },
-
   h5: {
-    color: 'rgba(0, 0, 0, 0.87)',
-    fontFamily: fonts[0],
-    lineHeight: '1.5em',
-    fontSize: '1.1rem',
-    fontWeight: 500,
-    letterSpacing: '0.1em',
+    fontFamily: fonts.primary,
+    fontSize: '1rem',
+    fontWeight: 400,
+    lineHeight: 'normal',
+    letterSpacing: '0.1rem',
+    textDecoration: 'underline',
   },
-
   h6: {
-    color: 'rgba(0, 0, 0, 0.87)',
-    fontFamily: fonts[0],
-    lineHeight: '1.5em',
-    fontSize: '1.0rem',
-    fontWeight: 700,
-    letterSpacing: '0.1em',
+    fontFamily: fonts.primary,
+    fontSize: '0.875rem',
+    fontWeight: 400,
+    lineHeight: 'normal',
+    letterSpacing: '0.0875rem',
+    textDecoration: 'underline',
   },
-  fontFamily: fonts[0],
+  // Adding additional typography options for h8 and body7
+  h7: {
+    fontFamily: fonts.primary,
+    fontSize: '0.875rem',
+    fontWeight: 700,
+    lineHeight: 'normal',
+    letterSpacing: '0.0875rem',
+  },
 }
+
+const defaultShadows: ThemeOptions['shadows'] = [...defaultTheme.shadows]
+
+const shadows = defaultShadows.map(() => 'none') as Shadows
 
 const components = {
   MuiTableRow: {
@@ -189,6 +203,61 @@ const components = {
       },
     },
   },
+  MuiButton: {
+    variants: [
+      {
+        props: { variant: 'contained' },
+        style: {
+          backgroundColor: palette.neutral.light, // Replace with your desired color for the button
+          borderColor: palette.neutral.main,
+          color: palette.neutral.darker,
+        },
+      },
+      {
+        props: { variant: 'outlined' },
+        style: {
+          backgroundColor: palette.neutral.light, // Replace with your desired color for the button
+          borderColor: palette.neutral.main,
+          color: palette.neutral.darker,
+          boxShadow: '1px 1px 7px 0px #EEECEC',
+        },
+      },
+    ],
+    styleOverrides: {
+      root: {
+        textTransform: 'none',
+      },
+    },
+  } as const,
+  MuiCssBaseline: {
+    styleOverrides: {
+      '*': {
+        scrollbarWidth: 'thin',
+        scrollbarColor: 'transparent transparent',
+        '&::-webkit-scrollbar': {
+          width: '10px',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: 'transparent',
+        },
+        '&:hover': {
+          scrollbarColor: `${palette.neutral.darker} ${palette.neutral.dark}`,
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: palette.neutral.dark,
+          },
+        },
+        boxSizing: 'border-box',
+        borderCollapse: 'collapse',
+      },
+    },
+  },
 }
 
-export default createTheme({ palette, components, typography, zIndex, shape })
+export default createTheme({
+  palette,
+  components,
+  typography,
+  zIndex,
+  shape,
+  shadows,
+})

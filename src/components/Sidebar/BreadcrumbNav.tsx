@@ -37,7 +37,7 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
         sx={(theme) => ({
           display: 'inline-block',
           typography: theme.typography.subtitle1,
-          color: theme.palette.primary.main,
+          color: 'neutral.darker',
         })}
       >
         {name}
@@ -52,7 +52,7 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
         flexDirection: 'row',
         alignItems: 'flex-end',
         minHeight: '60px',
-        color: theme.palette.tertiary.dark,
+        color: theme.palette.neutral.dark,
       })}
     >
       {routes.length > 1 && (
@@ -62,9 +62,9 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
               sx={(theme) => ({
                 float: 'left',
                 cursor: 'pointer',
-                color: theme.palette.tertiary.dark,
+                color: theme.palette.neutral.dark,
                 margin: '0 10px 0 0',
-                '&:hover': { color: theme.palette.primary.main },
+                '&:hover': { color: theme.palette.neutral.main },
               })}
             ></ArrowBackIosNewIcon>
           </MuiLink>

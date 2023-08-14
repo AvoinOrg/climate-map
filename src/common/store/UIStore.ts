@@ -1,61 +1,88 @@
-import { useState, useRef } from 'react'
+import React from 'react'
 import { create } from 'zustand'
 
-import { ProfileState, ModalState, NotificationMessage } from '#/common/types/state'
+import { NotificationMessage } from '#/common/types/state'
 
-interface UIState {
+interface Vars {
   isSidebarOpen: boolean
-  setIsSidebarOpen: (value: boolean) => void
   isSidebarDisabled: boolean
   mode: 'side' | 'full'
-  setMode: (value: 'side' | 'full') => void
-  setIsSidebarDisabled: (value: boolean) => void
   isMapPopupOpen: boolean
-  setIsMapPopupOpen: (value: boolean) => void
-  profileState: ProfileState
-  setProfileState: (value: ProfileState) => void
-  modalState: ModalState
-  setModalState: (value: ModalState) => void
-  signupFunnelStep: number
-  setSignupFunnelStep: (value: number) => void
   notifications: NotificationMessage[]
-  notify: (message: NotificationMessage) => void
+  isNavbarOpen: boolean
+  isLoginModalOpen: boolean
+  sidebarWidth: number | undefined
 }
 
-export const useUIStore = create<UIState>((set, get) => ({
-  isSidebarOpen: true,
-  setIsSidebarOpen: (value) => set({ isSidebarOpen: value }),
-  isSidebarDisabled: false,
-  mode: 'side',
-  setMode: (value) => set({ mode: value }),
-  setIsSidebarDisabled: (value) => set({ isSidebarDisabled: value }),
-  isMapPopupOpen: false,
-  setIsMapPopupOpen: (value) => set({ isMapPopupOpen: value }),
-  profileState: 'none',
-  setProfileState: (value) => set({ profileState: value }),
-  modalState: 'none',
-  setModalState: (value) => set({ modalState: value }),
-  signupFunnelStep: 0,
-  setSignupFunnelStep: (value) => set({ signupFunnelStep: value }),
-  notifications: [],
-  notify: (message) => {
-    const newNotification: any = {}
-    const index = new Date().getTime()
+interface Actions {
+  setIsSidebarOpen: (value: boolean) => void
+  setMode: (value: 'side' | 'full') => void
+  setIsSidebarDisabled: (value: boolean) => void
+  setIsMapPopupOpen: (value: boolean) => void
+  notify: (message: NotificationMessage) => void
+  setIsNavbarOpen: (value: boolean) => void
+  setSidebarHeaderElement: undefined | ((value: React.JSX.Element) => void)
+  setSidebarHeaderElementSetter: (setter: (value: React.JSX.Element) => void) => void
+  setIsLoginModalOpen: (isOpen: boolean) => void
+  setSidebarWidth: (pixels: number) => void
+}
 
-    newNotification[index] = {
-      message,
-      severity: message.severity,
-      duration: message.duration || 6000,
-    }
+type State = Vars & Actions
 
-    set((state) => ({
-      notifications: { ...state.notifications, ...newNotification },
-    }))
+export const useUIStore = create<State>((set, get) => {
+  const vars: Vars = {
+    isSidebarDisabled: false,
+    isSidebarOpen: true,
+    mode: 'side',
+    isMapPopupOpen: false,
+    isLoginModalOpen: false,
+    isNavbarOpen: true,
+    notifications: [],
+    sidebarWidth: undefined,
+  }
+  const actions: Actions = {
+    setIsSidebarOpen: (value) => set({ isSidebarOpen: value }),
+    setMode: (value) => set({ mode: value }),
+    setIsSidebarDisabled: (value) => set({ isSidebarDisabled: value }),
+    setIsMapPopupOpen: (value) => set({ isMapPopupOpen: value }),
+    setIsLoginModalOpen: (isOpen: boolean) => {
+      set({ isLoginModalOpen: isOpen })
+    },
+    // profileState: 'none',
+    // setProfileState: (value) => set({ profileState: value }),
+    // modalState: 'none',
+    // setModalState: (value) => set({ modalState: value }),
+    // signupFunnelStep: 0,
+    // setSignupFunnelStep: (value) => set({ signupFunnelStep: value }),
+    setIsNavbarOpen: (value) => set({ isNavbarOpen: value }),
+    // These two allow dynamic changing of the sidebar header from other components
+    // TODO: Figure out a better way to do this
+    setSidebarHeaderElement: undefined,
+    setSidebarHeaderElementSetter: (setter) => set({ setSidebarHeaderElement: setter }),
+    setSidebarWidth(pixels: number) {
+      set({ sidebarWidth: pixels })
+    },
+    notify: (message) => {
+      const newNotification: any = {}
+      const index = new Date().getTime()
 
-    setTimeout(async () => {
-      const newNotifications: any = { ...get().notifications }
-      delete newNotifications[index]
-      set({ notifications: newNotifications })
-    }, message.duration || 6000)
-  },
-}))
+      newNotification[index] = {
+        message,
+        severity: message.severity,
+        duration: message.duration || 6000,
+      }
+
+      set((state) => ({
+        notifications: { ...state.notifications, ...newNotification },
+      }))
+
+      setTimeout(async () => {
+        const newNotifications: any = { ...get().notifications }
+        delete newNotifications[index]
+        set({ notifications: newNotifications })
+      }, message.duration || 6000)
+    },
+  }
+
+  return { ...vars, ...actions }
+})

@@ -1,7 +1,7 @@
 import { fillOpacity, roundToSignificantDigitsExpr } from '#/common/utils/map'
-import { LayerId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
+import { LayerGroupId, LayerConf, ExtendedMbStyle } from '#/common/types/map'
 
-const id: LayerId = 'hsy_solarpotential'
+const id: LayerGroupId = 'hsy_solarpotential'
 
 const getStyle = async (): Promise<ExtendedMbStyle> => {
   return {

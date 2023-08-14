@@ -1,9 +1,9 @@
-import { useContext } from 'react'
-import { IconButton } from '@mui/material'
+import { Button } from '@mui/material'
+import { styled } from '@mui/material/styles'
 
-import HamburgerClosed from '../icons/HamburgerClosed'
-import HamburgerOpen from '../icons/HamburgerOpen'
+import Sandwich from '../icons/Sandwich'
 import { useUIStore } from '../../common/store'
+import { SIDEBAR_CLOSED_WIDTH } from '#/common/style/theme/constants'
 
 interface Props {
   sx?: any
@@ -19,25 +19,41 @@ const SidebarToggleButton = ({ sx }: Props) => {
   }
 
   return (
-    <IconButton
+    <Button
       onClick={toggleSidebar}
-      edge="start"
       sx={(theme) => ({
-        padding: '0',
-        width: '30px',
         margin: '0 0 0 0',
+        p: 3,
+        pl: 5,
         display: 'flex',
+        '&:hover': {
+          backgroundColor: 'transparent',
+        },
+        ...(!isSidebarOpen && {
+          height: '100vh',
+          alignItems: 'flex-start',
+          width: SIDEBAR_CLOSED_WIDTH + 'px',
+          p: 0,
+          pl: 0,
+        }),
+        transition: 'padding 0.1s',
         ...sx,
       })}
-      disableRipple
+      disableRipple={true}
       color="inherit"
       aria-label="open drawer"
       disabled={isSidebarDisabled}
       size="large"
     >
-      {isSidebarOpen ? <HamburgerOpen /> : <HamburgerClosed sx={{ width: '80px' }} />}
-    </IconButton>
+      {isSidebarOpen ? <MySandwich /> : <MySandwich sx={{ transform: 'rotate(90deg)', margin: '35px 0 0 0' }} />}
+    </Button>
   )
 }
+
+const MySandwich = styled(Sandwich)(({ theme }) => ({
+  margin: '0',
+  width: '50px',
+  transition: 'transform 0.1s, margin 0.1s',
+}))
 
 export default SidebarToggleButton

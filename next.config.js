@@ -11,7 +11,7 @@ const nextConfig = {
     appDir: true,
   },
   compiler: {
-    styledComponents: true
+    styledComponents: true,
   },
   modularizeImports: {
     '@mui/material': {
@@ -35,6 +35,11 @@ const nextConfig = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
+  // i18n: {
+  //   locales: ['en', 'fi'],
+  //   localeDetection: true,
+  //   defaultLocale: 'en',
+  // },
   webpack: (config, { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }) => {
     // Important: return the modified config
 
@@ -44,6 +49,29 @@ const nextConfig = {
       }),
       new CopyPlugin({
         patterns: [
+          {
+            // copy main public folder to the root public folder
+            from: path.join(__dirname, '/src/public/**/*'),
+            context: path.resolve(__dirname, 'src'),
+            // removes the relative path from the public folder
+            to: ({ context, absoluteFilename }) => {
+              let relativePath = path.relative(context, absoluteFilename)
+              let publicIndex = relativePath.indexOf('public') + 6 // To exclude 'public' from path
+              return path.join(__dirname, '/public', relativePath.slice(publicIndex))
+            },
+          },
+          {
+            // copy any app public folder to the root public folder
+            from: path.join(__dirname, '/src/app/**/public/**/*'),
+            context: path.resolve(__dirname, 'src/app'),
+            to: ({ context, absoluteFilename }) => {
+              let relativePath = path.relative(context, absoluteFilename)
+              let publicIndex = relativePath.indexOf('public') + 6 // To exclude 'public' from path
+              let newRelativePath = relativePath.slice(publicIndex)
+              let parentDirectory = path.basename(path.dirname(relativePath.slice(0, publicIndex)))
+              return path.join(__dirname, '/public', parentDirectory, newRelativePath)
+            },
+          },
           {
             // copy sql-wasm for the GPKG library used in carbon app
             from: path.join(__dirname, 'node_modules/rtree-sql.js/dist/sql-wasm.wasm'),

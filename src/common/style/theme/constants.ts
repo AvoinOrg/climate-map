@@ -1,0 +1,1 @@
+export const SIDEBAR_CLOSED_WIDTH = 64

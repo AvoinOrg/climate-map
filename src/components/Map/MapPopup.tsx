@@ -46,11 +46,9 @@ export const MapPopup = ({ popupOpts }: Props) => {
     // ></Box>
     <>
       {popupOpts && (
-        <Box>
-          <PopupContainer>
-            {popupFeatures && <popupOpts.PopupElement features={popupFeatures}></popupOpts.PopupElement>}
-          </PopupContainer>
-        </Box>
+        <PopupContainer className="popup-container">
+          {popupFeatures && <popupOpts.PopupElement features={popupFeatures}></popupOpts.PopupElement>}
+        </PopupContainer>
       )}
     </>
   )
@@ -63,6 +61,10 @@ const PopupContainer = styled('div')(({ theme }) => ({
   // left: '-50px',
   minWidth: '200px',
   maxWidth: '550px',
+  display: 'flex',
+  flexDirection: 'column',
+  overflowY: 'auto',
+  overflowX: 'hidden',
   // '&:after, &:before': {
   //   top: '100%',
   //   border: 'solid transparent',

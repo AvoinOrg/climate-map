@@ -11,6 +11,11 @@ body {
   box-sizing: border-box;
 }
 
+a {
+  color: inherit;
+  text-decoration: inherit; /* no underline */
+}
+
 body {
   margin: 0;
   padding: 0;

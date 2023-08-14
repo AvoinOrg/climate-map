@@ -9,14 +9,25 @@ interface Props {
 
 const SidebarHeader = ({ children, title }: Props) => {
   return (
-    <Box sx={{ padding: '3px 24px 24px 24px', backgroundColor: 'tertiary.main' }}>
-      <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-        <SidebarToggleButton sx={{ margin: '24px 0 0 0' }}></SidebarToggleButton>
+    <Box
+      sx={{
+        p: 0,
+        pr: 3,
+        pb: 3,
+        backgroundColor: 'neutral.light',
+        display: 'flex',
+        border: 1,
+        borderColor: 'primary.dark',
+        flexDirection: 'column',
+      }}
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', flexGrow: 1 }}>
+        <SidebarToggleButton />
         <Typography sx={{ margin: '20px 0 0 0', width: '100%', textAlign: 'end' }} variant="h2">
           {title}
         </Typography>
       </Box>
-      {children}
+      <Box sx={{ ml: 3 }}>{children}</Box>
     </Box>
   )
 }

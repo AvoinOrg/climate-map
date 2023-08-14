@@ -23,17 +23,28 @@ import OSM from 'ol/source/OSM'
 import VectorSource from 'ol/source/Vector'
 import { Attribution, ScaleLine, defaults as defaultControls } from 'ol/control'
 
-import { MapLayerMouseEvent, Style as MbStyle, MapboxGeoJSONFeature } from 'mapbox-gl'
+import {
+  MapLayerMouseEvent,
+  Style as MbStyle,
+  MapboxGeoJSONFeature,
+} from 'mapbox-gl'
 // import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import { useUIStore } from '../../common/store'
 import { useMapStore } from '../../common/store'
 
-import { LayerOpt, LayerOpts, MapLibraryMode, QueuePriority, PopupOpts } from '#/common/types/map'
+import {
+  LayerOpt,
+  LayerOpts,
+  MapLibraryMode,
+  QueuePriority,
+  PopupOpts,
+  FunctionQueue,
+} from '#/common/types/map'
 import { getLayerName } from '#/common/utils/map'
 import { OverlayMessages } from './OverlayMessages'
-import { GroupOrientation } from './MapButtons'
+import { MapButtons } from './MapButtons'
 
 interface Props {
   children?: React.ReactNode
@@ -44,6 +55,7 @@ const DEFAULT_ZOOM = 5
 
 export const Map = ({ children }: Props) => {
   const setIsMapPopupOpen = useUIStore((state) => state.setIsMapPopupOpen)
+  const isSidebarOpen = useUIStore((state) => state.isSidebarOpen)
 
   const mapDivRef = useRef<HTMLDivElement>()
   const mapRef = useRef<OlMap | null>(null)
@@ -54,14 +66,22 @@ export const Map = ({ children }: Props) => {
   const mapLibraryMode = useMapStore((state) => state.mapLibraryMode)
   const isLoaded = useMapStore((state) => state.isLoaded)
   const _setIsLoaded = useMapStore((state) => state._setIsLoaded)
+  const _isMapReady = useMapStore((state) => state._isMapReady)
+  const _isHydrated = useMapStore((state) => state._isHydrated)
+  const _setIsMapReady = useMapStore((state) => state._setIsMapReady)
   const _functionQueue = useMapStore((state) => state._functionQueue)
-  const _setFunctionQueue = useMapStore((state) => state._setFunctionQueue)
+  const _executeFunctionQueue = useMapStore(
+    (state) => state._executeFunctionQueue
+  )
   const _layerGroups = useMapStore((state) => state._layerGroups)
   const activeLayerGroupIds = useMapStore((state) => state.activeLayerGroupIds)
   const _layerOptions = useMapStore((state) => state._layerOptions)
   const overlayMessage = useMapStore((state) => state.overlayMessage)
   const selectedFeatures = useMapStore((state) => state.selectedFeatures)
   const setSelectedFeatures = useMapStore((state) => state.setSelectedFeatures)
+  const _isFunctionQueueExecuting = useMapStore(
+    (state) => state._isFunctionQueueExecuting
+  )
 
   const [isMapReady, setIsMapReady] = useState(false)
   const [isMbMapReady, setIsMbMapReady] = useState(false)
@@ -74,9 +94,14 @@ export const Map = ({ children }: Props) => {
   const [popupKey, setPopupKey] = useState<any>(null)
   const [popupOpts, setPopupOpts] = useState<PopupOpts | null>(null)
 
-  const [newlySelectedFeatures, setNewlySelectedFeatures] = useState<MapboxGeoJSONFeature[]>([])
+  const [newlySelectedFeatures, setNewlySelectedFeatures] = useState<
+    MapboxGeoJSONFeature[]
+  >([])
 
-  const initMbMap = (viewSettings: { center: [number, number]; zoom?: number }, isHybrid = true) => {
+  const initMbMap = (
+    viewSettings: { center: [number, number]; zoom?: number },
+    isHybrid = true
+  ) => {
     // Mapbox does not render without a valid access token
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN as string
 
@@ -129,7 +154,7 @@ export const Map = ({ children }: Props) => {
             tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
             tileSize: 256,
             attribution:
-              'Map tiles by <a target="_top" rel="noopener" href="https://tile.openstreetmap.org/">OpenStreetMap tile servers</a>, under the <a target="_top" rel="noopener" href="https://operations.osmfoundation.org/policies/tiles/">tile usage policy</a>. Data by <a target="_top" rel="noopener" href="http://openstreetmap.org">OpenStreetMap</a>',
+              '© <a target="_top" rel="noopener" href="https://openstreetmap.org/">OpenStreetMap</a>, under the <a target="_top" rel="noopener" href="https://operations.osmfoundation.org/policies/tiles/">tile usage policy</a>.',
           },
         },
         layers: [
@@ -147,7 +172,7 @@ export const Map = ({ children }: Props) => {
         style: style,
         center: viewSettings.center, // starting position [lng, lat]
         zoom: viewSettings.zoom, // starting zoom
-        attributionControl: true,
+        attributionControl: false,
         // transformRequest: (url) => {
         //   return {
         //     url: url,
@@ -155,6 +180,12 @@ export const Map = ({ children }: Props) => {
         //   };
         // },
       })
+
+      newMbMap.addControl(
+        new mapboxgl.AttributionControl({
+          compact: true,
+        })
+      )
     }
 
     if (_mbMap && _mbMap.getStyle()) {
@@ -228,7 +259,10 @@ export const Map = ({ children }: Props) => {
     return mbLayer
   }
 
-  const initHybridMap = (viewSettings: { center: [number, number]; zoom?: number }) => {
+  const initHybridMap = (viewSettings: {
+    center: [number, number]
+    zoom?: number
+  }) => {
     const newMbMap = initMbMap(viewSettings, true)
     const mbLayer = getHybridMbLayer(newMbMap)
 
@@ -239,24 +273,30 @@ export const Map = ({ children }: Props) => {
     const options = {
       renderer: 'webgl',
       target: 'map',
-      view: new View({ zoom: viewSettings.zoom, center: proj.fromLonLat(viewSettings.center) }),
+      view: new View({
+        zoom: viewSettings.zoom,
+        center: proj.fromLonLat(viewSettings.center),
+      }),
       layers: [
         new TileLayer({
           source: new OSM(),
         }),
         new VectorLayer({
           source: new VectorSource({
-            attributions: '© Powered by <a href="https://www.netlify.com/" target="_blank">Netlify</a>',
+            attributions:
+              '© Powered by <a href="https://www.netlify.com/" target="_blank">Netlify</a>',
           }),
         }),
         mbLayer,
       ],
-      controls: defaultControls({ attribution: false }).extend([attribution, new ScaleLine()]),
+      controls: defaultControls({ attribution: false }).extend([
+        attribution,
+        new ScaleLine(),
+      ]),
     }
     const newMap = new OlMap(options)
 
     newMap.once('rendercomplete', () => {
-      setIsMapReady(true)
       newMap.setTarget(mapDivRef.current)
 
       const overlay = new Overlay({
@@ -275,12 +315,17 @@ export const Map = ({ children }: Props) => {
       setPopupOnClose(() => onclick)
 
       newMap.addOverlay(overlay)
+
+      _setIsMapReady(true)
     })
 
     return { newMap, newMbMap }
   }
 
-  const initMapMode = (mode: MapLibraryMode, viewSettings: { center: [number, number]; zoom?: number }) => {
+  const initMapMode = (
+    mode: MapLibraryMode,
+    viewSettings: { center: [number, number]; zoom?: number }
+  ) => {
     switch (mode) {
       case 'mapbox': {
         let newMbMap = initMbMap(viewSettings, false)
@@ -315,7 +360,7 @@ export const Map = ({ children }: Props) => {
     if (!mapLibraryRef.current) {
       return initMapMode(mapLibraryMode, { center, zoom })
     } else if (mapLibraryRef.current !== mapLibraryMode) {
-      _setIsLoaded(false)
+      _setIsMapReady(false)
 
       if (mapLibraryRef.current === 'mapbox') {
         const mbCenter = _mbMap?.getCenter()
@@ -343,7 +388,7 @@ export const Map = ({ children }: Props) => {
   }, [mapLibraryMode])
 
   useEffect(() => {
-    if (isLoaded) {
+    if (isMapReady) {
       if (mapLibraryRef.current !== 'mapbox') {
         // remove the old callback and create a new one each time state is updated
         unByKey(popupKey)
@@ -427,7 +472,9 @@ export const Map = ({ children }: Props) => {
       )
 
       // remove features from unselectable layers
-      let newlySelectedFeaturesCopy = newlySelectedFeatures.filter((f) => selectableLayers.includes(f.layer.id))
+      let newlySelectedFeaturesCopy = newlySelectedFeatures.filter((f) =>
+        selectableLayers.includes(f.layer.id)
+      )
 
       // remove reatures without an id and log an error
       newlySelectedFeaturesCopy = newlySelectedFeaturesCopy.filter((f) => {
@@ -445,17 +492,21 @@ export const Map = ({ children }: Props) => {
       let selectedFeaturesCopy = [...selectedFeatures]
 
       for (const feature of newlySelectedFeaturesCopy) {
-        const layerId = feature.layer.id
+        const layerGroupId = feature.layer.id
 
         // if the feature is already selected, unselect
         if (selectedFeaturesCopy.find((f) => f.id === feature.id)) {
-          selectedFeaturesCopy = selectedFeaturesCopy.filter((f) => f.id !== feature.id)
+          selectedFeaturesCopy = selectedFeaturesCopy.filter(
+            (f) => f.id !== feature.id
+          )
           continue
         }
 
         // if the layer is not multi-selectable, unselect all other features from that layer
-        if (!_layerOptions[layerId].multiSelectable) {
-          selectedFeaturesCopy = selectedFeaturesCopy.filter((f) => f.layer.id !== feature.layer.id)
+        if (!_layerOptions[layerGroupId].multiSelectable) {
+          selectedFeaturesCopy = selectedFeaturesCopy.filter(
+            (f) => f.layer.id !== feature.layer.id
+          )
         }
 
         selectedFeaturesCopy.push(feature)
@@ -466,52 +517,59 @@ export const Map = ({ children }: Props) => {
 
     // Set a filter matching selected features by FIPS codes
     // to activate the 'counties-highlighted' layer.
-    const selectedFeaturesCopy = filterSelectedFeatures(_layerOptions, selectedFeatures, newlySelectedFeatures)
+    const selectedFeaturesCopy = filterSelectedFeatures(
+      _layerOptions,
+      selectedFeatures,
+      newlySelectedFeatures
+    )
 
     // TODO: "selectedFeaturesCopy" is calculated twice for each update, which
     // is not great. However, this allows direct manipulation of
     // "selectedFeatures" from other components. Make smarter later.
     if (!isEqual(selectedFeatures, selectedFeaturesCopy)) {
-      let selectedLayerIds: string[] = []
+      let selectedLayerGroupIds: string[] = []
       selectedFeaturesCopy.map((feature) => {
-        selectedLayerIds.push(feature.layer.id)
+        selectedLayerGroupIds.push(feature.layer.id)
       })
 
       if (selectedFeaturesCopy)
         // add layer ids from the previous selection
         selectedFeatures.map((feature) => {
-          selectedLayerIds.push(feature.layer.id)
+          selectedLayerGroupIds.push(feature.layer.id)
         })
 
-      selectedLayerIds = uniq(selectedLayerIds)
+      selectedLayerGroupIds = uniq(selectedLayerGroupIds)
 
-      for (const id of selectedLayerIds) {
+      for (const id of selectedLayerGroupIds) {
         const featureIds = selectedFeaturesCopy
           .filter((f) => f.layer.id === id)
           .map((feature) => {
             return feature.id
           })
 
-        _mbMap?.setFilter(getLayerName(id) + '-highlighted', ['in', 'id', ...featureIds])
+        _mbMap?.setFilter(getLayerName(id) + '-highlighted', [
+          'in',
+          'id',
+          ...featureIds,
+        ])
       }
 
       setSelectedFeatures(selectedFeaturesCopy)
       setNewlySelectedFeatures([])
     }
-  }, [newlySelectedFeatures, selectedFeatures, _layerOptions, activeLayerGroupIds, _layerGroups])
+  }, [newlySelectedFeatures, _layerOptions, activeLayerGroupIds, _layerGroups])
 
   useEffect(() => {
-    // Run queued function once map has loaded
     if (!isLoaded) {
       switch (mapLibraryMode) {
         case 'mapbox': {
           if (isMbMapReady) {
-            _setIsLoaded(true)
+            _setIsMapReady(true)
           }
         }
         case 'hybrid': {
           if (isMbMapReady && isMapReady) {
-            _setIsLoaded(true)
+            _setIsMapReady(true)
           }
         }
       }
@@ -519,67 +577,32 @@ export const Map = ({ children }: Props) => {
   }, [isLoaded, isMapReady, isMbMapReady, mapLibraryMode])
 
   useEffect(() => {
-    // Run queued function once map has loaded
-    if (isLoaded && _functionQueue.length > 0) {
-      let functionsToCall: any[] = []
-      let _newFunctionQueue: any[] = []
-
-      // reverse the QueuePriority enum array, since we want to call the highest priority functions first
-      let priorityArr = Object.values(QueuePriority)
-      priorityArr = priorityArr.reverse().splice(0, priorityArr.length / 2)
-
-      for (let i in priorityArr) {
-        functionsToCall = functionsToCall.concat(_functionQueue.filter((f) => f.priority === priorityArr[i]))
-
-        if (functionsToCall.length > 0) {
-          _newFunctionQueue = _functionQueue.filter((f) => !functionsToCall.includes(f))
-          break
-        }
-      }
-
-      const callFuncs = async () => {
-        await Promise.all(
-          functionsToCall.map((call) => {
-            try {
-              // @ts-ignore
-              return values[call.func](...call.args)
-            } catch (e) {
-              console.error("Couldn't run queued map function", call.func, call.args)
-              console.error(e)
-              call.promise.reject()
-              call.promise = null
-              return null
-            }
-          })
-        )
-
-        functionsToCall.forEach((call) => {
-          if (call.promise != null) {
-            call.promise.resolve()
-          }
-        })
-
-        _setFunctionQueue(_newFunctionQueue)
-      }
-
-      callFuncs()
+    // Run queued functions once map has loaded
+    if (_isMapReady && !_isFunctionQueueExecuting && !isLoaded && _isHydrated) {
+      _executeFunctionQueue(() => _setIsLoaded(true))
     }
-  }, [isLoaded, _functionQueue])
+  }, [
+    _isMapReady,
+    _isHydrated,
+    _functionQueue,
+    _isFunctionQueueExecuting,
+    isLoaded,
+  ])
 
   useEffect(() => {
     if (isLoaded) {
-      let activeLayerIds: string[] = []
+      let activeLayerGroupIds: string[] = []
 
-      for (const layerId of activeLayerGroupIds) {
-        const layerGroupLayers = _layerGroups[layerId]
+      for (const layerGroupId of activeLayerGroupIds) {
+        const layerGroupLayers = _layerGroups[layerGroupId]
 
-        activeLayerIds = [...activeLayerIds, ...Object.keys(layerGroupLayers)]
+        activeLayerGroupIds = [...activeLayerGroupIds, ...Object.keys(layerGroupLayers)]
       }
 
       let selectedFeaturesCopy = [...selectedFeatures]
 
       selectedFeaturesCopy = selectedFeaturesCopy.filter((feature) => {
-        return activeLayerIds.includes(feature.layer.id)
+        return activeLayerGroupIds.includes(feature.layer.id)
       })
 
       if (selectedFeaturesCopy.length !== selectedFeatures.length) {
@@ -587,6 +610,12 @@ export const Map = ({ children }: Props) => {
       }
     }
   }, [isLoaded, selectedFeatures, activeLayerGroupIds, _layerGroups])
+
+  useEffect(() => {
+    if (isLoaded) {
+      _mbMap?.resize()
+    }
+  }, [isSidebarOpen, isLoaded])
 
   return (
     <>
@@ -607,13 +636,15 @@ export const Map = ({ children }: Props) => {
         id="map"
         className={'ol-map'}
         sx={{
-          position: 'absolute !important',
+          position: 'absolute',
           top: 0,
           bottom: 0,
-          width: '100vw',
-          height: '100vh',
+          left: 0,
+          right: 0,
           overflow: 'hidden',
-          ...(mapLibraryMode === 'hybrid' && { '.ol-scale-line': { right: '8px', left: 'auto', bottom: '26px' } }),
+          ...(mapLibraryMode === 'hybrid' && {
+            '.ol-scale-line': { right: '8px', left: 'auto', bottom: '26px' },
+          }),
           // pointerEvents: 'none',
           // '> *': {
           //   pointerEvents: 'auto',
@@ -621,7 +652,7 @@ export const Map = ({ children }: Props) => {
         }}
       ></Box>
       <OverlayMessages message={overlayMessage}></OverlayMessages>
-      <GroupOrientation></GroupOrientation>
+      <MapButtons></MapButtons>
       {children}
     </>
   )
