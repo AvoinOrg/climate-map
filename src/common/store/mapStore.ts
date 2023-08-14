@@ -26,7 +26,8 @@ import { Map as OlMap } from 'ol'
 import {
   LayerGroupId,
   SerializableLayerConf,
-  LayerOpt,
+  LayerOptions,
+  LayerGroupOptions,
   ExtendedAnyLayer,
   OverlayMessage,
   MapLibraryMode,
@@ -82,6 +83,7 @@ export type Vars = {
   // openlayers map object
   _olMap: OlMap | null
   // A single UI layer has often multiple layers which are grouped together.
+  _layerGroups: Record<string, LayerGroupOptions>
   // For quickly access a layer group by its id.
   _layerInstances: Record<string, AnyLayer>
   // For persisting user customised or uploaded layer configurations.
@@ -414,11 +416,7 @@ export const useMapStore = create<State>()(
             } = get()
 
             // Initialize layer if it doesn't exist
-            let opts = options || {}
-
-            if (opts.mapContext == null) {
-              opts.mapContext = mapContext
-            }
+            let opts = options || { persist: false, layerConf: undefined }
 
             if (opts.persist) {
               _addPersistingLayerGroupAddOptions(layerGroupId, opts)
@@ -427,6 +425,14 @@ export const useMapStore = create<State>()(
 
             if (!opts.layerConf) {
               opts = _persistingLayerGroupAddOptions[layerGroupId]
+            }
+
+            if (opts.mapContext == null) {
+              opts.mapContext = mapContext
+            }
+
+            if (opts.mapContext !== mapContext) {
+              opts.isHidden = true
             }
 
             if (!opts.layerConf) {
@@ -462,30 +468,20 @@ export const useMapStore = create<State>()(
 
           if (_layerGroups[layerGroupId]) {
             _setGroupVisibility(layerGroupId, true)
-
-            set((state) => {
-              state.activeLayerGroupIds.push(layerGroupId)
-            })
           } else {
             addLayerGroup(layerGroupId, options)
           }
         },
 
         disableLayerGroup: async (layerGroupId: LayerGroupId) => {
-          const { _setGroupVisibility, activeLayerGroupIds } = get()
+          const { _setGroupVisibility, _layerGroups } = get()
 
-          if (!activeLayerGroupIds.includes(layerGroupId)) {
+          if (!Object.keys(_layerGroups).includes(layerGroupId)) {
             throw new Error(
               "Unable to disable layer group that isn't enabled: " +
                 layerGroupId
             )
           }
-
-          set((state) => {
-            state.activeLayerGroupIds = state.activeLayerGroupIds.filter(
-              (id: string) => id !== layerGroupId
-            )
-          })
 
           _setGroupVisibility(layerGroupId, false)
         },
@@ -494,10 +490,9 @@ export const useMapStore = create<State>()(
           layerGroupId: LayerGroupId,
           options?: LayerGroupAddOptions
         ) => {
-          const { activeLayerGroupIds, disableLayerGroup, enableLayerGroup } =
-            get()
+          const { disableLayerGroup, enableLayerGroup, _layerGroups } = get()
 
-          if (activeLayerGroupIds.includes(layerGroupId)) {
+          if (Object.keys(_layerGroups).includes(layerGroupId)) {
             disableLayerGroup(layerGroupId)
           } else {
             enableLayerGroup(layerGroupId, options)
@@ -653,6 +648,7 @@ export const useMapStore = create<State>()(
         mapToggleTerrain: () => {
           const { toggleLayerGroup } = get()
           toggleLayerGroup('terramonitor', {
+            mapContext: 'any',
             isAddedBefore: false,
             neighboringLayerGroupId: 'osm',
           })
@@ -707,6 +703,8 @@ export const useMapStore = create<State>()(
         }),
 
         setMapContext: (mapContext: MapContext) => {
+          const { _layerGroups, enableLayerGroup, disableLayerGroup } = get()
+
           set((state) => {
             state.mapContext = mapContext
           })
@@ -734,20 +732,25 @@ export const useMapStore = create<State>()(
           layerGroupId: LayerGroupId,
           isVisible: boolean
         ) => {
-          const { _layerGroups, _layerOptions, _mbMap } = get()
+          const { _layerGroups, _mbMap } = get()
           const layerGroup = _layerGroups[layerGroupId]
 
-          for (const layer in layerGroup) {
-            if (_layerOptions[layer].useMb) {
+          for (const layerId in layerGroup.layers) {
+            if (layerGroup.layers[layerId].useMb) {
               _mbMap?.setLayoutProperty(
-                layer,
+                layerId,
                 'visibility',
                 isVisible ? 'visible' : 'none'
               )
             } else {
-              layerGroup[layer].setVisible(isVisible)
+              // TODO: For OpenLayer usage. Fix later if needed
+              // layerGroup.layers[layerId].setVisible(isVisible)
             }
           }
+
+          set((state) => {
+            state._layerGroups[layerGroupId].isHidden = !isVisible
+          })
         },
 
         _setPopupOpts: (popupOpts: PopupOpts) => {
@@ -758,6 +761,8 @@ export const useMapStore = create<State>()(
           )
         },
 
+        // Used by OpenLayers. Broken after removing ActiveLayerGroupIds
+        // Refactor if migrating to OpenLayers
         _addMbStyle: async (
           id: LayerGroupId,
           options: LayerGroupAddOptionsWithConf
@@ -789,13 +794,15 @@ export const useMapStore = create<State>()(
                   )
 
                   if (conf) {
-                    const layerOpt: LayerOpt = {
+                    //@ts-ignore
+                    const layerOpt: LayerOptions = {
                       id: layerKeys[0],
                       source: sourceKey,
                       name: getLayerName(layerKeys[0]),
                       layerType: getLayerType(layerKeys[0]),
                       selectable: conf.selectable || false,
                       multiSelectable: conf.multiSelectable || false,
+                      //@ts-ignore
                       popup: options.layerConf.popup || false,
                       useMb: false,
                     }
@@ -806,6 +813,7 @@ export const useMapStore = create<State>()(
                     layerGroup[layerKeys[0]] = layer
 
                     set((state) => {
+                      //@ts-ignore
                       state._layerOptions[layerKeys[0]] = layerOpt
                     })
                   } else {
@@ -823,6 +831,7 @@ export const useMapStore = create<State>()(
 
             if (!options.isHidden) {
               set((state) => {
+                //@ts-ignore
                 state.activeLayerGroupIds.push(id)
               })
             } else {
@@ -881,36 +890,45 @@ export const useMapStore = create<State>()(
               _mbMap?.addSource(sourceKey, style.sources[sourceKey])
             }
 
-            const layerGroup: any = {}
+            const layerGroup: LayerGroupOptions = {
+              id: id,
+              mapContext: options.mapContext,
+              isHidden: options.isHidden ? true : false,
+              persist: options.persist ? true : false,
+              layers: {},
+            }
 
             for (const layer of style.layers) {
-              const layerOpt: LayerOpt = {
+              const layerOptions: LayerOptions = {
                 id: layer.id,
                 source: layer.source,
                 name: getLayerName(layer.id),
                 layerType: getLayerType(layer.id),
                 selectable: layer.selectable || false,
                 multiSelectable: layer.multiSelectable || false,
-                popup: options.layerConf.popup || false,
+                popup:
+                  'popup' in options.layerConf
+                    ? options.layerConf.popup || false
+                    : false,
                 useMb: true,
               }
 
-              if (layerOpt.layerType === 'fill') {
+              if (layerOptions.layerType === 'fill') {
                 if (layer.selectable) {
                   if (
                     !style.layers.find(
-                      (l: any) => l.id === layerOpt.name + '-highlighted'
+                      (l: any) => l.id === layerOptions.name + '-highlighted'
                     )
                   ) {
                     console.error(
                       "Layer '" +
-                        layerOpt.name +
+                        layerOptions.name +
                         "' is selectable but missing the corresponding highlighted layer."
                     )
                   }
                 }
-                if (options.layerConf.popup) {
-                  const Popup: any = options.layerConf.popup
+                if (layerOptions.popup) {
+                  const Popup: any = layerOptions.popup
 
                   const popupFn = (evt: MapLayerMouseEvent) => {
                     const features = evt.features || []
@@ -931,7 +949,7 @@ export const useMapStore = create<State>()(
                 }
               }
 
-              assertValidHighlightingConf(layerOpt, style.layers)
+              assertValidHighlightingConf(layerOptions, style.layers)
 
               set((state) => {
                 state._layerInstances[layer.id] = layer
@@ -986,12 +1004,6 @@ export const useMapStore = create<State>()(
               } else {
                 _mbMap?.setLayoutProperty(layer.id, 'visibility', 'none')
               }
-            }
-
-            if (!options.isHidden) {
-              set((state) => {
-                state.activeLayerGroupIds.push(id)
-              })
             }
 
             set((state) => {
