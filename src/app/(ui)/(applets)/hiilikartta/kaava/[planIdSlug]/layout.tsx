@@ -20,6 +20,7 @@ const Layout = ({
   const disableSerializableLayerGroup = useMapStore(
     (state) => state.disableSerializableLayerGroup
   )
+
   const getSourceBounds = useMapStore((state) => state.getSourceBounds)
   const fitBounds = useMapStore((state) => state.fitBounds)
 
