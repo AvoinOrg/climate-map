@@ -492,7 +492,7 @@ export const Map = ({ children }: Props) => {
       let selectedFeaturesCopy = [...selectedFeatures]
 
       for (const feature of newlySelectedFeaturesCopy) {
-        const layerGroupId = feature.layer.id
+        const layerId = feature.layer.id
 
         // if the feature is already selected, unselect
         if (selectedFeaturesCopy.find((f) => f.id === feature.id)) {
@@ -503,7 +503,7 @@ export const Map = ({ children }: Props) => {
         }
 
         // if the layer is not multi-selectable, unselect all other features from that layer
-        if (!_layerOptions[layerGroupId].multiSelectable) {
+        if (!_layerOptions[layerId].multiSelectable) {
           selectedFeaturesCopy = selectedFeaturesCopy.filter(
             (f) => f.layer.id !== feature.layer.id
           )
@@ -527,20 +527,20 @@ export const Map = ({ children }: Props) => {
     // is not great. However, this allows direct manipulation of
     // "selectedFeatures" from other components. Make smarter later.
     if (!isEqual(selectedFeatures, selectedFeaturesCopy)) {
-      let selectedLayerGroupIds: string[] = []
+      let selectedLayerIds: string[] = []
       selectedFeaturesCopy.map((feature) => {
-        selectedLayerGroupIds.push(feature.layer.id)
+        selectedLayerIds.push(feature.layer.id)
       })
 
       if (selectedFeaturesCopy)
         // add layer ids from the previous selection
         selectedFeatures.map((feature) => {
-          selectedLayerGroupIds.push(feature.layer.id)
+          selectedLayerIds.push(feature.layer.id)
         })
 
-      selectedLayerGroupIds = uniq(selectedLayerGroupIds)
+      selectedLayerIds = uniq(selectedLayerIds)
 
-      for (const id of selectedLayerGroupIds) {
+      for (const id of selectedLayerIds) {
         const featureIds = selectedFeaturesCopy
           .filter((f) => f.layer.id === id)
           .map((feature) => {
