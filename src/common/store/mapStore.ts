@@ -64,7 +64,6 @@ export type Vars = {
   selectedFeatures: MapboxGeoJSONFeature[]
   // Options for popup windows, when clicking a feature on the map
   popupOpts: PopupOpts | null
-  activeLayerGroupIds: string[]
   // Whether user has activated drawing mode
   isDrawEnabled: boolean
   mapContext: MapContext
@@ -93,7 +92,7 @@ export type Vars = {
   >
   _isHydrated: boolean
   _hydrationData: {
-    activeLayerGroupIds: string[]
+    layerGroups: Record<string, LayerGroupOptions>
     persistingLayerGroupAddOptions: Record<
       string,
       SerializableLayerGroupAddOptions
@@ -232,7 +231,6 @@ export const useMapStore = create<State>()(
         selectedFeatures: [],
         popupOpts: null,
         isDrawEnabled: false,
-        activeLayerGroupIds: [],
         mapContext: 'main',
         _isMapReady: false,
         _draw: null,
@@ -245,7 +243,7 @@ export const useMapStore = create<State>()(
         _isHydrated: false,
         _persistingLayerGroupAddOptions: {},
         _hydrationData: {
-          activeLayerGroupIds: [],
+          layerGroups: {},
           persistingLayerGroupAddOptions: {},
         },
       }
@@ -1230,10 +1228,7 @@ export const useMapStore = create<State>()(
             enableSerializableLayerGroup,
           } = get()
 
-          // clone for local mutating without updating the store
-          const activeLayerGroupIds = cloneDeep(
-            _hydrationData.activeLayerGroupIds
-          )
+          const activeLayerGroupIds = Object.keys(_hydrationData.layerGroups)
 
           Object.keys(_hydrationData.persistingLayerGroupAddOptions).forEach(
             (key) => {
@@ -1286,7 +1281,7 @@ export const useMapStore = create<State>()(
 
           set((state) => {
             state._hydrationData = {
-              activeLayerGroupIds: [],
+              layerGroups: {},
               persistingLayerGroupAddOptions: {},
             }
           })
@@ -1300,7 +1295,7 @@ export const useMapStore = create<State>()(
       storage: createJSONStorage(() => sessionStorage), // (optional) by default the 'localStorage' is used
       partialize: (state: State) => ({
         _hydrationData: {
-          activeLayerGroupIds: state.activeLayerGroupIds,
+          layerGroups: state._layerGroups,
           persistingLayerGroupAddOptions: state._persistingLayerGroupAddOptions,
         },
       }),

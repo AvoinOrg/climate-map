@@ -35,8 +35,8 @@ import { useUIStore } from '../../common/store'
 import { useMapStore } from '../../common/store'
 
 import {
-  LayerOpt,
-  LayerOpts,
+  LayerOptions,
+  LayerOptionsObj,
   MapLibraryMode,
   QueuePriority,
   PopupOpts,
@@ -461,12 +461,12 @@ export const Map = ({ children }: Props) => {
 
   useEffect(() => {
     const filterSelectedFeatures = (
-      _layerOptions: LayerOpts,
+      layerOptions: LayerOptionsObj,
       selectedFeatures: MapboxGeoJSONFeature[],
       newlySelectedFeatures: MapboxGeoJSONFeature[]
     ) => {
       const selectableLayers = Object.keys(
-        pickBy(_layerOptions, (value: LayerOpt, _key: string) => {
+        pickBy(layerOptions, (value: LayerOptions, _key: string) => {
           return value.selectable
         })
       )
@@ -515,10 +515,15 @@ export const Map = ({ children }: Props) => {
       return selectedFeaturesCopy
     }
 
-    // Set a filter matching selected features by FIPS codes
-    // to activate the 'counties-highlighted' layer.
+    const allLayers: LayerOptionsObj = Object.values(_layerGroups).reduce(
+      (acc, group) => {
+        return Object.assign(acc, group.layers)
+      },
+      {} as LayerOptionsObj
+    )
+
     const selectedFeaturesCopy = filterSelectedFeatures(
-      _layerOptions,
+      allLayers,
       selectedFeatures,
       newlySelectedFeatures
     )
@@ -557,7 +562,7 @@ export const Map = ({ children }: Props) => {
       setSelectedFeatures(selectedFeaturesCopy)
       setNewlySelectedFeatures([])
     }
-  }, [newlySelectedFeatures, _layerOptions, activeLayerGroupIds, _layerGroups])
+  }, [newlySelectedFeatures, _layerGroups])
 
   useEffect(() => {
     if (!isLoaded) {
