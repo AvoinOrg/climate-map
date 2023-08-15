@@ -605,20 +605,21 @@ export const Map = ({ children }: Props) => {
     isLoaded,
   ])
 
+  // This effect filters the selected features to only those that are visible
   useEffect(() => {
     if (isLoaded) {
-      let activeLayerGroupIds: string[] = []
+      let activeLayerIds: string[] = []
 
-      for (const layerGroupId of activeLayerGroupIds) {
-        const layerGroupLayers = _layerGroups[layerGroupId]
+      for (const layerGroupId of Object.keys(visibleLayerGroups)) {
+        const layerGroup = visibleLayerGroups[layerGroupId]
 
-        activeLayerGroupIds = [...activeLayerGroupIds, ...Object.keys(layerGroupLayers)]
+        activeLayerIds = [...activeLayerIds, ...Object.keys(layerGroup.layers)]
       }
 
       let selectedFeaturesCopy = [...selectedFeatures]
 
       selectedFeaturesCopy = selectedFeaturesCopy.filter((feature) => {
-        return activeLayerGroupIds.includes(feature.layer.id)
+        return activeLayerIds.includes(feature.layer.id)
       })
 
       if (selectedFeaturesCopy.length !== selectedFeatures.length) {
