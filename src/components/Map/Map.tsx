@@ -507,7 +507,7 @@ export const Map = ({ children }: Props) => {
         }
 
         // if the layer is not multi-selectable, unselect all other features from that layer
-        if (!_layerOptions[layerId].multiSelectable) {
+        if (!layerOptions[layerId].multiSelectable) {
           selectedFeaturesCopy = selectedFeaturesCopy.filter(
             (f) => f.layer.id !== feature.layer.id
           )
