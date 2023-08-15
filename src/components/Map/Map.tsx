@@ -75,7 +75,7 @@ export const Map = ({ children }: Props) => {
   )
   const _layerGroups = useMapStore((state) => state._layerGroups)
   const activeLayerGroupIds = useMapStore((state) => state.activeLayerGroupIds)
-  const _layerOptions = useMapStore((state) => state._layerOptions)
+
   const overlayMessage = useMapStore((state) => state.overlayMessage)
   const selectedFeatures = useMapStore((state) => state.selectedFeatures)
   const setSelectedFeatures = useMapStore((state) => state.setSelectedFeatures)
