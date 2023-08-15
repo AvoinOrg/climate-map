@@ -102,6 +102,8 @@ export const Map = ({ children }: Props) => {
     MapboxGeoJSONFeature[]
   >([])
 
+  // The following functions are used to initialize the map,
+  // depending on the map's mode (Openlayers, Mapbox GL, or hybrid of both)
   const initMbMap = (
     viewSettings: { center: [number, number]; zoom?: number },
     isHybrid = true
@@ -357,6 +359,8 @@ export const Map = ({ children }: Props) => {
       }
     }
   }
+
+  // handles the initialization of map, using the above functions.
   useEffect(() => {
     let center = DEFAULT_CENTER
     let zoom = DEFAULT_ZOOM
@@ -391,6 +395,9 @@ export const Map = ({ children }: Props) => {
     }
   }, [mapLibraryMode])
 
+  // This effect runs only when OpenLayers is used
+  // It refreshes the set of popup functions whenever
+  // layerGroups get hidden or shown
   useEffect(() => {
     if (isMapReady) {
       if (mapLibraryRef.current !== 'mapbox') {
