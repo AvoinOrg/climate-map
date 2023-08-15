@@ -45,6 +45,8 @@ import {
 import { getLayerName } from '#/common/utils/map'
 import { OverlayMessages } from './OverlayMessages'
 import { MapButtons } from './MapButtons'
+import { useVisibleLayerGroups } from '#/common/hooks/map/useVisibleLayerGroups'
+import { useVisibleLayerGroupIds } from '#/common/hooks/map/useVisibleLayerGroupIds'
 
 interface Props {
   children?: React.ReactNode
@@ -74,7 +76,6 @@ export const Map = ({ children }: Props) => {
     (state) => state._executeFunctionQueue
   )
   const _layerGroups = useMapStore((state) => state._layerGroups)
-  const activeLayerGroupIds = useMapStore((state) => state.activeLayerGroupIds)
 
   const overlayMessage = useMapStore((state) => state.overlayMessage)
   const selectedFeatures = useMapStore((state) => state.selectedFeatures)
@@ -82,6 +83,9 @@ export const Map = ({ children }: Props) => {
   const _isFunctionQueueExecuting = useMapStore(
     (state) => state._isFunctionQueueExecuting
   )
+
+  const visibleLayerGroups = useVisibleLayerGroups()
+  const visibleLayerGroupIds = useVisibleLayerGroupIds()
 
   const [isMapReady, setIsMapReady] = useState(false)
   const [isMbMapReady, setIsMbMapReady] = useState(false)
@@ -457,7 +461,7 @@ export const Map = ({ children }: Props) => {
       } else {
       }
     }
-  }, [activeLayerGroupIds, mapLibraryMode, isLoaded, popups])
+  }, [visibleLayerGroupIds, mapLibraryMode, isLoaded, popups])
 
   useEffect(() => {
     const filterSelectedFeatures = (
@@ -614,7 +618,7 @@ export const Map = ({ children }: Props) => {
         setSelectedFeatures(selectedFeaturesCopy)
       }
     }
-  }, [isLoaded, selectedFeatures, activeLayerGroupIds, _layerGroups])
+  }, [isLoaded, selectedFeatures, visibleLayerGroups])
 
   useEffect(() => {
     if (isLoaded) {
