@@ -1,11 +1,11 @@
 import React from 'react'
 import { Box } from '@mui/system'
 
-import { useMapStore } from '#/common/store'
 import { OverlayMessage } from '#/common/types/map'
+import { useVisibleLayerGroupIds } from '#/common/hooks/map/useVisibleLayerGroupIds'
 
 export const OverlayMessages = ({ message }: { message: OverlayMessage | null }) => {
-  const activeLayerGroupIds = useMapStore((state) => state.activeLayerGroupIds)
+  const visibleLayerGroupIds = useVisibleLayerGroupIds()
 
   let isActive = false
 
@@ -13,7 +13,7 @@ export const OverlayMessages = ({ message }: { message: OverlayMessage | null })
     // If the the message has no layerGroupId specified, it is always active.
     if (message.layerGroupId == null) {
       isActive = true
-    } else if (activeLayerGroupIds.filter((x: any) => x === message.layerGroupId).length > 0) {
+    } else if (visibleLayerGroupIds.filter((x: any) => x === message.layerGroupId).length > 0) {
       isActive = true
     }
   }
