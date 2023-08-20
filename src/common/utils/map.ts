@@ -8,10 +8,11 @@ import { Geometry, Position } from 'geojson'
 import {
   LayerType,
   layerTypes,
-  LayerOpt,
+  LayerOptions,
   ExtendedAnyLayer,
   ExtendedMbStyleOrFn,
   ExtendedMbStyle,
+  LayerGroupOptions,
 } from '../types/map'
 
 export const fillOpacity = 0.65
@@ -239,7 +240,7 @@ export const getLayerName = (layerGroupId: string): LayerType => {
 }
 
 export const assertValidHighlightingConf = (
-  layerOpt: LayerOpt,
+  layerOpt: LayerOptions,
   layers: ExtendedAnyLayer[]
 ) => {
   if (layerOpt.layerType === 'fill') {
