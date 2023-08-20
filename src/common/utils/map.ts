@@ -271,3 +271,14 @@ export const resolveMbStyle = async (
 
   return style
 }
+
+export const getVisibleLayerGroups = (
+  layerGroups: Record<string, LayerGroupOptions>
+) => {
+  return Object.keys(layerGroups)
+    .filter((key) => !layerGroups[key].isHidden)
+    .reduce((acc: Record<string, LayerGroupOptions>, key) => {
+      acc[key] = layerGroups[key]
+      return acc
+    }, {})
+}
