@@ -231,7 +231,7 @@ export const useMapStore = create<State>()(
         selectedFeatures: [],
         popupOpts: null,
         isDrawEnabled: false,
-        mapContext: 'main',
+        mapContext: null,
         _isMapReady: false,
         _draw: null,
         _functionQueue: [],
