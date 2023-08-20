@@ -76,6 +76,7 @@ export const Map = ({ children }: Props) => {
     (state) => state._executeFunctionQueue
   )
   const _layerGroups = useMapStore((state) => state._layerGroups)
+  const mapContext = useMapStore((state) => state.mapContext)
 
   const overlayMessage = useMapStore((state) => state.overlayMessage)
   const selectedFeatures = useMapStore((state) => state.selectedFeatures)
@@ -576,7 +577,7 @@ export const Map = ({ children }: Props) => {
   }, [newlySelectedFeatures, _layerGroups])
 
   useEffect(() => {
-    if (!isLoaded) {
+    if (!isLoaded && mapContext != null) {
       switch (mapLibraryMode) {
         case 'mapbox': {
           if (isMbMapReady) {
@@ -590,7 +591,7 @@ export const Map = ({ children }: Props) => {
         }
       }
     }
-  }, [isLoaded, isMapReady, isMbMapReady, mapLibraryMode])
+  }, [isLoaded, isMapReady, isMbMapReady, mapLibraryMode, mapContext])
 
   useEffect(() => {
     // Run queued functions once map has loaded
