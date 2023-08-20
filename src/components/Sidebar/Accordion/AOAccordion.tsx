@@ -7,6 +7,7 @@ import Link from 'next/link'
 
 import { useMapStore } from '#/common/store'
 import { LayerGroupId } from '#/common/types/map'
+import { useVisibleLayerGroupIds } from '#/common/hooks/map/useVisibleLayerGroupIds'
 
 const styles = {
   heading: {
@@ -24,8 +25,7 @@ interface AOAccordionProps {
   panelProps?: any
 }
 
-export const AOAccordion = ({ layerGroupId, label, content, panelProps }: AOAccordionProps) => {
-  const activeLayerGroupIds = useMapStore((state) => state.activeLayerGroupIds)
+  const visibleLayerGroupIds = useVisibleLayerGroupIds()
   const toggleLayerGroup = useMapStore((state) => state.toggleLayerGroup)
   // const groupEnabled = layerGroups.filter((x) => x.name === groupName).length > 0
 
@@ -42,7 +42,7 @@ export const AOAccordion = ({ layerGroupId, label, content, panelProps }: AOAcco
           onFocus={(event) => event.stopPropagation()}
           control={<Checkbox />}
           label={label}
-          checked={activeLayerGroupIds.includes(layerGroupId)}
+          checked={visibleLayerGroupIds.includes(layerGroupId)}
         />
         {/* <Typography className={classes.heading}>{label}</Typography> */}
       </AccordionSummary>
@@ -90,12 +90,11 @@ interface LayerToggleControlProps {
 }
 
 // TODO: toggle state to local storage?
-export const LayerToggleControl = ({ layerGroupId, label }: LayerToggleControlProps) => {
-  const activeLayerGroupIds = useMapStore((state) => state.activeLayerGroupIds)
+  const visibleLayerGroupIds = useVisibleLayerGroupIds()
   const toggleLayerGroup = useMapStore((state) => state.toggleLayerGroup)
 
   // React.useEffect(() => {
-  //   if ([isLayerEnabled && activeLayerGroupIds.includes(layerName)]) {
+  //   if ([isLayerEnabled && visibleLayerGroupIds.includes(layerName)]) {
   //     toggleLayerGroup(layerName, layerStyle)
   //   }
   // }, [])
@@ -111,7 +110,7 @@ export const LayerToggleControl = ({ layerGroupId, label }: LayerToggleControlPr
       onFocus={(event) => event.stopPropagation()}
       control={<Checkbox />}
       label={label}
-      checked={activeLayerGroupIds.includes(layerGroupId)}
+      checked={visibleLayerGroupIds.includes(layerGroupId)}
     />
   )
 }
