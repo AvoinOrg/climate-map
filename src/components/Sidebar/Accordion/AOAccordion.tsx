@@ -1,5 +1,11 @@
 // TODO: Split into multiple files?
-import { Checkbox, Accordion, AccordionDetails, AccordionSummary, Theme, Typography } from '@mui/material'
+import {
+  Checkbox,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Typography,
+} from '@mui/material'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import React from 'react'
@@ -25,6 +31,12 @@ interface AOAccordionProps {
   panelProps?: any
 }
 
+export const AOAccordion = ({
+  layerGroupId,
+  label,
+  content,
+  panelProps,
+}: AOAccordionProps) => {
   const visibleLayerGroupIds = useVisibleLayerGroupIds()
   const toggleLayerGroup = useMapStore((state) => state.toggleLayerGroup)
   // const groupEnabled = layerGroups.filter((x) => x.name === groupName).length > 0
@@ -90,6 +102,10 @@ interface LayerToggleControlProps {
 }
 
 // TODO: toggle state to local storage?
+export const LayerToggleControl = ({
+  layerGroupId,
+  label,
+}: LayerToggleControlProps) => {
   const visibleLayerGroupIds = useVisibleLayerGroupIds()
   const toggleLayerGroup = useMapStore((state) => state.toggleLayerGroup)
 
@@ -119,7 +135,10 @@ export const AOAccordionHeader = ({ href, label }: any) => {
   return (
     <Accordion expanded={false}>
       <Link href={href} className="neutral-link">
-        <AccordionSummary sx={styles.content} expandIcon={<ExpandMoreIcon style={{ transform: 'rotate(90deg' }} />}>
+        <AccordionSummary
+          sx={styles.content}
+          expandIcon={<ExpandMoreIcon style={{ transform: 'rotate(90deg' }} />}
+        >
           <Typography sx={styles.heading}>{label}</Typography>
         </AccordionSummary>
       </Link>
