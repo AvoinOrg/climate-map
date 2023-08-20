@@ -911,6 +911,8 @@ export const useMapStore = create<State>()(
                 useMb: true,
               }
 
+              layerGroup.layers[layer.id] = layerOptions
+
               if (layerOptions.layerType === 'fill') {
                 if (layer.selectable) {
                   if (
@@ -925,6 +927,7 @@ export const useMapStore = create<State>()(
                     )
                   }
                 }
+
                 if (layerOptions.popup) {
                   const Popup: any = layerOptions.popup
 
