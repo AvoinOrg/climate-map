@@ -67,7 +67,9 @@ export type Vars = {
   // Whether user has activated drawing mode
   isDrawEnabled: boolean
   mapContext: MapContext
+  selectedFeatures: MapboxGeoJSONFeature[]
   // The below are internal variables.
+  // --------------------------------------
   // isMapReady is after the internal map object is ready to be interacted with,
   // but before the map functions are ready to be used by external components.
   _isMapReady: boolean
@@ -232,6 +234,7 @@ export const useMapStore = create<State>()(
         popupOpts: null,
         isDrawEnabled: false,
         mapContext: null,
+        selectedFeatures: [],
         _isMapReady: false,
         _draw: null,
         _functionQueue: [],
