@@ -232,7 +232,6 @@ export const useMapStore = create<State>()(
         mapLibraryMode: DEFAULT_MAP_LIBRARY_MODE, // Assume an initial value
         isLoaded: false,
         overlayMessage: null,
-        selectedFeatures: [],
         popupOpts: null,
         isDrawEnabled: false,
         mapContext: null,
