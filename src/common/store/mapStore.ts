@@ -62,7 +62,6 @@ export type Vars = {
   isLoaded: boolean
   // An overlay message over the map
   overlayMessage: OverlayMessage | null
-  selectedFeatures: MapboxGeoJSONFeature[]
   // Options for popup windows, when clicking a feature on the map
   popupOpts: PopupOpts | null
   // Whether user has activated drawing mode
