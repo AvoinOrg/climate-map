@@ -412,21 +412,23 @@ export const useMapStore = create<State>()(
             const {
               _addMbStyleToMb,
               _addMbStyle,
-              // _persistingLayerGroupAddOptions,
+              _persistingLayerGroupAddOptions,
               _addPersistingLayerGroupAddOptions,
               mapContext,
             } = get()
 
             // Initialize layer if it doesn't exist
-            let opts = options || { persist: false, layerConf: undefined }
+            let opts = cloneDeep(options) || {
+              persist: false,
+              layerConf: undefined,
+            }
 
             if (opts.persist) {
               _addPersistingLayerGroupAddOptions(layerGroupId, opts)
             }
-            const { _persistingLayerGroupAddOptions } = get()
 
             if (!opts.layerConf) {
-              opts = _persistingLayerGroupAddOptions[layerGroupId]
+              opts = cloneDeep(_persistingLayerGroupAddOptions[layerGroupId])
             }
 
             if (opts.mapContext == null) {
