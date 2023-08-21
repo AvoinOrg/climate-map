@@ -49,6 +49,7 @@ import {
   getLayerType,
   assertValidHighlightingConf,
   resolveMbStyle,
+  getVisibleLayerGroups,
 } from '#/common/utils/map'
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
@@ -1234,7 +1235,9 @@ export const useMapStore = create<State>()(
             enableSerializableLayerGroup,
           } = get()
 
-          const activeLayerGroupIds = Object.keys(_hydrationData.layerGroups)
+          const activeLayerGroupIds = Object.keys(
+            getVisibleLayerGroups(_hydrationData.layerGroups)
+          )
 
           Object.keys(_hydrationData.persistingLayerGroupAddOptions).forEach(
             (key) => {
