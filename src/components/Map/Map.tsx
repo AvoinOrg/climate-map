@@ -42,7 +42,7 @@ import {
   PopupOpts,
   FunctionQueue,
 } from '#/common/types/map'
-import { getLayerName } from '#/common/utils/map'
+import { getAllLayerOptionsObj, getLayerName } from '#/common/utils/map'
 import { OverlayMessages } from './OverlayMessages'
 import { MapButtons } from './MapButtons'
 import { useVisibleLayerGroups } from '#/common/hooks/map/useVisibleLayerGroups'
@@ -62,6 +62,7 @@ export const Map = ({ children }: Props) => {
   const mapDivRef = useRef<HTMLDivElement>()
   const mapRef = useRef<OlMap | null>(null)
   const mapLibraryRef = useRef<MapLibraryMode | null>(null)
+  const hasProcessedFeatureSelection = useRef(true)
 
   const _mbMap = useMapStore((state) => state._mbMap)
   const _setMbMap = useMapStore((state) => state._setMbMap)
@@ -214,6 +215,7 @@ export const Map = ({ children }: Props) => {
 
       const features = newMbMap.queryRenderedFeatures(point)
 
+      hasProcessedFeatureSelection.current = false
       setNewlySelectedFeatures(features)
     }
 
@@ -471,110 +473,137 @@ export const Map = ({ children }: Props) => {
     }
   }, [visibleLayerGroupIds, mapLibraryMode, isLoaded, popups])
 
+  // This effect filters the selected features to those,
+  // that are from selectable layers. Also applies styling
+  // to the layers, so that the features are visually selected.
   useEffect(() => {
-    const filterSelectedFeatures = (
-      layerOptions: LayerOptionsObj,
-      selectedFeatures: MapboxGeoJSONFeature[],
-      newlySelectedFeatures: MapboxGeoJSONFeature[]
-    ) => {
-      const selectableLayers = Object.keys(
-        pickBy(layerOptions, (value: LayerOptions, _key: string) => {
-          return value.selectable
-        })
-      )
+    if (isLoaded && !hasProcessedFeatureSelection.current) {
+      hasProcessedFeatureSelection.current = true
 
-      // remove features from unselectable layers
-      let newlySelectedFeaturesCopy = newlySelectedFeatures.filter((f) =>
-        selectableLayers.includes(f.layer.id)
-      )
-
-      // remove reatures without an id and log an error
-      newlySelectedFeaturesCopy = newlySelectedFeaturesCopy.filter((f) => {
-        if (f.id == null) {
-          console.error(
-            'Feature without id on layer "',
-            f.layer.id,
-            '". Check that the source style has either "generateId" or "promoteId" set.'
-          )
-          return false
-        }
-        return true
-      })
-
-      let selectedFeaturesCopy = [...selectedFeatures]
-
-      for (const feature of newlySelectedFeaturesCopy) {
-        const layerId = feature.layer.id
-
-        // if the feature is already selected, unselect
-        if (selectedFeaturesCopy.find((f) => f.id === feature.id)) {
-          selectedFeaturesCopy = selectedFeaturesCopy.filter(
-            (f) => f.id !== feature.id
-          )
-          continue
-        }
-
-        // if the layer is not multi-selectable, unselect all other features from that layer
-        if (!layerOptions[layerId].multiSelectable) {
-          selectedFeaturesCopy = selectedFeaturesCopy.filter(
-            (f) => f.layer.id !== feature.layer.id
-          )
-        }
-
-        selectedFeaturesCopy.push(feature)
+      if (newlySelectedFeatures.length === 0) {
+        return
+      } else {
+        setNewlySelectedFeatures([])
       }
 
-      return selectedFeaturesCopy
-    }
+      const filterSelectedFeatures = (
+        layerOptionsObj: LayerOptionsObj,
+        activeLayerIds: string[],
+        selectedFeatures: MapboxGeoJSONFeature[],
+        newlySelectedFeatures: MapboxGeoJSONFeature[]
+      ) => {
+        const selectableLayers = Object.keys(
+          pickBy(layerOptionsObj, (value: LayerOptions, _key: string) => {
+            return value.selectable
+          })
+        )
 
-    const allLayers: LayerOptionsObj = Object.values(_layerGroups).reduce(
-      (acc, group) => {
-        return Object.assign(acc, group.layers)
-      },
-      {} as LayerOptionsObj
-    )
+        // remove features from unselectable layers
+        let filteredFeatures = newlySelectedFeatures.filter((f) =>
+          selectableLayers.includes(f.layer.id)
+        )
 
-    const selectedFeaturesCopy = filterSelectedFeatures(
-      allLayers,
-      selectedFeatures,
-      newlySelectedFeatures
-    )
+        filteredFeatures = filteredFeatures.filter((f) =>
+          activeLayerIds.includes(f.layer.id)
+        )
 
-    // TODO: "selectedFeaturesCopy" is calculated twice for each update, which
-    // is not great. However, this allows direct manipulation of
-    // "selectedFeatures" from other components. Make smarter later.
-    if (!isEqual(selectedFeatures, selectedFeaturesCopy)) {
-      let selectedLayerIds: string[] = []
-      selectedFeaturesCopy.map((feature) => {
-        selectedLayerIds.push(feature.layer.id)
-      })
+        // remove reatures without an id and log an error
+        filteredFeatures = filteredFeatures.filter((f) => {
+          if (f.id == null) {
+            console.error(
+              'Feature without id on layer "',
+              f.layer.id,
+              '". Check that the source style has either "generateId" or "promoteId" set.'
+            )
+            return false
+          }
+          return true
+        })
 
-      if (selectedFeaturesCopy)
-        // add layer ids from the previous selection
-        selectedFeatures.map((feature) => {
+        let selectedFeaturesCopy = [...selectedFeatures]
+
+        // go through filtered features and compare them to previously selected features
+        for (const feature of filteredFeatures) {
+          const layerId = feature.layer.id
+
+          // if the feature is already selected, unselect
+          if (selectedFeaturesCopy.find((f) => f.id === feature.id)) {
+            selectedFeaturesCopy = selectedFeaturesCopy.filter(
+              (f) => f.id !== feature.id
+            )
+            continue
+          }
+
+          // if the layer is not multi-selectable, unselect all other features from that layer
+          if (!layerOptionsObj[layerId].multiSelectable) {
+            selectedFeaturesCopy = selectedFeaturesCopy.filter(
+              (f) => f.layer.id !== feature.layer.id
+            )
+          }
+
+          selectedFeaturesCopy.push(feature)
+        }
+
+        return selectedFeaturesCopy
+      }
+
+      const layerOptionsObj = getAllLayerOptionsObj(_layerGroups)
+
+      let activeLayerIds: string[] = []
+      for (const layerGroupId of Object.keys(visibleLayerGroups)) {
+        const layerGroup = visibleLayerGroups[layerGroupId]
+        activeLayerIds = [...activeLayerIds, ...Object.keys(layerGroup.layers)]
+      }
+
+      const selectedFeaturesCopy = filterSelectedFeatures(
+        layerOptionsObj,
+        activeLayerIds,
+        selectedFeatures,
+        newlySelectedFeatures
+      )
+
+      // TODO: "selectedFeaturesCopy" is calculated twice for each update, which
+      // is not great. However, this allows direct manipulation of
+      // "selectedFeatures" from other components. Make smarter later.
+      if (!isEqual(selectedFeatures, selectedFeaturesCopy)) {
+        let selectedLayerIds: string[] = []
+        selectedFeaturesCopy.map((feature) => {
           selectedLayerIds.push(feature.layer.id)
         })
 
-      selectedLayerIds = uniq(selectedLayerIds)
-
-      for (const id of selectedLayerIds) {
-        const featureIds = selectedFeaturesCopy
-          .filter((f) => f.layer.id === id)
-          .map((feature) => {
-            return feature.id
+        if (selectedFeaturesCopy)
+          // add layer ids from the previous selection
+          selectedFeatures.map((feature) => {
+            selectedLayerIds.push(feature.layer.id)
           })
 
-        _mbMap?.setFilter(getLayerName(id) + '-highlighted', [
-          'in',
-          'id',
-          ...featureIds,
-        ])
-      }
+        selectedLayerIds = uniq(selectedLayerIds)
 
-      setSelectedFeatures(selectedFeaturesCopy)
-      setNewlySelectedFeatures([])
+        for (const id of selectedLayerIds) {
+          const featureIds = selectedFeaturesCopy
+            .filter((f) => f.layer.id === id)
+            .map((feature) => {
+              return feature.id
+            })
+
+          // highlight the selected features using the highlighted-layer in the group
+          _mbMap?.setFilter(getLayerName(id) + '-highlighted', [
+            'in',
+            'id',
+            ...featureIds,
+          ])
+        }
+
+        setSelectedFeatures(selectedFeaturesCopy)
+      }
     }
-  }, [newlySelectedFeatures, _layerGroups])
+  }, [
+    newlySelectedFeatures,
+    selectedFeatures,
+    isLoaded,
+    visibleLayerGroups,
+    _layerGroups,
+  ])
 
   useEffect(() => {
     if (!isLoaded && mapContext != null) {
@@ -605,29 +634,6 @@ export const Map = ({ children }: Props) => {
     _isFunctionQueueExecuting,
     isLoaded,
   ])
-
-  // This effect filters the selected features to only those that are visible
-  useEffect(() => {
-    if (isLoaded) {
-      let activeLayerIds: string[] = []
-
-      for (const layerGroupId of Object.keys(visibleLayerGroups)) {
-        const layerGroup = visibleLayerGroups[layerGroupId]
-
-        activeLayerIds = [...activeLayerIds, ...Object.keys(layerGroup.layers)]
-      }
-
-      let selectedFeaturesCopy = [...selectedFeatures]
-
-      selectedFeaturesCopy = selectedFeaturesCopy.filter((feature) => {
-        return activeLayerIds.includes(feature.layer.id)
-      })
-
-      if (selectedFeaturesCopy.length !== selectedFeatures.length) {
-        setSelectedFeatures(selectedFeaturesCopy)
-      }
-    }
-  }, [isLoaded, selectedFeatures, visibleLayerGroups])
 
   useEffect(() => {
     if (isLoaded) {
