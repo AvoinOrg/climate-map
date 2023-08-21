@@ -183,6 +183,8 @@ export type Actions = {
   mapZoomOut: () => void
   setIsDrawPolygon: (isDrawPolygon: boolean) => Promise<void>
   setMapContext: (mapContext: MapContext) => void
+  // The below are internal variables
+  // ----------------------------------
   _setIsHydrated: { (isHydrated: boolean): void }
   _setIsLoaded: { (isLoaded: boolean): void }
   _setIsMapReady: { (isMapReady: boolean): void }
