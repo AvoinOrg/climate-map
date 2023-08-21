@@ -1274,20 +1274,6 @@ export const useMapStore = create<State>()(
             }
           )
 
-          activeLayerGroupIds.map((id) => {
-            try {
-              enableSerializableLayerGroup(id, undefined, {
-                priority: QueuePriority.HIGH,
-              })
-            } catch (e) {
-              console.error(
-                'Error enabling active layer group from storage: ',
-                id,
-                e
-              )
-            }
-          })
-
           _setIsHydrated(true)
 
           set((state) => {
