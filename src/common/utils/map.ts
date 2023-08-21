@@ -13,6 +13,7 @@ import {
   ExtendedMbStyleOrFn,
   ExtendedMbStyle,
   LayerGroupOptions,
+  LayerOptionsObj,
 } from '../types/map'
 
 export const fillOpacity = 0.65
@@ -281,4 +282,17 @@ export const getVisibleLayerGroups = (
       acc[key] = layerGroups[key]
       return acc
     }, {})
+}
+
+export const getAllLayerOptionsObj = (
+  layerGroups: Record<string, LayerGroupOptions>
+) => {
+  const allLayerOptionsObj: LayerOptionsObj = Object.values(layerGroups).reduce(
+    (acc, group) => {
+      return Object.assign(acc, group.layers)
+    },
+    {} as LayerOptionsObj
+  )
+
+  return allLayerOptionsObj
 }
