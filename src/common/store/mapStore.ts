@@ -65,7 +65,6 @@ export type Vars = {
   // Options for popup windows, when clicking a feature on the map
   popupOpts: PopupOpts | null
   // Whether user has activated drawing mode
-  isDrawEnabled: boolean
   mapContext: MapContext
   selectedFeatures: MapboxGeoJSONFeature[]
   // The below are internal variables.
@@ -189,6 +188,7 @@ export type Actions = {
     layerGroupId: string,
     _queueOptions?: QueueOptions
   ) => Promise<void>
+  disableDraw: (_queueOptions?: QueueOptions) => Promise<void>
   setMapContext: (mapContext: MapContext) => void
   // The below are internal variables
   // ----------------------------------
@@ -723,6 +723,27 @@ export const useMapStore = create<State>()(
             return
           },
           { priority: QueuePriority.LOW }
+        ),
+
+        disableDraw: queueableFnInit(
+          async () => {
+            const { _mbMap, _drawOptions, getSourceJson } = get()
+
+            const geoJSON = await getSourceJson('draw', { skipQueue: true })
+
+            if (_drawOptions.layerGroupId != null && geoJSON != null) {
+              const originalSource = _mbMap?.getSource(
+                _drawOptions.layerGroupId
+              ) as mapboxgl.GeoJSONSource
+              originalSource.setData(geoJSON)
+            }
+
+            _drawOptions.draw != null &&
+              _mbMap?.removeControl(_drawOptions.draw)
+          },
+          {
+            priority: QueuePriority.LOW,
+          }
         ),
 
         setMapContext: (mapContext: MapContext) => {
