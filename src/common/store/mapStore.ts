@@ -73,7 +73,11 @@ export type Vars = {
   // isMapReady is after the internal map object is ready to be interacted with,
   // but before the map functions are ready to be used by external components.
   _isMapReady: boolean
-  _draw: MapboxDraw | null
+  _drawOptions: {
+    layerGroupId: string | null
+    draw: MapboxDraw | null
+    isEnabled: boolean
+  }
   // A queue where functions are added before the map is loaded.
   // Executed after mapIsReady.
   _functionQueue: FunctionQueue
@@ -181,7 +185,10 @@ export type Actions = {
   mapToggleTerrain: () => void
   mapZoomIn: () => void
   mapZoomOut: () => void
-  setIsDrawPolygon: (isDrawPolygon: boolean) => Promise<void>
+  enableDraw: (
+    layerGroupId: string,
+    _queueOptions?: QueueOptions
+  ) => Promise<void>
   setMapContext: (mapContext: MapContext) => void
   // The below are internal variables
   // ----------------------------------
@@ -233,11 +240,14 @@ export const useMapStore = create<State>()(
         isLoaded: false,
         overlayMessage: null,
         popupOpts: null,
-        isDrawEnabled: false,
         mapContext: null,
         selectedFeatures: [],
         _isMapReady: false,
-        _draw: null,
+        _drawOptions: {
+          layerGroupId: null,
+          draw: null,
+          isEnabled: false,
+        },
         _functionQueue: [],
         _isFunctionQueueExecuting: false,
         _mbMap: null,
@@ -668,43 +678,52 @@ export const useMapStore = create<State>()(
           _mbMap?.zoomOut()
         },
 
-        setIsDrawPolygon: queueableFnInit(async (isDrawPolygon: boolean) => {
-          const { _mbMap } = get()
+        enableDraw: queueableFnInit(
+          async (layerGroupId: string) => {
+            const {
+              _mbMap,
+              _drawOptions,
+              disableSerializableLayerGroup,
+              disableDraw,
+            } = get()
 
-          // TODO: Fix drawing. Figure out which layer to use, and dynamically add it to the map
-          const sourceName = 'carbon-shapes'
+            if (_drawOptions.draw != null) {
+              disableDraw({ skipQueue: true })
+              return
+            }
 
-          const draw = new MapboxDraw({
-            displayControlsDefault: false,
-            // Select which mapbox-gl-draw control buttons to add to the map.
-            controls: {
-              polygon: true,
-              trash: true,
-            },
-            // Set mapbox-gl-draw to draw by default.
-            // The user does not have to click the polygon control button first.
-            // defaultMode: 'draw_polygon',
-          })
-          const source = cloneDeep(_mbMap?.getStyle().sources[sourceName])
+            const source = cloneDeep(_mbMap?.getStyle().sources[layerGroupId])
+            disableSerializableLayerGroup(layerGroupId)
 
-          _mbMap?.removeLayer('carbon-shapes-outline')
-          _mbMap?.removeLayer('carbon-shapes-fill')
-          _mbMap?.removeLayer('carbon-shapes-sym')
-          _mbMap?.removeSource(sourceName)
+            // TODO: Fix drawing. Figure out which layer to use, and dynamically add it to the map
 
-          // console.log(source.data.features)
-          _mbMap?.addControl(draw, 'bottom-right')
+            const draw = new MapboxDraw({
+              displayControlsDefault: false,
+              // Select which mapbox-gl-draw control buttons to add to the map.
+              controls: {
+                polygon: true,
+                trash: true,
+              },
+              // Set mapbox-gl-draw to draw by default.
+              // The user does not have to click the polygon control button first.
+              // defaultMode: 'draw_polygon',
+            })
 
-          //@ts-ignore
-          draw.add(source.data)
+            // console.log(source.data.features)
+            _mbMap?.addControl(draw, 'bottom-right')
 
-          set((state) => {
-            state._draw = draw
-            state.isDrawEnabled = true
-          })
+            //@ts-ignoreF
+            draw.add(source.data)
 
-          return
-        }),
+            set((state) => {
+              state._drawOptions.draw = draw
+              state._drawOptions.isEnabled = true
+            })
+
+            return
+          },
+          { priority: QueuePriority.LOW }
+        ),
 
         setMapContext: (mapContext: MapContext) => {
           const { _layerGroups, enableLayerGroup, disableLayerGroup } = get()
