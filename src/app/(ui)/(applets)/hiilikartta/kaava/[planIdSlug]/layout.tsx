@@ -23,6 +23,7 @@ const Layout = ({
 
   const getSourceBounds = useMapStore((state) => state.getSourceBounds)
   const fitBounds = useMapStore((state) => state.fitBounds)
+  // const setIsDrawEnabled = useMapStore((state) => state.setIsDrawEnabled)
 
   useEffect(() => {
     const getAndFitBounds = async () => {
