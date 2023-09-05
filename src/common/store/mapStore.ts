@@ -49,6 +49,7 @@ import {
   getLayerType,
   assertValidHighlightingConf,
   resolveMbStyle,
+  getVisibleLayerGroups,
 } from '#/common/utils/map'
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
@@ -61,17 +62,21 @@ export type Vars = {
   isLoaded: boolean
   // An overlay message over the map
   overlayMessage: OverlayMessage | null
-  selectedFeatures: MapboxGeoJSONFeature[]
   // Options for popup windows, when clicking a feature on the map
   popupOpts: PopupOpts | null
   // Whether user has activated drawing mode
-  isDrawEnabled: boolean
   mapContext: MapContext
+  selectedFeatures: MapboxGeoJSONFeature[]
   // The below are internal variables.
+  // --------------------------------------
   // isMapReady is after the internal map object is ready to be interacted with,
   // but before the map functions are ready to be used by external components.
   _isMapReady: boolean
-  _draw: MapboxDraw | null
+  _drawOptions: {
+    layerGroupId: string | null
+    draw: MapboxDraw | null
+    isEnabled: boolean
+  }
   // A queue where functions are added before the map is loaded.
   // Executed after mapIsReady.
   _functionQueue: FunctionQueue
@@ -179,8 +184,14 @@ export type Actions = {
   mapToggleTerrain: () => void
   mapZoomIn: () => void
   mapZoomOut: () => void
-  setIsDrawPolygon: (isDrawPolygon: boolean) => Promise<void>
+  enableDraw: (
+    layerGroupId: string,
+    _queueOptions?: QueueOptions
+  ) => Promise<void>
+  disableDraw: (_queueOptions?: QueueOptions) => Promise<void>
   setMapContext: (mapContext: MapContext) => void
+  // The below are internal variables
+  // ----------------------------------
   _setIsHydrated: { (isHydrated: boolean): void }
   _setIsLoaded: { (isLoaded: boolean): void }
   _setIsMapReady: { (isMapReady: boolean): void }
@@ -228,12 +239,15 @@ export const useMapStore = create<State>()(
         mapLibraryMode: DEFAULT_MAP_LIBRARY_MODE, // Assume an initial value
         isLoaded: false,
         overlayMessage: null,
-        selectedFeatures: [],
         popupOpts: null,
-        isDrawEnabled: false,
-        mapContext: 'main',
+        mapContext: null,
+        selectedFeatures: [],
         _isMapReady: false,
-        _draw: null,
+        _drawOptions: {
+          layerGroupId: null,
+          draw: null,
+          isEnabled: false,
+        },
         _functionQueue: [],
         _isFunctionQueueExecuting: false,
         _mbMap: null,
@@ -408,21 +422,23 @@ export const useMapStore = create<State>()(
             const {
               _addMbStyleToMb,
               _addMbStyle,
-              // _persistingLayerGroupAddOptions,
+              _persistingLayerGroupAddOptions,
               _addPersistingLayerGroupAddOptions,
               mapContext,
             } = get()
 
             // Initialize layer if it doesn't exist
-            let opts = options || { persist: false, layerConf: undefined }
+            let opts = cloneDeep(options) || {
+              persist: false,
+              layerConf: undefined,
+            }
 
             if (opts.persist) {
               _addPersistingLayerGroupAddOptions(layerGroupId, opts)
             }
-            const { _persistingLayerGroupAddOptions } = get()
 
             if (!opts.layerConf) {
-              opts = _persistingLayerGroupAddOptions[layerGroupId]
+              opts = cloneDeep(_persistingLayerGroupAddOptions[layerGroupId])
             }
 
             if (opts.mapContext == null) {
@@ -662,43 +678,73 @@ export const useMapStore = create<State>()(
           _mbMap?.zoomOut()
         },
 
-        setIsDrawPolygon: queueableFnInit(async (isDrawPolygon: boolean) => {
-          const { _mbMap } = get()
+        enableDraw: queueableFnInit(
+          async (layerGroupId: string) => {
+            const {
+              _mbMap,
+              _drawOptions,
+              disableSerializableLayerGroup,
+              disableDraw,
+            } = get()
 
-          // TODO: Fix drawing. Figure out which layer to use, and dynamically add it to the map
-          const sourceName = 'carbon-shapes'
+            if (_drawOptions.draw != null) {
+              disableDraw({ skipQueue: true })
+              return
+            }
 
-          const draw = new MapboxDraw({
-            displayControlsDefault: false,
-            // Select which mapbox-gl-draw control buttons to add to the map.
-            controls: {
-              polygon: true,
-              trash: true,
-            },
-            // Set mapbox-gl-draw to draw by default.
-            // The user does not have to click the polygon control button first.
-            // defaultMode: 'draw_polygon',
-          })
-          const source = cloneDeep(_mbMap?.getStyle().sources[sourceName])
+            const source = cloneDeep(_mbMap?.getStyle().sources[layerGroupId])
+            disableSerializableLayerGroup(layerGroupId)
 
-          _mbMap?.removeLayer('carbon-shapes-outline')
-          _mbMap?.removeLayer('carbon-shapes-fill')
-          _mbMap?.removeLayer('carbon-shapes-sym')
-          _mbMap?.removeSource(sourceName)
+            // TODO: Fix drawing. Figure out which layer to use, and dynamically add it to the map
 
-          // console.log(source.data.features)
-          _mbMap?.addControl(draw, 'bottom-right')
+            const draw = new MapboxDraw({
+              displayControlsDefault: false,
+              // Select which mapbox-gl-draw control buttons to add to the map.
+              controls: {
+                polygon: true,
+                trash: true,
+              },
+              // Set mapbox-gl-draw to draw by default.
+              // The user does not have to click the polygon control button first.
+              // defaultMode: 'draw_polygon',
+            })
 
-          //@ts-ignore
-          draw.add(source.data)
+            // console.log(source.data.features)
+            _mbMap?.addControl(draw, 'bottom-right')
 
-          set((state) => {
-            state._draw = draw
-            state.isDrawEnabled = true
-          })
+            //@ts-ignoreF
+            draw.add(source.data)
 
-          return
-        }),
+            set((state) => {
+              state._drawOptions.draw = draw
+              state._drawOptions.isEnabled = true
+            })
+
+            return
+          },
+          { priority: QueuePriority.LOW }
+        ),
+
+        disableDraw: queueableFnInit(
+          async () => {
+            const { _mbMap, _drawOptions, getSourceJson } = get()
+
+            const geoJSON = await getSourceJson('draw', { skipQueue: true })
+
+            if (_drawOptions.layerGroupId != null && geoJSON != null) {
+              const originalSource = _mbMap?.getSource(
+                _drawOptions.layerGroupId
+              ) as mapboxgl.GeoJSONSource
+              originalSource.setData(geoJSON)
+            }
+
+            _drawOptions.draw != null &&
+              _mbMap?.removeControl(_drawOptions.draw)
+          },
+          {
+            priority: QueuePriority.LOW,
+          }
+        ),
 
         setMapContext: (mapContext: MapContext) => {
           const { _layerGroups, enableLayerGroup, disableLayerGroup } = get()
@@ -911,6 +957,8 @@ export const useMapStore = create<State>()(
                 useMb: true,
               }
 
+              layerGroup.layers[layer.id] = layerOptions
+
               if (layerOptions.layerType === 'fill') {
                 if (layer.selectable) {
                   if (
@@ -925,6 +973,7 @@ export const useMapStore = create<State>()(
                     )
                   }
                 }
+
                 if (layerOptions.popup) {
                   const Popup: any = layerOptions.popup
 
@@ -1228,7 +1277,9 @@ export const useMapStore = create<State>()(
             enableSerializableLayerGroup,
           } = get()
 
-          const activeLayerGroupIds = Object.keys(_hydrationData.layerGroups)
+          const activeLayerGroupIds = Object.keys(
+            getVisibleLayerGroups(_hydrationData.layerGroups)
+          )
 
           Object.keys(_hydrationData.persistingLayerGroupAddOptions).forEach(
             (key) => {
@@ -1262,20 +1313,6 @@ export const useMapStore = create<State>()(
               }
             }
           )
-
-          activeLayerGroupIds.map((id) => {
-            try {
-              enableSerializableLayerGroup(id, undefined, {
-                priority: QueuePriority.HIGH,
-              })
-            } catch (e) {
-              console.error(
-                'Error enabling active layer group from storage: ',
-                id,
-                e
-              )
-            }
-          })
 
           _setIsHydrated(true)
 

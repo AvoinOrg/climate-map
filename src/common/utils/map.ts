@@ -8,10 +8,12 @@ import { Geometry, Position } from 'geojson'
 import {
   LayerType,
   layerTypes,
-  LayerOpt,
+  LayerOptions,
   ExtendedAnyLayer,
   ExtendedMbStyleOrFn,
   ExtendedMbStyle,
+  LayerGroupOptions,
+  LayerOptionsObj,
 } from '../types/map'
 
 export const fillOpacity = 0.65
@@ -239,7 +241,7 @@ export const getLayerName = (layerGroupId: string): LayerType => {
 }
 
 export const assertValidHighlightingConf = (
-  layerOpt: LayerOpt,
+  layerOpt: LayerOptions,
   layers: ExtendedAnyLayer[]
 ) => {
   if (layerOpt.layerType === 'fill') {
@@ -269,4 +271,28 @@ export const resolveMbStyle = async (
   }
 
   return style
+}
+
+export const getVisibleLayerGroups = (
+  layerGroups: Record<string, LayerGroupOptions>
+) => {
+  return Object.keys(layerGroups)
+    .filter((key) => !layerGroups[key].isHidden)
+    .reduce((acc: Record<string, LayerGroupOptions>, key) => {
+      acc[key] = layerGroups[key]
+      return acc
+    }, {})
+}
+
+export const getAllLayerOptionsObj = (
+  layerGroups: Record<string, LayerGroupOptions>
+) => {
+  const allLayerOptionsObj: LayerOptionsObj = Object.values(layerGroups).reduce(
+    (acc, group) => {
+      return Object.assign(acc, group.layers)
+    },
+    {} as LayerOptionsObj
+  )
+
+  return allLayerOptionsObj
 }

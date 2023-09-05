@@ -1,5 +1,11 @@
 // TODO: Split into multiple files?
-import { Checkbox, Accordion, AccordionDetails, AccordionSummary, Theme, Typography } from '@mui/material'
+import {
+  Checkbox,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Typography,
+} from '@mui/material'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import React from 'react'
@@ -7,6 +13,7 @@ import Link from 'next/link'
 
 import { useMapStore } from '#/common/store'
 import { LayerGroupId } from '#/common/types/map'
+import { useVisibleLayerGroupIds } from '#/common/hooks/map/useVisibleLayerGroupIds'
 
 const styles = {
   heading: {
@@ -24,8 +31,13 @@ interface AOAccordionProps {
   panelProps?: any
 }
 
-export const AOAccordion = ({ layerGroupId, label, content, panelProps }: AOAccordionProps) => {
-  const activeLayerGroupIds = useMapStore((state) => state.activeLayerGroupIds)
+export const AOAccordion = ({
+  layerGroupId,
+  label,
+  content,
+  panelProps,
+}: AOAccordionProps) => {
+  const visibleLayerGroupIds = useVisibleLayerGroupIds()
   const toggleLayerGroup = useMapStore((state) => state.toggleLayerGroup)
   // const groupEnabled = layerGroups.filter((x) => x.name === groupName).length > 0
 
@@ -42,7 +54,7 @@ export const AOAccordion = ({ layerGroupId, label, content, panelProps }: AOAcco
           onFocus={(event) => event.stopPropagation()}
           control={<Checkbox />}
           label={label}
-          checked={activeLayerGroupIds.includes(layerGroupId)}
+          checked={visibleLayerGroupIds.includes(layerGroupId)}
         />
         {/* <Typography className={classes.heading}>{label}</Typography> */}
       </AccordionSummary>
@@ -90,12 +102,15 @@ interface LayerToggleControlProps {
 }
 
 // TODO: toggle state to local storage?
-export const LayerToggleControl = ({ layerGroupId, label }: LayerToggleControlProps) => {
-  const activeLayerGroupIds = useMapStore((state) => state.activeLayerGroupIds)
+export const LayerToggleControl = ({
+  layerGroupId,
+  label,
+}: LayerToggleControlProps) => {
+  const visibleLayerGroupIds = useVisibleLayerGroupIds()
   const toggleLayerGroup = useMapStore((state) => state.toggleLayerGroup)
 
   // React.useEffect(() => {
-  //   if ([isLayerEnabled && activeLayerGroupIds.includes(layerName)]) {
+  //   if ([isLayerEnabled && visibleLayerGroupIds.includes(layerName)]) {
   //     toggleLayerGroup(layerName, layerStyle)
   //   }
   // }, [])
@@ -111,7 +126,7 @@ export const LayerToggleControl = ({ layerGroupId, label }: LayerToggleControlPr
       onFocus={(event) => event.stopPropagation()}
       control={<Checkbox />}
       label={label}
-      checked={activeLayerGroupIds.includes(layerGroupId)}
+      checked={visibleLayerGroupIds.includes(layerGroupId)}
     />
   )
 }
@@ -120,7 +135,10 @@ export const AOAccordionHeader = ({ href, label }: any) => {
   return (
     <Accordion expanded={false}>
       <Link href={href} className="neutral-link">
-        <AccordionSummary sx={styles.content} expandIcon={<ExpandMoreIcon style={{ transform: 'rotate(90deg' }} />}>
+        <AccordionSummary
+          sx={styles.content}
+          expandIcon={<ExpandMoreIcon style={{ transform: 'rotate(90deg' }} />}
+        >
           <Typography sx={styles.heading}>{label}</Typography>
         </AccordionSummary>
       </Link>

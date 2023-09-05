@@ -4,15 +4,19 @@ import { useEffect, useState } from 'react'
 
 const useFilteredSelectedFeatures = (filterLayers: string[]) => {
   const selectedFeatures = useMapStore((state) => state.selectedFeatures)
-  const [filteredFeatures, setFilteredFeatures] = useState<MapboxGeoJSONFeature[]>([])
+  const [filteredFeatures, setFilteredFeatures] = useState<
+    MapboxGeoJSONFeature[]
+  >([])
 
   useEffect(() => {
-    const newFilteredFeatures = selectedFeatures.filter((f: MapboxGeoJSONFeature) => {
-      if (filterLayers.includes(f.layer.id)) {
-        return true
+    const newFilteredFeatures = selectedFeatures.filter(
+      (f: MapboxGeoJSONFeature) => {
+        if (filterLayers.includes(f.layer.id)) {
+          return true
+        }
+        return false
       }
-      return false
-    })
+    )
 
     setFilteredFeatures(newFilteredFeatures)
   }, [selectedFeatures])
