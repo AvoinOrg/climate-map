@@ -41,7 +41,7 @@ export type LayerOptionsObj = {
 }
 
 interface BaseLayerGroupAddOptions {
-  mapContext: MapContext
+  mapContext?: MapContext
   layerConf?: SerializableLayerConf | LayerConf
   isAddedBefore?: boolean
   neighboringLayerGroupId?: LayerGroupId | string
