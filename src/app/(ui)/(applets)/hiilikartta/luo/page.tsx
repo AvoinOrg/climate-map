@@ -75,7 +75,7 @@ const Page = () => {
       </MuiLink>
 
       <BigMenuButton variant="contained" onClick={handleNewPlanClick}>
-        <T keyName={'sidebar.create.draw-new'} ns={'hiilikartta'}></T>
+        <T keyName={'sidebar.create.draw_new'} ns={'hiilikartta'}></T>
       </BigMenuButton>
     </>
   )
