@@ -64,6 +64,7 @@ export interface LayerGroupAddOptions extends BaseLayerGroupAddOptions {
 }
 
 export interface LayerGroupAddOptionsWithConf extends LayerGroupAddOptions {
+  mapContext: MapContext
   layerConf: LayerConf | SerializableLayerConf
 }
 
