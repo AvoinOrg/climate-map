@@ -113,7 +113,7 @@ const LoggedInButton = () => {
                     <T keyName={'navbar.profile.settings'}></T>
                   </MenuItem>
                   <MenuItem onClick={handleSignoutClick}>
-                    <T keyName={'navbar.profile.signout'}></T>
+                    <T keyName={'navbar.profile.sign_out'}></T>
                   </MenuItem>
                 </MenuList>
               </ClickAwayListener>
