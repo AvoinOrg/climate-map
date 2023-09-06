@@ -13,9 +13,12 @@ import { routeTree } from 'applets/hiilikartta/common/routes'
 import GpkgInit from '../../components/GpkgInit'
 import { useAppStore } from 'applets/hiilikartta/state/appStore'
 import { createLayerConf } from '../../common/utils'
+import ShpInit from 'applets/hiilikartta/components/ShpInit'
 
 const Page = () => {
-  const addSerializableLayerGroup = useMapStore((state) => state.addSerializableLayerGroup)
+  const addSerializableLayerGroup = useMapStore(
+    (state) => state.addSerializableLayerGroup
+  )
   const addPlanConf = useAppStore((state) => state.addPlanConf)
   const deletePlanConf = useAppStore((state) => state.deletePlanConf)
   const [fileType, setFileType] = useState<FileType>()
@@ -47,7 +50,10 @@ const Page = () => {
 
     try {
       const layerConf = createLayerConf(json, planConf.id, colName)
-      await addSerializableLayerGroup(layerConf.id, { layerConf, persist: true })
+      await addSerializableLayerGroup(layerConf.id, {
+        layerConf,
+        persist: true,
+      })
     } catch (e) {
       deletePlanConf(planConf.id)
       console.error(e)
@@ -70,17 +76,19 @@ const Page = () => {
       // TODO: add error handling. An error message popup if file is invalid?
       if (reader.result != null) {
         setFileName(f.name)
-        if (f.name.split('.').pop() === 'gpkg') {
-          if (typeof reader.result !== 'string') {
-            setFileType('gpkg')
+        if (typeof reader.result !== 'string') {
+          if (f.name.split('.').pop() === 'gpkg') {
+            if (typeof reader.result !== 'string') {
+              setFileType('gpkg')
+              setArrayBuffer(reader.result)
+            }
+          } else if (f.name.split('.').pop() === 'zip') {
+            setFileType('shp')
             setArrayBuffer(reader.result)
-          } else {
-            console.error('reader.result is a string, not an ArrayBuffer')
+            // initializePlan(json)
           }
-        } else if (f.name.split('.').pop() === 'zip') {
-          const shp = (await import('shpjs')).default
-          const json = await shp(reader.result)
-          // initializePlan(json)
+        } else {
+          console.error('reader.result is a string, not an ArrayBuffer')
         }
       }
       e.target.value = ''
@@ -119,6 +127,9 @@ const Page = () => {
       </Button>
       {fileType === 'gpkg' && arrayBuffer && (
         <GpkgInit fileBuffer={arrayBuffer} onFinish={handleFinish}></GpkgInit>
+      )}
+      {fileType === 'shp' && arrayBuffer && (
+        <ShpInit fileBuffer={arrayBuffer} onFinish={handleFinish}></ShpInit>
       )}
       {/* {res && <p>{JSON.stringify(res)}</p>} */}
     </>
