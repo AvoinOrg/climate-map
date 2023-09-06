@@ -433,20 +433,20 @@ export const useMapStore = create<State>()(
               layerConf: undefined,
             }
 
-            if (opts.persist) {
-              _addPersistingLayerGroupAddOptions(layerGroupId, opts)
-            }
-
-            if (!opts.layerConf) {
-              opts = cloneDeep(_persistingLayerGroupAddOptions[layerGroupId])
-            }
-
             if (opts.mapContext == null) {
               opts.mapContext = mapContext
             }
 
             if (opts.mapContext !== mapContext) {
               opts.isHidden = true
+            }
+
+            if (opts.persist) {
+              _addPersistingLayerGroupAddOptions(layerGroupId, opts)
+            }
+
+            if (!opts.layerConf) {
+              opts = cloneDeep(_persistingLayerGroupAddOptions[layerGroupId])
             }
 
             if (!opts.layerConf) {
