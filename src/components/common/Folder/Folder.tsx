@@ -1,7 +1,9 @@
 import React from 'react'
-import { Box, styled } from '@mui/material'
+import { Box } from '@mui/material'
+import { styled } from '@mui/material/styles'
 import type { SxProps, Theme } from '@mui/system'
 import SvgFolder from './SvgFolder'
+import { useTheme } from '@mui/material/styles'
 
 const StyledBox = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -27,18 +29,21 @@ type Props = {
 }
 
 const Folder = ({ children, sx }: Props) => {
-  const backgroundColor =
-    sx &&
-    typeof sx === 'object' &&
-    'backgroundColor' in sx &&
-    typeof sx.backgroundColor === 'string'
-      ? sx.backgroundColor
-      : '#AFB39A'
+  let color = useTheme().palette.neutral.lighter
+  let borderColor = useTheme().palette.neutral.main
+
+  if (sx && typeof sx === 'object') {
+    if ('color' in sx && typeof sx.color === 'string') {
+      color = sx.color
+    }
+    if ('borderColor' in sx && typeof sx.borderColor === 'string') {
+      borderColor = sx.borderColor
+    }
+  }
 
   return (
     <StyledBox sx={sx}>
-      <SvgFolder color={backgroundColor || '#AFB39A'} />
-      <SvgFolder />
+      <SvgFolder color={color} borderColor={borderColor} />
       <div className="content">{children}</div>
     </StyledBox>
   )
