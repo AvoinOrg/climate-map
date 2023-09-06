@@ -17,7 +17,7 @@ const SvgFolder = ({ color, borderColor, ...props }: Props) => (
       <path
         fill={color}
         stroke={borderColor ? borderColor : color}
-        stroke-width="2"
+        strokeWidth="2"
         d="M2 139V8h50.432l19.924 13.099H353V139H2Z"
       />
     </g>
