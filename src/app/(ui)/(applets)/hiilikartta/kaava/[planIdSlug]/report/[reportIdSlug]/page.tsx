@@ -49,7 +49,7 @@ const Page = ({ params }: { params: { planIdSlug: string; reportIdSlug: string }
             left: 0,
             right: 0,
             width: '100vw',
-            backgroundColor: theme.palette.quaternary.light,
+            backgroundColor: theme.palette.neutral.light,
             display: 'flex',
             flexDirection: 'column',
           })}
@@ -79,7 +79,7 @@ const Page = ({ params }: { params: { planIdSlug: string; reportIdSlug: string }
                 sx={(theme) => ({
                   typography: theme.typography.body1,
                   display: 'inline',
-                  color: theme.palette.quaternary.light,
+                  color: theme.palette.neutral.light,
                 })}
               >
                 <u>Sulje raportti</u>
@@ -113,7 +113,7 @@ const Page = ({ params }: { params: { planIdSlug: string; reportIdSlug: string }
             sx={(theme) => ({
               typography: theme.typography.caption,
               display: 'inline',
-              color: theme.palette.quaternary.light,
+              color: theme.palette.neutral.light,
             })}
           >
             <u>Sulje raportti</u>
