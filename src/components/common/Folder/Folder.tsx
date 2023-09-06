@@ -14,10 +14,9 @@ const StyledBox = styled(Box)(({ theme }) => ({
   },
   '& > div.content': {
     position: 'absolute',
-    top: 45, // Adjust accordingly to position content inside folder SVG
-    left: 20, // Adjust accordingly
-    right: 20,
-    bottom: 20,
+    top: 0, // Adjust accordingly to position content inside folder SVG
+    right: 0,
+    left: 0,
     overflow: 'auto',
   },
 }))
