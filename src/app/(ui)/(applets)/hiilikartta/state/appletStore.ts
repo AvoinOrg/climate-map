@@ -1,8 +1,8 @@
-import { generateShortId } from '#/common/utils/general'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
+import { generateShortId } from '#/common/utils/general'
 import { NewPlanConf, PlanConf } from '../common/types'
 
 type State = {
