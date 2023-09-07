@@ -16,7 +16,7 @@ import JSZip from 'jszip'
 import { getRoute } from '#/common/utils/routing'
 import useStore from '#/common/hooks/useStore'
 
-import { useAppStore } from 'applets/hiilikartta/state/appStore'
+import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { PlanConf } from 'applets/hiilikartta/common/types'
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { useMapStore } from '#/common/store'
@@ -26,10 +26,12 @@ import Folder from '#/components/common/Folder'
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const getSourceJson = useMapStore((state) => state.getSourceJson)
   const planConf = useStore(
-    useAppStore,
+    useAppletStore,
     (state) => state.planConfs[params.planIdSlug]
   )
   const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
+  const addReportToPlan = useAppletStore((state) => state.addReportToPlan)
+  const deletePlanConf = useAppletStore((state) => state.deletePlanConf)
 
   const [isLoaded, setIsLoaded] = useState(false)
   const router = useRouter()
