@@ -12,15 +12,15 @@ import { T } from '@tolgee/react'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { NewPlanConf } from '../common/types'
-import { useAppStore } from '../state/appStore'
+import { useAppletStore } from '../state/appletStore'
 import { createLayerConf } from '../common/utils'
 import { useMapStore } from '#/common/store'
 
 const Page = () => {
   const router = useRouter()
 
-  const addPlanConf = useAppStore((state) => state.addPlanConf)
-  const deletePlanConf = useAppStore((state) => state.deletePlanConf)
+  const addPlanConf = useAppletStore((state) => state.addPlanConf)
+  const deletePlanConf = useAppletStore((state) => state.deletePlanConf)
   const addSerializableLayerGroup = useMapStore((state) => state.addSerializableLayerGroup)
 
   const initializePlan = async () => {
