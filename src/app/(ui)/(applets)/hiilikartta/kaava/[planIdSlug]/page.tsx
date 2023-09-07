@@ -91,14 +91,18 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     <>
       {isLoaded && planConf && (
         <>
-          <Box
-            sx={(theme) => ({
-              typography: theme.typography.h6,
-              margin: '80px 0 0 0',
-            })}
-          >
-            {planConf.name}
-          </Box>
+          <Folder sx={{ width: '340px' }}>
+            <Box
+              sx={(theme) => ({
+                typography: theme.typography.h2,
+                margin: '50px 0 0 25px',
+                color: theme.palette.neutral.darker,
+              })}
+            >
+              {planConf.name}
+            </Box>
+          </Folder>
+
           {/* <MuiLink
             href={getRoute(routeTree.plan.settings, routeTree, [planConf.id])}
             sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
