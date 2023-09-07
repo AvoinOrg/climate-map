@@ -32,7 +32,13 @@ export const useAppletStore = create<State & Actions>()(
       addPlanConf: async (newPlanConf: NewPlanConf) => {
         const id = generateShortId()
         const created = new Date().getTime()
-        const planConf = { id, created, reports: {}, ...newPlanConf }
+        const planConf = {
+          id,
+          created,
+          reports: {},
+          isCalculating: false,
+          ...newPlanConf,
+        }
         await set((state) => {
           state.planConfs[id] = planConf
         })
