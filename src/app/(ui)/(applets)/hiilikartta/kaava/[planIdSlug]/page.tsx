@@ -92,7 +92,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     <>
       {isLoaded && planConf && (
         <>
-          <Folder sx={{ width: '340px' }}>
+          <Folder sx={{ width: '100%' }}>
             <Box
               sx={(theme) => ({
                 typography: theme.typography.h2,
