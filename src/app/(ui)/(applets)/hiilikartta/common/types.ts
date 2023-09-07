@@ -2,9 +2,7 @@ export interface PlanConf extends NewPlanConf {
   id: string
   created: number
   isCalculating: boolean
-  reports: {
-    [key: string]: any
-  }
+  reportData: undefined | GeoJSON.FeatureCollection
 }
 
 export type NewPlanConf = {
@@ -12,6 +10,7 @@ export type NewPlanConf = {
   areaHa: number
   json: any
   isCalculating?: boolean
+  reportData?: GeoJSON.FeatureCollection
   fileSettings: {
     fileType: FileType
     zoningColumn: string
