@@ -79,6 +79,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
                   // apply to direct children that aren't style tags
                   direction: 'ltr',
                 },
+                margin: '0 10px 0 0',
               }}
             >
               {children}
