@@ -15,7 +15,7 @@ import { routeTree } from 'applets/hiilikartta/common/routes'
 
 const MAX_WIDTH = '1000px'
 
-const Page = ({ params }: { params: { planIdSlug: string; reportIdSlug: string } }) => {
+const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const report = useStore(useAppletStore, (state) => state.planConfs[params.planIdSlug].reports[params.reportIdSlug])
 
