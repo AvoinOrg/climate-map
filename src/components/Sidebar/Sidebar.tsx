@@ -16,11 +16,15 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const mode = useUIStore((state) => state.mode)
   const setIsMapPopupOpen = useUIStore((state) => state.setIsMapPopupOpen)
   const popupOpts = useMapStore((state) => state.popupOpts)
-  const setSidebarHeaderElementSetter = useUIStore((state) => state.setSidebarHeaderElementSetter)
+  const setSidebarHeaderElementSetter = useUIStore(
+    (state) => state.setSidebarHeaderElementSetter
+  )
   const setSidebarWidth = useUIStore((state) => state.setSidebarWidth)
 
   // Initialize with empty header title to make the change of header smoother
-  const [sidebarHeader, setSidebarHeader] = useState(<SidebarHeader title={''}></SidebarHeader>)
+  const [sidebarHeader, setSidebarHeader] = useState(
+    <SidebarHeader title={''}></SidebarHeader>
+  )
   const sidebarRef = useRef()
 
   useLayoutEffect(() => {
@@ -59,7 +63,9 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       }}
     >
       {mode === 'side' && (
-        <Box sx={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0 }}>
+        <Box
+          sx={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0 }}
+        >
           <Drawer open={isSidebarOpen}>
             {sidebarHeader}
             <Box
@@ -103,7 +109,16 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
         </Box>
       )}
       {mode === 'full' && (
-        <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', height: '100%' }}>{children}</Box>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            width: '100%',
+            height: '100%',
+          }}
+        >
+          {children}
+        </Box>
       )}
     </Box>
   )
