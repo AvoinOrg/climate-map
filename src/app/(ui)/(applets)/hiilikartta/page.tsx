@@ -8,13 +8,13 @@ import useStore from '#/common/hooks/useStore'
 import { getRoute } from '#/common/utils/routing'
 
 import { useMapStore } from '#/common/store'
-import { useAppStore } from './state/appStore'
+import { useAppletStore } from './state/appletStore'
 import PlanListItem from './components/PlanListItem'
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { T } from '@tolgee/react'
 
 const Page = () => {
-  const planConfs = useStore(useAppStore, (state) => state.planConfs)
+  const planConfs = useStore(useAppletStore, (state) => state.planConfs)
   const setMapLibraryMode = useMapStore((state) => state.setMapLibraryMode)
 
   useEffect(() => {
