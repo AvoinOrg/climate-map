@@ -4,7 +4,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import useStore from '#/common/hooks/useStore'
 import { useUIStore } from '#/common/store'
 
-import { useAppStore } from 'applets/hiilikartta/state/appStore'
+import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
 import { Box, Typography } from '@mui/material'
 import { styled } from '@mui/system'
@@ -14,7 +14,7 @@ const MAX_WIDTH = '1000px'
 
 const Page = ({ params }: { params: { planIdSlug: string; reportIdSlug: string } }) => {
   const [isLoaded, setIsLoaded] = useState(false)
-  const report = useStore(useAppStore, (state) => state.planConfs[params.planIdSlug].reports[params.reportIdSlug])
+  const report = useStore(useAppletStore, (state) => state.planConfs[params.planIdSlug].reports[params.reportIdSlug])
 
   useEffect(() => {
     // useUIStore.setState((state) => {
