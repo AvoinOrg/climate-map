@@ -20,7 +20,7 @@ type Actions = {
   addReportToPlan: (planId: string, report: any) => Promise<any>
 }
 
-export const useAppStore = create<State & Actions>()(
+export const useAppletStore = create<State & Actions>()(
   persist(
     immer((set, get) => ({
       planConfs: {},
