@@ -27,7 +27,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     >
       <Box
         sx={{
-          padding: '35px 30px 100px 30px',
+          padding: '35px 20px 100px 20px',
           width: '400px',
           display: 'flex',
           flexDirection: 'column',
