@@ -113,7 +113,7 @@ const Page = ({ params }: { params: { planIdSlug: string; reportIdSlug: string }
                     mt: theme.spacing(0.5),
                   })}
                 >
-                  {pp(report.area / 10000, 2)} hehtaaria
+                  {/* {pp(reportData.area / 10000, 2)} hehtaaria */}
                 </Typography>
               </Col>
               {/* <Typography
@@ -148,7 +148,7 @@ const Page = ({ params }: { params: { planIdSlug: string; reportIdSlug: string }
                   mt: theme.spacing(0.5),
                 })}
               >
-                {pp(report.sum / 100, 5)} tCO2e
+                {/* {pp(reportData.sum / 100, 5)} tCO2e */}
               </Typography>
             </Row>
           </Section>
