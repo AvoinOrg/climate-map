@@ -31,14 +31,14 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     useAppStore,
     (state) => state.planConfs[params.planIdSlug]
   )
-  const addReportToPlan = useAppStore((state) => state.addReportToPlan)
-  const deletePlanConf = useAppStore((state) => state.deletePlanConf)
+  const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
 
   const [isLoaded, setIsLoaded] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async () => {
     if (planConf) {
+      updatePlanConf(planConf.id, { isCalculating: true })
       const json = await getSourceJson(getPlanLayerGroupId(planConf.id))
 
       const zip = new JSZip()
@@ -62,14 +62,8 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         }
       )
 
-      if (addReportToPlan) {
-        const report = await addReportToPlan(params.planIdSlug, response.data)
-        const route = getRoute(routeTree.plan.report, routeTree, [
-          params.planIdSlug,
-          report.id,
-        ])
-        router.push(route)
-      }
+
+      updatePlanConf(planConf.id, { isCalculating: false })
     }
   }
 
