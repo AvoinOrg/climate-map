@@ -26,7 +26,7 @@ const Page = () => {
       <Box>
         <Link href={getRoute(routeTree.create, routeTree)}>
           <Box sx={{ typography: 'h2', textAlign: 'start' }}>
-            <T keyName={'sidebar.main.add_new'} ns='hiilikartta'></T>
+            <T keyName={'sidebar.main.add_new'} ns="hiilikartta"></T>
           </Box>
         </Link>
       </Box>
