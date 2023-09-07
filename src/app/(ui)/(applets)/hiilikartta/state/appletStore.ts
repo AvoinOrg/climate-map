@@ -17,7 +17,6 @@ type Actions = {
     planId: string,
     planConf: Partial<PlanConf>
   ) => Promise<PlanConf>
-  addReportToPlan: (planId: string, report: any) => Promise<any>
 }
 
 export const useAppletStore = create<State & Actions>()(
@@ -35,7 +34,7 @@ export const useAppletStore = create<State & Actions>()(
         const planConf = {
           id,
           created,
-          reports: {},
+          reportData: undefined,
           isCalculating: false,
           ...newPlanConf,
         }
@@ -50,14 +49,6 @@ export const useAppletStore = create<State & Actions>()(
           state.planConfs[planId] = updatedPlanConf
         })
         return updatedPlanConf
-      },
-      addReportToPlan: async (planId: string, report: any) => {
-        const id = generateShortId()
-        const updatedReport = { id, ...report }
-        await set((state) => {
-          state.planConfs[planId].reports[id] = report
-        })
-        return updatedReport
       },
     })),
     {
