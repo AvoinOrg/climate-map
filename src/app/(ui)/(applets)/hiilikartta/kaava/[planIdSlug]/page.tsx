@@ -113,21 +113,18 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               Kaavatiedoston asetukset <SettingsIcon />
             </MenuButton>
           </MuiLink> */}
-          <MenuButton sx={{ margin: '25px 0 0 0' }} variant="outlined">
-            Kaavan asetukset <TuneIcon />
-          </MenuButton>
-          <MenuButton variant="outlined">
-            Laske hiilimuutokset <ForestIcon />
-          </MenuButton>
-          <MenuButton variant="outlined" onClick={handleSubmit}>
-            Laske nykyiset hiilivarastot <ParkIcon />
-          </MenuButton>
-          <SmallMenuButton sx={{ margin: '50px 0 0 0' }} variant="outlined">
-            Jakoasetukset <PeopleIcon />
-          </SmallMenuButton>
-          <SmallMenuButton variant="outlined" onClick={handleDeleteClick}>
-            Poista kaava <DeleteForeverIcon />
-          </SmallMenuButton>
+          <Box sx={{}}>
+            <SmallMenuButton variant="outlined" onClick={handleDeleteClick}>
+              Poista kaava <DeleteForeverIcon />
+            </SmallMenuButton>
+            <MenuButton variant="outlined" onClick={handleSubmit}>
+              <T
+                keyName={'sidebar.plan_settings.calculate_carbon_effect'}
+                ns={'hiilikartta'}
+              />
+              <ParkIcon />
+            </MenuButton>
+          </Box>
         </>
       )}
     </>
