@@ -11,7 +11,7 @@ import { getGeoJsonArea } from '#/common/utils/gis'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import GpkgInit from '../../components/GpkgInit'
-import { useAppStore } from 'applets/hiilikartta/state/appStore'
+import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { createLayerConf } from '../../common/utils'
 import ShpInit from 'applets/hiilikartta/components/ShpInit'
 
@@ -19,8 +19,8 @@ const Page = () => {
   const addSerializableLayerGroup = useMapStore(
     (state) => state.addSerializableLayerGroup
   )
-  const addPlanConf = useAppStore((state) => state.addPlanConf)
-  const deletePlanConf = useAppStore((state) => state.deletePlanConf)
+  const addPlanConf = useAppletStore((state) => state.addPlanConf)
+  const deletePlanConf = useAppletStore((state) => state.deletePlanConf)
   const [fileType, setFileType] = useState<FileType>()
   const [fileName, setFileName] = useState<string>()
   const [arrayBuffer, setArrayBuffer] = useState<ArrayBuffer>()
