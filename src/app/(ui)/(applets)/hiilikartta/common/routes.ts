@@ -30,7 +30,7 @@ export const routeTree: RouteTree = {
     },
     report: {
       _conf: {
-        path: 'report/:id',
+        path: 'raportti',
         name: 'Raportti',
       },
     },
