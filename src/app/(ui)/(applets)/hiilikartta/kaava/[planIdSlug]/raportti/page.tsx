@@ -3,12 +3,15 @@ import React, { useContext, useEffect, useState } from 'react'
 
 import useStore from '#/common/hooks/useStore'
 import { useUIStore } from '#/common/store'
+import Link from '#/components/common/Link'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
 import { Box, Typography } from '@mui/material'
 import { styled } from '@mui/system'
 import { pp } from '#/common/utils/general'
+import { getRoute } from '#/common/utils/routing'
+import { routeTree } from 'applets/hiilikartta/common/routes'
 
 const MAX_WIDTH = '1000px'
 
@@ -75,15 +78,19 @@ const Page = ({ params }: { params: { planIdSlug: string; reportIdSlug: string }
               >
                 Hiiliraportti
               </Typography>
-              <Typography
-                sx={(theme) => ({
-                  typography: theme.typography.body1,
-                  display: 'inline',
-                  color: theme.palette.neutral.light,
-                })}
+              <Link
+                href={getRoute(routeTree.plan, routeTree, [params.planIdSlug])}
               >
-                <u>Sulje raportti</u>
-              </Typography>
+                <Typography
+                  sx={(theme) => ({
+                    typography: theme.typography.body1,
+                    display: 'inline',
+                    color: theme.palette.neutral.light,
+                  })}
+                >
+                  <u>Sulje raportti</u>
+                </Typography>
+              </Link>
             </Row>
             <Row
               sx={(theme) => ({
