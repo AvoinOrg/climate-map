@@ -11,6 +11,7 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 // import Link from 'next/link'
 import axios from 'axios'
 import JSZip from 'jszip'
+import { T } from '@tolgee/react'
 
 import { getRoute } from '#/common/utils/routing'
 import useStore from '#/common/hooks/useStore'
@@ -115,18 +116,22 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               Kaavatiedoston asetukset <SettingsIcon />
             </MenuButton>
           </MuiLink> */}
-          <Box sx={{}}>
-            <SmallMenuButton variant="outlined" onClick={handleDeleteClick}>
-              Poista kaava <DeleteForeverIcon />
-            </SmallMenuButton>
-            <MenuButton variant="outlined" onClick={handleSubmit}>
-              <T
-                keyName={'sidebar.plan_settings.calculate_carbon_effect'}
-                ns={'hiilikartta'}
-              />
-              <ParkIcon />
-            </MenuButton>
-          </Box>
+          {!planConf.isCalculating && (
+            <Box sx={{}}>
+              <SmallMenuButton variant="outlined" onClick={handleDeleteClick}>
+                Poista kaava <DeleteForeverIcon />
+              </SmallMenuButton>
+              {!planConf.reportData && (
+                <MenuButton variant="outlined" onClick={handleSubmit}>
+                  <T
+                    keyName={'sidebar.plan_settings.calculate_carbon_effect'}
+                    ns={'hiilikartta'}
+                  />
+                  <ParkIcon />
+                </MenuButton>
+              )}
+            </Box>
+          )}
         </>
       )}
     </>
