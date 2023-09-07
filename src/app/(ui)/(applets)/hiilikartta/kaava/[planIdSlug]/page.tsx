@@ -28,7 +28,6 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     (state) => state.planConfs[params.planIdSlug]
   )
   const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
-  const addReportToPlan = useAppletStore((state) => state.addReportToPlan)
   const deletePlanConf = useAppletStore((state) => state.deletePlanConf)
 
   const [isLoaded, setIsLoaded] = useState(false)
@@ -60,6 +59,12 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         }
       )
 
+      updatePlanConf(planConf.id, {
+        reportData: response.data,
+        isCalculating: false,
+      })
+    }
+  }
 
   const handleOpenReport = async () => {
     if (planConf) {
