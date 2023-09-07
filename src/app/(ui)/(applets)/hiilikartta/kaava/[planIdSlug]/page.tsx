@@ -50,20 +50,27 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
 
       // const response = await useFileUploadMutation("http://localhost:8000/calculate", uploadFile)
 
-      const response = await axios.post(
-        'http://localhost:8000/calculate',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      )
-
-      updatePlanConf(planConf.id, {
-        reportData: response.data,
-        isCalculating: false,
-      })
+      try {
+        const response = await axios.post(
+          'http://localhost:8000/calculate',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        )
+        updatePlanConf(planConf.id, {
+          reportData: response.data,
+          isCalculating: false,
+        })
+      } catch (e) {
+        console.log(e)
+        updatePlanConf(planConf.id, {
+          isCalculating: false,
+          reportData: undefined,
+        })
+      }
     }
   }
 
