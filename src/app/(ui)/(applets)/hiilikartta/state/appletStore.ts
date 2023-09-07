@@ -15,7 +15,7 @@ type Actions = {
   addPlanConf: (newPlanConf: NewPlanConf) => Promise<PlanConf>
   updatePlanConf: (
     planId: string,
-    newPlanConf: NewPlanConf
+    planConf: Partial<PlanConf>
   ) => Promise<PlanConf>
   addReportToPlan: (planId: string, report: any) => Promise<any>
 }
@@ -44,8 +44,8 @@ export const useAppletStore = create<State & Actions>()(
         })
         return planConf
       },
-      updatePlanConf: async (planId: string, newPlanConf: NewPlanConf) => {
-        const updatedPlanConf = { ...get().planConfs[planId], ...newPlanConf }
+      updatePlanConf: async (planId: string, planConf: Partial<PlanConf>) => {
+        const updatedPlanConf = { ...get().planConfs[planId], ...planConf }
         await set((state) => {
           state.planConfs[planId] = updatedPlanConf
         })
