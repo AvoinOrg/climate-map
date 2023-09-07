@@ -1,5 +1,4 @@
 import { generateShortId } from '#/common/utils/general'
-import { useState, useEffect } from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
