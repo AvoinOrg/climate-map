@@ -206,7 +206,7 @@ const components = {
   MuiButton: {
     variants: [
       {
-        props: { variant: 'contained' },
+        props: { variant: 'contained' as 'contained' },
         style: {
           backgroundColor: palette.neutral.light, // Replace with your desired color for the button
           borderColor: palette.neutral.main,
@@ -214,7 +214,7 @@ const components = {
         },
       },
       {
-        props: { variant: 'outlined' },
+        props: { variant: 'outlined' as 'outlined' },
         style: {
           backgroundColor: palette.neutral.light, // Replace with your desired color for the button
           borderColor: palette.neutral.main,
@@ -225,10 +225,10 @@ const components = {
     ],
     styleOverrides: {
       root: {
-        textTransform: 'none',
+        textTransform: 'none' as 'none',
       },
     },
-  } as const,
+  },
   MuiCssBaseline: {
     styleOverrides: {
       '*': {
