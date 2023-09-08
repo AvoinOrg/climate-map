@@ -1,6 +1,7 @@
 import React from 'react'
 import type { SxProps, Theme } from '@mui/system'
 import MuiLink from '@mui/material/Link'
+import NextLink from 'next/link'
 
 type Props = {
   href: string
@@ -18,7 +19,7 @@ const Link = ({ href, children, sx }: Props) => {
         textDecoration: 'none',
         ...sx,
       }}
-      component={Link}
+      component={NextLink}
     >
       {children}
     </MuiLink>
