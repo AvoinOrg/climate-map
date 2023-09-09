@@ -52,6 +52,8 @@ declare module '@mui/material/Typography' {
 declare module '@mui/material/styles/createTypography' {
   interface TypographyOptions {
     h7?: React.CSSProperties
+    h8?: React.CSSProperties
+    h9?: React.CSSProperties
     body7?: React.CSSProperties
   }
 }
@@ -169,18 +171,29 @@ const typography: TypographyOptions = {
     fontWeight: 400,
     lineHeight: 'normal',
     letterSpacing: '0.1rem',
-    textDecoration: 'underline',
   },
   h6: {
     fontFamily: fonts.primary,
     fontSize: '0.875rem',
     fontWeight: 400,
+    lineHeight: '1.625rem',
+    letterSpacing: '0.0875rem',
+  },
+  h7: {
+    fontFamily: fonts.primary,
+    fontSize: '0.875rem',
+    fontWeight: 700,
+    lineHeight: '1.625rem',
+    letterSpacing: '0.0875rem',
+  },
+  h8: {
+    fontFamily: fonts.primary,
+    fontSize: '0.875rem',
+    fontWeight: 400,
     lineHeight: 'normal',
     letterSpacing: '0.0875rem',
-    textDecoration: 'underline',
   },
-  // Adding additional typography options for h8 and body7
-  h7: {
+  h9: {
     fontFamily: fonts.primary,
     fontSize: '0.875rem',
     fontWeight: 700,
