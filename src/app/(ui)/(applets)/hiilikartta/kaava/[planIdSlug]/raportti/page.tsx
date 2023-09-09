@@ -107,7 +107,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                     display: 'inline',
                   })}
                 >
-                  Tampereen keskusta, kaava V1
+                  {planConf?.name}
                 </Typography>
                 <Typography
                   sx={(theme) => ({
