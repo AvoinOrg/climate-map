@@ -62,7 +62,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         >
           <Section
             sx={(theme) => ({
-              backgroundColor: theme.palette.secondary.dark,
+              backgroundColor: theme.palette.primary.dark,
               pt: theme.spacing(10),
               pb: theme.spacing(4),
               px: theme.spacing(4),
@@ -75,7 +75,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             >
               <Typography
                 sx={(theme) => ({
-                  typography: theme.typography.h3,
+                  typography: theme.typography.h1,
                   display: 'inline',
                 })}
               >
