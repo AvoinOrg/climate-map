@@ -133,12 +133,12 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
           <Section>
             <Row
               sx={(theme) => ({
-                mt: theme.spacing(4),
+                mt: theme.spacing(6),
               })}
             >
               <Typography
                 sx={(theme) => ({
-                  typography: theme.typography.h4,
+                  typography: theme.typography.h1,
                   display: 'inline',
                 })}
               >
