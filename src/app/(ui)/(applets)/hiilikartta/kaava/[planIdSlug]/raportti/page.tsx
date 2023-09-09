@@ -12,6 +12,7 @@ import { styled } from '@mui/system'
 import { pp } from '#/common/utils/general'
 import { getRoute } from '#/common/utils/routing'
 import { routeTree } from 'applets/hiilikartta/common/routes'
+import { T } from '@tolgee/react'
 
 const MAX_WIDTH = '1000px'
 
@@ -142,17 +143,20 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                   display: 'inline',
                 })}
               >
-                Hiilivarasto (biomassa)
+                <T
+                  keyName="report.impact_on_carbon_stock"
+                  ns={'hiilikartta'}
+                ></T>
               </Typography>
-              <Typography
+              {/* <Typography
                 sx={(theme) => ({
                   typography: theme.typography.h4,
                   display: 'inline',
                   mt: theme.spacing(0.5),
                 })}
               >
-                {/* {pp(reportData.sum / 100, 5)} tCO2e */}
-              </Typography>
+                {pp(reportData.sum / 100, 5)} tCO2e
+              </Typography> */}
             </Row>
           </Section>
         </Box>
