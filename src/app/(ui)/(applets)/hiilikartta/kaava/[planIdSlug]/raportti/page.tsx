@@ -17,20 +17,20 @@ const MAX_WIDTH = '1000px'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const [isLoaded, setIsLoaded] = useState(false)
-  const reportData = useStore(
+  const planConf = useStore(
     useAppletStore,
-    (state) => state.planConfs[params.planIdSlug].reportData
+    (state) => state.planConfs[params.planIdSlug]
   )
 
   useEffect(() => {
     // useUIStore.setState((state) => {
     //   state.appBarTitle = 'Kaavat'
     // })
-    if (reportData != null) {
-      console.log(reportData)
+    if (planConf?.reportData != null) {
+      console.log(planConf.reportData)
       setIsLoaded(true)
     }
-  }, [reportData])
+  }, [planConf])
 
   // useEffect(() => {
   //   const planLayerGroupId = getPlanLayerGroupId(params.planIdSlug)
