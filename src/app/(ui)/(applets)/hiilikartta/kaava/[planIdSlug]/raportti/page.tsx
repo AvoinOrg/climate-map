@@ -158,6 +158,33 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 {pp(reportData.sum / 100, 5)} tCO2e
               </Typography> */}
             </Row>
+            <Row sx={{ mt: 6 }}>
+              <Col>
+                <Typography typography={'h8'}>
+                  <T keyName="report.plan" ns="hiilikartta"></T>
+                </Typography>
+                <Typography typography={'h7'}>{planConf?.name}</Typography>
+                <Typography typography={'h5'} sx={{ mt: 2 }}>
+                  <T
+                    keyName="report.carbon_stock_decreases"
+                    ns="hiilikartta"
+                  ></T>
+                </Typography>
+                <Typography typography={'h5'}>
+                  <T
+                    keyName="report.carbon_stocks_decrease"
+                    ns="hiilikartta"
+                  ></T>
+                </Typography>
+                <Typography typography={'h5'}>
+                  <T
+                    keyName="report.carbon_stocks_decrease"
+                    ns="hiilikartta"
+                  ></T>
+                </Typography>
+              </Col>
+              <Col sx={{}}></Col>
+            </Row>
           </Section>
         </Box>
       )}
