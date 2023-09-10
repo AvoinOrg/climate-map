@@ -13,8 +13,37 @@ import { pp } from '#/common/utils/general'
 import { getRoute } from '#/common/utils/routing'
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { T } from '@tolgee/react'
+import {
+  CalcFeature,
+  FeatureCalcs,
+  featureCols,
+  CalcFeatureYearValues,
+} from 'applets/hiilikartta/common/types'
 
 const MAX_WIDTH = '1000px'
+
+const getCalculations = (calcFeature: CalcFeature): FeatureCalcs => {
+  const calculations: Partial<FeatureCalcs> = {} // Start as a partial for intermediate computations
+
+  featureCols.forEach((col) => {
+    const nochange = calcFeature.properties[col].nochange
+    const planned = calcFeature.properties[col].planned
+    const yearDiffs: Partial<CalcFeatureYearValues> = {}
+
+    // Dynamically compute differences for each year
+    for (let yearKey in nochange) {
+      if (nochange.hasOwnProperty(yearKey) && planned.hasOwnProperty(yearKey)) {
+        // Assure TypeScript of the type
+        const year = yearKey as keyof CalcFeatureYearValues
+        yearDiffs[year] = nochange[year] - planned[year]
+      }
+    }
+
+    calculations[`${col}_diff`] = yearDiffs as CalcFeatureYearValues
+  })
+
+  return calculations as FeatureCalcs // Cast back to FeatureCalcs after computing all the values
+}
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const [isLoaded, setIsLoaded] = useState(false)
