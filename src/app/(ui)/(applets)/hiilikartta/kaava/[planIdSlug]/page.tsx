@@ -127,7 +127,10 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             <>
               {planConf.reportData && (
                 <SmallMenuButton variant="outlined" onClick={handleOpenReport}>
-                  <T keyName={'sidebar.plan_settings.open_full_report'}></T>
+                  <T
+                    keyName={'sidebar.plan_settings.open_full_report'}
+                    ns={'hiilikartta'}
+                  ></T>
                 </SmallMenuButton>
               )}
               <Box sx={{}}>
