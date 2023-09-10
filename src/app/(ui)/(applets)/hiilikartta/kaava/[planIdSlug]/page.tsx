@@ -19,7 +19,10 @@ import useStore from '#/common/hooks/useStore'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { useMapStore } from '#/common/store'
-import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
+import {
+  getPlanLayerGroupId,
+  transformCalcGeojsonToNestedStructure,
+} from 'applets/hiilikartta/common/utils'
 import Folder from '#/components/common/Folder'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
@@ -60,8 +63,17 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             },
           }
         )
+
+        const areas = transformCalcGeojsonToNestedStructure(
+          JSON.parse(response.data.areas)
+        )
+        const totals = transformCalcGeojsonToNestedStructure(
+          JSON.parse(response.data.totals)
+        )
+        const metadata = JSON.parse(response.data.metadata)
+
         updatePlanConf(planConf.id, {
-          reportData: response.data,
+          reportData: { areas: areas, totals: totals, metadata: metadata },
           isCalculating: false,
         })
       } catch (e) {
