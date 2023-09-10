@@ -81,7 +81,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   // }, [])
   return (
     <>
-      {isLoaded && (
+      {isLoaded && totalsCalcs && (
         <Box
           sx={(theme) => ({
             position: 'absolute',
