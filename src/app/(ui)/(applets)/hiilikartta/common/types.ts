@@ -63,3 +63,7 @@ export type CalcFeatureCollection = {
   type: 'FeatureCollection'
   features: CalcFeature[]
 }
+
+export type FeatureCalcs = {
+  [K in `${(typeof featureCols)[number]}_diff`]: CalcFeatureYearValues
+}
