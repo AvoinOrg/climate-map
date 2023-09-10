@@ -47,6 +47,7 @@ const getCalculations = (calcFeature: CalcFeature): FeatureCalcs => {
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const [isLoaded, setIsLoaded] = useState(false)
+  const [totalsCalcs, setTotalsCalcs] = useState<FeatureCalcs>()
   const planConf = useStore(
     useAppletStore,
     (state) => state.planConfs[params.planIdSlug]
@@ -58,6 +59,11 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     // })
     if (planConf?.reportData != null) {
       console.log(planConf.reportData)
+      const newTotalsCalcs = getCalculations(
+        planConf.reportData.totals.features[0]
+      )
+      console.log(newTotalsCalcs)
+      setTotalsCalcs(newTotalsCalcs)
       setIsLoaded(true)
     }
   }, [planConf])
