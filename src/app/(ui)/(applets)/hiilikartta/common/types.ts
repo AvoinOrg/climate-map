@@ -55,7 +55,7 @@ export type CalcFeature = {
   id: string
   type: 'Feature'
   properties: CalcFeatureProperties
-  geometry: Geometry
+  geometry: { coordinates: [number, number][][]; type: 'Polygon' }
 }
 
 export type CalcFeatureCollection = {
