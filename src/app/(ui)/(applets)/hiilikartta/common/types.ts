@@ -1,6 +1,8 @@
+import { Geometry } from 'geojson'
+
 export interface ReportData {
-  areas: GeoJSON.FeatureCollection
-  totals: GeoJSON.FeatureCollection
+  areas: CalcFeatureCollection
+  totals: CalcFeatureCollection
   metadata: any
 }
 
@@ -26,3 +28,38 @@ export type NewPlanConf = {
 }
 
 export type FileType = 'shp' | 'geojson' | 'gpkg'
+
+export type CalcFeatureYearValues = {
+  now: number
+  '2035': number
+  '2045': number
+  '2055': number
+}
+
+export const featureCols = [
+  'bio_carbon_sum',
+  'ground_carbon_sum',
+  'bio_carbon_per_area',
+  'ground_carbon_per_area',
+] as const
+
+export type CarbonData = {
+  nochange: CalcFeatureYearValues
+  planned: CalcFeatureYearValues
+}
+
+export type CalcFeatureProperties = {
+  [K in (typeof featureCols)[number]]: CarbonData
+}
+
+export type CalcFeature = {
+  id: string
+  type: 'Feature'
+  properties: CalcFeatureProperties
+  geometry: Geometry
+}
+
+export type CalcFeatureCollection = {
+  type: 'FeatureCollection'
+  features: CalcFeature[]
+}
