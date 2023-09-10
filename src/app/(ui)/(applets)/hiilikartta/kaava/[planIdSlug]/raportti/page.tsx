@@ -15,9 +15,10 @@ import { routeTree } from 'applets/hiilikartta/common/routes'
 import { T } from '@tolgee/react'
 import {
   CalcFeature,
+  CalcFeatureYearValues,
   FeatureCalcs,
   featureCols,
-  CalcFeatureYearValues,
+  featureYears,
 } from 'applets/hiilikartta/common/types'
 
 const MAX_WIDTH = '1000px'
@@ -31,13 +32,11 @@ const getCalculations = (calcFeature: CalcFeature): FeatureCalcs => {
     const yearDiffs: Partial<CalcFeatureYearValues> = {}
 
     // Dynamically compute differences for each year
-    for (let yearKey in nochange) {
-      if (nochange.hasOwnProperty(yearKey) && planned.hasOwnProperty(yearKey)) {
-        // Assure TypeScript of the type
-        const year = yearKey as keyof CalcFeatureYearValues
-        yearDiffs[year] = nochange[year] - planned[year]
+    featureYears.forEach((year) => {
+      if (nochange[year] !== undefined && planned[year] !== undefined) {
+        yearDiffs[year] = planned[year] - nochange[year]
       }
-    }
+    })
 
     calculations[`${col}_diff`] = yearDiffs as CalcFeatureYearValues
   })
