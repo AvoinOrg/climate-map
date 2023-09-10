@@ -29,12 +29,7 @@ export type NewPlanConf = {
 
 export type FileType = 'shp' | 'geojson' | 'gpkg'
 
-export type CalcFeatureYearValues = {
-  now: number
-  '2035': number
-  '2045': number
-  '2055': number
-}
+export const featureYears = ['now', '2035', '2045', '2055'] as const
 
 export const featureCols = [
   'bio_carbon_sum',
@@ -42,6 +37,10 @@ export const featureCols = [
   'bio_carbon_per_area',
   'ground_carbon_per_area',
 ] as const
+
+export type CalcFeatureYearValues = {
+  [K in (typeof featureYears)[number]]: number
+}
 
 export type CarbonData = {
   nochange: CalcFeatureYearValues
