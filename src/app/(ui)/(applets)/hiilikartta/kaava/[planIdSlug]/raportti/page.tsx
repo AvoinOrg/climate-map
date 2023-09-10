@@ -82,7 +82,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   // }, [])
   return (
     <>
-      {isLoaded && totalsCalcs && (
+      {isLoaded && totalsCalcs && planConf && planConf.reportData && (
         <Box
           sx={(theme) => ({
             position: 'absolute',
@@ -94,6 +94,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             backgroundColor: theme.palette.neutral.light,
             display: 'flex',
             flexDirection: 'column',
+            overflow: 'auto',
+            pb: theme.spacing(20),
+            alignItems: 'center',
           })}
         >
           <Section
@@ -208,7 +211,10 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                   )}
                 </Typography>
                 <Typography mt={3} typography={'h5'}>
-                  <T keyName="report.carbon_eqv_unit_hectare" ns="hiilikartta"></T>
+                  <T
+                    keyName="report.carbon_eqv_unit_hectare"
+                    ns="hiilikartta"
+                  ></T>
                 </Typography>
                 <Typography mt={1} typography={'h1'}>
                   {pp(
@@ -221,6 +227,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               <Col sx={{}}></Col>
             </Row>
           </Section>
+          <Breaker sx={{ mt: 8 }} />
           <Section sx={{ mt: 8 }}>
             <Row>
               <Typography
@@ -250,6 +257,13 @@ const Section = styled('div')(({ theme }) => ({
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center',
+  width: '100%',
+}))
+
+const Breaker = styled('div')(({ theme }) => ({
+  width: '100%',
+  borderTop: `3px solid ${theme.palette.primary.light}`,
+  maxWidth: MAX_WIDTH,
 }))
 
 const Row = styled('div')(({ theme }) => ({
