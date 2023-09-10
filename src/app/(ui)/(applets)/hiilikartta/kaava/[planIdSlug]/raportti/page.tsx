@@ -178,19 +178,11 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 })}
               >
                 <T
-                  keyName="report.impact_on_carbon_stock"
+                  keyName="report.impact_on_carbon_stock_in_year"
                   ns={'hiilikartta'}
-                ></T>
+                ></T>{' '}
+                {featureYears[1]}
               </Typography>
-              {/* <Typography
-                sx={(theme) => ({
-                  typography: theme.typography.h4,
-                  display: 'inline',
-                  mt: theme.spacing(0.5),
-                })}
-              >
-                {pp(reportData.sum / 100, 5)} tCO2e
-              </Typography> */}
             </Row>
             <Row sx={{ mt: 6 }}>
               <Col>
@@ -204,17 +196,25 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                     ns="hiilikartta"
                   ></T>
                 </Typography>
-                <Typography typography={'h5'}>
-                  <T
-                    keyName="report.carbon_stocks_decrease"
-                    ns="hiilikartta"
-                  ></T>
+                <Typography mt={4} typography={'h5'}>
+                  <T keyName="report.carbon_eqv_unit" ns="hiilikartta"></T>
                 </Typography>
-                <Typography typography={'h5'}>
-                  <T
-                    keyName="report.carbon_stocks_decrease"
-                    ns="hiilikartta"
-                  ></T>
+                <Typography mt={1} typography={'h1'}>
+                  {pp(
+                    totalsCalcs.bio_carbon_sum_diff[featureYears[1]] +
+                      totalsCalcs.ground_carbon_sum_diff[featureYears[1]],
+                    4
+                  )}
+                </Typography>
+                <Typography mt={3} typography={'h5'}>
+                  <T keyName="report.carbon_eqv_unit_hectare" ns="hiilikartta"></T>
+                </Typography>
+                <Typography mt={1} typography={'h1'}>
+                  {pp(
+                    totalsCalcs.bio_carbon_per_area_diff[featureYears[1]] +
+                      totalsCalcs.ground_carbon_per_area_diff[featureYears[1]],
+                    2
+                  )}
                 </Typography>
               </Col>
               <Col sx={{}}></Col>
