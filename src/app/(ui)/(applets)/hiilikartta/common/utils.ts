@@ -2,6 +2,13 @@ import { map, uniq } from 'lodash-es'
 
 import { getColorExpressionArrForValues } from '#/common/utils/map'
 import { ExtendedMbStyle, SerializableLayerConf } from '#/common/types/map'
+import GeoJSON from 'geojson'
+import {
+  CalcFeatureCollection,
+  CalcFeatureProperties,
+  featureCols,
+  CalcFeature,
+} from './types'
 
 export const getPlanLayerGroupId = (planId: string) => {
   return `${planId}_zoning_plan`
