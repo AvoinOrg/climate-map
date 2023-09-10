@@ -84,3 +84,44 @@ export const createLayerConf = (
 
   return layerConf
 }
+
+export const transformCalcGeojsonToNestedStructure = (
+  input: GeoJSON.FeatureCollection
+): CalcFeatureCollection => {
+  const output: CalcFeatureCollection = {
+    type: 'FeatureCollection',
+    features: [],
+  }
+
+  input.features.forEach((feature: any) => {
+    const newProperties: CalcFeatureProperties = {} as CalcFeatureProperties
+
+    featureCols.forEach((col) => {
+      newProperties[col] = {
+        nochange: {
+          now: feature.properties[`${col}_nochange_now`],
+          '2035': feature.properties[`${col}_nochange_2035`],
+          '2045': feature.properties[`${col}_nochange_2045`],
+          '2055': feature.properties[`${col}_nochange_2055`],
+        },
+        planned: {
+          now: feature.properties[`${col}_planned_now`],
+          '2035': feature.properties[`${col}_planned_2035`],
+          '2045': feature.properties[`${col}_planned_2045`],
+          '2055': feature.properties[`${col}_planned_2055`],
+        },
+      }
+    })
+
+    const newFeature: CalcFeature = {
+      id: feature.id,
+      type: 'Feature',
+      properties: newProperties,
+      geometry: feature.geometry,
+    }
+
+    output.features.push(newFeature)
+  })
+
+  return output
+}
