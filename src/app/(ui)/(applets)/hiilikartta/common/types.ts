@@ -64,6 +64,7 @@ export type CalcFeatureCollection = {
   features: CalcFeature[]
 }
 
+// A helper type for extra calculations based on the carbon data
 export type FeatureCalcs = {
   [K in `${(typeof featureCols)[number]}_diff`]: CalcFeatureYearValues
 }
