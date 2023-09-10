@@ -20,6 +20,7 @@ import {
   featureCols,
   featureYears,
 } from 'applets/hiilikartta/common/types'
+import CarbonMapGraph from 'applets/hiilikartta/components/CarbonMapGraph'
 
 const MAX_WIDTH = '1000px'
 
@@ -218,6 +219,24 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 </Typography>
               </Col>
               <Col sx={{}}></Col>
+            </Row>
+          </Section>
+          <Section sx={{ mt: 8 }}>
+            <Row>
+              <Typography
+                sx={(theme) => ({
+                  typography: theme.typography.h1,
+                  display: 'inline',
+                })}
+              >
+                <T
+                  keyName="report.carbon_stock_development"
+                  ns={'hiilikartta'}
+                ></T>{' '}
+              </Typography>
+            </Row>
+            <Row>
+              <CarbonMapGraph geojsonData={planConf.reportData.areas} />
             </Row>
           </Section>
         </Box>
