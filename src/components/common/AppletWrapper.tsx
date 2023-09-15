@@ -8,6 +8,7 @@ import React, { useEffect, useLayoutEffect } from 'react'
 import { useMapStore, useUIStore } from '#/common/store'
 import { MapContext } from '#/common/types/map'
 import { useTolgee } from '@tolgee/react'
+import { Box } from '@mui/material'
 
 const AppletWrapper = ({
   children,
@@ -15,12 +16,14 @@ const AppletWrapper = ({
   localizationNamespace,
   defaultLanguage,
   SidebarHeaderElement,
+  sx,
 }: {
   children: React.ReactNode
   mapContext: MapContext
   localizationNamespace?: string
   defaultLanguage?: string
   SidebarHeaderElement?: React.JSX.Element
+  sx?: any
 }) => {
   const tolgee = useTolgee(['update'])
 
@@ -64,7 +67,11 @@ const AppletWrapper = ({
     return true
   }
 
-  return <>{stateMapContext === mapContext && isTolgeeReady() && children}</>
+  return (
+    <Box sx={sx}>
+      {stateMapContext === mapContext && isTolgeeReady() && children}
+    </Box>
+  )
 }
 
 export default AppletWrapper
