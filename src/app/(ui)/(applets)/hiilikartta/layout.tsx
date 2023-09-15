@@ -24,17 +24,14 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       localizationNamespace={localizationNamespace}
       defaultLanguage={defaultLanguage}
       SidebarHeaderElement={SidebarHeaderElement}
+      sx={{
+        width: '400px',
+        pt: 4,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
-      <Box
-        sx={{
-          padding: '35px 20px 100px 20px',
-          width: '400px',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {children}
-      </Box>
+      {children}
     </AppletWrapper>
   )
 }
