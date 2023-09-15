@@ -31,6 +31,8 @@ export type FileType = 'shp' | 'geojson' | 'gpkg'
 
 export const featureYears = ['now', '2035', '2045', '2055'] as const
 
+export type FeatureYear = (typeof featureYears)[number]
+
 export const featureCols = [
   'bio_carbon_sum',
   'ground_carbon_sum',
