@@ -1,4 +1,3 @@
-import { Geometry } from 'geojson'
 
 export interface ReportData {
   areas: CalcFeatureCollection
