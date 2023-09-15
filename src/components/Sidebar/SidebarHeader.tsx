@@ -21,16 +21,31 @@ const SidebarHeader = ({ children, title, sx }: Props) => {
         border: 1,
         borderColor: 'primary.dark',
         flexDirection: 'column',
-        ...sx
+        ...sx,
+        width: '100%',
       }}
     >
-      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', flexGrow: 1 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          flexGrow: 1,
+        }}
+      >
         <SidebarToggleButton />
-        <Typography sx={{ margin: '20px 0 0 0', width: '100%', textAlign: 'end' }} variant="h2">
+        <Typography
+          sx={{ margin: '20px 0 0 0', width: '100%', textAlign: 'end' }}
+          variant="h2"
+        >
           {title}
         </Typography>
       </Box>
-      <Box sx={{ ml: 3 }}>{children}</Box>
+      <Box
+        sx={{ ml: 3, overflow: 'hidden', width: sx?.width ? sx.width : '100%' }}
+      >
+        {children}
+      </Box>
     </Box>
   )
 }
