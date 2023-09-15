@@ -56,7 +56,9 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
       })}
     >
       {routes.length > 1 && (
-        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+        <Box
+          sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
+        >
           <MuiLink href={routes[routes.length - 2].path} component={Link}>
             <ArrowBackIosNewIcon
               sx={(theme) => ({
@@ -71,7 +73,12 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
           <Box sx={{ display: 'inline-block' }}>
             {routes.map((route) => {
               if (route === routes[routes.length - 1]) {
-                return <RouteElementInert key={route.path} name={route.name}></RouteElementInert>
+                return (
+                  <RouteElementInert
+                    key={route.path}
+                    name={route.name}
+                  ></RouteElementInert>
+                )
               }
               return (
                 <Box
@@ -80,7 +87,10 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
                   })}
                   key={route.path}
                 >
-                  <RouteElement route={route.path} name={route.name}></RouteElement>
+                  <RouteElement
+                    route={route.path}
+                    name={route.name}
+                  ></RouteElement>
                   <Typography
                     sx={(theme) => ({
                       display: 'inline-block',
