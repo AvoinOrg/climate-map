@@ -11,6 +11,7 @@ interface Props {
 const SidebarHeader = ({ children, title, sx }: Props) => {
   return (
     <Box
+      className="sidebar-header"
       sx={{
         p: 0,
         pr: 3,
