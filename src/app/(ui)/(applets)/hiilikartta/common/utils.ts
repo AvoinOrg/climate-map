@@ -120,6 +120,9 @@ export const transformCalcGeojsonToNestedStructure = (
       }
     })
 
+    newProperties.area = feature.properties.area
+    newProperties.zoning_code = feature.properties.kaavamerki
+
     const newFeature: CalcFeature = {
       id: feature.id,
       type: 'Feature',
