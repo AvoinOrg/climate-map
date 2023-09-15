@@ -21,6 +21,7 @@ import {
   featureYears,
 } from 'applets/hiilikartta/common/types'
 import CarbonMapGraph from 'applets/hiilikartta/components/CarbonMapGraph'
+import CarbonLineChart from 'applets/hiilikartta/components/CarbonLineChart'
 
 const MAX_WIDTH = '1000px'
 
@@ -244,6 +245,25 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             </Row>
             <Row>
               <CarbonMapGraph geojsonData={planConf.reportData.areas} />
+            </Row>
+          </Section>
+          <Breaker sx={{ mt: 8 }} />
+          <Section sx={{ mt: 8 }}>
+            <Row>
+              <Typography
+                sx={(theme) => ({
+                  typography: theme.typography.h1,
+                  display: 'inline',
+                })}
+              >
+                <T
+                  keyName="report.carbon_stock_change_in_area_total"
+                  ns={'hiilikartta'}
+                ></T>{' '}
+              </Typography>
+            </Row>
+            <Row>
+              <CarbonLineChart data={planConf.reportData.totals} />
             </Row>
           </Section>
         </Box>
