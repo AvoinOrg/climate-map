@@ -42,7 +42,11 @@ const SidebarHeader = ({ children, title, sx }: Props) => {
         </Typography>
       </Box>
       <Box
-        sx={{ ml: 3, overflow: 'hidden', width: sx?.width ? sx.width : '100%' }}
+        sx={{
+          ml: 3,
+          overflow: 'hidden',
+          maxWidth: sx?.width ? sx.width : '100%',
+        }}
       >
         {children}
       </Box>
