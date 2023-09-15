@@ -22,8 +22,9 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
       <Typography
         sx={(theme) => ({
           display: 'inline-block',
-          typography: theme.typography.subtitle1,
+          typography: theme.typography.subtitle2,
           '&:hover': { color: theme.palette.primary.main },
+          textTransform: 'uppercase',
         })}
       >
         {name}
@@ -36,8 +37,9 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
       <Typography
         sx={(theme) => ({
           display: 'inline-block',
-          typography: theme.typography.subtitle1,
+          typography: theme.typography.subtitle2,
           color: 'neutral.darker',
+          textTransform: 'uppercase',
         })}
       >
         {name}
@@ -84,6 +86,8 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
                 <Box
                   sx={(theme) => ({
                     display: 'inline-block',
+                    lineHeight: '0',
+                    height: '18px',
                   })}
                   key={route.path}
                 >
