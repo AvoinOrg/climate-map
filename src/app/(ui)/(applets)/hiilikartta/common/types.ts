@@ -51,6 +51,9 @@ export type CarbonData = {
 
 export type CalcFeatureProperties = {
   [K in (typeof featureCols)[number]]: CarbonData
+} & {
+  area: number
+  zoning_code: string
 }
 
 export type CalcFeature = {
