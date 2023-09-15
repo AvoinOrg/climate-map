@@ -9,7 +9,17 @@ interface FeatureShape {
   type: 'Feature'
   id: string
   geometry: { coordinates: [number, number][][]; type: 'Polygon' }
-  properties: {}
+  properties: {
+    bio_carbon_per_area: {
+      planned: { [year: string]: number }
+      nochange: { [year: string]: number }
+    }
+    ground_carbon_per_area: {
+      planned: { [year: string]: number }
+      nochange: { [year: string]: number }
+    }
+    zoning_code: string
+  }
 }
 
 type Props = {
