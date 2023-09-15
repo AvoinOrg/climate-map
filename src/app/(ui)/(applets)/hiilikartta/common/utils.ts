@@ -121,6 +121,7 @@ export const transformCalcGeojsonToNestedStructure = (
     })
 
     newProperties.area = feature.properties.area
+    // TODO: change to actual zoning property, not hardcoded kaavamerki
     newProperties.zoning_code = feature.properties.kaavamerki
 
     const newFeature: CalcFeature = {
