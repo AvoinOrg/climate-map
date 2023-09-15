@@ -70,7 +70,7 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
               })}
             ></ArrowBackIosNewIcon>
           </MuiLink>
-          <Box sx={{ display: 'inline-block' }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
             {routes.map((route) => {
               if (route === routes[routes.length - 1]) {
                 return (
