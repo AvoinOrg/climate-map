@@ -42,7 +42,17 @@ const AppletWrapper = ({
 
   useLayoutEffect(() => {
     if (SidebarHeaderElement != null && setSidebarHeaderElement != null) {
-      setSidebarHeaderElement(SidebarHeaderElement)
+      const AdjustedSidebarHeaderElement = React.cloneElement(
+        SidebarHeaderElement,
+        {
+          sx: {
+            ...SidebarHeaderElement.props.sx,
+            width: sx?.width ? sx.width : '100%',
+          },
+        }
+      )
+
+      setSidebarHeaderElement(AdjustedSidebarHeaderElement)
     }
   }, [setSidebarHeaderElement, SidebarHeaderElement])
 
