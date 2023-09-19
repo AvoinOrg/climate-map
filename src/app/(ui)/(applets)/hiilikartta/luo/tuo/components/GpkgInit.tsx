@@ -20,7 +20,9 @@ const GpkgInit = ({
 
   useEffect(() => {
     const loadGpkg = async (fileBuffer: ArrayBuffer) => {
-      const { GeoPackageAPI, setSqljsWasmLocateFile } = await import('@ngageoint/geopackage')
+      const { GeoPackageAPI, setSqljsWasmLocateFile } = await import(
+        '@ngageoint/geopackage'
+      )
       setSqljsWasmLocateFile((file) => '/dyn/' + file)
 
       const geopackage = await GeoPackageAPI.open(new Uint8Array(fileBuffer))
@@ -85,7 +87,10 @@ const GpkgInit = ({
   }
 
   const handleExtract = () => {
-    const extract = async (geopackage: any, tableName: string): Promise<any> => {
+    const extract = async (
+      geopackage: any,
+      tableName: string
+    ): Promise<any> => {
       const geoJson: any = {
         type: 'FeatureCollection',
         features: [],
