@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Box, IconButton, SelectChangeEvent } from '@mui/material'
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import { SelectChangeEvent } from '@mui/material'
 import { Feature, FeatureCollection } from 'geojson'
 
 import DropDownSelect from '#/components/common/DropDownSelect'
+import PlanImportActionsRow from './PlanImportActionsRow'
 
 const ShpInit = ({
   fileBuffer,
@@ -89,21 +89,7 @@ const ShpInit = ({
       )}
 
       {column != null && (
-        <Box
-          sx={(theme) => ({
-            minHeight: '25px',
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            margin: '40px 0 60px 0',
-          })}
-        >
-          <IconButton onClick={handleFinish}>
-            <ArrowForwardIosIcon
-              sx={(theme) => ({ float: 'right', cursor: 'pointer' })}
-            ></ArrowForwardIosIcon>
-          </IconButton>
-        </Box>
+        <PlanImportActionsRow onClickNext={handleFinish}></PlanImportActionsRow>
       )}
     </>
   )
