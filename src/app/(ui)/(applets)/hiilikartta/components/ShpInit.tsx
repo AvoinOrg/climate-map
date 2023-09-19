@@ -1,11 +1,9 @@
-import { GeoPackage } from '@ngageoint/geopackage'
 import { useState, useEffect } from 'react'
 import { Box, IconButton, SelectChangeEvent } from '@mui/material'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
-import { Feature, FeatureCollection, GeoJsonObject } from 'geojson'
+import { Feature, FeatureCollection } from 'geojson'
 
 import DropDownSelect from '#/components/common/DropDownSelect'
-import { FeatureCollectionWithFilename } from 'shpjs'
 
 const ShpInit = ({
   fileBuffer,
