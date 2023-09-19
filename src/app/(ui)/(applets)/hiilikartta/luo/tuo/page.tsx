@@ -10,10 +10,10 @@ import { FileType, NewPlanConf } from 'applets/hiilikartta/common/types'
 import { getGeoJsonArea } from '#/common/utils/gis'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import GpkgInit from '../../components/GpkgInit'
+import GpkgInit from './components/GpkgInit'
+import ShpInit from './components/ShpInit'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { createLayerConf } from '../../common/utils'
-import ShpInit from 'applets/hiilikartta/components/ShpInit'
 
 const Page = () => {
   const addSerializableLayerGroup = useMapStore(
@@ -131,7 +131,6 @@ const Page = () => {
       {fileType === 'shp' && arrayBuffer && (
         <ShpInit fileBuffer={arrayBuffer} onFinish={handleFinish}></ShpInit>
       )}
-      {/* {res && <p>{JSON.stringify(res)}</p>} */}
     </>
   )
 }
