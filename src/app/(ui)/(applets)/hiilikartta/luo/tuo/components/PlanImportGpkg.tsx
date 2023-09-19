@@ -5,7 +5,7 @@ import { SelectChangeEvent } from '@mui/material'
 import DropDownSelect from '#/components/common/DropDownSelect'
 import PlanImportActionsRow from './PlanImportActionsRow'
 
-const GpkgInit = ({
+const PlanImportGpkg = ({
   fileBuffer,
   onFinish,
 }: {
@@ -142,4 +142,4 @@ const GpkgInit = ({
   )
 }
 
-export default GpkgInit
+export default PlanImportGpkg

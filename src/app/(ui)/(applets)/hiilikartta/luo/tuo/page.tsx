@@ -10,7 +10,7 @@ import { FileType, NewPlanConf } from 'applets/hiilikartta/common/types'
 import { getGeoJsonArea } from '#/common/utils/gis'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import GpkgInit from './components/GpkgInit'
+import PlanImportGpkg from './components/PlanImportGpkg'
 import ShpInit from './components/ShpInit'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { createLayerConf } from '../../common/utils'
@@ -126,7 +126,10 @@ const Page = () => {
         />
       </Button>
       {fileType === 'gpkg' && arrayBuffer && (
-        <GpkgInit fileBuffer={arrayBuffer} onFinish={handleFinish}></GpkgInit>
+        <PlanImportGpkg
+          fileBuffer={arrayBuffer}
+          onFinish={handleFinish}
+        ></PlanImportGpkg>
       )}
       {fileType === 'shp' && arrayBuffer && (
         <ShpInit fileBuffer={arrayBuffer} onFinish={handleFinish}></ShpInit>
