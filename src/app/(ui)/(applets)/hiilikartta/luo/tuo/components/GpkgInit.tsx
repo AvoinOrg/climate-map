@@ -1,9 +1,9 @@
 import { GeoPackage } from '@ngageoint/geopackage'
 import { useState, useEffect } from 'react'
-import { Box, IconButton, SelectChangeEvent } from '@mui/material'
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import { SelectChangeEvent } from '@mui/material'
 
 import DropDownSelect from '#/components/common/DropDownSelect'
+import PlanImportActionsRow from './PlanImportActionsRow'
 
 const GpkgInit = ({
   fileBuffer,
@@ -129,19 +129,9 @@ const GpkgInit = ({
       )}
 
       {table != null && column != null && (
-        <Box
-          sx={(theme) => ({
-            minHeight: '25px',
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            margin: '40px 0 60px 0',
-          })}
-        >
-          <IconButton onClick={handleExtract}>
-            <ArrowForwardIosIcon sx={(theme) => ({ float: 'right', cursor: 'pointer' })}></ArrowForwardIosIcon>
-          </IconButton>
-        </Box>
+        <PlanImportActionsRow
+          onClickNext={handleExtract}
+        ></PlanImportActionsRow>
       )}
     </>
   )
