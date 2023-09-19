@@ -5,7 +5,7 @@ import { Feature, FeatureCollection } from 'geojson'
 import DropDownSelect from '#/components/common/DropDownSelect'
 import PlanImportActionsRow from './PlanImportActionsRow'
 
-const ShpInit = ({
+const PlanImportShp = ({
   fileBuffer,
   onFinish,
 }: {
@@ -95,4 +95,4 @@ const ShpInit = ({
   )
 }
 
-export default ShpInit
+export default PlanImportShp

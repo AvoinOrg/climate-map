@@ -11,7 +11,7 @@ import { getGeoJsonArea } from '#/common/utils/gis'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import PlanImportGpkg from './components/PlanImportGpkg'
-import ShpInit from './components/ShpInit'
+import PlanImportShp from './components/PlanImportShp'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { createLayerConf } from '../../common/utils'
 
@@ -132,7 +132,10 @@ const Page = () => {
         ></PlanImportGpkg>
       )}
       {fileType === 'shp' && arrayBuffer && (
-        <ShpInit fileBuffer={arrayBuffer} onFinish={handleFinish}></ShpInit>
+        <PlanImportShp
+          fileBuffer={arrayBuffer}
+          onFinish={handleFinish}
+        ></PlanImportShp>
       )}
     </>
   )
