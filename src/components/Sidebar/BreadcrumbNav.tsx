@@ -53,7 +53,6 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'flex-end',
-        minHeight: '60px',
         color: theme.palette.neutral.dark,
       })}
     >
@@ -67,7 +66,7 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
                 float: 'left',
                 cursor: 'pointer',
                 color: theme.palette.neutral.dark,
-                margin: '0 10px 0 0',
+                margin: '0 10px 0 -5px',
                 '&:hover': { color: theme.palette.neutral.main },
               })}
             ></ArrowBackIosNewIcon>
