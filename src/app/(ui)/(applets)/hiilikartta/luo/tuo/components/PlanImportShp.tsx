@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Feature, FeatureCollection } from 'geojson'
 
 import PlanImportActionsRow from './PlanImportActionsRow'
-import PlanImportPolygonLayerSelect from './PlanImportPolygonLayerSelect'
+import PlanImportCodeRecordSelect from './PlanImportCodeRecordSelect'
 
 const PlanImportShp = ({
   fileBuffer,
@@ -69,11 +69,11 @@ const PlanImportShp = ({
   return (
     <>
       {columns.length > 0 && (
-        <PlanImportPolygonLayerSelect
+        <PlanImportCodeRecordSelect
           columns={columns}
           selectedColumn={column}
           onColumnChange={handleColumnChange}
-        ></PlanImportPolygonLayerSelect>
+        ></PlanImportCodeRecordSelect>
       )}
 
       <PlanImportActionsRow

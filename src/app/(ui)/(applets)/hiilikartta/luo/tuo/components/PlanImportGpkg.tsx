@@ -4,7 +4,7 @@ import { SelectChangeEvent } from '@mui/material'
 
 import DropDownSelect from '#/components/common/DropDownSelect'
 import PlanImportActionsRow from './PlanImportActionsRow'
-import PlanImportPolygonLayerSelect from './PlanImportPolygonLayerSelect'
+import PlanImportCodeRecordSelect from './PlanImportCodeRecordSelect'
 
 const PlanImportGpkg = ({
   fileBuffer,
@@ -116,7 +116,7 @@ const PlanImportGpkg = ({
         ></DropDownSelect>
       )}
       {columns.length > 0 && (
-        <PlanImportPolygonLayerSelect
+        <PlanImportCodeRecordSelect
           columns={columns}
           selectedColumn={column}
           onColumnChange={handleColumnChange}

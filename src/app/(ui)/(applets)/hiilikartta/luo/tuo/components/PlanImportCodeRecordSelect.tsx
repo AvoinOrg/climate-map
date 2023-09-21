@@ -8,7 +8,7 @@ interface Props {
   onColumnChange: (column: string | undefined) => void
 }
 
-const PlanImportPolygonLayerSelect = ({
+const PlanImportCodeRecordSelect = ({
   columns,
   selectedColumn,
   onColumnChange,
@@ -42,4 +42,4 @@ const PlanImportPolygonLayerSelect = ({
   )
 }
 
-export default PlanImportPolygonLayerSelect
+export default PlanImportCodeRecordSelect
