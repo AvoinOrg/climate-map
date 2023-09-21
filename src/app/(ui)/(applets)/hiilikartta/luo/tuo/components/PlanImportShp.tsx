@@ -76,9 +76,10 @@ const PlanImportShp = ({
         ></PlanImportPolygonLayerSelect>
       )}
 
-      {column != null && (
-        <PlanImportActionsRow onClickNext={handleFinish}></PlanImportActionsRow>
-      )}
+      <PlanImportActionsRow
+        onClickAccept={handleFinish}
+        isAcceptDisabled={column == null}
+      ></PlanImportActionsRow>
     </>
   )
 }
