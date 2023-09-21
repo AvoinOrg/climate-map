@@ -248,7 +248,7 @@ const components = {
         scrollbarWidth: 'thin',
         scrollbarColor: 'transparent transparent',
         '&::-webkit-scrollbar': {
-          width: '10px',
+          width: '12px',
         },
         '&::-webkit-scrollbar-thumb': {
           backgroundColor: 'transparent',
