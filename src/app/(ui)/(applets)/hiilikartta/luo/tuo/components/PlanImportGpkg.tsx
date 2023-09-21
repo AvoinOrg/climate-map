@@ -4,6 +4,7 @@ import { SelectChangeEvent } from '@mui/material'
 
 import DropDownSelect from '#/components/common/DropDownSelect'
 import PlanImportActionsRow from './PlanImportActionsRow'
+import PlanImportPolygonLayerSelect from './PlanImportPolygonLayerSelect'
 
 const PlanImportGpkg = ({
   fileBuffer,
@@ -75,15 +76,8 @@ const PlanImportGpkg = ({
     setTable(value)
   }
 
-  const handleSelectColumn = (event: SelectChangeEvent) => {
-    const { value } = event.target
-
-    if (value == '' || value == null) {
-      setColumn(undefined)
-      return
-    }
-
-    setColumn(value)
+  const handleColumnChange = (newColumn: string | undefined) => {
+    setColumn(newColumn)
   }
 
   const handleExtract = () => {
@@ -122,15 +116,11 @@ const PlanImportGpkg = ({
         ></DropDownSelect>
       )}
       {columns.length > 0 && (
-        <DropDownSelect
-          sx={() => ({ margin: '20px 0 0 0' })}
-          value={column}
-          options={columns.map((table) => {
-            return { value: table, label: table }
-          })}
-          onChange={handleSelectColumn}
-          label="Valitse sarake, joka sisältää aluevarauskoodit"
-        ></DropDownSelect>
+        <PlanImportPolygonLayerSelect
+          columns={columns}
+          selectedColumn={column}
+          onColumnChange={handleColumnChange}
+        />
       )}
 
       {table != null && column != null && (
