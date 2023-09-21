@@ -1,6 +1,6 @@
 import React from 'react'
-import { Box, IconButton } from '@mui/material'
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import { Box, Typography } from '@mui/material'
+import { T } from '@tolgee/react'
 
 const InitActionsRow = ({
   onClickAccept,
@@ -19,11 +19,20 @@ const InitActionsRow = ({
         margin: '40px 0 60px 0',
       })}
     >
-      <IconButton onClick={onClickNext}>
-        <ArrowForwardIosIcon
-          sx={(theme) => ({ float: 'right', cursor: 'pointer' })}
-        ></ArrowForwardIosIcon>
-      </IconButton>
+      <Typography
+        typography={'h3'}
+        sx={(theme) => ({
+          float: 'right',
+          ...(isAcceptDisabled
+            ? { color: theme.palette.neutral.main }
+            : { cursor: 'pointer' }),
+        })}
+        onClick={isAcceptDisabled ? undefined : onClickAccept}
+      >
+        <u>
+          <T keyName="sidebar.create.accept" ns="hiilikartta" />
+        </u>
+      </Typography>
     </Box>
   )
 }
