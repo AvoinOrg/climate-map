@@ -14,7 +14,9 @@ const defaultLanguage = 'fi'
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const SidebarHeaderElement = (
     <SidebarHeader title={'Hiilikartta'}>
-      <BreadcrumbNav routeTree={routeTree}></BreadcrumbNav>
+      <Box sx={{mt: 8}}>
+        <BreadcrumbNav routeTree={routeTree}></BreadcrumbNav>
+      </Box>
     </SidebarHeader>
   )
 
