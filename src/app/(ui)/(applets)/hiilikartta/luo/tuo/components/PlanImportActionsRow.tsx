@@ -2,7 +2,13 @@ import React from 'react'
 import { Box, IconButton } from '@mui/material'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 
-const InitActionsRow = ({ onClickNext }: { onClickNext: () => void }) => {
+const InitActionsRow = ({
+  onClickAccept,
+  isAcceptDisabled,
+}: {
+  onClickAccept: () => void
+  isAcceptDisabled: boolean
+}) => {
   return (
     <Box
       sx={(theme) => ({
