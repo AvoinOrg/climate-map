@@ -22,19 +22,24 @@ const SidebarToggleButton = ({ sx }: Props) => {
     <Button
       onClick={toggleSidebar}
       sx={(theme) => ({
-        margin: '0 0 0 0',
-        p: 3,
+        m: 0,
+        p: 0,
+        pt: 4,
         pl: 5,
         display: 'flex',
         '&:hover': {
           backgroundColor: 'transparent',
         },
+        minWidth: 'unset',
+        maxWidth: 'unset',
         ...(!isSidebarOpen && {
           height: '100vh',
           alignItems: 'flex-start',
           width: SIDEBAR_CLOSED_WIDTH + 'px',
           p: 0,
+          pt: 0,
           pl: 0,
+          marginLeft: '-2px', // a hack to visually align the button with the sidebar
         }),
         transition: 'padding 0.1s',
         ...sx,
@@ -45,14 +50,25 @@ const SidebarToggleButton = ({ sx }: Props) => {
       disabled={isSidebarDisabled}
       size="large"
     >
-      {isSidebarOpen ? <MySandwich /> : <MySandwich sx={{ transform: 'rotate(90deg)', margin: '35px 0 0 0' }} />}
+      {isSidebarOpen ? (
+        <MySandwich />
+      ) : (
+        <MySandwich
+          sx={{
+            transform: 'rotate(90deg)',
+            mt: 5,
+            mr: 2,
+            ml: 2,
+          }}
+        />
+      )}
     </Button>
   )
 }
 
 const MySandwich = styled(Sandwich)(({ theme }) => ({
   margin: '0',
-  width: '50px',
+  width: '48px',
   transition: 'transform 0.1s, margin 0.1s',
 }))
 
