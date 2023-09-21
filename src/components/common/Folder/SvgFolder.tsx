@@ -12,6 +12,7 @@ const SvgFolder = ({ color, borderColor, ...props }: Props) => (
     viewBox="9 5 348 137"
     fill="none"
     {...props}
+    style={{ filter: 'drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.15))' }}
   >
     <g>
       <path
