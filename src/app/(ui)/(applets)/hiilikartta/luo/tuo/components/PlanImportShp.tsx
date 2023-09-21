@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
-import { SelectChangeEvent } from '@mui/material'
 import { Feature, FeatureCollection } from 'geojson'
 
-import DropDownSelect from '#/components/common/DropDownSelect'
 import PlanImportActionsRow from './PlanImportActionsRow'
+import PlanImportPolygonLayerSelect from './PlanImportPolygonLayerSelect'
 
 const PlanImportShp = ({
   fileBuffer,
@@ -57,15 +56,8 @@ const PlanImportShp = ({
     }
   }, [geojson])
 
-  const handleSelectColumn = (event: SelectChangeEvent) => {
-    const { value } = event.target
-
-    if (value == '' || value == null) {
-      setColumn(undefined)
-      return
-    }
-
-    setColumn(value)
+  const handleColumnChange = (newColumn: string | undefined) => {
+    setColumn(newColumn)
   }
 
   const handleFinish = () => {
@@ -77,15 +69,11 @@ const PlanImportShp = ({
   return (
     <>
       {columns.length > 0 && (
-        <DropDownSelect
-          sx={() => ({ margin: '20px 0 0 0' })}
-          value={column}
-          options={columns.map((table) => {
-            return { value: table, label: table }
-          })}
-          onChange={handleSelectColumn}
-          label="Valitse sarake, joka sisältää aluevarauskoodit"
-        ></DropDownSelect>
+        <PlanImportPolygonLayerSelect
+          columns={columns}
+          selectedColumn={column}
+          onColumnChange={handleColumnChange}
+        ></PlanImportPolygonLayerSelect>
       )}
 
       {column != null && (
