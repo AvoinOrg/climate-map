@@ -122,12 +122,10 @@ const PlanImportGpkg = ({
           onColumnChange={handleColumnChange}
         />
       )}
-
-      {table != null && column != null && (
-        <PlanImportActionsRow
-          onClickNext={handleExtract}
-        ></PlanImportActionsRow>
-      )}
+      <PlanImportActionsRow
+        onClickAccept={handleExtract}
+        isAcceptDisabled={table != null && column != null}
+      ></PlanImportActionsRow>
     </>
   )
 }
