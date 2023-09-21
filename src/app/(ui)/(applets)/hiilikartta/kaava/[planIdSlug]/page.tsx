@@ -88,7 +88,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
 
   const handleOpenReport = async () => {
     if (planConf) {
-      const route = getRoute(routeTree.plan.report, routeTree, [
+      const route = getRoute(routeTree.plans.plan.report, routeTree, [
         params.planIdSlug,
       ])
       router.push(route)
@@ -127,7 +127,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
           </Folder>
 
           {/* <MuiLink
-            href={getRoute(routeTree.plan.settings, routeTree, [planConf.id])}
+            href={getRoute(routeTree.plans.plan.settings, routeTree, [planConf.id])}
             sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
             component={Link}
           >

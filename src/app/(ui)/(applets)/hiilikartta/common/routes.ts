@@ -17,21 +17,27 @@ export const routeTree: RouteTree = {
       },
     },
   },
-  plan: {
+  plans: {
     _conf: {
-      path: 'kaava/:id',
-      name: 'Kaavan tiedot',
+      path: 'kaavat',
+      name: 'Omat kaavat',
     },
-    settings: {
+    plan: {
       _conf: {
-        path: 'asetukset',
-        name: 'Kaavan asetukset',
+        path: ':id',
+        name: 'Kaavan tiedot',
       },
-    },
-    report: {
-      _conf: {
-        path: 'raportti',
-        name: 'Raportti',
+      settings: {
+        _conf: {
+          path: 'asetukset',
+          name: 'Kaavan asetukset',
+        },
+      },
+      report: {
+        _conf: {
+          path: 'raportti',
+          name: 'Raportti',
+        },
       },
     },
   },
