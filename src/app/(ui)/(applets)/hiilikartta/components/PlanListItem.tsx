@@ -3,8 +3,7 @@
 import React from 'react'
 import { Box } from '@mui/material'
 import TuneIcon from '@mui/icons-material/Tune'
-import Link from 'next/link'
-import { Link as MuiLink } from '@mui/material'
+import Link from '#/components/common/Link'
 
 import { PlanConf } from '../common/types'
 import { routeTree } from '../common/routes'
@@ -30,15 +29,18 @@ const PlanListItem = ({ planConf }: Props) => {
       })}
     >
       <Box sx={(theme) => ({ minHeight: '25px' })}>
-        <MuiLink
+        <Link
           href={getRoute(routeTree.plans.plan, routeTree, [planConf.id])}
           sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
-          component={Link}
         >
-          <TuneIcon sx={(theme) => ({ float: 'left', cursor: 'pointer' })}></TuneIcon>
-        </MuiLink>
+          <TuneIcon
+            sx={(theme) => ({ float: 'left', cursor: 'pointer' })}
+          ></TuneIcon>
+        </Link>
       </Box>
-      <Box sx={(theme) => ({ typography: theme.typography.body1 })}>{planConf.name}</Box>
+      <Box sx={(theme) => ({ typography: theme.typography.body1 })}>
+        {planConf.name}
+      </Box>
       <Box sx={(theme) => ({ minHeight: '25px' })}></Box>
     </Box>
   )
