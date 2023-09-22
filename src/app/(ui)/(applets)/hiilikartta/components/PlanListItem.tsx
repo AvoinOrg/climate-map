@@ -25,7 +25,7 @@ const PlanListItem = ({ planConf }: Props) => {
         flexDirection: 'column',
         justifyContent: 'space-between',
         backgroundColor: theme.palette.neutral.main,
-        margin: "0 0 15px 0"
+        margin: '0 0 15px 0',
       })}
     >
       <Box sx={(theme) => ({ minHeight: '25px' })}>
