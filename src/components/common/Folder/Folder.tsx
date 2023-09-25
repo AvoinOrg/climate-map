@@ -23,6 +23,8 @@ const Folder = ({ children, sx }: Props) => {
   let borderColor = theme.palette.neutral.main
   let backgroundColor = theme.palette.neutral.lighter
 
+  // Capturing various styling props and passing them later
+  // to relevant components
   if (sx && typeof sx === 'object') {
     if ('color' in sx && typeof sx.color === 'string') {
       color = resolveColor(sx.color, theme)
@@ -87,7 +89,7 @@ const Folder = ({ children, sx }: Props) => {
       <Box
         sx={{
           position: 'absolute',
-          top: 0, // Adjust accordingly to position content inside folder SVG
+          top: 0,
           right: 0,
           left: 0,
           overflow: 'auto',
