@@ -33,6 +33,37 @@ const Folder = ({ children, sx }: Props) => {
     delete sx.backgroundColor
   }
 
+  // iterating through the sx and picking out the padding props
+  const paddingProps = [
+    'p',
+    'px',
+    'py',
+    'pt',
+    'pb',
+    'pl',
+    'pr',
+    'padding',
+    'paddingTop',
+    'paddingBottom',
+    'paddingLeft',
+    'paddingRight',
+  ]
+  const paddingStyles: Record<string, any> = {}
+  const mainStyles: Record<string, any> = {}
+
+  if (sx && typeof sx === 'object') {
+    Object.keys(sx).forEach((key) => {
+      if (paddingProps.includes(key)) {
+        // Explicit casting as the key comes from the predefined set of keys
+        paddingStyles[key as keyof SxProps<Theme>] =
+          sx[key as keyof SxProps<Theme>]
+      } else {
+        mainStyles[key as keyof SxProps<Theme>] =
+          sx[key as keyof SxProps<Theme>]
+      }
+    })
+  }
+
   return (
     <Box
       sx={{
