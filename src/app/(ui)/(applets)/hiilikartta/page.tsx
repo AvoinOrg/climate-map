@@ -1,20 +1,17 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { Box, Button } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import Link from 'next/link'
-
-import useStore from '#/common/hooks/useStore'
-import { getRoute } from '#/common/utils/routing'
-
-import { useMapStore } from '#/common/store'
-import { useAppletStore } from './state/appletStore'
-import PlanListItem from './components/PlanListItem'
-import { routeTree } from 'applets/hiilikartta/common/routes'
 import { T } from '@tolgee/react'
 
+import { getRoute } from '#/common/utils/routing'
+import Folder from '#/components/common/Folder'
+import { useMapStore } from '#/common/store'
+
+import { routeTree } from 'applets/hiilikartta/common/routes'
+
 const Page = () => {
-  const planConfs = useStore(useAppletStore, (state) => state.planConfs)
   const setMapLibraryMode = useMapStore((state) => state.setMapLibraryMode)
 
   useEffect(() => {
@@ -23,23 +20,27 @@ const Page = () => {
 
   return (
     <>
-      <Box>
-        <Link href={getRoute(routeTree.create, routeTree)}>
-          <Box sx={{ typography: 'h2', textAlign: 'start' }}>
-            <T keyName={'sidebar.main.add_new'} ns="hiilikartta"></T>
-          </Box>
-        </Link>
-      </Box>
-      {planConfs != null && Object.keys(planConfs).length > 0 && (
-        <>
-          <Box component="p">Omat kaavat</Box>
-          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            {Object.keys(planConfs).map((id) => {
-              return <PlanListItem key={id} planConf={planConfs[id]} />
-            })}
-          </Box>
-        </>
-      )}
+      <Link href={getRoute(routeTree.create, routeTree)}>
+        <Box sx={{ typography: 'h2', textAlign: 'start', mt: 5 }}>
+          <T keyName={'sidebar.main.add_new'} ns="hiilikartta"></T>
+        </Box>
+      </Link>
+      <Link href={getRoute(routeTree.plans, routeTree)}>
+        <Folder
+          sx={{
+            color: 'neutral.lighter',
+            backgroundColor: 'primary.dark',
+            borderColor: 'primary.light',
+            mt: 18,
+            pt: 6,
+            pl: 4,
+          }}
+        >
+          <Typography variant="h2" sx={{ textTransform: 'uppercase' }}>
+            <T keyName={'sidebar.my_plans.title'} ns={'hiilikartta'}></T>
+          </Typography>
+        </Folder>
+      </Link>
     </>
   )
 }
