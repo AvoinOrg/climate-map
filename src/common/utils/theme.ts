@@ -1,5 +1,7 @@
 import { Theme } from '@mui/material'
 
+// Used for resolving color strings in components,
+// where MUI theme might not work directly
 export const resolveColor = (color: string, theme: Theme) => {
   const parts = color.split('.')
   if (parts.length === 2) {
