@@ -28,7 +28,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       SidebarHeaderElement={SidebarHeaderElement}
       sx={{
         width: '400px',
-        pt: 4,
+        pt: 0,
         display: 'flex',
         flexDirection: 'column',
       }}
