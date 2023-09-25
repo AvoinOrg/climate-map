@@ -1,9 +1,10 @@
 'use client'
 
 import React from 'react'
-import { Box } from '@mui/material'
-import TuneIcon from '@mui/icons-material/Tune'
+import { Box, Typography } from '@mui/material'
 import Link from '#/components/common/Link'
+
+import Folder from '#/components/common/Folder'
 
 import { PlanConf } from '../common/types'
 import { routeTree } from '../common/routes'
@@ -15,33 +16,15 @@ interface Props {
 
 const PlanListItem = ({ planConf }: Props) => {
   return (
-    <Box
-      sx={(theme) => ({
-        padding: '5px',
-        textAlign: 'center',
-        minHeight: '140px',
-        minWidth: '300px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        backgroundColor: theme.palette.neutral.main,
-        margin: '0 0 15px 0',
-      })}
-    >
-      <Box sx={(theme) => ({ minHeight: '25px' })}>
-        <Link
-          href={getRoute(routeTree.plans.plan, routeTree, [planConf.id])}
-          sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
-        >
-          <TuneIcon
-            sx={(theme) => ({ float: 'left', cursor: 'pointer' })}
-          ></TuneIcon>
-        </Link>
-      </Box>
-      <Box sx={(theme) => ({ typography: theme.typography.body1 })}>
-        {planConf.name}
-      </Box>
-      <Box sx={(theme) => ({ minHeight: '25px' })}></Box>
+    <Box>
+      <Link
+        href={getRoute(routeTree.plans.plan, routeTree, [planConf.id])}
+        sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
+      >
+        <Folder sx={{pt: 6, pl: 3}}>
+          <Typography variant="h2">{planConf.name}</Typography>
+        </Folder>
+      </Link>
     </Box>
   )
 }
