@@ -1,18 +1,20 @@
 import React from 'react'
 import type { SVGProps } from 'react'
+import { Box } from '@mui/material'
 
 type Props = SVGProps<SVGSVGElement> & {
   color?: string
   borderColor?: string
+  sx?: any
 }
 
-const SvgFolder = ({ color, borderColor, ...props }: Props) => (
-  <svg
+const SvgFolder = ({ color, borderColor, sx }: Props) => (
+  <Box
+    component="svg"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="9 5 348 137"
     fill="none"
-    {...props}
-    style={{ filter: 'drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.15))' }}
+    sx={{ filter: 'drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.15))', ...sx }}
   >
     <g>
       <path
@@ -24,7 +26,7 @@ const SvgFolder = ({ color, borderColor, ...props }: Props) => (
         stroke={borderColor ? borderColor : color}
       />
     </g>
-  </svg>
+  </Box>
 )
 
 export default SvgFolder
