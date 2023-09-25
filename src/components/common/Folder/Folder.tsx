@@ -1,3 +1,10 @@
+// The goal of this component is to be a folder shaped div,
+// that can be styled like any other div element. This is not straightforward
+// as the folder is an SVG element.
+//
+// That is why some of the props and styling elements are
+// captured and passed to the underlying components.
+
 import React from 'react'
 import { Box } from '@mui/material'
 import type { SxProps, Theme } from '@mui/system'
