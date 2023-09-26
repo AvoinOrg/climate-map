@@ -33,7 +33,7 @@ const Page = () => {
     }
   }, [])
 
-  const initializePlan = async (json: any, colName: string) => {
+  const initializePlan = async (json: FeatureCollection, colName: string) => {
     if (!fileName) {
       return null
     }
@@ -95,7 +95,7 @@ const Page = () => {
     }
   }
 
-  const handleFinish = async (json: any, colName: string) => {
+  const handleFinish = async (json: FeatureCollection, colName: string) => {
     const id = await initializePlan(json, colName)
     // TODO: throw error if id is null, i.e. if file is invalid
     if (id) {
