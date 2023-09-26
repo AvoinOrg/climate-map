@@ -14,6 +14,7 @@ import PlanImportGpkg from './components/PlanImportGpkg'
 import PlanImportShp from './components/PlanImportShp'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { createLayerConf } from '../../common/utils'
+import { Feature, FeatureCollection } from 'geojson'
 
 const Page = () => {
   const addSerializableLayerGroup = useMapStore(
@@ -33,14 +34,43 @@ const Page = () => {
     }
   }, [])
 
+  const formatGeojson: any = (
+    json: FeatureCollection,
+    colName: string
+  ): FeatureCollection => {
+    return {
+      type: 'FeatureCollection',
+      features: json.features.map((feature: Feature) => {
+        // Get the value of the property using colName and remove other properties
+        const zoningCode = feature.properties?.[colName]
+
+        // If the desired property is not found, don't modify the feature
+        if (!zoningCode) return feature
+
+        const featureAreaHa = getGeoJsonArea(feature) / 10000
+
+        // Return the new feature with only zoning_code and area in hectares in its properties
+        return {
+          ...feature,
+          properties: {
+            zoning_code: zoningCode,
+            area_has: featureAreaHa,
+          },
+        }
+      }),
+    }
+  }
+
   const initializePlan = async (json: FeatureCollection, colName: string) => {
     if (!fileName) {
       return null
     }
 
-    const areaHa = getGeoJsonArea(json) / 10000
+    const formatedJson = formatGeojson(json, colName)
+
+    const areaHa = getGeoJsonArea(formatedJson) / 10000
     const newPlanConf: NewPlanConf = {
-      json: json,
+      json: formatedJson,
       name: fileName,
       areaHa: areaHa,
       fileSettings: { fileType: 'geojson', zoningColumn: colName },
