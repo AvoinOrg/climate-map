@@ -9,7 +9,7 @@ const PlanImportShp = ({
   onFinish,
 }: {
   fileBuffer: ArrayBuffer
-  onFinish: (json: any, columnName: string) => void
+  onFinish: (json: FeatureCollection, columnName: string) => void
 }) => {
   const [geojson, setGeojson] = useState<FeatureCollection>()
   const [column, setColumn] = useState<string>()
@@ -61,7 +61,7 @@ const PlanImportShp = ({
   }
 
   const handleFinish = () => {
-    if (column != null) {
+    if (column != null && geojson != null) {
       onFinish(geojson, column)
     }
   }

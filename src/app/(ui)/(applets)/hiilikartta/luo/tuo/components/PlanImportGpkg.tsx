@@ -1,6 +1,7 @@
 import { GeoPackage } from '@ngageoint/geopackage'
 import { useState, useEffect } from 'react'
 import { SelectChangeEvent } from '@mui/material'
+import { FeatureCollection } from 'geojson'
 
 import DropDownSelect from '#/components/common/DropDownSelect'
 import PlanImportActionsRow from './PlanImportActionsRow'
@@ -11,7 +12,7 @@ const PlanImportGpkg = ({
   onFinish,
 }: {
   fileBuffer: ArrayBuffer
-  onFinish: (json: any, columnName: string) => void
+  onFinish: (json: FeatureCollection, columnName: string) => void
 }) => {
   const [gpkgFile, setGpkgFile] = useState<GeoPackage>()
   const [table, setTable] = useState<string>()
