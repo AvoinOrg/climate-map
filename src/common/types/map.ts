@@ -4,6 +4,7 @@ import {
   MapboxGeoJSONFeature,
   GeoJSONSource,
 } from 'mapbox-gl'
+import { Feature } from 'geojson'
 import { ReactNode } from 'react'
 
 import { Actions as MapStoreActions } from '#/common/store/mapStore'
