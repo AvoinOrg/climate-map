@@ -44,6 +44,21 @@ export type LayerOptionsObj = {
   [key: string]: LayerOptions
 }
 
+export interface LayerGroupDrawOptions {
+  idField?: string
+  polygonEnabled?: boolean
+  editEnabled?: boolean
+  featureAddMutator?: (feature: Feature) => Feature
+  featureUpdateMutator?: (feature: Feature) => Feature
+}
+
+export interface MapDrawOptions extends LayerGroupDrawOptions {
+  layerGroupId: string | null
+  draw: MapboxDraw | null
+  isEnabled: boolean
+  originalStyles?: Record<string, any>
+}
+
 interface BaseLayerGroupAddOptions {
   mapContext?: MapContext
   layerConf?: SerializableLayerConf | LayerConf
@@ -51,6 +66,7 @@ interface BaseLayerGroupAddOptions {
   neighboringLayerGroupId?: LayerGroupId | string
   isHidden?: boolean
   persist?: boolean
+  drawOptions?: LayerGroupDrawOptions
 }
 
 // Compatible with hydration.
