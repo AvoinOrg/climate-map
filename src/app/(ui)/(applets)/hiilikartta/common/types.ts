@@ -1,3 +1,4 @@
+export const ZONING_CODE_COL = 'zoning_code'
 
 export interface ReportData {
   areas: CalcFeatureCollection
@@ -28,6 +29,13 @@ export type NewPlanConf = {
 
 export type FileType = 'shp' | 'geojson' | 'gpkg'
 
+export interface FeatureProperties {
+  id: string
+  area_ha: number
+  [ZONING_CODE_COL]: string | null
+  old_id?: string | number
+}
+
 export const featureYears = ['now', '2035', '2045', '2055'] as const
 
 export type FeatureYear = (typeof featureYears)[number]
@@ -51,8 +59,9 @@ export type CarbonData = {
 export type CalcFeatureProperties = {
   [K in (typeof featureCols)[number]]: CarbonData
 } & {
+  id: string
   area: number
-  zoning_code: string
+  [ZONING_CODE_COL]: string
 }
 
 export type CalcFeature = {
