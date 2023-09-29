@@ -1,5 +1,9 @@
-import { Style as MbStyle, AnyLayer, MapboxGeoJSONFeature } from 'mapbox-gl'
-import Feature from 'ol/Feature'
+import {
+  Style as MbStyle,
+  AnyLayer,
+  MapboxGeoJSONFeature,
+  GeoJSONSource,
+} from 'mapbox-gl'
 import { ReactNode } from 'react'
 
 import { Actions as MapStoreActions } from '#/common/store/mapStore'
@@ -183,3 +187,7 @@ export type FunctionQueue = (QueueFunction & {
 })[]
 
 export type MapContext = 'main' | 'any' | string | null
+
+export const isGeoJSONSource = (source: any): source is GeoJSONSource => {
+  return source != null && 'setData' in source // or other appropriate conditions
+}
