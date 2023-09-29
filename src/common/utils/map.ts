@@ -1,10 +1,12 @@
-import { Expression, MapboxGeoJSONFeature } from 'mapbox-gl'
+import { Expression, GeoJSONSource, MapboxGeoJSONFeature } from 'mapbox-gl'
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style'
 import Layer from 'ol/layer/Layer'
 import WebGLVectorLayerRenderer from 'ol/renderer/webgl/VectorLayer'
 import { asArray } from 'ol/color'
 // import { packColor } from 'ol/renderer/webgl/shaders'
-import { Geometry, Position } from 'geojson'
+import { Feature, Geometry, Position } from 'geojson'
+import { Map } from 'mapbox-gl'
+
 import {
   LayerType,
   layerTypes,
@@ -295,4 +297,49 @@ export const getAllLayerOptionsObj = (
   )
 
   return allLayerOptionsObj
+}
+
+export const updateFeatureInDrawSource = (
+  feature: GeoJSON.Feature,
+  idField: string,
+  _mbMap: Map | undefined,
+  layerGroupId: string
+) => {
+  if (layerGroupId && feature) {
+    // If you can identify the affected feature in the original source, update it directly.
+    const originalSource = _mbMap?.getSource(layerGroupId) as
+      | GeoJSONSource
+      | undefined
+
+    if (originalSource) {
+      if (!('_data' in originalSource)) {
+        return
+      }
+
+      const data = originalSource._data as GeoJSON.FeatureCollection
+
+      const updatedFeatures = data.features.map((f) => {
+        // Check if the current feature in the map is the one that needs to be updated
+        if (f.properties && feature.properties) {
+          const originalId = f.properties[idField]
+          const userId = feature.properties[idField]
+
+          if (originalId === userId) {
+            // Return a new feature object with updated geometry
+            return { ...f, geometry: feature.geometry }
+          }
+        }
+        // Return the unmodified feature
+        return f
+      })
+
+      // Update the source with the modified features
+      originalSource.setData({ ...data, features: updatedFeatures })
+    } else {
+      // Feature not found. You might want to add it or handle this case differently.
+      console.error(
+        `Feature with id ${feature.id} not found in the original source`
+      )
+    }
+  }
 }
