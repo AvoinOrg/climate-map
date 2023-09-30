@@ -343,3 +343,31 @@ export const updateFeatureInDrawSource = (
     }
   }
 }
+
+export const deleteFeatureFromDrawSource = (
+  feature: Feature,
+  _mbMap: Map | undefined,
+  layerGroupId: string
+) => {
+  if (!_mbMap || !layerGroupId) return
+  const originalSource = _mbMap.getSource(layerGroupId) as
+    | GeoJSONSource
+    | undefined
+
+  if (!originalSource) return
+
+  if (!('data' in originalSource)) {
+    return
+  }
+
+  const data = originalSource.data as GeoJSON.FeatureCollection
+  if (!data.features) return
+
+  // Assuming you have a unique id property to identify the feature
+  if (!('user_id' in feature)) {
+    return
+  }
+
+  const updatedFeatures = data.features.filter((f) => f.id !== feature.user_id)
+  originalSource.setData({ ...data, features: updatedFeatures })
+}
