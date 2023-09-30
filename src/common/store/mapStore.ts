@@ -703,6 +703,54 @@ export const useMapStore = create<State>()(
               return
             }
 
+            const originalStyles: Record<string, any> = {}
+
+            _mbMap?.getStyle().layers.forEach((layer) => {
+              if (layer.id.startsWith(`${layerGroupId}-`)) {
+                let opacityProperty: string | undefined = undefined
+
+                switch (layer.type) {
+                  case 'fill':
+                    opacityProperty = 'fill-opacity'
+                    break
+                  case 'line':
+                    opacityProperty = 'line-opacity'
+                    break
+                  case 'symbol':
+                    if (layer.layout) {
+                      if ('text-field' in layer.layout) {
+                        opacityProperty = 'text-opacity'
+                      } else if ('icon-image' in layer.layout) {
+                        opacityProperty = 'icon-opacity'
+                      }
+                    }
+                    break
+                }
+
+                if (opacityProperty) {
+                  let originalOpacity = 1
+                  try {
+                    const opacity = _mbMap.getPaintProperty(
+                      layer.id,
+                      opacityProperty
+                    ) as number | undefined
+                    if (typeof opacity === 'number' && opacity > 0.3) {
+                      originalOpacity = opacity
+                      _mbMap.setPaintProperty(layer.id, opacityProperty, 0.3)
+                    }
+                  } catch (e) {
+                    console.error(
+                      `Error adjusting ${opacityProperty} for layer ${layer.id}: `,
+                      e
+                    )
+                  }
+
+                  if (!originalStyles[layer.id]) originalStyles[layer.id] = {}
+                  originalStyles[layer.id][opacityProperty] = originalOpacity
+                }
+              }
+            })
+
             const draw = new MapboxDraw({
               displayControlsDefault: false,
               // Select which mapbox-gl-draw control buttons to add to the map.
