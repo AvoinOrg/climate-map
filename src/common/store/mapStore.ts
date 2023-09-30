@@ -845,17 +845,46 @@ export const useMapStore = create<State>()(
             if (drawInstance != null) {
               const geoJSON = drawInstance.getAll()
 
-            if (_drawOptions.layerGroupId != null && geoJSON != null) {
-              const originalSource = _mbMap?.getSource(
-                _drawOptions.layerGroupId
-              ) as mapboxgl.GeoJSONSource
-              originalSource.setData(geoJSON)
+              if (_drawOptions.layerGroupId != null && geoJSON != null) {
+                // geoJSON.features.forEach((feature) => {
+                //   const properties = feature.properties || {}
+                //   const modifiedProperties: Record<string, any> = {}
+
+                //   for (const key in properties) {
+                //     // The original properties of the source features are prefixed with "user_"
+                //     // Remove other properties, and remove the prefix that was added by draw.
+                //     if (key.startsWith('user_')) {
+                //       const modifiedKey = key.replace('user_', '')
+                //       modifiedProperties[modifiedKey] = properties[key]
+                //     }
+                //   }
+
+                //   feature.properties = modifiedProperties
+                // })
+
+                // // Set the modified GeoJSON to the original source
+                // const originalSource = _mbMap?.getSource(
+                //   _drawOptions.layerGroupId
+                // ) as mapboxgl.GeoJSONSource
+                // originalSource.setData(geoJSON)
+
+                if (_drawOptions.originalStyles != null) {
+                  for (const [layerId, style] of Object.entries(
+                    _drawOptions.originalStyles
+                  )) {
+                    for (const [property, value] of Object.entries(style)) {
+                      _mbMap?.setPaintProperty(layerId, property, value)
+                    }
+                  }
+                }
+              }
 
               _mbMap?.removeControl(drawInstance)
 
               set((state) => {
                 state._drawOptions.draw = null
                 state._drawOptions.isEnabled = false
+                state._drawOptions.originalStyles = undefined
               })
             }
           },
