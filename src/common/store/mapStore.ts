@@ -41,6 +41,7 @@ import {
   QueueOptions,
   MapContext,
   LayerConf,
+  MapDrawOptions,
 } from '#/common/types/map'
 import { layerConfs } from '#/components/Map/Layers'
 
@@ -72,11 +73,7 @@ export type Vars = {
   // isMapReady is after the internal map object is ready to be interacted with,
   // but before the map functions are ready to be used by external components.
   _isMapReady: boolean
-  _drawOptions: {
-    layerGroupId: string | null
-    draw: MapboxDraw | null
-    isEnabled: boolean
-  }
+  _drawOptions: MapDrawOptions
   // A queue where functions are added before the map is loaded.
   // Executed after mapIsReady.
   _functionQueue: FunctionQueue
