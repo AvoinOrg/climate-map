@@ -838,16 +838,31 @@ export const useMapStore = create<State>()(
 
         disableDraw: queueableFnInit(
           async () => {
-            const { _mbMap, _drawOptions, getSourceJson } = get()
+            const { _mbMap, _drawOptions } = get()
 
-            const geoJSON = await getSourceJson('draw', { skipQueue: true })
+            const drawInstance = _drawOptions.draw
+
+            if (drawInstance != null) {
+              const geoJSON = drawInstance.getAll()
 
             if (_drawOptions.layerGroupId != null && geoJSON != null) {
               const originalSource = _mbMap?.getSource(
                 _drawOptions.layerGroupId
               ) as mapboxgl.GeoJSONSource
               originalSource.setData(geoJSON)
+
+              _mbMap?.removeControl(drawInstance)
+
+              set((state) => {
+                state._drawOptions.draw = null
+                state._drawOptions.isEnabled = false
+              })
             }
+          },
+          {
+            priority: QueuePriority.LOW,
+          }
+        ),
 
         toggleDraw: queueableFnInit(
           async () => {
