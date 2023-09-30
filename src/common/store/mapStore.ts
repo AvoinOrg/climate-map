@@ -765,6 +765,34 @@ export const useMapStore = create<State>()(
 
             if ('data' in source) {
               const data = source.data as FeatureCollection
+              // In case the properties need to be handled differently.
+              // Currently all properties from the original features are added to draw source.
+              // const features = data.features
+              // const idField = _drawOptions.idField
+              // if (idField != null) {
+              //   features.map((feature) => {
+              //     const userProperties: Record<string, any> = {}
+              //     try {
+              //       // @ts-ignore
+              //       userProperties["user_id"] = feature[idField]
+              //     } catch (e) {
+              //       console.error(
+              //         `No "${idField}" found in draw feature's properties.`
+              //       )
+              //     }
+              //     return {
+              //       ...feature,
+              //       properties: userProperties,
+              //     }
+              //   })
+              // }
+              // console.log(features)
+
+              // const modifiedSourceData = {
+              //   ...data,
+              //   features: features,
+              // }
+              //@ts-ignore
               draw.add(data)
 
               set((state) => {
