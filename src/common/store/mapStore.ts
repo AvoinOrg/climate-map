@@ -181,10 +181,7 @@ export type Actions = {
   mapToggleTerrain: () => void
   mapZoomIn: () => void
   mapZoomOut: () => void
-  enableDraw: (
-    layerGroupId: string,
-    _queueOptions?: QueueOptions
-  ) => Promise<void>
+  enableDraw: (_queueOptions?: QueueOptions) => Promise<void>
   disableDraw: (_queueOptions?: QueueOptions) => Promise<void>
   toggleDraw: (_queueOptions?: QueueOptions) => Promise<void>
   setMapContext: (mapContext: MapContext) => void
@@ -677,23 +674,22 @@ export const useMapStore = create<State>()(
         },
 
         enableDraw: queueableFnInit(
-          async (layerGroupId: string) => {
-            const {
-              _mbMap,
-              _drawOptions,
-              disableSerializableLayerGroup,
-              disableDraw,
-            } = get()
+          async () => {
+            const { _mbMap, _drawOptions } = get()
 
-            if (_drawOptions.draw != null) {
-              disableDraw({ skipQueue: true })
+            if (_drawOptions.layerGroupId == null) {
+              console.error('No layerGroupId set for drawing.')
               return
             }
 
-            const source = cloneDeep(_mbMap?.getStyle().sources[layerGroupId])
-            disableSerializableLayerGroup(layerGroupId)
+            const layerGroupId = _drawOptions.layerGroupId
 
-            // TODO: Fix drawing. Figure out which layer to use, and dynamically add it to the map
+            const source = cloneDeep(_mbMap?.getStyle().sources[layerGroupId])
+
+            if (!source) {
+              console.error(`No source found with id: ${layerGroupId}`)
+              return
+            }
 
             const draw = new MapboxDraw({
               displayControlsDefault: false,
@@ -710,15 +706,16 @@ export const useMapStore = create<State>()(
             // console.log(source.data.features)
             _mbMap?.addControl(draw, 'bottom-right')
 
-            //@ts-ignoreF
-            draw.add(source.data)
+            if ('data' in source) {
+              const data = source.data as FeatureCollection
+              draw.add(data)
 
-            set((state) => {
-              state._drawOptions.draw = draw
-              state._drawOptions.isEnabled = true
-            })
-
-            return
+              set((state) => {
+                state._drawOptions.draw = draw
+                state._drawOptions.isEnabled = true
+                state._drawOptions.originalStyles = originalStyles
+              })
+            }
           },
           { priority: QueuePriority.LOW }
         ),
