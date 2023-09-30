@@ -6,7 +6,12 @@ import { useRouter } from 'next/navigation'
 
 import { getRoute } from '#/common/utils/routing'
 import { useMapStore } from '#/common/store'
-import { FileType, NewPlanConf } from 'applets/hiilikartta/common/types'
+import {
+  FeatureProperties,
+  FileType,
+  NewPlanConf,
+  ZONING_CODE_COL,
+} from 'applets/hiilikartta/common/types'
 import { getGeoJsonArea } from '#/common/utils/gis'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
@@ -15,6 +20,7 @@ import PlanImportShp from './components/PlanImportShp'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { createLayerConf } from '../../common/utils'
 import { Feature, FeatureCollection } from 'geojson'
+import { generateUUID } from '#/common/utils/general'
 
 const Page = () => {
   const addSerializableLayerGroup = useMapStore(
@@ -49,13 +55,17 @@ const Page = () => {
 
         const featureAreaHa = getGeoJsonArea(feature) / 10000
 
+        const properties: FeatureProperties = {
+          id: generateUUID(),
+          zoning_code: zoningCode,
+          area_ha: featureAreaHa,
+          old_id: feature.id != null ? feature.id : undefined,
+        }
+
         // Return the new feature with only zoning_code and area in hectares in its properties
         return {
           ...feature,
-          properties: {
-            zoning_code: zoningCode,
-            area_has: featureAreaHa,
-          },
+          properties: properties,
         }
       }),
     }
@@ -73,13 +83,17 @@ const Page = () => {
       json: formatedJson,
       name: fileName,
       areaHa: areaHa,
-      fileSettings: { fileType: 'geojson', zoningColumn: colName },
+      fileSettings: { fileType: 'geojson', zoningColumn: ZONING_CODE_COL },
     }
 
     const planConf = await addPlanConf(newPlanConf)
 
     try {
-      const layerConf = createLayerConf(json, planConf.id, colName)
+      const layerConf = createLayerConf(
+        formatedJson,
+        planConf.id,
+        ZONING_CODE_COL
+      )
       await addSerializableLayerGroup(layerConf.id, {
         layerConf,
         persist: true,
