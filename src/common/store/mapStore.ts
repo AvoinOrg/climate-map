@@ -243,6 +243,8 @@ export const useMapStore = create<State>()(
           layerGroupId: null,
           draw: null,
           isEnabled: false,
+          featureAddMutator: undefined,
+          idField: undefined,
         },
         _functionQueue: [],
         _isFunctionQueueExecuting: false,
