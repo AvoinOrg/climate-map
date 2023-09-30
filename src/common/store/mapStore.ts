@@ -53,6 +53,7 @@ import {
   resolveMbStyle,
   getVisibleLayerGroups,
   updateFeatureInDrawSource,
+  addFeatureToDrawSource,
 } from '#/common/utils/map'
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
@@ -795,6 +796,15 @@ export const useMapStore = create<State>()(
               // }
               //@ts-ignore
               draw.add(data)
+
+              _mbMap?.on('draw.create', (e) => {
+                e.features.forEach((feature: Feature) => {
+                  if (_drawOptions.featureAddMutator != null) {
+                    feature = _drawOptions.featureAddMutator(feature)
+                  }
+                  addFeatureToDrawSource(feature, _mbMap, layerGroupId)
+                })
+              })
 
               _mbMap?.on('draw.update', (e) => {
                 const idField = _drawOptions.idField
