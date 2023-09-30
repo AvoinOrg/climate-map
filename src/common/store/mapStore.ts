@@ -699,6 +699,7 @@ export const useMapStore = create<State>()(
                 polygon: true,
                 trash: true,
               },
+              userProperties: true,
               styles: drawStyles,
             })
 
