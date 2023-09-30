@@ -299,6 +299,48 @@ export const getAllLayerOptionsObj = (
   return allLayerOptionsObj
 }
 
+export const addFeatureToDrawSource = (
+  feature: GeoJSON.Feature,
+  _mbMap: Map | undefined,
+  layerGroupId: string
+) => {
+  if (layerGroupId && feature) {
+    // If you can identify the affected feature in the original source, update it directly.
+    const originalSource = _mbMap?.getSource(layerGroupId) as
+      | GeoJSONSource
+      | undefined
+
+    if (originalSource) {
+      if (!('_data' in originalSource)) {
+        return
+      }
+
+      const data = originalSource._data as GeoJSON.FeatureCollection
+
+      const featureIndex = data.features.findIndex(
+        (f) => f.properties?.id === feature.properties?.user_id
+      )
+
+      if (featureIndex > -1) {
+        // Replacing the geometry of the identified feature
+        data.features[featureIndex].geometry = feature.geometry
+        data.features[featureIndex].properties = {
+          ...data.features[featureIndex].properties,
+          ...feature.properties,
+        }
+
+        // Update the source with the modified data
+        originalSource.setData(data)
+      } else {
+        // Feature not found. You might want to add it or handle this case differently.
+        console.error(
+          `Feature with id ${feature.id} not found in the original source`
+        )
+      }
+    }
+  }
+}
+
 export const updateFeatureInDrawSource = (
   feature: GeoJSON.Feature,
   idField: string,
