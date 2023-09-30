@@ -480,6 +480,15 @@ export const useMapStore = create<State>()(
 
           if (_layerGroups[layerGroupId]) {
             _setGroupVisibility(layerGroupId, true)
+            if (options?.drawOptions != null) {
+              set((state) => {
+                state._drawOptions = {
+                  ...state._drawOptions,
+                  ...options.drawOptions,
+                  layerGroupId: layerGroupId,
+                }
+              })
+            }
           } else {
             addLayerGroup(layerGroupId, options)
           }
