@@ -22,6 +22,7 @@ import mapboxgl from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import { useUIStore } from '#/common/store'
 import { Map as OlMap } from 'ol'
+import drawStyles from '#/common/utils/drawStyles'
 
 import {
   LayerGroupId,
@@ -698,9 +699,7 @@ export const useMapStore = create<State>()(
                 polygon: true,
                 trash: true,
               },
-              // Set mapbox-gl-draw to draw by default.
-              // The user does not have to click the polygon control button first.
-              // defaultMode: 'draw_polygon',
+              styles: drawStyles,
             })
 
             // console.log(source.data.features)
