@@ -5,6 +5,10 @@ import { useMapStore } from '#/common/store'
 
 // import { useAppStore } from 'applets/hiilikartta/state/appStore'
 import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
+import { Feature } from 'geojson'
+import { getGeoJsonArea } from '#/common/utils/gis'
+import { generateUUID } from '#/common/utils/general'
+import { FeatureProperties } from 'applets/hiilikartta/common/types'
 
 const Layout = ({
   params,
@@ -34,7 +38,24 @@ const Layout = ({
     }
 
     const planLayerGroupId = getPlanLayerGroupId(params.planIdSlug)
-    enableSerializableLayerGroup(planLayerGroupId)
+    enableSerializableLayerGroup(planLayerGroupId, {
+      drawOptions: {
+        idField: 'id',
+        polygonEnabled: true,
+        editEnabled: true,
+        featureAddMutator: (feature: Feature) => {
+          const properties: FeatureProperties = {
+            id: generateUUID(),
+            area_ha: getGeoJsonArea(feature) / 10000,
+            zoning_code: null,
+          }
+
+          feature.properties = properties
+
+          return feature
+        },
+      },
+    })
 
     getAndFitBounds()
 
