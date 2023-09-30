@@ -6,7 +6,7 @@ import olms from 'ol-mapbox-style'
 import turfBbox from '@turf/bbox'
 import { immer } from 'zustand/middleware/immer'
 import { produce } from 'immer'
-import { FeatureCollection } from 'geojson'
+import { Feature, FeatureCollection } from 'geojson'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
@@ -52,6 +52,7 @@ import {
   assertValidHighlightingConf,
   resolveMbStyle,
   getVisibleLayerGroups,
+  updateFeatureInDrawSource,
 } from '#/common/utils/map'
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
@@ -794,6 +795,26 @@ export const useMapStore = create<State>()(
               // }
               //@ts-ignore
               draw.add(data)
+
+              _mbMap?.on('draw.update', (e) => {
+                const idField = _drawOptions.idField
+                if (idField == null) {
+                  console.error("Cannot update a feature without 'idField' set")
+                  return
+                }
+                e.features.forEach((feature: Feature) => {
+                  console.log(feature)
+                  if (_drawOptions.featureUpdateMutator != null) {
+                    feature = _drawOptions.featureUpdateMutator(feature)
+                  }
+                  updateFeatureInDrawSource(
+                    feature,
+                    idField,
+                    _mbMap,
+                    layerGroupId
+                  )
+                })
+              })
 
               set((state) => {
                 state._drawOptions.draw = draw
