@@ -753,7 +753,6 @@ export const useMapStore = create<State>()(
 
             const draw = new MapboxDraw({
               displayControlsDefault: false,
-              // Select which mapbox-gl-draw control buttons to add to the map.
               controls: {
                 polygon: true,
                 trash: true,
@@ -762,7 +761,6 @@ export const useMapStore = create<State>()(
               styles: drawStyles,
             })
 
-            // console.log(source.data.features)
             _mbMap?.addControl(draw, 'bottom-right')
 
             if ('data' in source) {
