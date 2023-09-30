@@ -54,6 +54,7 @@ import {
   getVisibleLayerGroups,
   updateFeatureInDrawSource,
   addFeatureToDrawSource,
+  deleteFeatureFromDrawSource,
 } from '#/common/utils/map'
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
@@ -823,6 +824,12 @@ export const useMapStore = create<State>()(
                     _mbMap,
                     layerGroupId
                   )
+                })
+              })
+
+              _mbMap?.on('draw.delete', (e) => {
+                e.features.forEach((feature: Feature) => {
+                  deleteFeatureFromDrawSource(feature, _mbMap, layerGroupId)
                 })
               })
 
