@@ -186,6 +186,7 @@ export type Actions = {
     _queueOptions?: QueueOptions
   ) => Promise<void>
   disableDraw: (_queueOptions?: QueueOptions) => Promise<void>
+  toggleDraw: (_queueOptions?: QueueOptions) => Promise<void>
   setMapContext: (mapContext: MapContext) => void
   // The below are internal variables
   // ----------------------------------
@@ -735,8 +736,17 @@ export const useMapStore = create<State>()(
               originalSource.setData(geoJSON)
             }
 
-            _drawOptions.draw != null &&
-              _mbMap?.removeControl(_drawOptions.draw)
+        toggleDraw: queueableFnInit(
+          async () => {
+            const { _drawOptions, disableDraw, enableDraw } = get()
+
+            if (_drawOptions.draw != null) {
+              disableDraw({ skipQueue: true })
+              return
+            } else {
+              enableDraw({ skipQueue: true })
+              return
+            }
           },
           {
             priority: QueuePriority.LOW,
