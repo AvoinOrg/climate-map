@@ -814,7 +814,6 @@ export const useMapStore = create<State>()(
                   return
                 }
                 e.features.forEach((feature: Feature) => {
-                  console.log(feature)
                   if (_drawOptions.featureUpdateMutator != null) {
                     feature = _drawOptions.featureUpdateMutator(feature)
                   }
