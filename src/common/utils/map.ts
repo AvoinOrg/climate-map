@@ -378,19 +378,35 @@ export const updateFeatureInDrawSource = (
 
 export const deleteFeatureFromDrawSource = (
   feature: Feature,
+  idField: string,
   _mbMap: Map | undefined,
   layerGroupId: string
 ) => {
-  if (!_mbMap || !layerGroupId) return
-  const originalSource = _mbMap.getSource(layerGroupId) as
-    | GeoJSONSource
-    | undefined
+  if (layerGroupId && feature) {
+    // If you can identify the affected feature in the original source, update it directly.
+    const originalSource = _mbMap?.getSource(layerGroupId) as
+      | GeoJSONSource
+      | undefined
 
-  if (!originalSource) return
+    if (originalSource) {
+      if (!('_data' in originalSource)) {
+        return
+      }
 
-  if (!('data' in originalSource)) {
-    return
+      const data = originalSource._data as GeoJSON.FeatureCollection
+
+      const updatedFeatures = data.features.filter((f) => {
+        if (f.properties && feature.properties) {
+          const originalId = f.properties[idField]
+          const drawId = feature.properties[idField]
+
+          return originalId !== drawId
+        }
+      })
+      originalSource.setData({ ...data, features: updatedFeatures })
+    }
   }
+}
 
 export const getMapboxDrawMode = (drawMode: DrawMode): MapboxDraw.DrawMode => {
   switch (drawMode) {
