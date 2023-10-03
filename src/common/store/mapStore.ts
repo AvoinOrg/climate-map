@@ -821,21 +821,30 @@ export const useMapStore = create<State>()(
                 return
               }
 
+              const idField = _drawOptions.idField || 'id'
+
               _mbMap?.on('draw.create', (e) => {
                 e.features.forEach((feature: Feature) => {
                   if (_drawOptions.featureAddMutator != null) {
-                    feature = _drawOptions.featureAddMutator(feature)
+                    const mutatedFeature =
+                      _drawOptions.featureAddMutator(feature)
+
+                    const id = (mutatedFeature.properties as any)[idField]
+
+                    if (id !== undefined) {
+                      draw.setFeatureProperty(String(feature.id), idField, id)
+                    } else {
+                      console.error(
+                        `Mutated draw feature has no idField: "${idField}"`
+                      )
+                      return
+                    }
                   }
                   addFeatureToDrawSource(feature, _mbMap, layerGroupId)
                 })
               })
 
               _mbMap?.on('draw.update', (e) => {
-                const idField = _drawOptions.idField
-                if (idField == null) {
-                  console.error("Cannot update a feature without 'idField' set")
-                  return
-                }
                 e.features.forEach((feature: Feature) => {
                   if (_drawOptions.featureUpdateMutator != null) {
                     feature = _drawOptions.featureUpdateMutator(feature)
@@ -851,7 +860,12 @@ export const useMapStore = create<State>()(
 
               _mbMap?.on('draw.delete', (e) => {
                 e.features.forEach((feature: Feature) => {
-                  deleteFeatureFromDrawSource(feature, _mbMap, layerGroupId)
+                  deleteFeatureFromDrawSource(
+                    feature,
+                    idField,
+                    _mbMap,
+                    layerGroupId
+                  )
                 })
               })
 
