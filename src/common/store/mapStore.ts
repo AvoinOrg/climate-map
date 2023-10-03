@@ -783,6 +783,10 @@ export const useMapStore = create<State>()(
               const data = source.data as FeatureCollection
               const features = data.features
               try {
+                // As mapbox draw creates a clone of the original features, we need to ensure
+                // that the id field is properly cloned as well. It is used to identify updated and deleted
+                // features across the two datasets.
+                // If idField is not set (feature.properties[idField]), the feature.id is used instead.
                 const modifiedFeatures = features.map((feature) => {
                   const userProperties: Record<string, any> = {}
 
