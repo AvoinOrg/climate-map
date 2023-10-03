@@ -16,6 +16,7 @@ import {
   ExtendedMbStyle,
   LayerGroupOptions,
   LayerOptionsObj,
+  DrawMode,
 } from '../types/map'
 import { clone } from 'lodash-es'
 
