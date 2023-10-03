@@ -781,35 +781,41 @@ export const useMapStore = create<State>()(
 
             if ('data' in source) {
               const data = source.data as FeatureCollection
-              // In case the properties need to be handled differently.
-              // Currently all properties from the original features are added to draw source.
-              // const features = data.features
-              // const idField = _drawOptions.idField
-              // if (idField != null) {
-              //   features.map((feature) => {
-              //     const userProperties: Record<string, any> = {}
-              //     try {
-              //       // @ts-ignore
-              //       userProperties["user_id"] = feature[idField]
-              //     } catch (e) {
-              //       console.error(
-              //         `No "${idField}" found in draw feature's properties.`
-              //       )
-              //     }
-              //     return {
-              //       ...feature,
-              //       properties: userProperties,
-              //     }
-              //   })
-              // }
-              // console.log(features)
+              const features = data.features
+              try {
+                const modifiedFeatures = features.map((feature) => {
+                  const userProperties: Record<string, any> = {}
 
-              // const modifiedSourceData = {
-              //   ...data,
-              //   features: features,
-              // }
-              //@ts-ignore
-              draw.add(data)
+                  if (_drawOptions.idField != null) {
+                    const id = (feature.properties as any)[_drawOptions.idField]
+                    userProperties[_drawOptions.idField] = id
+
+                    if (id !== undefined) {
+                    } else {
+                      throw new Error(
+                        `No "${_drawOptions.idField}" found in draw feature's properties.`
+                      )
+                    }
+                  } else {
+                    userProperties['id'] = feature.id
+                  }
+
+                  return {
+                    ...feature,
+                    properties: userProperties,
+                  }
+                })
+
+                const modifiedSourceData = {
+                  ...data,
+                  features: modifiedFeatures,
+                }
+                //@ts-ignore
+                draw.add(modifiedSourceData)
+              } catch (e) {
+                console.error(e)
+                return
+              }
 
               _mbMap?.on('draw.create', (e) => {
                 e.features.forEach((feature: Feature) => {
