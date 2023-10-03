@@ -344,13 +344,16 @@ export const updateFeatureInDrawSource = (
 
       const data = originalSource._data as GeoJSON.FeatureCollection
 
+      let found = false
+
       const updatedFeatures = data.features.map((f) => {
         // Check if the current feature in the map is the one that needs to be updated
         if (f.properties && feature.properties) {
           const originalId = f.properties[idField]
-          const userId = feature.properties[idField]
+          const drawId = feature.properties[idField]
 
-          if (originalId === userId) {
+          if (originalId === drawId) {
+            found = true
             // Return a new feature object with updated geometry
             return { ...f, geometry: feature.geometry }
           }
@@ -359,13 +362,15 @@ export const updateFeatureInDrawSource = (
         return f
       })
 
-      // Update the source with the modified features
-      originalSource.setData({ ...data, features: updatedFeatures })
-    } else {
-      // Feature not found. You might want to add it or handle this case differently.
-      console.error(
-        `Feature with id ${feature.id} not found in the original source`
-      )
+      if (!found) {
+        console.error(
+          // @ts-ignore
+          `Feature with id ${feature.properties[idField]} not found in the original source`
+        )
+      } else {
+        // Update the source with the modified features
+        originalSource.setData({ ...data, features: updatedFeatures })
+      }
     }
   }
 }
