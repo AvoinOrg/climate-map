@@ -208,3 +208,5 @@ export type MapContext = 'main' | 'any' | string | null
 export const isGeoJSONSource = (source: any): source is GeoJSONSource => {
   return source != null && 'setData' in source // or other appropriate conditions
 }
+
+export type DrawMode = 'polygon' | 'edit'
