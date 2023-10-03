@@ -17,6 +17,7 @@ import {
   LayerGroupOptions,
   LayerOptionsObj,
 } from '../types/map'
+import { clone } from 'lodash-es'
 
 export const fillOpacity = 0.65
 
