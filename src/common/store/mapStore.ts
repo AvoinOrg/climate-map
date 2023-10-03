@@ -43,6 +43,7 @@ import {
   MapContext,
   LayerConf,
   MapDrawOptions,
+  DrawMode,
 } from '#/common/types/map'
 import { layerConfs } from '#/components/Map/Layers'
 
@@ -55,6 +56,7 @@ import {
   updateFeatureInDrawSource,
   addFeatureToDrawSource,
   deleteFeatureFromDrawSource,
+  getMapboxDrawMode,
 } from '#/common/utils/map'
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
@@ -185,9 +187,10 @@ export type Actions = {
   mapToggleTerrain: () => void
   mapZoomIn: () => void
   mapZoomOut: () => void
-  enableDraw: (_queueOptions?: QueueOptions) => Promise<void>
-  disableDraw: (_queueOptions?: QueueOptions) => Promise<void>
-  toggleDraw: (_queueOptions?: QueueOptions) => Promise<void>
+  toggleDrawMode: (
+    drawMode: DrawMode,
+    _queueOptions?: QueueOptions
+  ) => Promise<void>
   setMapContext: (mapContext: MapContext) => void
   // The below are internal variables
   // ----------------------------------
@@ -223,6 +226,11 @@ export type Actions = {
     serializableLayerGroupAddOptions: SerializableLayerGroupAddOptions
   ) => void
   _removePersistingLayerGroupAddOptions: (layerGroupId: string) => void
+  _enableDraw: (
+    drawMode?: MapboxDraw.DrawMode,
+    _queueOptions?: QueueOptions
+  ) => Promise<void>
+  _disableDraw: (_queueOptions?: QueueOptions) => Promise<void>
 }
 
 export type State = Vars & Actions
@@ -688,8 +696,8 @@ export const useMapStore = create<State>()(
           _mbMap?.zoomOut()
         },
 
-        enableDraw: queueableFnInit(
-          async () => {
+        _enableDraw: queueableFnInit(
+          async (drawMode?: MapboxDraw.DrawMode) => {
             const { _mbMap, _drawOptions } = get()
 
             if (_drawOptions.layerGroupId == null) {
@@ -760,6 +768,7 @@ export const useMapStore = create<State>()(
                 polygon: true,
                 trash: true,
               },
+              defaultMode: drawMode || 'simple_select',
               userProperties: true,
               styles: drawStyles,
             })
@@ -842,7 +851,7 @@ export const useMapStore = create<State>()(
           { priority: QueuePriority.LOW }
         ),
 
-        disableDraw: queueableFnInit(
+        _disableDraw: queueableFnInit(
           async () => {
             const { _mbMap, _drawOptions } = get()
 
@@ -899,17 +908,28 @@ export const useMapStore = create<State>()(
           }
         ),
 
-        toggleDraw: queueableFnInit(
-          async () => {
-            const { _drawOptions, disableDraw, enableDraw } = get()
+        toggleDrawMode: queueableFnInit(
+          async (drawMode: DrawMode) => {
+            const { _drawOptions, _enableDraw, _disableDraw } = get()
 
-            if (_drawOptions.draw != null) {
-              disableDraw({ skipQueue: true })
-              return
+            let mode = getMapboxDrawMode(drawMode)
+
+            if (_drawOptions.draw == null) {
+              await _enableDraw(mode, { skipQueue: true })
             } else {
-              enableDraw({ skipQueue: true })
-              return
+              if (_drawOptions.draw.getMode() === mode) {
+                _disableDraw()
+                return
+              }
             }
+
+            // Shitty typing in MapboxDraw
+            _drawOptions.draw?.changeMode(mode as any)
+          },
+          {
+            priority: QueuePriority.LOW,
+          }
+        ),
           },
           {
             priority: QueuePriority.LOW,
