@@ -191,6 +191,10 @@ export type Actions = {
     drawMode: DrawMode,
     _queueOptions?: QueueOptions
   ) => Promise<void>
+  setDrawMode: (
+    drawMode: DrawMode,
+    _queueOptions?: QueueOptions
+  ) => Promise<void>
   setMapContext: (mapContext: MapContext) => void
   // The below are internal variables
   // ----------------------------------
@@ -930,6 +934,19 @@ export const useMapStore = create<State>()(
             priority: QueuePriority.LOW,
           }
         ),
+
+        setDrawMode: queueableFnInit(
+          async (drawMode: DrawMode) => {
+            const { _drawOptions, _enableDraw } = get()
+
+            let mode = getMapboxDrawMode(drawMode)
+
+            if (_drawOptions.draw == null) {
+              await _enableDraw(mode, { skipQueue: true })
+            } else {
+              // Shitty typing in MapboxDraw
+              _drawOptions.draw.changeMode(mode as any)
+            }
           },
           {
             priority: QueuePriority.LOW,
