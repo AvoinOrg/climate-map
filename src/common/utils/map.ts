@@ -317,26 +317,10 @@ export const addFeatureToDrawSource = (
 
       const data = originalSource._data as GeoJSON.FeatureCollection
 
-      const featureIndex = data.features.findIndex(
-        (f) => f.properties?.id === feature.properties?.user_id
-      )
+      const newFeatures = [...clone(data.features), feature]
 
-      if (featureIndex > -1) {
-        // Replacing the geometry of the identified feature
-        data.features[featureIndex].geometry = feature.geometry
-        data.features[featureIndex].properties = {
-          ...data.features[featureIndex].properties,
-          ...feature.properties,
-        }
-
-        // Update the source with the modified data
-        originalSource.setData(data)
-      } else {
-        // Feature not found. You might want to add it or handle this case differently.
-        console.error(
-          `Feature with id ${feature.id} not found in the original source`
-        )
-      }
+      // Update the source with the modified features
+      originalSource.setData({ ...data, features: newFeatures })
     }
   }
 }
