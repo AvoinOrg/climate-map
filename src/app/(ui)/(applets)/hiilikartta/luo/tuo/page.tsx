@@ -80,7 +80,7 @@ const Page = () => {
 
     const areaHa = getGeoJsonArea(formatedJson) / 10000
     const newPlanConf: NewPlanConf = {
-      json: formatedJson,
+      data: formatedJson,
       name: fileName,
       areaHa: areaHa,
       fileSettings: { fileType: 'geojson', zoningColumn: ZONING_CODE_COL },

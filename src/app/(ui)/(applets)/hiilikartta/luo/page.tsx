@@ -11,10 +11,11 @@ import { Link as MuiLink } from '@mui/material'
 import { T } from '@tolgee/react'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import { NewPlanConf } from '../common/types'
+import { NewPlanConf, ZONING_CODE_COL } from '../common/types'
 import { useAppletStore } from '../state/appletStore'
 import { createLayerConf } from '../common/utils'
 import { useMapStore } from '#/common/store'
+import { FeatureCollection } from 'geojson'
 
 const Page = () => {
   const router = useRouter()
@@ -26,16 +27,15 @@ const Page = () => {
   )
 
   const initializePlan = async () => {
-    const colName = 'area_codes'
+    const colName = ZONING_CODE_COL
     const jsonName = 'Uusi kaava'
-    const json = {
+    const data: FeatureCollection = {
       type: 'FeatureCollection',
-      name: jsonName,
       features: [],
     }
 
     const newPlanConf: NewPlanConf = {
-      json: json,
+      data: data,
       name: jsonName,
       areaHa: 0,
       fileSettings: { fileType: 'geojson', zoningColumn: colName },
@@ -44,7 +44,7 @@ const Page = () => {
     const planConf = await addPlanConf(newPlanConf)
 
     try {
-      const layerConf = createLayerConf(json, planConf.id, colName)
+      const layerConf = createLayerConf(data, planConf.id, colName)
       await addSerializableLayerGroup(layerConf.id, {
         layerConf,
         persist: true,
