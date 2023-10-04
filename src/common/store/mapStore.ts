@@ -237,6 +237,7 @@ export type Actions = {
     _queueOptions?: QueueOptions
   ) => Promise<void>
   _disableDraw: (_queueOptions?: QueueOptions) => Promise<void>
+  _removeDraw: (_queueOptions?: QueueOptions) => Promise<void>
 }
 
 export type State = Vars & Actions
@@ -971,6 +972,20 @@ export const useMapStore = create<State>()(
                 state._drawOptions.originalStyles = undefined
               })
             }
+          },
+          {
+            priority: QueuePriority.LOW,
+          }
+        ),
+
+        _removeDraw: queueableFnInit(
+          async () => {
+            const { _disableDraw } = get()
+
+            await _disableDraw({ skipQueue: true })
+            set((state) => {
+              state._drawOptions.layerGroupId = null
+            })
           },
           {
             priority: QueuePriority.LOW,
