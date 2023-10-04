@@ -919,7 +919,7 @@ export const useMapStore = create<State>()(
 
               const idField = _drawOptions.idField || 'id'
 
-              _mbMap?.on('draw.create', (e) => {
+              const handleDrawCreate = (e: any) => {
                 e.features.forEach((feature: Feature) => {
                   if (_drawOptions.featureAddMutator != null) {
                     const mutatedFeature =
@@ -938,9 +938,9 @@ export const useMapStore = create<State>()(
                   }
                   addFeatureToDrawSource(feature, _mbMap, layerGroupId)
                 })
-              })
+              }
 
-              _mbMap?.on('draw.update', (e) => {
+              const handleDrawUpdate = (e: any) => {
                 e.features.forEach((feature: Feature) => {
                   if (_drawOptions.featureUpdateMutator != null) {
                     feature = _drawOptions.featureUpdateMutator(feature)
@@ -952,9 +952,9 @@ export const useMapStore = create<State>()(
                     layerGroupId
                   )
                 })
-              })
+              }
 
-              _mbMap?.on('draw.delete', (e) => {
+              const handleDrawDelete = (e: any) => {
                 e.features.forEach((feature: Feature) => {
                   deleteFeatureFromDrawSource(
                     feature,
@@ -963,12 +963,19 @@ export const useMapStore = create<State>()(
                     layerGroupId
                   )
                 })
-              })
+              }
+
+              _mbMap?.on('draw.create', handleDrawCreate)
+              _mbMap?.on('draw.update', handleDrawUpdate)
+              _mbMap?.on('draw.delete', handleDrawDelete)
 
               set((state) => {
                 state._drawOptions.draw = draw
                 state._drawOptions.isEnabled = true
                 state._drawOptions.originalStyles = originalStyles
+                state._drawOptions.handleDrawCreate = handleDrawCreate
+                state._drawOptions.handleDrawUpdate = handleDrawUpdate
+                state._drawOptions.handleDrawDelete = handleDrawDelete
               })
             }
           },
