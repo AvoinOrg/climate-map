@@ -56,12 +56,10 @@ const Layout = ({
         },
         featureUpdateMutator: (feature: Feature) => {
           const properties = feature.properties as FeatureProperties
-          console.log(feature)
           const newProperties: FeatureProperties = {
             ...properties,
             area_ha: getGeoJsonArea(feature) / 10000,
           }
-          console.log(newProperties)
 
           feature.properties = newProperties
 
