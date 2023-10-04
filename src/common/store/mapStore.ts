@@ -513,7 +513,12 @@ export const useMapStore = create<State>()(
         },
 
         disableLayerGroup: async (layerGroupId: LayerGroupId) => {
-          const { _setGroupVisibility, _layerGroups } = get()
+          const {
+            _setGroupVisibility,
+            _layerGroups,
+            _drawOptions,
+            _removeDraw,
+          } = get()
 
           if (!Object.keys(_layerGroups).includes(layerGroupId)) {
             throw new Error(
@@ -523,6 +528,9 @@ export const useMapStore = create<State>()(
           }
 
           _setGroupVisibility(layerGroupId, false)
+          if (_drawOptions.layerGroupId === layerGroupId) {
+            _removeDraw({ skipQueue: true })
+          }
         },
 
         removeLayerGroup: async (layerGroupId: LayerGroupId) => {
