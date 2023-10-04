@@ -223,6 +223,10 @@ export type Actions = {
     id: LayerGroupId,
     options: LayerGroupAddOptionsWithConf
   ) => Promise<void>
+  _runLayerGroupActivationActions: (
+    layerGroupIdString: string,
+    opts?: LayerGroupAddOptions | SerializableLayerGroupAddOptions
+  ) => Promise<void>
   _addToFunctionQueue: (queueFunction: QueueFunction) => Promise<any>
   _setFunctionQueue: (functionQueue: FunctionQueue) => void
   _executeFunctionQueue: (callback?: () => void) => Promise<void>
@@ -448,7 +452,7 @@ export const useMapStore = create<State>()(
               _persistingLayerGroupAddOptions,
               _addPersistingLayerGroupAddOptions,
               mapContext,
-              getAndFitBounds,
+              _runLayerGroupActivationActions,
             } = get()
 
             // Initialize layer if it doesn't exist
@@ -491,12 +495,10 @@ export const useMapStore = create<State>()(
                   opts as LayerGroupAddOptionsWithConf
                 )
               }
+
+              _runLayerGroupActivationActions(layerGroupId, opts)
             } else {
               console.error('No layer config found for id: ' + layerGroupId)
-            }
-
-            if (opts.zoomToExtent) {
-              getAndFitBounds(layerGroupId, undefined, { skipQueue: true })
             }
           },
           { priority: QueuePriority.MEDIUM_HIGH }
@@ -510,24 +512,12 @@ export const useMapStore = create<State>()(
             _layerGroups,
             _setGroupVisibility,
             addLayerGroup,
-            getAndFitBounds,
+            _runLayerGroupActivationActions,
           } = get()
 
           if (_layerGroups[layerGroupId]) {
             _setGroupVisibility(layerGroupId, true)
-            if (options?.drawOptions != null) {
-              set((state) => {
-                state._drawOptions = {
-                  ...state._drawOptions,
-                  ...options.drawOptions,
-                  layerGroupId: layerGroupId,
-                }
-              })
-            }
-
-            if (options?.zoomToExtent) {
-              getAndFitBounds(layerGroupId, undefined, { skipQueue: true })
-            }
+            _runLayerGroupActivationActions(layerGroupId, options)
           } else {
             addLayerGroup(layerGroupId, options)
           }
@@ -1406,6 +1396,29 @@ export const useMapStore = create<State>()(
           } catch (e: any) {
             if (!e.message.includes('There is already a source')) {
               console.error(e)
+            }
+          }
+        },
+
+        _runLayerGroupActivationActions: async (
+          layerGroupIdString: string,
+          opts?: LayerGroupAddOptions | SerializableLayerGroupAddOptions
+        ) => {
+          if (opts != null) {
+            const { getAndFitBounds } = get()
+            if (opts?.zoomToExtent) {
+              getAndFitBounds(layerGroupIdString, undefined, {
+                skipQueue: true,
+              })
+            }
+            if (opts?.drawOptions != null) {
+              set((state) => {
+                state._drawOptions = {
+                  ...state._drawOptions,
+                  ...opts.drawOptions,
+                  layerGroupId: layerGroupIdString,
+                }
+              })
             }
           }
         },
