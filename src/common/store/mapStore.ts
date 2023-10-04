@@ -928,9 +928,7 @@ export const useMapStore = create<State>()(
             const drawInstance = _drawOptions.draw
 
             if (drawInstance != null) {
-              const geoJSON = drawInstance.getAll()
-
-              if (_drawOptions.layerGroupId != null && geoJSON != null) {
+              if (_drawOptions.layerGroupId != null) {
                 // geoJSON.features.forEach((feature) => {
                 //   const properties = feature.properties || {}
                 //   const modifiedProperties: Record<string, any> = {}
@@ -963,8 +961,6 @@ export const useMapStore = create<State>()(
                   }
                 }
               }
-
-              _mbMap?.removeControl(drawInstance)
 
               set((state) => {
                 state._drawOptions.draw = null
