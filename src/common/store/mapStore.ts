@@ -44,6 +44,7 @@ import {
   LayerConf,
   MapDrawOptions,
   DrawMode,
+  FitBoundsOptions,
 } from '#/common/types/map'
 import { layerConfs } from '#/components/Map/Layers'
 
@@ -179,7 +180,13 @@ export type Actions = {
   ) => Promise<void>
   fitBounds: (
     bbox: number[] | LngLatBounds,
-    options: { duration?: number; lonExtra?: number; latExtra?: number }
+    options?: FitBoundsOptions,
+    _queueOptions?: QueueOptions
+  ) => Promise<any>
+  getAndFitBounds: (
+    layerGroupId: string,
+    options?: FitBoundsOptions,
+    _queueOptions?: QueueOptions
   ) => Promise<any>
   setSelectedFeatures: (features: MapboxGeoJSONFeature[]) => void
   setMapLibraryMode: (mode: MapLibraryMode) => void
@@ -684,10 +691,10 @@ export const useMapStore = create<State>()(
           (
             bbox: number[] | LngLatBounds,
             {
-              duration = 1000,
-              lonExtra = 0,
-              latExtra = 0,
-            }: { duration?: number; lonExtra?: number; latExtra?: number } = {}
+              duration = 2000,
+              lonExtra = 1,
+              latExtra = 1,
+            }: FitBoundsOptions = {}
           ): Promise<void> => {
             const { _mbMap } = get()
 
@@ -722,6 +729,37 @@ export const useMapStore = create<State>()(
             return Promise.resolve()
           }
         ),
+
+        getAndFitBounds: queueableFnInit(
+          async (
+            layerGroupId,
+            {
+              duration = 2000,
+              lonExtra = 1,
+              latExtra = 1,
+            }: FitBoundsOptions = {}
+          ): Promise<void> => {
+            const { fitBounds, getSourceBounds } = get()
+
+            const bounds = await getSourceBounds(layerGroupId, {
+              skipQueue: true,
+            })
+            if (bounds) {
+              fitBounds(
+                bounds,
+                {
+                  duration: duration,
+                  latExtra: lonExtra,
+                  lonExtra: latExtra,
+                },
+                { skipQueue: true }
+              )
+            }
+
+            return Promise.resolve()
+          }
+        ),
+
         getGeocoder: () => {
           // set((state) => {
           // })
