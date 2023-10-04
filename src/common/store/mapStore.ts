@@ -998,7 +998,7 @@ export const useMapStore = create<State>()(
               await _enableDraw(mode, { skipQueue: true })
             } else {
               if (_drawOptions.draw.getMode() === mode) {
-                _disableDraw()
+                _disableDraw({ skipQueue: true })
                 return
               }
             }
