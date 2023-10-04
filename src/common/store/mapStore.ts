@@ -129,6 +129,7 @@ export type Actions = {
     _queueOptions?: QueueOptions
   ) => Promise<void>
   disableLayerGroup: (layerGroupId: LayerGroupId) => Promise<void>
+  removeLayerGroup: (layerGroupId: LayerGroupId) => Promise<void>
   toggleLayerGroup: (
     layerGroupId: LayerGroupId,
     options?: LayerGroupAddOptions,
@@ -152,6 +153,7 @@ export type Actions = {
     _queueOptions?: QueueOptions
   ) => Promise<void>
   disableSerializableLayerGroup: (layerGroupIdString: string) => Promise<void>
+  removeSerializableLayerGroup: (layerGroupIdString: string) => Promise<void>
   setLayoutProperty: (
     layer: string,
     name: string,
@@ -522,6 +524,39 @@ export const useMapStore = create<State>()(
           _setGroupVisibility(layerGroupId, false)
         },
 
+        removeLayerGroup: async (layerGroupId: LayerGroupId) => {
+          const { _setGroupVisibility, _layerGroups, _mbMap } = get() // Assuming you have a map reference in your store.
+
+          if (!Object.keys(_layerGroups).includes(layerGroupId)) {
+            console.error(
+              'Unable to remove layer group that does not have layer group options: ' +
+                layerGroupId
+            )
+            return
+          }
+
+          const layerGroupOptions = _layerGroups[layerGroupId]
+
+          // Remove each layer from the map.
+          for (const layerId of Object.keys(layerGroupOptions.layers)) {
+            if (_mbMap?.getLayer(layerId)) {
+              _mbMap?.removeLayer(layerId)
+            }
+
+            // Optional: If there's a source associated with this layer and no other layer is using it.
+            // Here I'm assuming layerId and sourceId are the same. Adjust if different.
+            if (_mbMap?.getSource(layerId)) {
+              _mbMap?.removeSource(layerId)
+            }
+          }
+
+          set(
+            produce((state: State) => {
+              delete state._layerGroups[layerGroupId]
+            })
+          )
+        },
+
         toggleLayerGroup: async (
           layerGroupId: LayerGroupId,
           options?: LayerGroupAddOptions
@@ -591,6 +626,12 @@ export const useMapStore = create<State>()(
           const { disableLayerGroup } = get()
 
           disableLayerGroup(layerGroupIdString as LayerGroupId)
+        },
+
+        removeSerializableLayerGroup: async (layerGroupIdString: string) => {
+          const { removeLayerGroup } = get() // Assuming you have a map reference in your store.
+
+          removeLayerGroup(layerGroupIdString as LayerGroupId)
         },
 
         setLayoutProperty: queueableFnInit(
