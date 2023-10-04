@@ -303,7 +303,7 @@ export const getAllLayerOptionsObj = (
 
 export const addFeatureToDrawSource = (
   feature: GeoJSON.Feature,
-  _mbMap: Map | undefined,
+  _mbMap: Map | null,
   layerGroupId: string
 ) => {
   if (layerGroupId && feature) {
@@ -330,7 +330,7 @@ export const addFeatureToDrawSource = (
 export const updateFeatureInDrawSource = (
   feature: GeoJSON.Feature,
   idField: string,
-  _mbMap: Map | undefined,
+  _mbMap: Map | null,
   layerGroupId: string
 ) => {
   if (layerGroupId && feature) {
@@ -380,7 +380,7 @@ export const updateFeatureInDrawSource = (
 export const deleteFeatureFromDrawSource = (
   feature: Feature,
   idField: string,
-  _mbMap: Map | undefined,
+  _mbMap: Map | null,
   layerGroupId: string
 ) => {
   if (layerGroupId && feature) {
