@@ -1025,10 +1025,23 @@ export const useMapStore = create<State>()(
 
               _mbMap?.removeControl(drawInstance)
 
+              if (_drawOptions.handleDrawCreate != null) {
+                _mbMap?.off('draw.create', _drawOptions.handleDrawCreate)
+              }
+              if (_drawOptions.handleDrawUpdate != null) {
+                _mbMap?.off('draw.update', _drawOptions.handleDrawUpdate)
+              }
+              if (_drawOptions.handleDrawDelete != null) {
+                _mbMap?.off('draw.delete', _drawOptions.handleDrawDelete)
+              }
+
               set((state) => {
                 state._drawOptions.draw = null
                 state._drawOptions.isEnabled = false
                 state._drawOptions.originalStyles = undefined
+                state._drawOptions.handleDrawCreate = undefined
+                state._drawOptions.handleDrawUpdate = undefined
+                state._drawOptions.handleDrawDelete = undefined
               })
             }
           },
