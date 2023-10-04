@@ -58,6 +58,9 @@ export interface MapDrawOptions extends LayerGroupDrawOptions {
   draw: MapboxDraw | null
   isEnabled: boolean
   originalStyles?: Record<string, any>
+  handleDrawCreate?: (e: any) => void
+  handleDrawUpdate?: (e: any) => void
+  handleDrawDelete?: (e: any) => void
 }
 
 interface BaseLayerGroupAddOptions {
