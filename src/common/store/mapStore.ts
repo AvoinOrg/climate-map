@@ -1016,6 +1016,8 @@ export const useMapStore = create<State>()(
                 }
               }
 
+              _mbMap?.removeControl(drawInstance)
+
               set((state) => {
                 state._drawOptions.draw = null
                 state._drawOptions.isEnabled = false
