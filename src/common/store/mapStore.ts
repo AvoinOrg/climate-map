@@ -448,6 +448,7 @@ export const useMapStore = create<State>()(
               _persistingLayerGroupAddOptions,
               _addPersistingLayerGroupAddOptions,
               mapContext,
+              getAndFitBounds,
             } = get()
 
             // Initialize layer if it doesn't exist
@@ -493,6 +494,10 @@ export const useMapStore = create<State>()(
             } else {
               console.error('No layer config found for id: ' + layerGroupId)
             }
+
+            if (opts.zoomToExtent) {
+              getAndFitBounds(layerGroupId, undefined, { skipQueue: true })
+            }
           },
           { priority: QueuePriority.MEDIUM_HIGH }
         ),
@@ -501,7 +506,12 @@ export const useMapStore = create<State>()(
           layerGroupId: LayerGroupId,
           options?: LayerGroupAddOptions
         ) => {
-          const { _layerGroups, _setGroupVisibility, addLayerGroup } = get()
+          const {
+            _layerGroups,
+            _setGroupVisibility,
+            addLayerGroup,
+            getAndFitBounds,
+          } = get()
 
           if (_layerGroups[layerGroupId]) {
             _setGroupVisibility(layerGroupId, true)
@@ -513,6 +523,10 @@ export const useMapStore = create<State>()(
                   layerGroupId: layerGroupId,
                 }
               })
+            }
+
+            if (options?.zoomToExtent) {
+              getAndFitBounds(layerGroupId, undefined, { skipQueue: true })
             }
           } else {
             addLayerGroup(layerGroupId, options)

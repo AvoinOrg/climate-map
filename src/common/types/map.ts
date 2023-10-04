@@ -68,6 +68,7 @@ interface BaseLayerGroupAddOptions {
   isHidden?: boolean
   persist?: boolean
   drawOptions?: LayerGroupDrawOptions
+  zoomToExtent?: boolean
 }
 
 // Compatible with hydration.
