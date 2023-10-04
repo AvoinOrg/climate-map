@@ -526,7 +526,7 @@ export const useMapStore = create<State>()(
         },
 
         removeLayerGroup: async (layerGroupId: LayerGroupId) => {
-          const { _setGroupVisibility, _layerGroups, _mbMap } = get() // Assuming you have a map reference in your store.
+          const { _layerGroups, _mbMap, _drawOptions, _removeDraw } = get() // Assuming you have a map reference in your store.
 
           if (!Object.keys(_layerGroups).includes(layerGroupId)) {
             console.error(
@@ -556,6 +556,10 @@ export const useMapStore = create<State>()(
               delete state._layerGroups[layerGroupId]
             })
           )
+
+          if (_drawOptions.layerGroupId === layerGroupId) {
+            _removeDraw({ skipQueue: true })
+          }
         },
 
         toggleLayerGroup: async (
