@@ -210,3 +210,9 @@ export const isGeoJSONSource = (source: any): source is GeoJSONSource => {
 }
 
 export type DrawMode = 'polygon' | 'edit'
+
+export type FitBoundsOptions = {
+  duration?: number
+  lonExtra?: number
+  latExtra?: number
+}
