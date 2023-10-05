@@ -4,7 +4,7 @@ import React from 'react'
 import { styled } from '@mui/material/styles'
 import ButtonGroup from '@mui/material/ButtonGroup'
 import ExploreIcon from '@mui/icons-material/ExploreOutlined'
-import { Button } from '@mui/material'
+import { Box, Button } from '@mui/material'
 
 import { useMapStore } from '#/common/store'
 import { Terrain, Bullseye, Minus, Plus } from '#/components/icons'
@@ -55,6 +55,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
   color: theme.palette.neutral.darker,
   backgroundColor: theme.palette.neutral.light,
   border: 'none',
+  boxShadow: 'none',
   '&:hover': {
     backgroundColor: theme.palette.neutral.main,
     border: 'none',
@@ -68,5 +69,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
   height: '40px',
 }))
 
-// TODO: theme styling
-const Box = styled('div')(({ theme }) => ({}))
+const StyledButtonGroup = styled(ButtonGroup)(({ theme }) => ({
+  height: '100%',
+  boxShadow: '1px 1px 7px 0px #EEECEC',
+}))
