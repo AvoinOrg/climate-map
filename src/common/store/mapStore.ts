@@ -798,7 +798,7 @@ export const useMapStore = create<State>()(
         },
 
         deleteDrawFeatures: (features: Feature[]) => {
-          const { _drawOptions } = get()
+          const { _mbMap, _drawOptions } = get()
 
           if (_drawOptions.draw == null) {
             console.error('Cannot delete features: No draw object found.')
@@ -808,6 +808,8 @@ export const useMapStore = create<State>()(
           const featureIds = features.map((feature) => String(feature.id))
 
           _drawOptions.draw.delete(featureIds)
+
+          _mbMap?.fire('draw.delete', { features })
         },
 
         toggleDrawMode: queueableFnInit(
@@ -930,6 +932,7 @@ export const useMapStore = create<State>()(
               defaultMode: drawMode || 'simple_select',
               userProperties: true,
               styles: drawStyles,
+              keybindings: true,
             })
 
             _mbMap?.addControl(draw, 'bottom-right')
