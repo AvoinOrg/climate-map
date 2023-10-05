@@ -16,9 +16,12 @@ import {
   Plus,
   Polygon,
   EditDocument,
+  Delete,
 } from '#/components/icons'
 import { useIsDrawEnabled } from '#/common/hooks/map/useIsDrawEnabled'
 import { useAllowedDrawModes } from '#/common/hooks/map/useAllowedDrawModes'
+import { useSelectedDrawFeatures } from '#/common/hooks/map/useSelectedDrawFeature'
+import { useIsDrawDeleteAllowed } from '#/common/hooks/map/useIsDrawDeleteAllowed'
 
 export const MapButtons = () => {
   const mapToggleTerrain = useMapStore((state) => state.mapToggleTerrain)
@@ -28,10 +31,17 @@ export const MapButtons = () => {
   const mapRelocate = useMapStore((state) => state.mapRelocate)
   const setDrawMode = useMapStore((state) => state.setDrawMode)
   const disableDraw = useMapStore((state) => state.disableDraw)
+  const deleteDrawFeatures = useMapStore((state) => state.deleteDrawFeatures)
   const drawMode = useDrawMode()
   const isDrawEnabled = useIsDrawEnabled()
   const allowedDrawModes = useAllowedDrawModes()
+  const selectedDrawFeatures = useSelectedDrawFeatures()
+  const isDrawDeleteAllowed = useIsDrawDeleteAllowed()
   // const setIsDrawPolygon = useMapStore((state) => state.setIsDrawPolygon)
+
+  const handleDrawDeleteClick = () => {
+    deleteDrawFeatures(selectedDrawFeatures)
+  }
 
   return (
     <Box
@@ -45,6 +55,22 @@ export const MapButtons = () => {
           theme.zIndex.mobileStepper /* force this to be on top of the map */,
       })}
     >
+      {isDrawEnabled && isDrawDeleteAllowed && (
+        <StyledButtonGroup
+          orientation="horizontal"
+          sx={{ height: '100%', mr: 1 }}
+        >
+          {drawMode != null && (
+            <StyledButton
+              onClick={handleDrawDeleteClick}
+              size="small"
+              disabled={selectedDrawFeatures.length === 0}
+            >
+              <Delete />
+            </StyledButton>
+          )}
+        </StyledButtonGroup>
+      )}
       {isDrawEnabled && (
         <StyledButtonGroup
           orientation="horizontal"
