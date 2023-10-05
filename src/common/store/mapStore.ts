@@ -1,5 +1,6 @@
 // The map store is a zustand store that manages the map state.
 // A lot of the logic is split between this file and the Map component.
+// There are a also various helper hooks in src/common/hooks/map.
 
 import { map, cloneDeep } from 'lodash-es'
 import olms from 'ol-mapbox-style'
@@ -17,7 +18,6 @@ import {
   MapboxGeoJSONFeature,
   AnyLayer,
 } from 'mapbox-gl'
-// import GeoJSON from 'ol/format/GeoJSON'
 import mapboxgl from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import { useUIStore } from '#/common/store'
