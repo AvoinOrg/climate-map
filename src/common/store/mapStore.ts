@@ -967,7 +967,6 @@ export const useMapStore = create<State>()(
 
               set((state) => {
                 state._drawOptions.draw = draw
-                state._drawOptions.isEnabled = true
                 state._drawOptions.originalStyles = originalStyles
                 state._drawOptions.handleDrawCreate = handleDrawCreate
                 state._drawOptions.handleDrawUpdate = handleDrawUpdate
@@ -1033,7 +1032,6 @@ export const useMapStore = create<State>()(
 
               set((state) => {
                 state._drawOptions.draw = null
-                state._drawOptions.isEnabled = false
                 state._drawOptions.originalStyles = undefined
                 state._drawOptions.handleDrawCreate = undefined
                 state._drawOptions.handleDrawUpdate = undefined
@@ -1053,6 +1051,7 @@ export const useMapStore = create<State>()(
             await _disableDraw({ skipQueue: true })
             set((state) => {
               state._drawOptions.layerGroupId = null
+              state._drawOptions.isEnabled = false
             })
           },
           {
@@ -1423,18 +1422,28 @@ export const useMapStore = create<State>()(
           opts?: LayerGroupAddOptions | SerializableLayerGroupAddOptions
         ) => {
           if (opts != null) {
-            const { getAndFitBounds } = get()
+            const { getAndFitBounds, _drawOptions, _removeDraw } = get()
             if (opts?.zoomToExtent) {
               getAndFitBounds(layerGroupIdString, undefined, {
                 skipQueue: true,
               })
             }
-            if (opts?.drawOptions != null) {
+
+            if (
+              opts?.drawOptions != null &&
+              (opts.drawOptions.polygonEnabled || opts.drawOptions.editEnabled)
+            ) {
+              if (_drawOptions != null) {
+                await _removeDraw({ skipQueue: true })
+              }
               set((state) => {
                 state._drawOptions = {
-                  ...state._drawOptions,
+                  draw: null,
+                  polygonEnabled: false,
+                  editEnabled: false,
                   ...opts.drawOptions,
                   layerGroupId: layerGroupIdString,
+                  isEnabled: true,
                 }
               })
             }
