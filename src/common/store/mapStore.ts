@@ -811,6 +811,55 @@ export const useMapStore = create<State>()(
           _drawOptions.draw.delete(featureIds)
         },
 
+        toggleDrawMode: queueableFnInit(
+          async (drawMode: DrawMode) => {
+            const { _drawOptions, _enableDraw, disableDraw } = get()
+
+            let mode = getMapboxDrawMode(drawMode)
+
+            if (_drawOptions.draw == null) {
+              await _enableDraw(mode, { skipQueue: true })
+            } else {
+              if (_drawOptions.draw.getMode() === mode) {
+                disableDraw({ skipQueue: true })
+                return
+              }
+            }
+
+            // Shitty typing in MapboxDraw
+            _drawOptions.draw?.changeMode(mode as any)
+          },
+          {
+            priority: QueuePriority.LOW,
+          }
+        ),
+
+        setDrawMode: queueableFnInit(
+          async (drawMode: DrawMode) => {
+            const { _drawOptions, _enableDraw } = get()
+
+            let mode = getMapboxDrawMode(drawMode)
+
+            if (_drawOptions.draw == null) {
+              await _enableDraw(mode, { skipQueue: true })
+            } else {
+              // Shitty typing in MapboxDraw
+              _drawOptions.draw.changeMode(mode as any)
+            }
+          },
+          {
+            priority: QueuePriority.LOW,
+          }
+        ),
+
+        setMapContext: (mapContext: MapContext) => {
+          const { _layerGroups, enableLayerGroup, disableLayerGroup } = get()
+
+          set((state) => {
+            state.mapContext = mapContext
+          })
+        },
+
         _enableDraw: queueableFnInit(
           async (drawMode?: MapboxDraw.DrawMode) => {
             const { _mbMap, _drawOptions } = get()
@@ -1073,55 +1122,6 @@ export const useMapStore = create<State>()(
             priority: QueuePriority.LOW,
           }
         ),
-
-        toggleDrawMode: queueableFnInit(
-          async (drawMode: DrawMode) => {
-            const { _drawOptions, _enableDraw, disableDraw } = get()
-
-            let mode = getMapboxDrawMode(drawMode)
-
-            if (_drawOptions.draw == null) {
-              await _enableDraw(mode, { skipQueue: true })
-            } else {
-              if (_drawOptions.draw.getMode() === mode) {
-                disableDraw({ skipQueue: true })
-                return
-              }
-            }
-
-            // Shitty typing in MapboxDraw
-            _drawOptions.draw?.changeMode(mode as any)
-          },
-          {
-            priority: QueuePriority.LOW,
-          }
-        ),
-
-        setDrawMode: queueableFnInit(
-          async (drawMode: DrawMode) => {
-            const { _drawOptions, _enableDraw } = get()
-
-            let mode = getMapboxDrawMode(drawMode)
-
-            if (_drawOptions.draw == null) {
-              await _enableDraw(mode, { skipQueue: true })
-            } else {
-              // Shitty typing in MapboxDraw
-              _drawOptions.draw.changeMode(mode as any)
-            }
-          },
-          {
-            priority: QueuePriority.LOW,
-          }
-        ),
-
-        setMapContext: (mapContext: MapContext) => {
-          const { _layerGroups, enableLayerGroup, disableLayerGroup } = get()
-
-          set((state) => {
-            state.mapContext = mapContext
-          })
-        },
 
         _setIsHydrated: (isHydrated: boolean) => {
           set((state) => {
