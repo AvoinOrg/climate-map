@@ -204,6 +204,7 @@ export type Actions = {
     drawMode: DrawMode,
     _queueOptions?: QueueOptions
   ) => Promise<void>
+  disableDraw: (_queueOptions?: QueueOptions) => Promise<void>
   setMapContext: (mapContext: MapContext) => void
   // The below are internal variables
   // ----------------------------------
@@ -247,7 +248,7 @@ export type Actions = {
     drawMode?: MapboxDraw.DrawMode,
     _queueOptions?: QueueOptions
   ) => Promise<void>
-  _disableDraw: (_queueOptions?: QueueOptions) => Promise<void>
+
   _removeDraw: (_queueOptions?: QueueOptions) => Promise<void>
 }
 
@@ -977,7 +978,7 @@ export const useMapStore = create<State>()(
           { priority: QueuePriority.LOW }
         ),
 
-        _disableDraw: queueableFnInit(
+        disableDraw: queueableFnInit(
           async () => {
             const { _mbMap, _drawOptions } = get()
 
@@ -1046,9 +1047,9 @@ export const useMapStore = create<State>()(
 
         _removeDraw: queueableFnInit(
           async () => {
-            const { _disableDraw } = get()
+            const { disableDraw } = get()
 
-            await _disableDraw({ skipQueue: true })
+            await disableDraw({ skipQueue: true })
             set((state) => {
               state._drawOptions.layerGroupId = null
               state._drawOptions.isEnabled = false
@@ -1061,7 +1062,7 @@ export const useMapStore = create<State>()(
 
         toggleDrawMode: queueableFnInit(
           async (drawMode: DrawMode) => {
-            const { _drawOptions, _enableDraw, _disableDraw } = get()
+            const { _drawOptions, _enableDraw, disableDraw } = get()
 
             let mode = getMapboxDrawMode(drawMode)
 
@@ -1069,7 +1070,7 @@ export const useMapStore = create<State>()(
               await _enableDraw(mode, { skipQueue: true })
             } else {
               if (_drawOptions.draw.getMode() === mode) {
-                _disableDraw({ skipQueue: true })
+                disableDraw({ skipQueue: true })
                 return
               }
             }
