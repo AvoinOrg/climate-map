@@ -7,6 +7,7 @@ const SvgTerrain = (props: SVGProps<SVGSVGElement>) => (
     height="24"
     viewBox="0 0 24 24"
     fill="none"
+    {...props}
   >
     <rect
       x="1"
@@ -15,10 +16,10 @@ const SvgTerrain = (props: SVGProps<SVGSVGElement>) => (
       height="22"
       rx="2"
       stroke="black"
-      stroke-width="2"
+      strokeWidth="2"
     />
-    <path d="M11 5C11 8 8.5 11 5 11" stroke="black" stroke-width="2" />
-    <path d="M8 5C8 6.5 6.75 8 5 8" stroke="black" stroke-width="2" />
+    <path d="M11 5C11 8 8.5 11 5 11" stroke="black" strokeWidth="2" />
+    <path d="M8 5C8 6.5 6.75 8 5 8" stroke="black" strokeWidth="2" />
     <mask
       id="path-4-outside-1_14_521"
       maskUnits="userSpaceOnUse"
@@ -30,14 +31,14 @@ const SvgTerrain = (props: SVGProps<SVGSVGElement>) => (
     >
       <rect fill="white" x="4" y="11" width="17" height="9" />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M18.3971 19L14.5 13L11.2149 18.0578L9.5 16L7 19H12L12 19H18.3971Z"
       />
     </mask>
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M18.3971 19L14.5 13L11.2149 18.0578L9.5 16L7 19H12L12 19H18.3971Z"
       fill="black"
     />
