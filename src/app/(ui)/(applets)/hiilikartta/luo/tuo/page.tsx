@@ -26,6 +26,9 @@ const Page = () => {
   const addSerializableLayerGroup = useMapStore(
     (state) => state.addSerializableLayerGroup
   )
+  const removeSerializableLayerGroup = useMapStore(
+    (state) => state.removeSerializableLayerGroup
+  )
   const addPlanConf = useAppletStore((state) => state.addPlanConf)
   const deletePlanConf = useAppletStore((state) => state.deletePlanConf)
   const [fileType, setFileType] = useState<FileType>()
@@ -94,13 +97,18 @@ const Page = () => {
         planConf.id,
         ZONING_CODE_COL
       )
+
+      // Testing if the file works, then removing the layers.
       await addSerializableLayerGroup(layerConf.id, {
         layerConf,
-        persist: true,
+        persist: false,
+        isHidden: true,
       })
+      await removeSerializableLayerGroup(layerConf.id)
     } catch (e) {
       deletePlanConf(planConf.id)
       console.error(e)
+      // TODO: show error to user, invalid file
       return null
     }
 
