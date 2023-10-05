@@ -5,5 +5,5 @@ export const useDoesLayerGroupExist = (layerGroupId: string) => {
     (state) => state._layerGroups[layerGroupId] != null
   )
 
-  return useDoesLayerGroupExist
+  return doesLayerGroupExist
 }
