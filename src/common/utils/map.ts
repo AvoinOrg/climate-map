@@ -417,3 +417,19 @@ export const getMapboxDrawMode = (drawMode: DrawMode): MapboxDraw.DrawMode => {
       return 'simple_select'
   }
 }
+
+// TODO: Add more modes as needed
+export const getDrawMode = (mapboxDrawMode: MapboxDraw.DrawMode): DrawMode => {
+  switch (mapboxDrawMode) {
+    case 'draw_polygon':
+      return 'polygon'
+    case 'simple_select':
+      return 'edit'
+    case 'direct_select':
+      return 'edit'
+    case 'static':
+      return 'edit'
+    default:
+      return 'edit'
+  }
+}
