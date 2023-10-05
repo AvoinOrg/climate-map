@@ -864,10 +864,6 @@ export const useMapStore = create<State>()(
 
             const draw = new MapboxDraw({
               displayControlsDefault: false,
-              controls: {
-                polygon: true,
-                trash: true,
-              },
               defaultMode: drawMode || 'simple_select',
               userProperties: true,
               styles: drawStyles,
