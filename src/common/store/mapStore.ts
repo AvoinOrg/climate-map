@@ -205,6 +205,7 @@ export type Actions = {
     _queueOptions?: QueueOptions
   ) => Promise<void>
   disableDraw: (_queueOptions?: QueueOptions) => Promise<void>
+  deleteDrawFeatures: (features: Feature[]) => void
   setMapContext: (mapContext: MapContext) => void
   // The below are internal variables
   // ----------------------------------
@@ -795,6 +796,19 @@ export const useMapStore = create<State>()(
         mapZoomOut: () => {
           const { _mbMap } = get()
           _mbMap?.zoomOut()
+        },
+
+        deleteDrawFeatures: (features: Feature[]) => {
+          const { _drawOptions } = get()
+
+          if (_drawOptions.draw == null) {
+            console.error('Cannot delete features: No draw object found.')
+            return
+          }
+
+          const featureIds = features.map((feature) => String(feature.id))
+
+          _drawOptions.draw.delete(featureIds)
         },
 
         _enableDraw: queueableFnInit(
