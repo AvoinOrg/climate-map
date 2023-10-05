@@ -5,7 +5,7 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw'
 export const useDrawMode = () => {
   const options = useMapStore((state) => state._drawOptions)
 
-  if (options.draw == null) {
+  if (options.draw == null || options.isEnabled === false) {
     return null
   }
 
