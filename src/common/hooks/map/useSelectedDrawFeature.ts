@@ -6,7 +6,7 @@ export const useSelectedDrawFeatures = () => {
   const draw = useMapStore((state) => state._drawOptions.draw)
 
   const [selectedDrawFeatures, setSelectedDrawFeatures] = useState<
-    (GeoJSON.Feature | null)[]
+    GeoJSON.Feature[]
   >([])
 
   useEffect(() => {
