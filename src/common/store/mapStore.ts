@@ -1455,6 +1455,7 @@ export const useMapStore = create<State>()(
                   draw: null,
                   polygonEnabled: false,
                   editEnabled: false,
+                  deleteEnabled: false,
                   ...opts.drawOptions,
                   layerGroupId: layerGroupIdString,
                   isEnabled: true,

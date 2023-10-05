@@ -49,6 +49,7 @@ export interface LayerGroupDrawOptions {
   idField?: string
   polygonEnabled?: boolean
   editEnabled?: boolean
+  deleteEnabled?: boolean
   featureAddMutator?: (feature: Feature) => Feature
   featureUpdateMutator?: (feature: Feature) => Feature
 }

@@ -60,6 +60,7 @@ const Layout = ({
           idField: 'id',
           polygonEnabled: true,
           editEnabled: true,
+          deleteEnabled: true,
           featureAddMutator: (feature: Feature) => {
             const properties: FeatureProperties = {
               id: generateUUID(),
