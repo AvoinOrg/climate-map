@@ -59,6 +59,13 @@ const StyledButton = styled(Button)(({ theme }) => ({
     backgroundColor: theme.palette.neutral.main,
     border: 'none',
   },
+  '&.Mui-disabled': {
+    border: 'none',
+    color: theme.palette.neutral.main, // you can adjust the color if you want
+  },
+  flex: 1,
+  width: '40px',
+  height: '40px',
 }))
 
 // TODO: theme styling
