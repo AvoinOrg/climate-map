@@ -26,7 +26,6 @@ import drawStyles from '#/common/utils/drawStyles'
 
 import {
   LayerGroupId,
-  SerializableLayerConf,
   LayerOptions,
   LayerGroupOptions,
   ExtendedAnyLayer,
