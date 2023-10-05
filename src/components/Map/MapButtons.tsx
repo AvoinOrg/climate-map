@@ -39,9 +39,30 @@ export const MapButtons = () => {
   const isDrawDeleteAllowed = useIsDrawDeleteAllowed()
   // const setIsDrawPolygon = useMapStore((state) => state.setIsDrawPolygon)
 
+  // useEffect(() => {
+  //   document.addEventListener('keydown', handleKeyPress)
+
+  //   // Cleanup the event listener when the component unmounts
+  //   return () => {
+  //     document.removeEventListener('keydown', handleKeyPress)
+  //   }
+  // }, [])
+
   const handleDrawDeleteClick = () => {
     deleteDrawFeatures(selectedDrawFeatures)
   }
+
+  // const handleKeyPress = (event: KeyboardEvent) => {
+  //   // Check if "Delete" or "Backspace" key is pressed
+  //   if (
+  //     (event.key === 'Delete' || event.key === 'Backspace') &&
+  //     isDrawEnabled &&
+  //     isDrawDeleteAllowed &&
+  //     selectedDrawFeatures.length > 0
+  //   ) {
+  //     handleDrawDeleteClick()
+  //   }
+  // }
 
   return (
     <Box
