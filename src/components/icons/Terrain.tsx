@@ -1,20 +1,51 @@
 import * as React from 'react'
 import type { SVGProps } from 'react'
 const SvgTerrain = (props: SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={23} height={23} fill="none" {...props}>
-    <path stroke="currentColor" strokeWidth={2} d="M1 1h21v21H1z" />
-    <path stroke="currentColor" strokeWidth={2} d="M10 4c0 3-2.5 6-6 6M7 4c0 1.5-1.25 3-3 3" />
-    <g fill="#000">
-      <mask id="terrain_svg__a" width={17} height={9} x={3} y={10} maskUnits="userSpaceOnUse">
-        <path fill="#fff" d="M3 10h17v9H3z" />
-        <path fillRule="evenodd" d="M17.397 18 13.5 12l-3.285 5.058L8.5 15 6 18h11.397Z" clipRule="evenodd" />
-      </mask>
-      <path fillRule="evenodd" d="M17.397 18 13.5 12l-3.285 5.058L8.5 15 6 18h11.397Z" clipRule="evenodd" />
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+  >
+    <rect
+      x="1"
+      y="1"
+      width="22"
+      height="22"
+      rx="2"
+      stroke="black"
+      stroke-width="2"
+    />
+    <path d="M11 5C11 8 8.5 11 5 11" stroke="black" stroke-width="2" />
+    <path d="M8 5C8 6.5 6.75 8 5 8" stroke="black" stroke-width="2" />
+    <mask
+      id="path-4-outside-1_14_521"
+      maskUnits="userSpaceOnUse"
+      x="4"
+      y="11"
+      width="17"
+      height="9"
+      fill="black"
+    >
+      <rect fill="white" x="4" y="11" width="17" height="9" />
       <path
-        d="m13.5 12 .839-.545-.839-1.29-.839 1.29.839.545Zm3.897 6v1h1.842l-1.003-1.545-.839.545Zm-7.182-.942-.768.64.868 1.042.739-1.137-.84-.545ZM8.5 15l.768-.64-.768-.922-.768.922.768.64ZM6 18l-.768-.64L3.865 19H6v-1Zm5 0v1h2.101l-1.325-1.63L11 18Zm0 0v-1H8.899l1.325 1.63L11 18Zm1.661-5.455 3.897 6 1.678-1.09-3.897-6-1.678 1.09Zm-1.607 5.057 3.285-5.057-1.678-1.09-3.285 5.058 1.678 1.09ZM7.731 15.64l1.715 2.058 1.536-1.28-1.715-2.058-1.536 1.28Zm-.964 3 2.5-3-1.536-1.28-2.5 3 1.536 1.28ZM11 17H6v2h5v-2Zm-.776 1.63 1.552-1.26-1.552 1.26ZM17.397 17H11v2h6.397v-2Z"
-        mask="url(#terrain_svg__a)"
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+        d="M18.3971 19L14.5 13L11.2149 18.0578L9.5 16L7 19H12L12 19H18.3971Z"
       />
-    </g>
+    </mask>
+    <path
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M18.3971 19L14.5 13L11.2149 18.0578L9.5 16L7 19H12L12 19H18.3971Z"
+      fill="black"
+    />
+    <path
+      d="M14.5 13L15.3386 12.4553L14.5 11.1641L13.6614 12.4553L14.5 13ZM18.3971 19V20H20.2391L19.2358 18.4553L18.3971 19ZM11.2149 18.0578L10.4466 18.698L11.3148 19.7398L12.0535 18.6025L11.2149 18.0578ZM9.5 16L10.2682 15.3598L9.5 14.438L8.73178 15.3598L9.5 16ZM7 19L6.23178 18.3598L4.86496 20H7V19ZM12 19V20H14.101L12.7761 18.3694L12 19ZM12 19V18H9.89902L11.2239 19.6306L12 19ZM13.6614 13.5447L17.5585 19.5447L19.2358 18.4553L15.3386 12.4553L13.6614 13.5447ZM12.0535 18.6025L15.3386 13.5447L13.6614 12.4553L10.3762 17.5131L12.0535 18.6025ZM8.73178 16.6402L10.4466 18.698L11.9831 17.4177L10.2682 15.3598L8.73178 16.6402ZM7.76822 19.6402L10.2682 16.6402L8.73178 15.3598L6.23178 18.3598L7.76822 19.6402ZM12 18H7V20H12V18ZM11.2239 19.6306L11.2239 19.6306L12.7761 18.3694L12.7761 18.3694L11.2239 19.6306ZM18.3971 18H12V20H18.3971V18Z"
+      fill="black"
+      mask="url(#path-4-outside-1_14_521)"
+    />
   </svg>
 )
 export default SvgTerrain
