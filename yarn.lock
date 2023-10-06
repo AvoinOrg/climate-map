@@ -3128,29 +3128,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/query-core@npm:4.35.7":
-  version: 4.35.7
-  resolution: "@tanstack/query-core@npm:4.35.7"
-  checksum: b82600ee0b2cea085eb6065d36bf944f4fff72b3fa575b5aa55590498fa431f951c5557a4e7ee36ae5b5de5fd5856cb841b974ff6f78cf773199f0f8c860b6c8
+"@tanstack/query-core@npm:5.0.0-rc.4":
+  version: 5.0.0-rc.4
+  resolution: "@tanstack/query-core@npm:5.0.0-rc.4"
+  checksum: ae11ea9c73078658a45f5496caf9cca94304e35d225d1a39882d75055c9fa7e8f008fbf86ff47c2bf63078819b70f3ae6cca660c6deb8c6ba606dd3f629c94e3
   languageName: node
   linkType: hard
 
-"@tanstack/react-query@npm:^4.35.7":
-  version: 4.35.7
-  resolution: "@tanstack/react-query@npm:4.35.7"
+"@tanstack/react-query@npm:rc":
+  version: 5.0.0-rc.4
+  resolution: "@tanstack/react-query@npm:5.0.0-rc.4"
   dependencies:
-    "@tanstack/query-core": 4.35.7
-    use-sync-external-store: ^1.2.0
+    "@tanstack/query-core": 5.0.0-rc.4
+    client-only: 0.0.1
   peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react: ^18.0.0
+    react-dom: ^18.0.0
     react-native: "*"
   peerDependenciesMeta:
     react-dom:
       optional: true
     react-native:
       optional: true
-  checksum: ba4e1aa883a42424085c81d44816fb7ee8efdc8c8d1c190320e78818ce8a45cfcafd2a9c0e217d19ff25b0ec58592c98f5286b5a9b738a799c3ee016a02f9447
+  checksum: 964009ed7dc904490b13aae4816719a7973b9a698c82db448151d4b6910d9fe9aef5641cc3b2334a9ff5ecc2fcf0109010a44d3510776c36ea0fdab0339e8f44
   languageName: node
   linkType: hard
 
@@ -6963,7 +6963,7 @@ __metadata:
     "@next/font": canary
     "@ngageoint/geopackage": ^4.2.3
     "@pmmmwh/react-refresh-webpack-plugin": ^0.5.10
-    "@tanstack/react-query": ^4.35.7
+    "@tanstack/react-query": rc
     "@testing-library/jest-dom": ^5.16.5
     "@testing-library/react": ^14.0.0
     "@tolgee/react": ^5.10.1
