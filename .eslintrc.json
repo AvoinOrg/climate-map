@@ -10,7 +10,14 @@
   //     "jsx": true
   //   }
   // },
-  "extends": ["next", "prettier", "airbnb", "plugin:@typescript-eslint/recommended", "plugin:prettier/recommended"],
+  "extends": [
+    "next",
+    "prettier",
+    "airbnb",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended",
+    "plugin:@tanstack/eslint-plugin-query/recommended"
+  ],
   // "env": {
   //   "browser": true,
   //   "commonjs": true,

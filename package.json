@@ -94,6 +94,7 @@
     "@babel/register": "^7.18.9",
     "@netlify/plugin-nextjs": "^4.30.3",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.10",
+    "@tanstack/eslint-plugin-query": "rc",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
     "@types/chart.js": "^2.9.37",
