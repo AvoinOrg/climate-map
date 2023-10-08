@@ -137,3 +137,9 @@ out
 .next
 next-env.d.ts
 
+# Api folders. We want to ignore everything included by the applets,
+# which are simply copied into the api folder.
+# The core api folders need to be manually added here.
+src/app/api/*
+!src/app/api/auth/
+!src/app/api/userinfo/
