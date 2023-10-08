@@ -57,7 +57,11 @@ const nextConfig = {
             to: ({ context, absoluteFilename }) => {
               let relativePath = path.relative(context, absoluteFilename)
               let publicIndex = relativePath.indexOf('public') + 6 // To exclude 'public' from path
-              return path.join(__dirname, '/public', relativePath.slice(publicIndex))
+              return path.join(
+                __dirname,
+                '/public',
+                relativePath.slice(publicIndex)
+              )
             },
           },
           {
@@ -68,8 +72,17 @@ const nextConfig = {
               let relativePath = path.relative(context, absoluteFilename)
               let publicIndex = relativePath.indexOf('public') + 6 // To exclude 'public' from path
               let newRelativePath = relativePath.slice(publicIndex)
-              let parentDirectory = path.basename(path.dirname(relativePath.slice(0, publicIndex)))
-              return path.join(__dirname, '/public', parentDirectory, newRelativePath)
+              let parentDirectory = path.basename(
+                path.dirname(relativePath.slice(0, publicIndex))
+              )
+              return path.join(
+                __dirname,
+                '/public',
+                parentDirectory,
+                newRelativePath
+              )
+            },
+          },
             },
           },
           {
