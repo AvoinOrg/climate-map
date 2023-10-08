@@ -10,3 +10,9 @@ services:
     volumes:
       - .:/app:z
     entrypoint: '/bin/bash /app/docker-entrypoint.sh'
+    networks:
+      - climate-map-network
+
+networks:
+  climate-map-network:
+    external: true
