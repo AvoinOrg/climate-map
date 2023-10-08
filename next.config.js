@@ -7,9 +7,6 @@ const nextConfig = {
   // Will probably be fixed later, either by swcMinify or Openlayers
   swcMinify: false,
   // emotion: true,
-  experimental: {
-    appDir: true,
-  },
   compiler: {
     styledComponents: true,
   },
