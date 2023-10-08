@@ -90,7 +90,10 @@ const nextConfig = {
           },
           {
             // copy sql-wasm for the GPKG library used in carbon app
-            from: path.join(__dirname, 'node_modules/rtree-sql.js/dist/sql-wasm.wasm'),
+            from: path.join(
+              __dirname,
+              'node_modules/rtree-sql.js/dist/sql-wasm.wasm'
+            ),
             to: path.join(__dirname, '/public/dyn/'),
           },
         ],
@@ -99,7 +102,10 @@ const nextConfig = {
 
     config.resolve.mainFields.push(['browser', 'main'])
 
-    config.resolve.fallback = { ...(config.resolve.fallback ? config.resolve.fallback : {}), ...{ fs: false } }
+    config.resolve.fallback = {
+      ...(config.resolve.fallback ? config.resolve.fallback : {}),
+      ...{ fs: false },
+    }
 
     return config
   },
