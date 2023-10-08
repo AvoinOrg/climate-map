@@ -589,9 +589,9 @@ export const useMapStore = create<State>()(
           const { disableLayerGroup, enableLayerGroup, _layerGroups } = get()
 
           if (Object.keys(_layerGroups).includes(layerGroupId)) {
-            disableLayerGroup(layerGroupId)
+            await disableLayerGroup(layerGroupId)
           } else {
-            enableLayerGroup(layerGroupId, options)
+            await enableLayerGroup(layerGroupId, options)
           }
         },
 
@@ -603,7 +603,7 @@ export const useMapStore = create<State>()(
           const { addLayerGroup } = get()
 
           try {
-            addLayerGroup(
+            await addLayerGroup(
               layerGroupIdString as LayerGroupId,
               options as LayerGroupAddOptions
             )
@@ -620,7 +620,7 @@ export const useMapStore = create<State>()(
           const { toggleLayerGroup } = get()
 
           try {
-            toggleLayerGroup(
+            await toggleLayerGroup(
               layerGroupIdString as LayerGroupId,
               options as LayerGroupAddOptions
             )
@@ -650,13 +650,13 @@ export const useMapStore = create<State>()(
         disableSerializableLayerGroup: async (layerGroupIdString: string) => {
           const { disableLayerGroup } = get()
 
-          disableLayerGroup(layerGroupIdString as LayerGroupId)
+          await disableLayerGroup(layerGroupIdString as LayerGroupId)
         },
 
         removeSerializableLayerGroup: async (layerGroupIdString: string) => {
           const { removeLayerGroup } = get() // Assuming you have a map reference in your store.
 
-          removeLayerGroup(layerGroupIdString as LayerGroupId)
+          await removeLayerGroup(layerGroupIdString as LayerGroupId)
         },
 
         setLayoutProperty: queueableFnInit(
