@@ -83,6 +83,38 @@ const nextConfig = {
               )
             },
           },
+          {
+            // copy any applet api folder to the root api folder
+            // GOTCHA: Do not use dynamic api paths with [id]. This will break webpack
+            from: path.join(__dirname, '/src/app/\\(ui\\)/**/api/**/*'),
+            context: path.resolve(__dirname, 'src/app'),
+            to: ({ context, absoluteFilename }) => {
+              let relativePath = path.relative(context, absoluteFilename)
+              let parts = relativePath.split('/')
+
+              // Find the index of "api" in the parts
+              let apiIndex = parts.indexOf('api')
+
+              // Check if "api" is the first part of the path, if so return null to skip
+              if (apiIndex <= 0) {
+                return null
+              }
+
+              // Get the name of the parent folder of "api"
+              let parentOfApi = parts[apiIndex - 1]
+
+              // Take the part of the path after "api"
+              let afterApi = parts.slice(apiIndex + 1).join('/')
+
+              // Use the parent folder name as the root for the copied files and folders
+              const finalPath = path.join(
+                __dirname,
+                'src/app/api',
+                parentOfApi,
+                afterApi
+              )
+
+              return finalPath
             },
           },
           {
