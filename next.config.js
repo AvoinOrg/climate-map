@@ -40,7 +40,10 @@ const nextConfig = {
   //   localeDetection: true,
   //   defaultLocale: 'en',
   // },
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }) => {
+  webpack: (
+    config,
+    { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }
+  ) => {
     // Important: return the modified config
 
     config.plugins = config.plugins.concat([
