@@ -34,11 +34,8 @@ const Folder = ({ children, sx }: Props) => {
     }
     if ('backgroundColor' in sx && typeof sx.backgroundColor === 'string') {
       backgroundColor = resolveColor(sx.backgroundColor, theme)
+      delete sx.backgroundColor
     }
-  }
-
-  if (sx && 'backgroundColor' in sx) {
-    delete sx.backgroundColor
   }
 
   // iterating through the sx and picking out the padding props
