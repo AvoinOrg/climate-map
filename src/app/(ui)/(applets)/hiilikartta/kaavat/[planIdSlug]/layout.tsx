@@ -114,11 +114,19 @@ const Layout = ({
   useEffect(() => {
     return () => {
       const layerGroupId = getPlanLayerGroupId(params.planIdSlug)
-      try {
-        disableSerializableLayerGroup(layerGroupId)
-      } catch (e) {
-        // if it fails, the layer is (most likely) already disabled/removed
+
+      const cleanup = async () => {
+        try {
+          await disableSerializableLayerGroup(layerGroupId)
+        } catch (e) {
+          console.error(
+            "Couldn't disable layer group when unmounting plan Layout.tsx"
+          )
+          // if it fails, the layer is (most likely) already disabled/removed
+        }
       }
+
+      cleanup() // Invoke the async function, but don't await it here
     }
   }, [])
 
