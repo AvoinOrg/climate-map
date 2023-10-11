@@ -5,7 +5,9 @@ export const ZONING_CODE_COL = 'zoning_code'
 export interface ReportData {
   areas: CalcFeatureCollection
   totals: CalcFeatureCollection
-  metadata: any
+  metadata: {
+    timestamp: number
+  }
 }
 
 export interface PlanConf extends NewPlanConf {
