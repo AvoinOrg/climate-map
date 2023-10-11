@@ -19,6 +19,7 @@ import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import useStore from '#/common/hooks/useStore'
 import { useDoesLayerGroupExist } from '#/common/hooks/map/useDoesLayerGroupExist'
 import { SerializableLayerGroupAddOptions } from '#/common/types/map'
+import { FeatureCollection } from 'geojson'
 
 const Layout = ({
   params,
