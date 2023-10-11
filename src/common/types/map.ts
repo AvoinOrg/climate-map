@@ -8,6 +8,7 @@ import { Feature } from 'geojson'
 import { ReactNode } from 'react'
 
 import { Actions as MapStoreActions } from '#/common/store/mapStore'
+import { FeatureCollection } from 'geojson'
 // interface mapFunctions {}
 
 export type PopupProps = { features: PopupFeature[] }
@@ -28,6 +29,7 @@ export type LayerGroupOptions = {
   isHidden: boolean
   persist: boolean
   layers: LayerOptionsObj
+  handleDataUpdate?: (e: any) => void
 }
 
 export type LayerOptions = {
@@ -75,10 +77,13 @@ interface BaseLayerGroupAddOptions {
   zoomToExtent?: boolean
 }
 
+export type DataUpdateMutator = (data: FeatureCollection) => Promise<void>
+
 // Compatible with hydration.
 export interface SerializableLayerGroupAddOptions
   extends BaseLayerGroupAddOptions {
   layerConf?: SerializableLayerConf
+  dataUpdateMutator?: DataUpdateMutator
 }
 
 // Not compatible with hydration. Includes a possible popup function within layerConf.
