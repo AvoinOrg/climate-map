@@ -75,7 +75,7 @@ const Layout = ({
             const properties: FeatureProperties = {
               id: generateUUID(),
               area_ha: getGeoJsonArea(feature) / 10000,
-              zoning_code: null,
+              zoning_code: '',
             }
 
             feature.properties = properties
