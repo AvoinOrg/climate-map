@@ -42,6 +42,8 @@ const Layout = ({
     useAppletStore,
     (state) => state.planConfs[params.planIdSlug]
   )
+  const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
+
   const doesLayerGroupExist = useDoesLayerGroupExist(
     getPlanLayerGroupId(params.planIdSlug)
   )
@@ -56,6 +58,13 @@ const Layout = ({
 
       const layerGroupAddOptions: SerializableLayerGroupAddOptions = {
         zoomToExtent: true,
+        dataUpdateMutator: async (data: FeatureCollection) => {
+          if (updatePlanConf != null) {
+            updatePlanConf(params.planIdSlug, { data })
+          } else {
+            console.error('Unable to add dataUpdateMutator')
+          }
+        },
         drawOptions: {
           idField: 'id',
           polygonEnabled: true,
