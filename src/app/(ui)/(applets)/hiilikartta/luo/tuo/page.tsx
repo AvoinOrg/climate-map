@@ -91,26 +91,26 @@ const Page = () => {
 
     const planConf = await addPlanConf(newPlanConf)
 
-    try {
-      const layerConf = createLayerConf(
-        formatedJson,
-        planConf.id,
-        ZONING_CODE_COL
-      )
+    // try {
+    //   const layerConf = createLayerConf(
+    //     formatedJson,
+    //     planConf.id,
+    //     ZONING_CODE_COL
+    //   )
 
-      // Testing if the file works, then removing the layers.
-      await addSerializableLayerGroup(layerConf.id, {
-        layerConf,
-        persist: false,
-        isHidden: true,
-      })
-      await removeSerializableLayerGroup(layerConf.id)
-    } catch (e) {
-      deletePlanConf(planConf.id)
-      console.error(e)
-      // TODO: show error to user, invalid file
-      return null
-    }
+    //   // Testing if the file works, then removing the layers.
+    //   await addSerializableLayerGroup(layerConf.id, {
+    //     layerConf,
+    //     persist: false,
+    //     isHidden: true,
+    //   })
+    //   await removeSerializableLayerGroup(layerConf.id)
+    // } catch (e) {
+    //   deletePlanConf(planConf.id)
+    //   console.error(e)
+    //   // TODO: show error to user, invalid file
+    //   return null
+    // }
 
     return planConf.id
   }
