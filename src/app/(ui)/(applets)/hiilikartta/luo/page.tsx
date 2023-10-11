@@ -47,7 +47,7 @@ const Page = () => {
       const layerConf = createLayerConf(data, planConf.id, colName)
       await addSerializableLayerGroup(layerConf.id, {
         layerConf,
-        persist: true,
+        persist: false,
       })
     } catch (e) {
       deletePlanConf(planConf.id)
