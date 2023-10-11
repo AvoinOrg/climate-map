@@ -164,14 +164,6 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
           </MuiLink> */}
           {!planConf.isCalculating && (
             <>
-              {planConf.reportData && (
-                <SmallMenuButton variant="outlined" onClick={handleOpenReport}>
-                  <T
-                    keyName={'sidebar.plan_settings.open_full_report'}
-                    ns={'hiilikartta'}
-                  ></T>
-                </SmallMenuButton>
-              )}
               <Box sx={{}}>
                 {/* {!planConf.reportData && ( */}
                 <MenuButton variant="outlined" onClick={handleSubmit}>
