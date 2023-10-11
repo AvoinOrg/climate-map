@@ -150,18 +150,29 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 </SmallMenuButton>
               )}
               <Box sx={{}}>
+                {/* {!planConf.reportData && ( */}
+                <MenuButton variant="outlined" onClick={handleSubmit}>
+                  <T
+                    keyName={'sidebar.plan_settings.calculate_carbon_effect'}
+                    ns={'hiilikartta'}
+                  />
+                  <ParkIcon />
+                </MenuButton>
+                {/* )} */}
+                {planConf.reportData && (
+                  <SmallMenuButton
+                    variant="outlined"
+                    onClick={handleOpenReport}
+                  >
+                    <T
+                      keyName={'sidebar.plan_settings.open_full_report'}
+                      ns={'hiilikartta'}
+                    ></T>
+                  </SmallMenuButton>
+                )}
                 <SmallMenuButton variant="outlined" onClick={handleDeleteClick}>
                   Poista kaava <DeleteForeverIcon />
                 </SmallMenuButton>
-                {!planConf.reportData && (
-                  <MenuButton variant="outlined" onClick={handleSubmit}>
-                    <T
-                      keyName={'sidebar.plan_settings.calculate_carbon_effect'}
-                      ns={'hiilikartta'}
-                    />
-                    <ParkIcon />
-                  </MenuButton>
-                )}
               </Box>
             </>
           )}
