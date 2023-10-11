@@ -27,6 +27,9 @@ import Folder from '#/components/common/Folder'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const getSourceJson = useMapStore((state) => state.getSourceJson)
+  const removeSerializableLayerGroup = useMapStore(
+    (state) => state.removeSerializableLayerGroup
+  )
   const planConf = useStore(
     useAppletStore,
     (state) => state.planConfs[params.planIdSlug]
@@ -97,8 +100,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
 
   const handleDeleteClick = async () => {
     if (planConf) {
-      router.push(getRoute(routeTree, routeTree))
+      await removeSerializableLayerGroup(getPlanLayerGroupId(planConf.id))
       deletePlanConf(planConf.id)
+      router.push(getRoute(routeTree, routeTree))
     }
   }
 
