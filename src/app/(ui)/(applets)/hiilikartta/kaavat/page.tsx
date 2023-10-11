@@ -11,7 +11,7 @@ import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 
 import PlanListItem from '../components/PlanListItem'
 
-const Page = ({ params }: { params: { planIdSlug: string } }) => {
+const Page = () => {
   const planConfs = useStore(useAppletStore, (state) => state.planConfs)
 
   return (
