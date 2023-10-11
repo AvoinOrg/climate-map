@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
-import { generateShortId } from '#/common/utils/general'
+import { generateShortId, generateUUID } from '#/common/utils/general'
 
 import { NewPlanConf, PlanConf } from '../common/types'
 
@@ -30,9 +30,11 @@ export const useAppletStore = create<State & Actions>()(
       },
       addPlanConf: async (newPlanConf: NewPlanConf) => {
         const id = generateShortId()
+        const serverId = generateUUID()
         const created = new Date().getTime()
         const planConf = {
           id,
+          serverId,
           created,
           reportData: undefined,
           isCalculating: false,

@@ -10,6 +10,7 @@ export interface ReportData {
 
 export interface PlanConf extends NewPlanConf {
   id: string
+  serverId: string
   created: number
   isCalculating: boolean
   reportData: undefined | ReportData
