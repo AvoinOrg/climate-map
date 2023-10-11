@@ -10,6 +10,7 @@ const nextConfig = {
   compiler: {
     styledComponents: true,
   },
+  reactStrictMode: false,
   modularizeImports: {
     '@mui/material': {
       transform: '@mui/material/{{member}}',
