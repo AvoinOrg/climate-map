@@ -32,7 +32,7 @@ const GET = withErrorHandler(async (req: NextRequest) => {
   const id = searchParams.get('id')
   const res = await axios.get(`${API_URL}/calculation`, { params: { id } })
 
-  const data = res.data.data ? res.data.data : res.data
+  const data = res.data
 
   return new Response(JSON.stringify(data), { status: res.status })
 })
