@@ -129,9 +129,9 @@ const nextConfig = {
       }),
     ])
 
-    config.resolve.mainFields = ['browser', 'main'].concat(
-      config.resolve.mainFields
-    )
+    // config.resolve.mainFields = ['browser', 'main'].concat(
+    //   config.resolve.mainFields
+    // )
 
     config.resolve.fallback = {
       ...(config.resolve.fallback ? config.resolve.fallback : {}),
