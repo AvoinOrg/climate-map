@@ -497,6 +497,8 @@ export const useMapStore = create<State>()(
                 )
               }
 
+              // Add event listener for source data changes
+
               _runLayerGroupActivationActions(layerGroupId, opts)
             } else {
               console.error('No layer config found for id: ' + layerGroupId)
@@ -569,6 +571,10 @@ export const useMapStore = create<State>()(
             if (_mbMap?.getSource(layerId)) {
               _mbMap?.removeSource(layerId)
             }
+          }
+
+          if (layerGroupOptions.handleDataUpdate) {
+            _mbMap?.off('data', layerGroupOptions.handleDataUpdate)
           }
 
           set(
@@ -1439,7 +1445,7 @@ export const useMapStore = create<State>()(
           opts?: LayerGroupAddOptions | SerializableLayerGroupAddOptions
         ) => {
           if (opts != null) {
-            const { getAndFitBounds, _drawOptions, _removeDraw } = get()
+            const { getAndFitBounds, _drawOptions, _removeDraw, _mbMap } = get()
             if (opts?.zoomToExtent) {
               getAndFitBounds(layerGroupIdString, undefined, {
                 skipQueue: true,
@@ -1464,6 +1470,32 @@ export const useMapStore = create<State>()(
                   isEnabled: true,
                 }
               })
+            }
+
+            if ('dataUpdateMutator' in opts) {
+              const handleDataUpdate = (e: any) => {
+                if (
+                  e.dataType === 'source' &&
+                  e.sourceId === layerGroupIdString &&
+                  e.isSourceLoaded
+                ) {
+                  // Source data for the layerGroupId has changed/loaded
+                  if ('data' in e.source) {
+                    if (e.source.data != null) {
+                      if (opts.dataUpdateMutator != null) {
+                        opts.dataUpdateMutator(e.source.data) // Update Zustand store with new data
+                      }
+                    }
+                  }
+                }
+              }
+
+              set((state) => {
+                state._layerGroups[layerGroupIdString].handleDataUpdate =
+                  handleDataUpdate
+              })
+
+              _mbMap?.on('data', handleDataUpdate)
             }
           }
         },
