@@ -48,12 +48,12 @@ export const createLayerConf = (
         source: sourceId, // reference the data source
         layout: {},
         paint: {
-          'fill-color': [
-            'match',
-            ['get', featureColorCol],
-            ...colorArr,
-            'white',
-          ],
+          'fill-color': 'gray',
+          // 'fill-color': [
+          //   'coalesce',
+          //   ['match', ['get', featureColorCol], ...colorArr, 'white'],
+          //   'white',
+          // ],
           'fill-opacity': 0.7,
         },
       },
