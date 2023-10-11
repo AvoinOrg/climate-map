@@ -26,7 +26,6 @@ import {
 import Folder from '#/components/common/Folder'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
-  const getSourceJson = useMapStore((state) => state.getSourceJson)
   const removeSerializableLayerGroup = useMapStore(
     (state) => state.removeSerializableLayerGroup
   )
@@ -43,10 +42,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const handleSubmit = async () => {
     if (planConf) {
       updatePlanConf(planConf.id, { isCalculating: true })
-      const json = await getSourceJson(getPlanLayerGroupId(planConf.id))
 
       const zip = new JSZip()
-      zip.file('file', JSON.stringify(json))
+      zip.file('file', JSON.stringify(planConf.data))
 
       const zipBlob = await zip.generateAsync({ type: 'blob' })
 
