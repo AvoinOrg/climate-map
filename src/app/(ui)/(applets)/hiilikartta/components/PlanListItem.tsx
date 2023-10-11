@@ -12,16 +12,17 @@ import { getRoute } from '#/common/utils/routing'
 
 interface Props {
   planConf: PlanConf
+  sx?: any
 }
 
-const PlanListItem = ({ planConf }: Props) => {
+const PlanListItem = ({ planConf, sx }: Props) => {
   return (
-    <Box>
+    <Box sx={sx}>
       <Link
         href={getRoute(routeTree.plans.plan, routeTree, [planConf.id])}
         sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
       >
-        <Folder sx={{pt: 6, pl: 3}}>
+        <Folder sx={{ pt: 6, pl: 3 }}>
           <Typography variant="h2">{planConf.name}</Typography>
         </Folder>
       </Link>
