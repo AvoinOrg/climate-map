@@ -63,7 +63,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             headers: {
               'Content-Type': 'multipart/form-data',
             },
-            params: { id: planConf.id },
+            params: { id: planConf.serverId },
           }
         )
 
@@ -81,7 +81,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
           response = await axios.get(
             `${'http://localhost:3000/api/hiilikartta/data'}`,
             {
-              params: { id: planConf.id },
+              params: { id: planConf.serverId },
             }
           )
 
@@ -90,12 +90,15 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
           }
 
           const areas = transformCalcGeojsonToNestedStructure(
-            JSON.parse(response.data.areas)
+            response.data.data.areas
           )
           const totals = transformCalcGeojsonToNestedStructure(
-            JSON.parse(response.data.totals)
+            response.data.data.totals
           )
-          const metadata = JSON.parse(response.data.metadata)
+
+          const metadata = {
+            timestamp: Number(response.data.data.metadata.calculated_ts),
+          }
 
           updatePlanConf(planConf.id, {
             reportData: { areas: areas, totals: totals, metadata: metadata },
