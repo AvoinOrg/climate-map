@@ -23,7 +23,13 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         <>
           <Box sx={{ display: 'flex', flexDirection: 'column', mt: 6 }}>
             {Object.keys(planConfs).map((id) => {
-              return <PlanListItem key={id} planConf={planConfs[id]} />
+              return (
+                <PlanListItem
+                  key={id}
+                  planConf={planConfs[id]}
+                  sx={{ mb: 2 }}
+                />
+              )
             })}
           </Box>
         </>
