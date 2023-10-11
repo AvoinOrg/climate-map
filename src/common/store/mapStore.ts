@@ -1735,12 +1735,17 @@ export const useMapStore = create<State>()(
     {
       name: 'mapStorage', // name of item in the storage (must be unique)
       storage: createJSONStorage(() => sessionStorage), // (optional) by default the 'localStorage' is used
-      partialize: (state: State) => ({
-        _hydrationData: {
-          layerGroups: state._layerGroups,
-          persistingLayerGroupAddOptions: state._persistingLayerGroupAddOptions,
-        },
-      }),
+      partialize: (state: State) => {
+        return {
+          // TODO: fix hydration. Currently rehydrates layerGroups that do not have data
+          _hydrationData: {
+            layerGroups: {},
+            // layerGroups: state._layerGroups,
+            persistingLayerGroupAddOptions:
+              state._persistingLayerGroupAddOptions,
+          },
+        }
+      },
       onRehydrateStorage: (state) => {
         return (state, error) => {
           if (error) {
