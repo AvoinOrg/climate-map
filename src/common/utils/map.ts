@@ -323,6 +323,7 @@ export const addFeatureToDrawSource = (
 
       // Update the source with the modified features
       originalSource.setData({ ...data, features: newFeatures })
+      _mbMap?.triggerRepaint()
     }
   }
 }
@@ -372,6 +373,7 @@ export const updateFeatureInDrawSource = (
       } else {
         // Update the source with the modified features
         originalSource.setData({ ...data, features: updatedFeatures })
+        _mbMap?.triggerRepaint()
       }
     }
   }
