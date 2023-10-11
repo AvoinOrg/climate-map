@@ -55,28 +55,53 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
       // const response = await useFileUploadMutation("http://localhost:8000/calculate", uploadFile)
 
       try {
-        const response = await axios.post(
-          'http://localhost:8000/calculate',
+        // Start the calculation by making a POST request
+        const postRes = await axios.post(
+          `${'http://localhost:3000/api/hiilikartta/data'}`,
           formData,
           {
             headers: {
               'Content-Type': 'multipart/form-data',
             },
+            params: { id: planConf.id },
           }
         )
 
-        const areas = transformCalcGeojsonToNestedStructure(
-          JSON.parse(response.data.areas)
-        )
-        const totals = transformCalcGeojsonToNestedStructure(
-          JSON.parse(response.data.totals)
-        )
-        const metadata = JSON.parse(response.data.metadata)
+        if (postRes.status !== 200) {
+          throw new Error('Failed to start calculation.')
+        }
 
-        updatePlanConf(planConf.id, {
-          reportData: { areas: areas, totals: totals, metadata: metadata },
-          isCalculating: false,
-        })
+        let isCompleted = false
+        let response
+
+        // Poll the GET request in a loop to check for completion
+        while (!isCompleted) {
+          await new Promise((res) => setTimeout(res, 5000)) // Wait for 5 seconds before polling again
+
+          response = await axios.get(
+            `${'http://localhost:3000/api/hiilikartta/data'}`,
+            {
+              params: { id: planConf.id },
+            }
+          )
+
+          if (response.status === 200) {
+            isCompleted = true
+          }
+
+          const areas = transformCalcGeojsonToNestedStructure(
+            JSON.parse(response.data.areas)
+          )
+          const totals = transformCalcGeojsonToNestedStructure(
+            JSON.parse(response.data.totals)
+          )
+          const metadata = JSON.parse(response.data.metadata)
+
+          updatePlanConf(planConf.id, {
+            reportData: { areas: areas, totals: totals, metadata: metadata },
+            isCalculating: false,
+          })
+        }
       } catch (e) {
         console.log(e)
         updatePlanConf(planConf.id, {
