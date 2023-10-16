@@ -82,8 +82,9 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
                 margin: '0 12px 0 0',
                 pr: 4,
                 pl: 4,
-                pb: 12,
+                pb: 4,
                 pt: 4,
+                height: '100%',
               }}
             >
               {children}

@@ -78,7 +78,7 @@ const AppletWrapper = ({
   }
 
   return (
-    <Box sx={sx}>
+    <Box sx={{ height: '100%', ...sx }}>
       {stateMapContext === mapContext && isTolgeeReady() && children}
     </Box>
   )
