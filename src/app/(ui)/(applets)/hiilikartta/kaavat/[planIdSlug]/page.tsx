@@ -5,8 +5,6 @@ import { Box, Button } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import { styled } from '@mui/material/styles'
 // import SettingsIcon from '@mui/icons-material/Settings'
-import ParkIcon from '@mui/icons-material/Park'
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 // import MuiLink from '@mui/material/Link'
 // import Link from 'next/link'
 import axios from 'axios'
@@ -24,6 +22,7 @@ import {
   transformCalcGeojsonToNestedStructure,
 } from 'applets/hiilikartta/common/utils'
 import Folder from '#/components/common/Folder'
+import { ArrowNextBig, Delete } from '#/components/icons'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const removeSerializableLayerGroup = useMapStore(
@@ -165,32 +164,97 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               Kaavatiedoston asetukset <SettingsIcon />
             </MenuButton>
           </MuiLink> */}
+
+          <Box sx={{}}>
+            {/* {!planConf.reportData && ( */}
+
+            {/* )} */}
+            {planConf.reportData && (
+              <SmallMenuButton variant="outlined" onClick={handleOpenReport}>
+                <T
+                  keyName={'sidebar.plan_settings.open_full_report'}
+                  ns={'hiilikartta'}
+                ></T>
+              </SmallMenuButton>
+            )}
+          </Box>
+
           {!planConf.isCalculating && (
             <>
-              <Box sx={{}}>
-                {/* {!planConf.reportData && ( */}
-                <MenuButton variant="outlined" onClick={handleSubmit}>
+              {/* <Box sx={{ display: 'flex', flexDirection: 'row' }}> */}
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  flexDirection: 'row',
+                  '&:hover': { cursor: 'pointer' },
+                  mt: 4,
+                  color: 'neutral.dark',
+                  flex: '0',
+                  whiteSpace: 'nowrap',
+                  alignSelf: 'flex-start',
+                }}
+                onClick={handleDeleteClick}
+              >
+                <Box sx={{ mr: 1.5 }}>
+                  <Delete></Delete>
+                </Box>
+                <Box
+                  sx={{
+                    typography: 'h3',
+                  }}
+                >
                   <T
-                    keyName={'sidebar.plan_settings.calculate_carbon_effect'}
+                    keyName={'sidebar.plan_settings.delete'}
                     ns={'hiilikartta'}
                   />
-                  <ParkIcon />
-                </MenuButton>
-                {/* )} */}
-                {planConf.reportData && (
-                  <SmallMenuButton
-                    variant="outlined"
-                    onClick={handleOpenReport}
+                </Box>
+                {/* </Box> */}
+              </Box>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flex: 1,
+                  flexDirection: 'column',
+                  justifyContent: 'flex-end',
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'flex-end',
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: 'inline-flex',
+                      flexDirection: 'row',
+                      '&:hover': { cursor: 'pointer' },
+                      mt: 4,
+                      flex: '0',
+                    }}
+                    onClick={handleSubmit}
                   >
-                    <T
-                      keyName={'sidebar.plan_settings.open_full_report'}
-                      ns={'hiilikartta'}
-                    ></T>
-                  </SmallMenuButton>
-                )}
-                <SmallMenuButton variant="outlined" onClick={handleDeleteClick}>
-                  Poista kaava <DeleteForeverIcon />
-                </SmallMenuButton>
+                    <Box
+                      sx={{
+                        typography: 'h1',
+                        textAlign: 'end',
+                        mr: 3,
+                        minWidth: '270px',
+                      }}
+                    >
+                      <T
+                        keyName={
+                          'sidebar.plan_settings.calculate_carbon_effect'
+                        }
+                        ns={'hiilikartta'}
+                      />
+                    </Box>
+                    <Box sx={{ mt: 0.2 }}>
+                      <ArrowNextBig></ArrowNextBig>
+                    </Box>
+                  </Box>
+                </Box>
               </Box>
             </>
           )}
