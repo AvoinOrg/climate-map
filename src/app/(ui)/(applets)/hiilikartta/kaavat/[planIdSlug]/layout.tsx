@@ -129,10 +129,10 @@ const Layout = ({
         try {
           await disableSerializableLayerGroup(layerGroupId)
         } catch (e) {
-          console.error(
-            "Couldn't disable layer group when unmounting plan Layout.tsx"
-          )
           // if it fails, the layer is (most likely) already disabled/removed
+          // console.error(
+          //   "Couldn't disable layer group when unmounting plan Layout.tsx"
+          // )
         }
       }
 
