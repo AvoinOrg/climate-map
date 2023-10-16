@@ -126,8 +126,8 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
 
   const handleDeleteClick = async () => {
     if (planConf) {
-      removeSerializableLayerGroup(getPlanLayerGroupId(planConf.id))
-      deletePlanConf(planConf.id)
+      await removeSerializableLayerGroup(getPlanLayerGroupId(planConf.id))
+      await deletePlanConf(planConf.id)
       router.push(getRoute(routeTree, routeTree))
     }
   }
