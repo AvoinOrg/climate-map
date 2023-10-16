@@ -584,7 +584,7 @@ export const useMapStore = create<State>()(
           )
 
           if (_drawOptions.layerGroupId === layerGroupId) {
-            _removeDraw({ skipQueue: true })
+            await _removeDraw({ skipQueue: true })
           }
         },
 
@@ -1102,7 +1102,7 @@ export const useMapStore = create<State>()(
                 _mbMap?.off('draw.delete', _drawOptions.handleDrawDelete)
               }
 
-              set((state) => {
+              await set((state) => {
                 state._drawOptions.draw = null
                 state._drawOptions.originalStyles = undefined
                 state._drawOptions.handleDrawCreate = undefined
@@ -1121,7 +1121,7 @@ export const useMapStore = create<State>()(
             const { disableDraw } = get()
 
             await disableDraw({ skipQueue: true })
-            set((state) => {
+            await set((state) => {
               state._drawOptions.layerGroupId = null
               state._drawOptions.isEnabled = false
             })
