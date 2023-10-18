@@ -1,7 +1,5 @@
 import { FeatureCollection, Geometry } from 'geojson'
 
-export const ZONING_CODE_COL = 'zoning_code'
-
 export interface ReportData {
   areas: CalcFeatureCollection
   totals: CalcFeatureCollection
@@ -18,8 +16,10 @@ export interface PlanConf extends NewPlanConf {
   reportData: undefined | ReportData
 }
 
-export type PlanData<G extends Geometry | null = Geometry> =
-  FeatureCollection<G, FeatureProperties>
+export type PlanData<G extends Geometry | null = Geometry> = FeatureCollection<
+  G,
+  FeatureProperties
+>
 
 export type NewPlanConf = {
   name: string
@@ -37,10 +37,11 @@ export type NewPlanConf = {
 
 export type FileType = 'shp' | 'geojson' | 'gpkg'
 
+export const ZONING_CODE_COL = 'zoning_code'
 export interface FeatureProperties {
   id: string
   area_ha: number
-  [ZONING_CODE_COL]: string | null
+  zoning_code: string | null
   old_id?: string | number
 }
 
