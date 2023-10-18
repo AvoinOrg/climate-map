@@ -1,4 +1,4 @@
-import { FeatureCollection } from 'geojson'
+import { FeatureCollection, Feature, Geometry } from 'geojson'
 
 export const ZONING_CODE_COL = 'zoning_code'
 
@@ -18,10 +18,13 @@ export interface PlanConf extends NewPlanConf {
   reportData: undefined | ReportData
 }
 
+export type PlanConfData<G extends Geometry | null = Geometry> =
+  FeatureCollection<G, FeatureProperties>
+
 export type NewPlanConf = {
   name: string
   areaHa: number
-  data: FeatureCollection
+  data: PlanConfData
   isCalculating?: boolean
   reportData?: ReportData
   fileSettings: {
