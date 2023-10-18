@@ -11,11 +11,10 @@ import { Link as MuiLink } from '@mui/material'
 import { T } from '@tolgee/react'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import { NewPlanConf, ZONING_CODE_COL } from '../common/types'
+import { NewPlanConf, PlanData, ZONING_CODE_COL } from '../common/types'
 import { useAppletStore } from '../state/appletStore'
 import { createLayerConf } from '../common/utils'
 import { useMapStore } from '#/common/store'
-import { FeatureCollection } from 'geojson'
 
 const Page = () => {
   const router = useRouter()
@@ -29,7 +28,7 @@ const Page = () => {
   const initializePlan = async () => {
     const colName = ZONING_CODE_COL
     const jsonName = 'Uusi kaava'
-    const data: FeatureCollection = {
+    const data: PlanData = {
       type: 'FeatureCollection',
       features: [],
     }
