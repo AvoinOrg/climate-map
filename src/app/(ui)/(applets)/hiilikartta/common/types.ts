@@ -18,13 +18,13 @@ export interface PlanConf extends NewPlanConf {
   reportData: undefined | ReportData
 }
 
-export type PlanConfData<G extends Geometry | null = Geometry> =
+export type PlanData<G extends Geometry | null = Geometry> =
   FeatureCollection<G, FeatureProperties>
 
 export type NewPlanConf = {
   name: string
   areaHa: number
-  data: PlanConfData
+  data: PlanData
   isCalculating?: boolean
   reportData?: ReportData
   fileSettings: {
