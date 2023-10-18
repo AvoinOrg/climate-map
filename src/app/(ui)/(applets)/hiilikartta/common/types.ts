@@ -1,4 +1,4 @@
-import { FeatureCollection, Feature, Geometry } from 'geojson'
+import { FeatureCollection, Geometry } from 'geojson'
 
 export const ZONING_CODE_COL = 'zoning_code'
 
