@@ -45,21 +45,29 @@ const Page = () => {
 
   const formatGeojson: any = (
     json: FeatureCollection,
-    colName: string
+    zoningColName: string,
+    nameColName?: string
   ): FeatureCollection => {
     return {
       type: 'FeatureCollection',
-      features: json.features.map((feature: Feature) => {
+      features: json.features.map((feature: Feature, index) => {
         // Get the value of the property using colName and remove other properties
-        const zoningCode = feature.properties?.[colName]
+        const zoningCode = feature.properties?.[zoningColName]
+
+        if (!zoningCode) return feature
+
+        let name: string | number = index + 1
+        if (nameColName && feature.properties?.[nameColName] != null) {
+          name = feature.properties?.[nameColName]
+        }
 
         // If the desired property is not found, don't modify the feature
-        if (!zoningCode) return feature
 
         const featureAreaHa = getGeoJsonArea(feature) / 10000
 
         const properties: FeatureProperties = {
           id: generateUUID(),
+          name: name,
           zoning_code: zoningCode,
           area_ha: featureAreaHa,
           old_id: feature.id != null ? feature.id : undefined,
@@ -74,12 +82,16 @@ const Page = () => {
     }
   }
 
-  const initializePlan = async (json: FeatureCollection, colName: string) => {
+  const initializePlan = async (
+    json: FeatureCollection,
+    zoningColName: string,
+    nameColName?: string
+  ) => {
     if (!fileName) {
       return null
     }
 
-    const formatedJson = formatGeojson(json, colName)
+    const formatedJson = formatGeojson(json, zoningColName, nameColName)
 
     const areaHa = getGeoJsonArea(formatedJson) / 10000
     const newPlanConf: NewPlanConf = {
@@ -147,8 +159,12 @@ const Page = () => {
     }
   }
 
-  const handleFinish = async (json: FeatureCollection, colName: string) => {
-    const id = await initializePlan(json, colName)
+  const handleFinish = async (
+    json: FeatureCollection,
+    zoningColName: string,
+    nameColName?: string
+  ) => {
+    const id = await initializePlan(json, zoningColName, nameColName)
     // TODO: throw error if id is null, i.e. if file is invalid
     if (id) {
       const route = getRoute(routeTree.plans.plan, routeTree, [id])
