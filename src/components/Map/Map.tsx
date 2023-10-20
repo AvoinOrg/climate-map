@@ -520,10 +520,11 @@ export const Map = ({ children }: Props) => {
           _drawOptions.draw != null &&
           _drawOptions.layerGroupId != null
         ) {
-          const mapDrawId = _drawOptions.layerGroupId
+          const drawLayerGroupId = _drawOptions.layerGroupId
           filteredFeatures = filteredFeatures.filter(
             (f) =>
-              getLayerGroupIdForLayer(f.layer.id, layerGroups) !== mapDrawId
+              getLayerGroupIdForLayer(f.layer.id, layerGroups) !==
+              drawLayerGroupId
           )
         }
 
