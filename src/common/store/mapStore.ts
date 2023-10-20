@@ -255,8 +255,8 @@ export type Actions = {
   _removeDraw: (_queueOptions?: QueueOptions) => Promise<void>
   _enableLayerEventHandlers: (layerOptions: LayerOptions) => void
   _disableLayerEventHandlers: (layerOptions: LayerOptions) => void
-  _enableLayerGroupEventHandlers: (layerGroupId: LayerGroupId) => void
-  _disableLayerGroupEventHandlers: (layerGroupId: LayerGroupId) => void
+  _enableLayerGroupEventHandlers: (layerGroupId: string) => void
+  _disableLayerGroupEventHandlers: (layerGroupId: string) => void
 }
 
 export type State = Vars & Actions
