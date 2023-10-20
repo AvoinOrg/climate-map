@@ -3,6 +3,7 @@ import {
   AnyLayer,
   MapboxGeoJSONFeature,
   GeoJSONSource,
+  MapLayerEventType,
 } from 'mapbox-gl'
 import { Feature } from 'geojson'
 import { ReactNode } from 'react'
@@ -32,6 +33,11 @@ export type LayerGroupOptions = {
   handleDataUpdate?: (e: any) => void
 }
 
+export type LayerEventHandlers = Record<
+  keyof MapLayerEventType,
+  (e: any) => void
+>
+
 export type LayerOptions = {
   id: string
   source: string
@@ -41,6 +47,7 @@ export type LayerOptions = {
   multiSelectable: boolean
   popup: Popup | false
   useMb: boolean
+  eventHandlers: LayerEventHandlers
 }
 
 export type LayerOptionsObj = {
