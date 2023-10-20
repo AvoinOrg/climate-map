@@ -10,7 +10,7 @@ import 'ol/ol.css'
 import '#/common/style/mapbox.css'
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 
-import { isEqual, pickBy, uniq } from 'lodash-es'
+import { isEqual, pickBy, uniq, uniqBy } from 'lodash-es'
 
 import React, { useState, useRef, useEffect } from 'react'
 import Box from '@mui/material/Box'
@@ -41,8 +41,13 @@ import {
   QueuePriority,
   PopupOpts,
   FunctionQueue,
+  LayerGroups,
 } from '#/common/types/map'
-import { getAllLayerOptionsObj, getLayerName } from '#/common/utils/map'
+import {
+  getAllLayerOptionsObj,
+  getLayerGroupIdForLayer,
+  getLayerName,
+} from '#/common/utils/map'
 import { OverlayMessages } from './OverlayMessages'
 import { MapButtons } from './MapButtons'
 import { useVisibleLayerGroups } from '#/common/hooks/map/useVisibleLayerGroups'
@@ -77,6 +82,7 @@ export const Map = ({ children }: Props) => {
     (state) => state._executeFunctionQueue
   )
   const _layerGroups = useMapStore((state) => state._layerGroups)
+  const _drawOptions = useMapStore((state) => state._drawOptions)
   const mapContext = useMapStore((state) => state.mapContext)
 
   const overlayMessage = useMapStore((state) => state.overlayMessage)
@@ -490,7 +496,8 @@ export const Map = ({ children }: Props) => {
         layerOptionsObj: LayerOptionsObj,
         activeLayerIds: string[],
         selectedFeatures: MapboxGeoJSONFeature[],
-        newlySelectedFeatures: MapboxGeoJSONFeature[]
+        newlySelectedFeatures: MapboxGeoJSONFeature[],
+        layerGroups: LayerGroups
       ) => {
         const selectableLayers = Object.keys(
           pickBy(layerOptionsObj, (value: LayerOptions, _key: string) => {
@@ -498,14 +505,27 @@ export const Map = ({ children }: Props) => {
           })
         )
 
+        let filteredFeatures = uniqBy(newlySelectedFeatures, 'id')
+
         // remove features from unselectable layers
-        let filteredFeatures = newlySelectedFeatures.filter((f) =>
-          selectableLayers.includes(f.layer.id)
+        filteredFeatures = filteredFeatures.filter(
+          (f) =>
+            selectableLayers.includes(f.layer.id) &&
+            activeLayerIds.includes(f.layer.id)
         )
 
-        filteredFeatures = filteredFeatures.filter((f) =>
-          activeLayerIds.includes(f.layer.id)
-        )
+        if (
+          _drawOptions != null &&
+          _drawOptions.isEnabled &&
+          _drawOptions.draw != null &&
+          _drawOptions.layerGroupId != null
+        ) {
+          const mapDrawId = _drawOptions.layerGroupId
+          filteredFeatures = filteredFeatures.filter(
+            (f) =>
+              getLayerGroupIdForLayer(f.layer.id, _layerGroups) !== mapDrawId
+          )
+        }
 
         // remove reatures without an id and log an error
         filteredFeatures = filteredFeatures.filter((f) => {
@@ -559,7 +579,8 @@ export const Map = ({ children }: Props) => {
         layerOptionsObj,
         activeLayerIds,
         selectedFeatures,
-        newlySelectedFeatures
+        newlySelectedFeatures,
+        _layerGroups
       )
 
       // TODO: "selectedFeaturesCopy" is calculated twice for each update, which
