@@ -44,6 +44,7 @@ import {
   MapDrawOptions,
   DrawMode,
   FitBoundsOptions,
+  LayerGroups,
 } from '#/common/types/map'
 import { layerConfs } from '#/components/Map/Layers'
 
@@ -90,7 +91,7 @@ export type Vars = {
   // openlayers map object
   _olMap: OlMap | null
   // A single UI layer has often multiple layers which are grouped together.
-  _layerGroups: Record<string, LayerGroupOptions>
+  _layerGroups: LayerGroups
   // For quickly access a layer group by its id.
   _layerInstances: Record<string, AnyLayer>
   // For persisting user customised or uploaded layer configurations.

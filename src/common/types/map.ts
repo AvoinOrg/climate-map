@@ -47,6 +47,8 @@ export type LayerOptionsObj = {
   [key: string]: LayerOptions
 }
 
+export type LayerGroups = Record<string, LayerGroupOptions>
+
 export interface LayerGroupDrawOptions {
   idField?: string
   polygonEnabled?: boolean
