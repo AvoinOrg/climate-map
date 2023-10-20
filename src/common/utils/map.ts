@@ -17,6 +17,7 @@ import {
   LayerGroupOptions,
   LayerOptionsObj,
   DrawMode,
+  LayerGroups,
 } from '../types/map'
 import { clone } from 'lodash-es'
 
@@ -242,6 +243,25 @@ export const getLayerName = (layerGroupId: string): LayerType => {
   }
 
   return layerGroupId
+}
+
+export const getLayerGroupIdForLayer = (
+  layerId: string,
+  layerGroups: LayerGroups
+): string | null => {
+  // Iterate over the layerGroups
+  for (const groupId in layerGroups) {
+    if (Object.prototype.hasOwnProperty.call(layerGroups, groupId)) {
+      const group = layerGroups[groupId]
+
+      // Check if the layerId exists within the layers of the current group
+      if (group.layers[layerId]) {
+        return groupId // return the layer group ID
+      }
+    }
+  }
+
+  return null // return null if no group is found containing the layerId
 }
 
 export const assertValidHighlightingConf = (
