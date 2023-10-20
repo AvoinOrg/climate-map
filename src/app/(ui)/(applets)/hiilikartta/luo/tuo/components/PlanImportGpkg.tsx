@@ -6,19 +6,26 @@ import { FeatureCollection } from 'geojson'
 import DropDownSelect from '#/components/common/DropDownSelect'
 import PlanImportActionsRow from './PlanImportActionsRow'
 import PlanImportCodeRecordSelect from './PlanImportCodeRecordSelect'
+import { useTranslate } from '@tolgee/react'
 
 const PlanImportGpkg = ({
   fileBuffer,
   onFinish,
 }: {
   fileBuffer: ArrayBuffer
-  onFinish: (json: FeatureCollection, columnName: string) => void
+  onFinish: (
+    json: FeatureCollection,
+    zoningColName: string,
+    nameColName?: string
+  ) => void
 }) => {
+  const { t } = useTranslate('hiilikartta')
   const [gpkgFile, setGpkgFile] = useState<GeoPackage>()
   const [table, setTable] = useState<string>()
-  const [column, setColumn] = useState<string>()
   const [tables, setTables] = useState<string[]>([])
   const [columns, setColumns] = useState<string[]>([])
+  const [zoningCol, setZoningCol] = useState<string | undefined>()
+  const [nameCol, setNameCol] = useState<string | undefined>() // nameCol can be optional
 
   useEffect(() => {
     const loadGpkg = async (fileBuffer: ArrayBuffer) => {
@@ -46,7 +53,7 @@ const PlanImportGpkg = ({
   useEffect(() => {
     if (gpkgFile != null) {
       const tables = gpkgFile.getFeatureTables()
-      setColumn(undefined)
+      setColumns([])
 
       switch (tables.length) {
         case 0: {
@@ -77,16 +84,20 @@ const PlanImportGpkg = ({
     setTable(value)
   }
 
-  const handleColumnChange = (newColumn: string | undefined) => {
-    setColumn(newColumn)
+  const handleZoningColChange = (newZoningCol: string | undefined) => {
+    setZoningCol(newZoningCol)
+  }
+
+  const handleNameColChange = (newNameCol: string | undefined) => {
+    setNameCol(newNameCol)
   }
 
   const handleExtract = () => {
     const extract = async (
-      geopackage: any,
+      geopackage: GeoPackage,
       tableName: string
-    ): Promise<any> => {
-      const geoJson: any = {
+    ): Promise<FeatureCollection> => {
+      const geoJson: FeatureCollection = {
         type: 'FeatureCollection',
         features: [],
       }
@@ -97,9 +108,10 @@ const PlanImportGpkg = ({
       return Promise.resolve(geoJson)
     }
 
-    if (column != null) {
-      extract(gpkgFile, tables[0]).then((json) => {
-        onFinish(json, column)
+    if (zoningCol != null && table != null) {
+      extract(gpkgFile!, table).then((json) => {
+        // using a non-null assertion for gpkgFile as it's checked in the if condition
+        onFinish(json, zoningCol, nameCol) // pass nameCol, it can be undefined
       })
     }
   }
@@ -117,15 +129,24 @@ const PlanImportGpkg = ({
         ></DropDownSelect>
       )}
       {columns.length > 0 && (
-        <PlanImportCodeRecordSelect
-          columns={columns}
-          selectedColumn={column}
-          onColumnChange={handleColumnChange}
-        />
+        <>
+          <PlanImportCodeRecordSelect
+            columns={columns}
+            selectedColumn={zoningCol}
+            onColumnChange={handleZoningColChange}
+            label={t('sidebar.create.select_zone_code_record')}
+          />
+          <PlanImportCodeRecordSelect
+            columns={columns}
+            selectedColumn={nameCol}
+            onColumnChange={handleNameColChange}
+            label={t('sidebar.create.select_zone_name_record')}
+          />
+        </>
       )}
       <PlanImportActionsRow
         onClickAccept={handleExtract}
-        isAcceptDisabled={table != null && column != null}
+        isAcceptDisabled={table != null && zoningCol != null}
       ></PlanImportActionsRow>
     </>
   )
