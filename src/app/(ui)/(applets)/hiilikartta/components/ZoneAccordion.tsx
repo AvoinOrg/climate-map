@@ -4,11 +4,13 @@ import Accordion from '@mui/material/Accordion'
 import AccordionSummary from '@mui/material/AccordionSummary'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import Typography from '@mui/material/Typography'
+import { useTranslate } from '@tolgee/react'
 
 import useStore from '#/common/hooks/useStore'
 import { ArrowDown } from '#/components/icons'
 
 import { useAppletStore } from '../state/appletStore'
+import { PlanDataFeature } from '../common/types'
 
 interface Props {
   planConfId: string
@@ -19,6 +21,18 @@ const ZoneAccordion = (props: Props) => {
     useAppletStore,
     (state) => state.planConfs[props.planConfId]
   )
+  const { t } = useTranslate('hiilikartta')
+
+  const getTitle = (feature: PlanDataFeature) => {
+    let name = ''
+    if (typeof feature.properties.name === 'string') {
+      name += feature.properties.name
+    } else {
+      name += `${t('sidebar.plan_settings.area')} ${feature.properties.name}`
+    }
+
+    return `${name} (${feature.properties.zoning_code})`
+  }
 
   return (
     <Box
@@ -57,7 +71,7 @@ const ZoneAccordion = (props: Props) => {
               id={`panel${index + 1}-header`}
             >
               <Typography></Typography>
-              {/* <Typography>{feature.zoningCol}</Typography> */}
+              <Typography>{getTitle(feature)}</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <Typography>
