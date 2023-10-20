@@ -13,6 +13,7 @@ import { getGeoJsonArea } from '#/common/utils/gis'
 import { generateUUID } from '#/common/utils/general'
 import {
   FeatureProperties,
+  PlanData,
   ZONING_CODE_COL,
 } from 'applets/hiilikartta/common/types'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
@@ -61,7 +62,7 @@ const Layout = ({
         zoomToExtent: true,
         dataUpdateMutator: async (data: FeatureCollection) => {
           if (updatePlanConf != null) {
-            updatePlanConf(params.planIdSlug, { data })
+            updatePlanConf(params.planIdSlug, { data: data as PlanData })
           } else {
             console.error('Unable to add dataUpdateMutator')
           }
@@ -74,6 +75,7 @@ const Layout = ({
           featureAddMutator: (feature: Feature) => {
             const properties: FeatureProperties = {
               id: generateUUID(),
+              name: '',
               area_ha: getGeoJsonArea(feature) / 10000,
               zoning_code: '',
             }
