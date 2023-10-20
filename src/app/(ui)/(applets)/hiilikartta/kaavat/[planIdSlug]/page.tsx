@@ -23,6 +23,7 @@ import {
 } from 'applets/hiilikartta/common/utils'
 import Folder from '#/components/common/Folder'
 import { ArrowNextBig, Delete } from '#/components/icons'
+import ZoneAccordion from 'applets/hiilikartta/components/ZoneAccordion'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const removeSerializableLayerGroup = useMapStore(
@@ -164,6 +165,8 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               Kaavatiedoston asetukset <SettingsIcon />
             </MenuButton>
           </MuiLink> */}
+
+          <ZoneAccordion planConfId={planConf.id}></ZoneAccordion>
 
           <Box sx={{}}>
             {/* {!planConf.reportData && ( */}
