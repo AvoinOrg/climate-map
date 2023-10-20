@@ -17,6 +17,7 @@ import {
   LngLatBounds,
   MapboxGeoJSONFeature,
   AnyLayer,
+  MapLayerEventType,
 } from 'mapbox-gl'
 import mapboxgl from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
@@ -45,6 +46,7 @@ import {
   DrawMode,
   FitBoundsOptions,
   LayerGroups,
+  LayerEventHandlers,
 } from '#/common/types/map'
 import { layerConfs } from '#/components/Map/Layers'
 
@@ -251,6 +253,10 @@ export type Actions = {
   ) => Promise<void>
 
   _removeDraw: (_queueOptions?: QueueOptions) => Promise<void>
+  _enableLayerEventHandlers: (layerOptions: LayerOptions) => void
+  _disableLayerEventHandlers: (layerOptions: LayerOptions) => void
+  _enableLayerGroupEventHandlers: (layerGroupId: LayerGroupId) => void
+  _disableLayerGroupEventHandlers: (layerGroupId: LayerGroupId) => void
 }
 
 export type State = Vars & Actions
@@ -1687,6 +1693,62 @@ export const useMapStore = create<State>()(
               // If the 'after' layer wasn't found or it's the last layer, just add the new layer
               _mbMap?.addLayer(layer)
             }
+          }
+        },
+
+        _enableLayerEventHandlers: (layerOptions: LayerOptions) => {
+          if (
+            layerOptions.eventHandlers != null &&
+            Object.keys(layerOptions.eventHandlers).length > 0
+          ) {
+            const { _mbMap } = get()
+
+            Object.keys(layerOptions.eventHandlers).forEach(
+              (eventKeyString) => {
+                const eventKey = eventKeyString as keyof MapLayerEventType
+                const handlerFn = layerOptions.eventHandlers[eventKey]
+                if (handlerFn != null) {
+                  _mbMap?.on(eventKey, layerOptions.id, handlerFn)
+                }
+              }
+            )
+          }
+        },
+
+        _disableLayerEventHandlers: (layerOptions: LayerOptions) => {
+          if (
+            layerOptions.eventHandlers != null &&
+            Object.keys(layerOptions.eventHandlers).length > 0
+          ) {
+            const { _mbMap } = get()
+
+            Object.keys(layerOptions.eventHandlers).forEach(
+              (eventKeyString) => {
+                const eventKey = eventKeyString as keyof MapLayerEventType
+                const handlerFn = layerOptions.eventHandlers[eventKey]
+                if (handlerFn != null) {
+                  _mbMap?.off(eventKey, layerOptions.id, handlerFn)
+                }
+              }
+            )
+          }
+        },
+
+        _enableLayerGroupEventHandlers: (layerGroupId: string) => {
+          const { _layerGroups, _enableLayerEventHandlers } = get()
+
+          for (const layerId in _layerGroups[layerGroupId].layers) {
+            const layerOptions = _layerGroups[layerGroupId].layers[layerId]
+            _enableLayerEventHandlers(layerOptions)
+          }
+        },
+
+        _disableLayerGroupEventHandlers: (layerGroupId: string) => {
+          const { _layerGroups, _disableLayerEventHandlers } = get()
+
+          for (const layerId in _layerGroups[layerGroupId].layers) {
+            const layerOptions = _layerGroups[layerGroupId].layers[layerId]
+            _disableLayerEventHandlers(layerOptions)
           }
         },
 
