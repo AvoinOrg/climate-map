@@ -505,14 +505,15 @@ export const Map = ({ children }: Props) => {
           })
         )
 
-        let filteredFeatures = uniqBy(newlySelectedFeatures, 'id')
-
         // remove features from unselectable layers
-        filteredFeatures = filteredFeatures.filter(
+        let filteredFeatures = newlySelectedFeatures.filter(
           (f) =>
             selectableLayers.includes(f.layer.id) &&
             activeLayerIds.includes(f.layer.id)
         )
+
+        // Remove duplicates. Not sure why there are any.
+        filteredFeatures = uniqBy(filteredFeatures, 'id')
 
         if (
           _drawOptions != null &&
