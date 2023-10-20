@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Feature, FeatureCollection } from 'geojson'
+import { useTranslate } from '@tolgee/react'
 
 import PlanImportActionsRow from './PlanImportActionsRow'
 import PlanImportCodeRecordSelect from './PlanImportCodeRecordSelect'
@@ -9,10 +10,16 @@ const PlanImportShp = ({
   onFinish,
 }: {
   fileBuffer: ArrayBuffer
-  onFinish: (json: FeatureCollection, columnName: string) => void
+  onFinish: (
+    json: FeatureCollection,
+    zoningColName: string,
+    nameColName?: string
+  ) => void
 }) => {
+  const { t } = useTranslate('hiilikartta')
   const [geojson, setGeojson] = useState<FeatureCollection>()
-  const [column, setColumn] = useState<string>()
+  const [zoningCol, setZoningCol] = useState<string>()
+  const [nameCol, setNameCol] = useState<string | undefined>() // nameCol can be optional
   const [columns, setColumns] = useState<string[]>([])
 
   useEffect(() => {
@@ -56,29 +63,42 @@ const PlanImportShp = ({
     }
   }, [geojson])
 
-  const handleColumnChange = (newColumn: string | undefined) => {
-    setColumn(newColumn)
+  const handleZoningColChange = (newZoningCol: string | undefined) => {
+    setZoningCol(newZoningCol)
+  }
+
+  const handleNameColChange = (newNameCol: string | undefined) => {
+    setNameCol(newNameCol)
   }
 
   const handleFinish = () => {
-    if (column != null && geojson != null) {
-      onFinish(geojson, column)
+    if (zoningCol != null && geojson != null) {
+      onFinish(geojson, zoningCol, nameCol)
     }
   }
 
   return (
     <>
       {columns.length > 0 && (
-        <PlanImportCodeRecordSelect
-          columns={columns}
-          selectedColumn={column}
-          onColumnChange={handleColumnChange}
-        ></PlanImportCodeRecordSelect>
+        <>
+          <PlanImportCodeRecordSelect
+            columns={columns}
+            selectedColumn={zoningCol}
+            onColumnChange={handleZoningColChange}
+            label={t('sidebar.create.select_zone_code_record')}
+          />
+          <PlanImportCodeRecordSelect
+            columns={columns}
+            selectedColumn={nameCol}
+            onColumnChange={handleNameColChange}
+            label={t('sidebar.create.select_zone_name_record')}
+          />
+        </>
       )}
 
       <PlanImportActionsRow
         onClickAccept={handleFinish}
-        isAcceptDisabled={column == null}
+        isAcceptDisabled={zoningCol == null}
       ></PlanImportActionsRow>
     </>
   )
