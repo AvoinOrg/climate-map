@@ -21,6 +21,8 @@ export type PlanData<G extends Geometry | null = Geometry> = FeatureCollection<
   FeatureProperties
 >
 
+export type PlanDataFeature = PlanData['features'][number]
+
 export type NewPlanConf = {
   name: string
   areaHa: number
@@ -40,6 +42,7 @@ export type FileType = 'shp' | 'geojson' | 'gpkg'
 export const ZONING_CODE_COL = 'zoning_code'
 export interface FeatureProperties {
   id: string
+  name: string | number
   area_ha: number
   zoning_code: string | null
   old_id?: string | number
