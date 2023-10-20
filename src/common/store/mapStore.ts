@@ -1306,6 +1306,7 @@ export const useMapStore = create<State>()(
             _addLayerAfter,
             _findFirstMatchingLayer,
             _findLastMatchingLayer,
+            _enableLayerGroupEventHandlers,
           } = get()
           const setIsMapPopupOpen = useUIStore.getState().setIsMapPopupOpen
 
@@ -1339,6 +1340,7 @@ export const useMapStore = create<State>()(
                     ? options.layerConf.popup || false
                     : false,
                 useMb: true,
+                eventHandlers: {} as LayerEventHandlers,
               }
 
               layerGroup.layers[layer.id] = layerOptions
@@ -1355,6 +1357,20 @@ export const useMapStore = create<State>()(
                         layerOptions.name +
                         "' is selectable but missing the corresponding highlighted layer."
                     )
+                  } else {
+                    const mouseEnterHandler = () => {
+                      if (_mbMap) {
+                        _mbMap.getCanvas().style.cursor = 'pointer'
+                      }
+                    }
+
+                    const mouseLeaveHandler = () => {
+                      if (_mbMap) {
+                        _mbMap.getCanvas().style.cursor = ''
+                      }
+                    }
+                    layerOptions.eventHandlers['mouseenter'] = mouseEnterHandler
+                    layerOptions.eventHandlers['mouseleave'] = mouseLeaveHandler
                   }
                 }
 
@@ -1437,9 +1453,11 @@ export const useMapStore = create<State>()(
               }
             }
 
-            set((state) => {
+            await set((state) => {
               state._layerGroups[id] = layerGroup
             })
+
+            _enableLayerGroupEventHandlers(id)
           } catch (e: any) {
             if (!e.message.includes('There is already a source')) {
               console.error(e)
