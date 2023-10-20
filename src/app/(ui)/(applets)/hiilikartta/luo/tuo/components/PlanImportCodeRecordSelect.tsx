@@ -1,19 +1,19 @@
 import { SelectChangeEvent } from '@mui/material'
 import DropDownSelect from '#/components/common/DropDownSelect'
-import { useTranslate } from '@tolgee/react'
 
 interface Props {
   columns: string[]
   selectedColumn?: string
   onColumnChange: (column: string | undefined) => void
+  label?: string
 }
 
 const PlanImportCodeRecordSelect = ({
   columns,
   selectedColumn,
   onColumnChange,
+  label,
 }: Props) => {
-  const { t } = useTranslate('hiilikartta')
   const handleSelectColumn = (event: SelectChangeEvent) => {
     const { value } = event.target
 
@@ -35,7 +35,7 @@ const PlanImportCodeRecordSelect = ({
             return { value: table, label: table }
           })}
           onChange={handleSelectColumn}
-          label={t('sidebar.create.select_zone_code_record')}
+          label={label}
         />
       )}
     </>
