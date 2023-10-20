@@ -26,12 +26,23 @@ const ZoneAccordion = (props: Props) => {
   const getTitle = (feature: PlanDataFeature) => {
     let name = ''
     if (typeof feature.properties.name === 'string') {
-      name += feature.properties.name
+      if (feature.properties.name === '') {
+        name += t('sidebar.plan_settings.new_area')
+      } else {
+        name += feature.properties.name
+      }
     } else {
       name += `${t('sidebar.plan_settings.area')} ${feature.properties.name}`
     }
 
-    return `${name} (${feature.properties.zoning_code})`
+    if (
+      feature.properties.zoning_code != null &&
+      feature.properties.zoning_code != ''
+    ) {
+      return `${name} (${feature.properties.zoning_code})`
+    }
+
+    return `${name}`
   }
 
   return (
