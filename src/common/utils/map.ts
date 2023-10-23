@@ -360,7 +360,7 @@ export const addFeatureToDrawSource = (
 }
 
 export const updateFeatureInDrawSource = (
-  feature: GeoJSON.Feature,
+  feature: Feature,
   idField: string,
   _mbMap: Map | null,
   layerGroupId: string
