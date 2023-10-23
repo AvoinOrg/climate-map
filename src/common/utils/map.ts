@@ -455,3 +455,15 @@ export const getDrawMode = (mapboxDrawMode: MapboxDraw.DrawMode): DrawMode => {
       return 'edit'
   }
 }
+
+export const isLayerGroupSelectable = (
+  layerGroupId: string,
+  layerGroups: LayerGroups
+) => {
+  const layerGroup = layerGroups[layerGroupId]
+  if (layerGroup) {
+    return Object.values(layerGroup.layers).some((layer) => layer.selectable)
+  }
+
+  return false
+}
