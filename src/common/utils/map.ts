@@ -434,6 +434,39 @@ export const deleteFeatureFromDrawSource = (
   _mbMap?.triggerRepaint()
 }
 
+export const getFeaturesFromSourceById = (
+  features: Feature[],
+  idField: string,
+  _mbMap: Map | null,
+  layerGroupId: string
+) => {
+  const data = getSourceData(_mbMap, layerGroupId)
+
+  if (data) {
+    // Find the corresponding original features for the selected ones
+    const matchingFeatures = features
+      .map((feature: Feature) => {
+        const originalFeature = data.features.find(
+          (originalFeature: Feature) => {
+            if (originalFeature.properties && feature.properties) {
+              const originalId = originalFeature.properties[idField]
+              const featureId = feature.properties[idField]
+
+              return originalId === featureId
+            }
+            return false
+          }
+        )
+        return originalFeature
+      })
+      .filter((f: Feature | undefined) => f != undefined)
+
+    return matchingFeatures as Feature[]
+  }
+
+  return [] as Feature[]
+}
+
 export const getMapboxDrawMode = (drawMode: DrawMode): MapboxDraw.DrawMode => {
   switch (drawMode) {
     case 'polygon':
