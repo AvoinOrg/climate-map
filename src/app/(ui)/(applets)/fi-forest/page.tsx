@@ -38,7 +38,7 @@ import {
   getUnitPerArea,
 } from './utils'
 import { finlandForests as layerConf } from './layers'
-import useFilteredSelectedFeatures from '#/common/hooks/useFilteredSelectedFeatures'
+import useSelectedFeaturesFilteredByLayer from '#/common/hooks/map/useSelectedFeaturesFilteredByLayer'
 import { FinlandForestsChart } from './components/FinlandForestsChart'
 import { ForestryMethod } from './types'
 import DropDownSelect from '#/components/common/DropDownSelect'
@@ -102,7 +102,7 @@ const FinlandForests = () => {
   const updateMapDetails = useUpdateMapDetails()
   const [hasFeature, setHasFeature] = useState(false)
   const [options, setOptions] = useState<any>(null)
-  const filteredFeatures = useFilteredSelectedFeatures(
+  const filteredFeatures = useSelectedFeaturesFilteredByLayer(
     Object.keys(layerOptions).map((x) => `${x}-fill`)
   )
 
