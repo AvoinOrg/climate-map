@@ -467,6 +467,21 @@ export const getFeaturesFromSourceById = (
   return [] as Feature[]
 }
 
+export const fetchFeaturesByIds = (
+  ids: string,
+  sourceId: string,
+  idField: string,
+  _mbMap: Map | null
+) => {
+  // Query the source features
+  const features = _mbMap?.querySourceFeatures(sourceId, {
+    // Provide an optional filter parameter to get specific features matching certain conditions
+    filter: ['in', ['get', idField], ['literal', ids]],
+  })
+
+  return features
+}
+
 export const getMapboxDrawMode = (drawMode: DrawMode): MapboxDraw.DrawMode => {
   switch (drawMode) {
     case 'polygon':
