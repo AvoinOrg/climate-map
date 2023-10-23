@@ -916,6 +916,7 @@ export const useMapStore = create<State>()(
               selectedFeatures,
               _layerGroups,
               _disableLayerGroupEventHandlers,
+              setSelectedFeatures,
             } = get()
 
             if (_drawOptions.layerGroupId == null) {
@@ -1062,11 +1063,7 @@ export const useMapStore = create<State>()(
                       })
                     }
                   }
-                  set(
-                    produce((draft: State) => {
-                      draft.selectedFeatures = newSelectedFeatures
-                    })
-                  )
+                  setSelectedFeatures(newSelectedFeatures)
                 }
               } catch (e) {
                 console.error(e)
@@ -1138,11 +1135,7 @@ export const useMapStore = create<State>()(
                   )
 
                   if (features) {
-                    set(
-                      produce((draft: State) => {
-                        draft.selectedFeatures = features
-                      })
-                    )
+                    setSelectedFeatures(features)
                   }
                 }
                 _mbMap?.on('draw.selectionchange', handleSelectionChange)
