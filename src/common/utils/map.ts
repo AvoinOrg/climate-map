@@ -322,8 +322,8 @@ export const getAllLayerOptionsObj = (
 }
 
 const getSourceData = (
-  _mbMap: Map | null,
-  layerGroupId: string
+  layerGroupId: string,
+  _mbMap: Map | null
 ): GeoJSON.FeatureCollection | null => {
   if (!_mbMap || !layerGroupId) {
     return null
@@ -343,10 +343,10 @@ const getSourceData = (
 
 export const addFeatureToDrawSource = (
   feature: GeoJSON.Feature,
-  _mbMap: Map | null,
-  layerGroupId: string
+  layerGroupId: string,
+  _mbMap: Map | null
 ) => {
-  const data = getSourceData(_mbMap, layerGroupId)
+  const data = getSourceData(layerGroupId, _mbMap)
   if (!data) {
     return
   }
@@ -362,10 +362,10 @@ export const addFeatureToDrawSource = (
 export const updateFeatureInDrawSource = (
   feature: Feature,
   idField: string,
-  _mbMap: Map | null,
-  layerGroupId: string
+  layerGroupId: string,
+  _mbMap: Map | null
 ) => {
-  const data = getSourceData(_mbMap, layerGroupId)
+  const data = getSourceData(layerGroupId, _mbMap)
   if (!data) {
     return
   }
@@ -409,10 +409,10 @@ export const updateFeatureInDrawSource = (
 export const deleteFeatureFromDrawSource = (
   feature: Feature,
   idField: string,
-  _mbMap: Map | null,
-  layerGroupId: string
+  layerGroupId: string,
+  _mbMap: Map | null
 ) => {
-  const data = getSourceData(_mbMap, layerGroupId)
+  const data = getSourceData(layerGroupId, _mbMap)
   if (!data) {
     return
   }
@@ -437,10 +437,10 @@ export const deleteFeatureFromDrawSource = (
 export const getFeaturesFromSourceById = (
   features: Feature[],
   idField: string,
-  _mbMap: Map | null,
-  layerGroupId: string
+  layerGroupId: string,
+  _mbMap: Map | null
 ) => {
-  const data = getSourceData(_mbMap, layerGroupId)
+  const data = getSourceData(layerGroupId, _mbMap)
 
   if (data) {
     // Find the corresponding original features for the selected ones

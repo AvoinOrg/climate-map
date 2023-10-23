@@ -1089,7 +1089,7 @@ export const useMapStore = create<State>()(
                       return
                     }
                   }
-                  addFeatureToDrawSource(feature, _mbMap, layerGroupId)
+                  addFeatureToDrawSource(feature, layerGroupId, _mbMap)
                 })
               }
 
@@ -1101,8 +1101,8 @@ export const useMapStore = create<State>()(
                   updateFeatureInDrawSource(
                     feature,
                     idField,
-                    _mbMap,
-                    layerGroupId
+                    layerGroupId,
+                    _mbMap
                   )
                 })
               }
@@ -1112,8 +1112,8 @@ export const useMapStore = create<State>()(
                   deleteFeatureFromDrawSource(
                     feature,
                     idField,
-                    _mbMap,
-                    layerGroupId
+                    layerGroupId,
+                    _mbMap
                   )
                 })
               }
