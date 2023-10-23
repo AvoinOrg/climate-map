@@ -321,31 +321,42 @@ export const getAllLayerOptionsObj = (
   return allLayerOptionsObj
 }
 
+const getOriginalSourceData = (
+  _mbMap: Map | null,
+  layerGroupId: string
+): GeoJSON.FeatureCollection | null => {
+  if (!_mbMap || !layerGroupId) {
+    return null
+  }
+
+  const originalSource = _mbMap.getSource(layerGroupId) as
+    | GeoJSONSource
+    | undefined
+
+  if (!originalSource || !('_data' in originalSource)) {
+    console.error('Source data is missing or not in the expected format.')
+    return null
+  }
+
+  return originalSource._data as GeoJSON.FeatureCollection
+}
+
 export const addFeatureToDrawSource = (
   feature: GeoJSON.Feature,
   _mbMap: Map | null,
   layerGroupId: string
 ) => {
-  if (layerGroupId && feature) {
-    // If you can identify the affected feature in the original source, update it directly.
-    const originalSource = _mbMap?.getSource(layerGroupId) as
-      | GeoJSONSource
-      | undefined
-
-    if (originalSource) {
-      if (!('_data' in originalSource)) {
-        return
-      }
-
-      const data = originalSource._data as GeoJSON.FeatureCollection
-
-      const newFeatures = [...clone(data.features), feature]
-
-      // Update the source with the modified features
-      originalSource.setData({ ...data, features: newFeatures })
-      _mbMap?.triggerRepaint()
-    }
+  const data = getOriginalSourceData(_mbMap, layerGroupId)
+  if (!data) {
+    return
   }
+
+  const newFeatures = [...clone(data.features), feature]
+
+  // Update the source with the modified features
+  const originalSource = _mbMap!.getSource(layerGroupId) as GeoJSONSource
+  originalSource.setData({ ...data, features: newFeatures })
+  _mbMap?.triggerRepaint()
 }
 
 export const updateFeatureInDrawSource = (
@@ -354,48 +365,44 @@ export const updateFeatureInDrawSource = (
   _mbMap: Map | null,
   layerGroupId: string
 ) => {
-  if (layerGroupId && feature) {
-    // If you can identify the affected feature in the original source, update it directly.
-    const originalSource = _mbMap?.getSource(layerGroupId) as
-      | GeoJSONSource
-      | undefined
+  const data = getOriginalSourceData(_mbMap, layerGroupId)
+  if (!data) {
+    return
+  }
 
-    if (originalSource) {
-      if (!('_data' in originalSource)) {
-        return
-      }
+  let found = false
 
-      const data = originalSource._data as GeoJSON.FeatureCollection
+  const updatedFeatures = data.features.map((f) => {
+    // Check if the current feature in the map is the one that needs to be updated
+    if (f.properties && feature.properties) {
+      const originalId = f.properties[idField]
+      const drawId = feature.properties[idField]
 
-      let found = false
-
-      const updatedFeatures = data.features.map((f) => {
-        // Check if the current feature in the map is the one that needs to be updated
-        if (f.properties && feature.properties) {
-          const originalId = f.properties[idField]
-          const drawId = feature.properties[idField]
-
-          if (originalId === drawId) {
-            found = true
-            // Return a new feature object with updated geometry
-            return { ...f, geometry: feature.geometry }
-          }
-        }
-        // Return the unmodified feature
-        return f
-      })
-
-      if (!found) {
-        console.error(
-          // @ts-ignore
-          `Feature with id ${feature.properties[idField]} not found in the original source`
-        )
-      } else {
-        // Update the source with the modified features
-        originalSource.setData({ ...data, features: updatedFeatures })
-        _mbMap?.triggerRepaint()
+      if (originalId === drawId) {
+        found = true
+        // Return a new feature object with updated geometry
+        return { ...f, geometry: feature.geometry }
       }
     }
+    // Return the unmodified feature
+    return f
+  })
+
+  if (!found) {
+    if (feature.properties) {
+      console.error(
+        `Feature with id ${feature.properties[idField]} not found in the original source`
+      )
+    } else {
+      console.error(
+        'Feature properties are null, or the feature was not found in the original source.'
+      )
+    }
+  } else {
+    // Update the source with the modified features
+    const originalSource = _mbMap!.getSource(layerGroupId) as GeoJSONSource
+    originalSource.setData({ ...data, features: updatedFeatures })
+    _mbMap?.triggerRepaint()
   }
 }
 
@@ -405,30 +412,26 @@ export const deleteFeatureFromDrawSource = (
   _mbMap: Map | null,
   layerGroupId: string
 ) => {
-  if (layerGroupId && feature) {
-    // If you can identify the affected feature in the original source, update it directly.
-    const originalSource = _mbMap?.getSource(layerGroupId) as
-      | GeoJSONSource
-      | undefined
-
-    if (originalSource) {
-      if (!('_data' in originalSource)) {
-        return
-      }
-
-      const data = originalSource._data as GeoJSON.FeatureCollection
-
-      const updatedFeatures = data.features.filter((f) => {
-        if (f.properties && feature.properties) {
-          const originalId = f.properties[idField]
-          const drawId = feature.properties[idField]
-
-          return originalId !== drawId
-        }
-      })
-      originalSource.setData({ ...data, features: updatedFeatures })
-    }
+  const data = getOriginalSourceData(_mbMap, layerGroupId)
+  if (!data) {
+    return
   }
+
+  const updatedFeatures = data.features.filter((f) => {
+    if (f.properties && feature.properties) {
+      const originalId = f.properties[idField]
+      const drawId = feature.properties[idField]
+
+      return originalId !== drawId
+    }
+    // If properties are missing, keep the feature (i.e., do not delete it)
+    return true
+  })
+
+  // Update the source with the modified features
+  const originalSource = _mbMap!.getSource(layerGroupId) as GeoJSONSource
+  originalSource.setData({ ...data, features: updatedFeatures })
+  _mbMap?.triggerRepaint()
 }
 
 export const getMapboxDrawMode = (drawMode: DrawMode): MapboxDraw.DrawMode => {
