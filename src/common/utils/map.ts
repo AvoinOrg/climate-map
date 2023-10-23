@@ -19,7 +19,7 @@ import {
   DrawMode,
   LayerGroups,
 } from '../types/map'
-import { clone } from 'lodash-es'
+import { clone, uniqBy } from 'lodash-es'
 
 export const fillOpacity = 0.65
 
@@ -479,7 +479,14 @@ export const fetchFeaturesByIds = (
     filter: ['in', ['get', idField], ['literal', ids]],
   })
 
-  return features
+  // Remove duplicates. QuerySourceFeatures queries from
+  // multiple viewport tiles, so there may be duplicates.
+  const uniqueFeatures = uniqBy(
+    features,
+    (feature) => feature.properties?.[idField]
+  )
+
+  return uniqueFeatures
 }
 
 export const getMapboxDrawMode = (drawMode: DrawMode): MapboxDraw.DrawMode => {
