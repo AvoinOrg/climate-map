@@ -1201,8 +1201,6 @@ export const useMapStore = create<State>()(
                 }
               }
 
-              _mbMap?.removeControl(drawInstance)
-
               if (_drawOptions.handleDrawCreate != null) {
                 _mbMap?.off('draw.create', _drawOptions.handleDrawCreate)
               }
@@ -1218,6 +1216,13 @@ export const useMapStore = create<State>()(
                   _drawOptions.handleSelectionChange
                 )
               }
+
+              // clear selected features, if any
+              if (drawInstance.getMode() === 'simple_select') {
+                drawInstance.changeMode('simple_select', { featureIds: [] })
+              }
+
+              _mbMap?.removeControl(drawInstance)
 
               await set((state) => {
                 state._drawOptions.draw = null
