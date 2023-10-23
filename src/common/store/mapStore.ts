@@ -1212,6 +1212,12 @@ export const useMapStore = create<State>()(
               if (_drawOptions.handleDrawDelete != null) {
                 _mbMap?.off('draw.delete', _drawOptions.handleDrawDelete)
               }
+              if (_drawOptions.handleSelectionChange != null) {
+                _mbMap?.off(
+                  'draw.selectionchange',
+                  _drawOptions.handleSelectionChange
+                )
+              }
 
               await set((state) => {
                 state._drawOptions.draw = null
