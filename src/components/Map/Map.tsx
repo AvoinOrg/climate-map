@@ -10,7 +10,7 @@ import 'ol/ol.css'
 import '#/common/style/mapbox.css'
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 
-import { isEqual, pickBy, uniq, uniqBy } from 'lodash-es'
+import { pickBy, uniqBy } from 'lodash-es'
 
 import React, { useState, useRef, useEffect } from 'react'
 import Box from '@mui/material/Box'
@@ -588,37 +588,7 @@ export const Map = ({ children }: Props) => {
       // TODO: "selectedFeaturesCopy" is calculated twice for each update, which
       // is not great. However, this allows direct manipulation of
       // "selectedFeatures" from other components. Make smarter later.
-      if (!isEqual(selectedFeatures, selectedFeaturesCopy)) {
-        let selectedLayerIds: string[] = []
-        selectedFeaturesCopy.map((feature) => {
-          selectedLayerIds.push(feature.layer.id)
-        })
-
-        if (selectedFeaturesCopy)
-          // add layer ids from the previous selection
-          selectedFeatures.map((feature) => {
-            selectedLayerIds.push(feature.layer.id)
-          })
-
-        selectedLayerIds = uniq(selectedLayerIds)
-
-        for (const id of selectedLayerIds) {
-          const featureIds = selectedFeaturesCopy
-            .filter((f) => f.layer.id === id)
-            .map((feature) => {
-              return feature.id
-            })
-
-          // highlight the selected features using the highlighted-layer in the group
-          _mbMap?.setFilter(getLayerName(id) + '-highlighted', [
-            'in',
-            'id',
-            ...featureIds,
-          ])
-        }
-
-        setSelectedFeatures(selectedFeaturesCopy)
-      }
+      setSelectedFeatures(selectedFeaturesCopy)
     }
   }, [
     newlySelectedFeatures,

@@ -2,7 +2,7 @@
 // A lot of the logic is split between this file and the Map component.
 // There are a also various helper hooks in src/common/hooks/map.
 
-import { map, cloneDeep } from 'lodash-es'
+import { map, cloneDeep, uniq, isEqual } from 'lodash-es'
 import olms from 'ol-mapbox-style'
 import turfBbox from '@turf/bbox'
 import { immer } from 'zustand/middleware/immer'
@@ -441,11 +441,42 @@ export const useMapStore = create<State>()(
         },
 
         setSelectedFeatures: (features: MapboxGeoJSONFeature[]) => {
-          set(
-            produce((draft: State) => {
-              draft.selectedFeatures = features
+          const { _mbMap, selectedFeatures } = get()
+
+          if (!isEqual(features, selectedFeatures)) {
+            let selectedLayerIds: string[] = []
+            features.map((feature) => {
+              selectedLayerIds.push(feature.layer.id)
             })
-          )
+
+            if (features)
+              // add layer ids from the previous selection
+              selectedFeatures.map((feature) => {
+                selectedLayerIds.push(feature.layer.id)
+              })
+
+            selectedLayerIds = uniq(selectedLayerIds)
+            for (const id of selectedLayerIds) {
+              const featureIds = features
+                .filter((f) => f.layer.id === id)
+                .map((feature) => {
+                  return feature.id
+                })
+
+              // highlight the selected features using the highlighted-layer in the group
+              _mbMap?.setFilter(getLayerName(id) + '-highlighted', [
+                'in',
+                'id',
+                ...featureIds,
+              ])
+            }
+
+            set(
+              produce((draft: State) => {
+                draft.selectedFeatures = features
+              })
+            )
+          }
         },
 
         // TODO: The logic of this function is getting too complex. Now we have
