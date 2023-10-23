@@ -473,16 +473,24 @@ export const fetchFeaturesByIds = (
   idField: string,
   _mbMap: Map | null
 ) => {
-  // Query the source features
-  const features = _mbMap?.querySourceFeatures(sourceId, {
-    // Provide an optional filter parameter to get specific features matching certain conditions
-    filter: ['in', ['get', idField], ['literal', ids]],
+  if (!_mbMap) {
+    console.error('Map object is not available')
+    return
+  }
+
+  // Query the rendered features from all layers
+  const allRenderedFeatures = _mbMap.queryRenderedFeatures()
+
+  // Filter features based on sourceId and matching ids
+  const filteredFeatures = allRenderedFeatures.filter((feature) => {
+    return (
+      feature.source === sourceId && ids.includes(feature.properties?.[idField])
+    )
   })
 
-  // Remove duplicates. QuerySourceFeatures queries from
-  // multiple viewport tiles, so there may be duplicates.
+  // Remove duplicates, as queryRenderedFeatures may return duplicates
   const uniqueFeatures = uniqBy(
-    features,
+    filteredFeatures,
     (feature) => feature.properties?.[idField]
   )
 
