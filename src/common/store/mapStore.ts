@@ -1225,6 +1225,7 @@ export const useMapStore = create<State>()(
                 state._drawOptions.handleDrawCreate = undefined
                 state._drawOptions.handleDrawUpdate = undefined
                 state._drawOptions.handleDrawDelete = undefined
+                state._drawOptions.handleSelectionChange = undefined
               })
             }
           },
