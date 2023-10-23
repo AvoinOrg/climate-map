@@ -60,6 +60,9 @@ import {
   addFeatureToDrawSource,
   deleteFeatureFromDrawSource,
   getMapboxDrawMode,
+  getLayerGroupIdForLayer,
+  isLayerGroupSelectable,
+  fetchFeaturesByIds,
 } from '#/common/utils/map'
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
@@ -876,7 +879,13 @@ export const useMapStore = create<State>()(
 
         _enableDraw: queueableFnInit(
           async (drawMode?: MapboxDraw.DrawMode) => {
-            const { _mbMap, _drawOptions } = get()
+            const {
+              _mbMap,
+              _drawOptions,
+              selectedFeatures,
+              _layerGroups,
+              _disableLayerGroupEventHandlers,
+            } = get()
 
             if (_drawOptions.layerGroupId == null) {
               console.error('No layerGroupId set for drawing.')
@@ -986,7 +995,48 @@ export const useMapStore = create<State>()(
                   features: modifiedFeatures,
                 }
                 //@ts-ignore
-                draw.add(modifiedSourceData)
+                await draw.add(modifiedSourceData)
+
+                if (selectedFeatures?.length > 0) {
+                  let newSelectedFeatures: MapboxGeoJSONFeature[] = []
+                  if (draw.getMode() === 'simple_select') {
+                    newSelectedFeatures = selectedFeatures.filter((feature) => {
+                      return (
+                        getLayerGroupIdForLayer(
+                          feature.layer.id,
+                          _layerGroups
+                        ) === layerGroupId
+                      )
+                    })
+
+                    const drawData = draw.getAll()
+
+                    const matchingFeatures = drawData.features.filter(
+                      (drawFeature) => {
+                        return selectedFeatures.some((selectedFeature) => {
+                          return (
+                            drawFeature.properties?.id === selectedFeature.id
+                          )
+                        })
+                      }
+                    )
+
+                    const matchingFeatureIds = matchingFeatures.map(
+                      (feature) => feature.id as string
+                    )
+
+                    if (matchingFeatureIds.length > 0) {
+                      draw.changeMode('simple_select', {
+                        featureIds: matchingFeatureIds,
+                      })
+                    }
+                  }
+                  set(
+                    produce((draft: State) => {
+                      draft.selectedFeatures = newSelectedFeatures
+                    })
+                  )
+                }
               } catch (e) {
                 console.error(e)
                 return
@@ -1040,6 +1090,33 @@ export const useMapStore = create<State>()(
                 })
               }
 
+              let handleSelectionChange: ((e: any) => void) | undefined =
+                undefined
+
+              if (isLayerGroupSelectable(layerGroupId, _layerGroups)) {
+                handleSelectionChange = (e: any) => {
+                  const featureIds = e.features.map((feature: any) => {
+                    return feature.properties[idField]
+                  })
+
+                  const features = fetchFeaturesByIds(
+                    featureIds,
+                    layerGroupId,
+                    idField,
+                    _mbMap
+                  )
+
+                  if (features) {
+                    set(
+                      produce((draft: State) => {
+                        draft.selectedFeatures = features
+                      })
+                    )
+                  }
+                }
+                _mbMap?.on('draw.selectionchange', handleSelectionChange)
+              }
+
               _mbMap?.on('draw.create', handleDrawCreate)
               _mbMap?.on('draw.update', handleDrawUpdate)
               _mbMap?.on('draw.delete', handleDrawDelete)
@@ -1050,7 +1127,10 @@ export const useMapStore = create<State>()(
                 state._drawOptions.handleDrawCreate = handleDrawCreate
                 state._drawOptions.handleDrawUpdate = handleDrawUpdate
                 state._drawOptions.handleDrawDelete = handleDrawDelete
+                state._drawOptions.handleSelectionChange = handleSelectionChange
               })
+
+              _disableLayerGroupEventHandlers(layerGroupId)
             }
           },
           { priority: QueuePriority.LOW }
