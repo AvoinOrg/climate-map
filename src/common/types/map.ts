@@ -73,6 +73,7 @@ export interface MapDrawOptions extends LayerGroupDrawOptions {
   handleDrawCreate?: (e: any) => void
   handleDrawUpdate?: (e: any) => void
   handleDrawDelete?: (e: any) => void
+  handleSelectionChange?: (e: any) => void
 }
 
 interface BaseLayerGroupAddOptions {
