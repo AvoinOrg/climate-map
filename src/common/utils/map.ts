@@ -321,7 +321,7 @@ export const getAllLayerOptionsObj = (
   return allLayerOptionsObj
 }
 
-const getOriginalSourceData = (
+const getSourceFeatures = (
   _mbMap: Map | null,
   layerGroupId: string
 ): GeoJSON.FeatureCollection | null => {
@@ -346,7 +346,7 @@ export const addFeatureToDrawSource = (
   _mbMap: Map | null,
   layerGroupId: string
 ) => {
-  const data = getOriginalSourceData(_mbMap, layerGroupId)
+  const data = getSourceFeatures(_mbMap, layerGroupId)
   if (!data) {
     return
   }
@@ -365,7 +365,7 @@ export const updateFeatureInDrawSource = (
   _mbMap: Map | null,
   layerGroupId: string
 ) => {
-  const data = getOriginalSourceData(_mbMap, layerGroupId)
+  const data = getSourceFeatures(_mbMap, layerGroupId)
   if (!data) {
     return
   }
@@ -412,7 +412,7 @@ export const deleteFeatureFromDrawSource = (
   _mbMap: Map | null,
   layerGroupId: string
 ) => {
-  const data = getOriginalSourceData(_mbMap, layerGroupId)
+  const data = getSourceFeatures(_mbMap, layerGroupId)
   if (!data) {
     return
   }
