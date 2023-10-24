@@ -533,3 +533,20 @@ export const isLayerGroupSelectable = (
 
   return false
 }
+
+export const getSelectableLayers = (
+  layerGroupId: string,
+  layerGroups: LayerGroups
+): string[] => {
+  const layerGroup = layerGroups[layerGroupId]
+  if (layerGroup) {
+    const layers = Object.values(layerGroup.layers).filter(
+      (value) => value.selectable
+    )
+    const layerIds = layers.map((layer) => layer.id)
+
+    return layerIds
+  }
+
+  return []
+}
