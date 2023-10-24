@@ -1219,7 +1219,9 @@ export const useMapStore = create<State>()(
 
               // clear selected features, if any
               if (drawInstance.getMode() === 'simple_select') {
-                drawInstance.changeMode('simple_select', { featureIds: [] })
+                await drawInstance.changeMode('simple_select', {
+                  featureIds: [],
+                })
               }
 
               _mbMap?.removeControl(drawInstance)
