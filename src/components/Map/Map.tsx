@@ -577,7 +577,7 @@ export const Map = ({ children }: Props) => {
         activeLayerIds = [...activeLayerIds, ...Object.keys(layerGroup.layers)]
       }
 
-      const selectedFeaturesCopy = filterSelectedFeatures(
+      const filteredSelectedFeatures = filterSelectedFeatures(
         layerOptionsObj,
         activeLayerIds,
         selectedFeatures,
@@ -588,7 +588,7 @@ export const Map = ({ children }: Props) => {
       // TODO: "selectedFeaturesCopy" is calculated twice for each update, which
       // is not great. However, this allows direct manipulation of
       // "selectedFeatures" from other components. Make smarter later.
-      setSelectedFeatures(selectedFeaturesCopy)
+      setSelectedFeatures(filteredSelectedFeatures)
     }
   }, [
     newlySelectedFeatures,
