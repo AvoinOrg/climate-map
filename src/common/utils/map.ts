@@ -471,6 +471,7 @@ export const fetchFeaturesByIds = (
   ids: string,
   sourceId: string,
   idField: string,
+  allowedLayers: string[],
   _mbMap: Map | null
 ) => {
   if (!_mbMap) {
@@ -479,7 +480,9 @@ export const fetchFeaturesByIds = (
   }
 
   // Query the rendered features from all layers
-  const allRenderedFeatures = _mbMap.queryRenderedFeatures()
+  const allRenderedFeatures = _mbMap.queryRenderedFeatures(undefined, {
+    layers: allowedLayers,
+  })
 
   // Filter features based on sourceId and matching ids
   const filteredFeatures = allRenderedFeatures.filter((feature) => {

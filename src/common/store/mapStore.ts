@@ -63,6 +63,7 @@ import {
   getLayerGroupIdForLayer,
   isLayerGroupSelectable,
   fetchFeaturesByIds,
+  getSelectableLayers,
 } from '#/common/utils/map'
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
@@ -1122,6 +1123,10 @@ export const useMapStore = create<State>()(
                 undefined
 
               if (isLayerGroupSelectable(layerGroupId, _layerGroups)) {
+                const allowedLayers = getSelectableLayers(
+                  layerGroupId,
+                  _layerGroups
+                )
                 handleSelectionChange = (e: any) => {
                   const featureIds = e.features.map((feature: any) => {
                     return feature.properties[idField]
@@ -1131,10 +1136,12 @@ export const useMapStore = create<State>()(
                     featureIds,
                     layerGroupId,
                     idField,
+                    allowedLayers,
                     _mbMap
                   )
 
                   if (features) {
+                    features.filter
                     setSelectedFeatures(features)
                   }
                 }
