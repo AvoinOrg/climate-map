@@ -457,6 +457,8 @@ export const useMapStore = create<State>()(
               })
 
             selectedLayerIds = uniq(selectedLayerIds)
+
+            const highlightedLayers: string[] = []
             for (const id of selectedLayerIds) {
               const featureIds = features
                 .filter((f) => f.layer.id === id)
@@ -464,8 +466,17 @@ export const useMapStore = create<State>()(
                   return feature.id
                 })
 
+              const highlightedLayerName = getLayerName(id) + '-highlighted'
+              if (highlightedLayers.includes(highlightedLayerName)) {
+                console.error(
+                  `The layer ${highlightedLayerName} is being highlighted more than once. Ensure your layer config does not have multiple selectable layers for one highlight-layer`
+                )
+              } else {
+                highlightedLayers.push(highlightedLayerName)
+              }
+
               // highlight the selected features using the highlighted-layer in the group
-              _mbMap?.setFilter(getLayerName(id) + '-highlighted', [
+              _mbMap?.setFilter(highlightedLayerName, [
                 'in',
                 'id',
                 ...featureIds,
