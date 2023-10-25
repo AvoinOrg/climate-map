@@ -1268,11 +1268,9 @@ export const useMapStore = create<State>()(
             _drawOptions.idField
           )
 
-          if (matchingFeatureIds.length > 0) {
-            _drawOptions.draw?.changeMode('simple_select', {
-              featureIds: matchingFeatureIds,
-            })
-          }
+          _drawOptions.draw?.changeMode('simple_select', {
+            featureIds: matchingFeatureIds,
+          })
 
           if (updateSelectedFeatures) {
             setSelectedFeatures(newSelectedFeatures)
