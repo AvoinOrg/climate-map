@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Box from '@mui/material/Box'
 import Accordion from '@mui/material/Accordion'
 import AccordionSummary from '@mui/material/AccordionSummary'
@@ -11,6 +11,9 @@ import { ArrowDown } from '#/components/icons'
 
 import { useAppletStore } from '../state/appletStore'
 import { PlanDataFeature } from '../common/types'
+import useSelectedFeaturesFilteredByLayer from '#/common/hooks/map/useSelectedFeaturesFilteredByLayer'
+import { getPlanLayerGroupId } from '../common/utils'
+import { useMapStore } from '#/common/store'
 
 interface Props {
   planConfId: string
@@ -21,7 +24,74 @@ const ZoneAccordion = (props: Props) => {
     useAppletStore,
     (state) => state.planConfs[props.planConfId]
   )
+  const removeSelectedFeaturesByIds = useMapStore(
+    (state) => state.removeSelectedFeaturesByIds
+  )
+  const addSelectedFeaturesByIds = useMapStore(
+    (state) => state.addSelectedFeaturesByIds
+  )
+
+  const selectedFeatures = useSelectedFeaturesFilteredByLayer([
+    getPlanLayerGroupId(props.planConfId) + '-fill',
+  ])
   const { t } = useTranslate('hiilikartta')
+  const [expandedAccordions, setExpandedAccordions] = useState<string[]>([])
+  const [lastAction, setLastAction] = useState<{
+    featureId: string
+    isExpanded: boolean
+  } | null>(null)
+
+  useEffect(() => {
+    const selectedFeatureIds = selectedFeatures.reduce((acc: string[], f) => {
+      if (f.properties && f.properties.id != null) {
+        acc.push(f.properties.id)
+      }
+
+      return acc
+    }, [])
+
+    setExpandedAccordions(selectedFeatureIds)
+  }, [selectedFeatures])
+
+  useEffect(() => {
+    if (lastAction) {
+      const { featureId, isExpanded } = lastAction
+      setExpandedAccordions((prevExpanded) => {
+        if (isExpanded) {
+          return [...prevExpanded, featureId]
+        } else {
+          return prevExpanded.filter((id) => id !== featureId)
+        }
+      })
+
+      if (isExpanded) {
+        addSelectedFeaturesByIds(
+          [featureId],
+          'id',
+          getPlanLayerGroupId(props.planConfId)
+        )
+      } else {
+        removeSelectedFeaturesByIds(
+          [featureId],
+          'id',
+          getPlanLayerGroupId(props.planConfId)
+        )
+      }
+    }
+  }, [lastAction, addSelectedFeaturesByIds, removeSelectedFeaturesByIds])
+
+  // Check if the accordion is expanded
+  const isAccordionExpanded = (featureId: string) => {
+    return expandedAccordions.includes(featureId)
+  }
+
+  const handleAccordionChange = useCallback(
+    (featureId: string) =>
+      (event: React.SyntheticEvent, isExpanded: boolean) => {
+        setLastAction({ featureId, isExpanded })
+      },
+    []
+  )
 
   const getTitle = (feature: PlanDataFeature) => {
     let name = ''
@@ -59,7 +129,7 @@ const ZoneAccordion = (props: Props) => {
       {planConf &&
         planConf.data.features.map((feature, index) => (
           <Accordion
-            key={index}
+            key={feature.properties.id}
             sx={{
               width: '100%',
               backgroundColor: 'background.paper', // Default color
@@ -75,6 +145,8 @@ const ZoneAccordion = (props: Props) => {
               },
             }}
             TransitionProps={{ unmountOnExit: true }} // Prevent margin transition
+            expanded={isAccordionExpanded(feature.properties.id)}
+            onChange={handleAccordionChange(feature.properties.id)}
           >
             <AccordionSummary
               expandIcon={<ArrowDown />}
