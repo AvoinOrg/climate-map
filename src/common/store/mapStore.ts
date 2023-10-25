@@ -64,6 +64,7 @@ import {
   isLayerGroupSelectable,
   fetchFeaturesByIds,
   getSelectableLayers,
+  getMatchingDrawFeatureIds,
 } from '#/common/utils/map'
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
@@ -271,8 +272,8 @@ export type Actions = {
     drawMode?: MapboxDraw.DrawMode,
     _queueOptions?: QueueOptions
   ) => Promise<void>
-
   _removeDraw: (_queueOptions?: QueueOptions) => Promise<void>
+  _updateDrawSelectedFeatures: () => void
   _enableLayerEventHandlers: (layerOptions: LayerOptions) => void
   _disableLayerEventHandlers: (layerOptions: LayerOptions) => void
   _enableLayerGroupEventHandlers: (layerGroupId: string) => void
@@ -979,15 +980,24 @@ export const useMapStore = create<State>()(
 
         setDrawMode: queueableFnInit(
           async (drawMode: DrawMode) => {
-            const { _drawOptions, _enableDraw } = get()
+            const {
+              _drawOptions,
+              _enableDraw,
+              _updateDrawSelectedFeatures,
+              selectedFeatures,
+            } = get()
 
             let mode = getMapboxDrawMode(drawMode)
 
             if (_drawOptions.draw == null) {
               await _enableDraw(mode, { skipQueue: true })
             } else {
-              // Shitty typing in MapboxDraw
-              _drawOptions.draw.changeMode(mode as any)
+              if (mode === 'simple_select' && selectedFeatures.length > 0) {
+                _updateDrawSelectedFeatures()
+              } else {
+                // Shitty typing in MapboxDraw
+                _drawOptions.draw.changeMode(mode as any)
+              }
             }
           },
           {
@@ -1012,6 +1022,7 @@ export const useMapStore = create<State>()(
               _layerGroups,
               _disableLayerGroupEventHandlers,
               setSelectedFeatures,
+              _updateDrawSelectedFeatures,
             } = get()
 
             if (_drawOptions.layerGroupId == null) {
@@ -1086,6 +1097,8 @@ export const useMapStore = create<State>()(
 
             _mbMap?.addControl(draw, 'bottom-right')
 
+            const idField = _drawOptions.idField || 'id'
+
             if ('data' in source) {
               const data = source.data as FeatureCollection
               const features = data.features
@@ -1123,49 +1136,10 @@ export const useMapStore = create<State>()(
                 }
                 //@ts-ignore
                 await draw.add(modifiedSourceData)
-
-                if (selectedFeatures?.length > 0) {
-                  let newSelectedFeatures: MapboxGeoJSONFeature[] = []
-                  if (draw.getMode() === 'simple_select') {
-                    newSelectedFeatures = selectedFeatures.filter((feature) => {
-                      return (
-                        getLayerGroupIdForLayer(
-                          feature.layer.id,
-                          _layerGroups
-                        ) === layerGroupId
-                      )
-                    })
-
-                    const drawData = draw.getAll()
-
-                    const matchingFeatures = drawData.features.filter(
-                      (drawFeature) => {
-                        return selectedFeatures.some((selectedFeature) => {
-                          return (
-                            drawFeature.properties?.id === selectedFeature.id
-                          )
-                        })
-                      }
-                    )
-
-                    const matchingFeatureIds = matchingFeatures.map(
-                      (feature) => feature.id as string
-                    )
-
-                    if (matchingFeatureIds.length > 0) {
-                      draw.changeMode('simple_select', {
-                        featureIds: matchingFeatureIds,
-                      })
-                    }
-                  }
-                  setSelectedFeatures(newSelectedFeatures)
-                }
               } catch (e) {
                 console.error(e)
                 return
               }
-
-              const idField = _drawOptions.idField || 'id'
 
               const handleDrawCreate = (e: any) => {
                 e.features.forEach((feature: Feature) => {
@@ -1246,7 +1220,7 @@ export const useMapStore = create<State>()(
               _mbMap?.on('draw.update', handleDrawUpdate)
               _mbMap?.on('draw.delete', handleDrawDelete)
 
-              set((state) => {
+              await set((state) => {
                 state._drawOptions.draw = draw
                 state._drawOptions.originalStyles = originalStyles
                 state._drawOptions.handleDrawCreate = handleDrawCreate
@@ -1256,10 +1230,47 @@ export const useMapStore = create<State>()(
               })
 
               _disableLayerGroupEventHandlers(layerGroupId)
+
+              if (selectedFeatures?.length > 0) {
+                if (draw.getMode() === 'simple_select') {
+                  _updateDrawSelectedFeatures()
+                }
+              }
             }
           },
           { priority: QueuePriority.LOW }
         ),
+
+        _updateDrawSelectedFeatures: () => {
+          const {
+            _drawOptions,
+            selectedFeatures,
+            _layerGroups,
+            setSelectedFeatures,
+          } = get()
+
+          let newSelectedFeatures: MapboxGeoJSONFeature[] = []
+          newSelectedFeatures = selectedFeatures.filter((feature) => {
+            return (
+              getLayerGroupIdForLayer(feature.layer.id, _layerGroups) ===
+              _drawOptions.layerGroupId
+            )
+          })
+
+          const matchingFeatureIds = getMatchingDrawFeatureIds(
+            _drawOptions.draw,
+            newSelectedFeatures,
+            _drawOptions.idField
+          )
+
+          if (matchingFeatureIds.length > 0) {
+            _drawOptions.draw?.changeMode('simple_select', {
+              featureIds: matchingFeatureIds,
+            })
+          }
+
+          setSelectedFeatures(newSelectedFeatures)
+        },
 
         disableDraw: queueableFnInit(
           async () => {
