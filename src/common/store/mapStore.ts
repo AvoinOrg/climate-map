@@ -273,7 +273,7 @@ export type Actions = {
     _queueOptions?: QueueOptions
   ) => Promise<void>
   _removeDraw: (_queueOptions?: QueueOptions) => Promise<void>
-  _updateDrawSelectedFeatures: () => void
+  _updateDrawSelectedFeatures: (updateSelectedFeatures?: boolean) => void
   _enableLayerEventHandlers: (layerOptions: LayerOptions) => void
   _disableLayerEventHandlers: (layerOptions: LayerOptions) => void
   _enableLayerGroupEventHandlers: (layerGroupId: string) => void
@@ -462,7 +462,12 @@ export const useMapStore = create<State>()(
           features: MapboxGeoJSONFeature[],
           updateDrawSelect?: boolean
         ) => {
-          const { _mbMap, selectedFeatures, _drawOptions, setDrawMode } = get()
+          const {
+            _mbMap,
+            selectedFeatures,
+            _drawOptions,
+            _updateDrawSelectedFeatures,
+          } = get()
 
           if (!isEqual(features, selectedFeatures)) {
             let selectedLayerIds: string[] = []
@@ -511,7 +516,7 @@ export const useMapStore = create<State>()(
 
             if (updateDrawSelect) {
               if (_drawOptions.isEnabled && _drawOptions.draw != null) {
-                setDrawMode('edit', { skipQueue: true })
+                _updateDrawSelectedFeatures()
               }
             }
           }
@@ -1233,7 +1238,7 @@ export const useMapStore = create<State>()(
 
               if (selectedFeatures?.length > 0) {
                 if (draw.getMode() === 'simple_select') {
-                  _updateDrawSelectedFeatures()
+                  _updateDrawSelectedFeatures(true)
                 }
               }
             }
@@ -1241,7 +1246,7 @@ export const useMapStore = create<State>()(
           { priority: QueuePriority.LOW }
         ),
 
-        _updateDrawSelectedFeatures: () => {
+        _updateDrawSelectedFeatures: (updateSelectedFeatures?: boolean) => {
           const {
             _drawOptions,
             selectedFeatures,
@@ -1269,7 +1274,9 @@ export const useMapStore = create<State>()(
             })
           }
 
-          setSelectedFeatures(newSelectedFeatures)
+          if (updateSelectedFeatures) {
+            setSelectedFeatures(newSelectedFeatures)
+          }
         },
 
         disableDraw: queueableFnInit(
