@@ -195,6 +195,11 @@ export type Actions = {
     _queueOptions?: QueueOptions
   ) => Promise<any>
   setSelectedFeatures: (features: MapboxGeoJSONFeature[]) => void
+  removeSelectedFeaturesByIds: (
+    featureIds: string[],
+    idField: string,
+    sourceId: string
+  ) => void
   addSelectedFeaturesByIds: (
     featureIds: string[],
     idField: string,
@@ -497,6 +502,28 @@ export const useMapStore = create<State>()(
           }
         },
 
+        removeSelectedFeaturesByIds: (
+          featureIds: string[],
+          idField: string,
+          sourceId: string
+        ) => {
+          const { selectedFeatures, setSelectedFeatures } = get()
+
+          const newSelectedFeatures = selectedFeatures.filter((feature) => {
+            if (feature.source !== sourceId) {
+              return true
+            }
+
+            const featureId = feature.properties?.[idField]
+            if (featureId != null) {
+              return !featureIds.includes(featureId.toString())
+            }
+
+            return true
+          })
+
+          setSelectedFeatures(newSelectedFeatures)
+        },
 
         addSelectedFeaturesByIds: (
           featureIds: string[],
