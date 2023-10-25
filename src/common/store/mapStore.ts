@@ -195,6 +195,12 @@ export type Actions = {
     _queueOptions?: QueueOptions
   ) => Promise<any>
   setSelectedFeatures: (features: MapboxGeoJSONFeature[]) => void
+  addSelectedFeaturesByIds: (
+    featureIds: string[],
+    idField: string,
+    sourceId: string,
+    allowedLayers?: string[]
+  ) => void
   setMapLibraryMode: (mode: MapLibraryMode) => void
   getGeocoder: () => void
   mapRelocate: () => void
@@ -491,6 +497,37 @@ export const useMapStore = create<State>()(
           }
         },
 
+
+        addSelectedFeaturesByIds: (
+          featureIds: string[],
+          idField: string,
+          sourceId: string,
+          allowedLayers?: string[]
+        ) => {
+          const {
+            selectedFeatures,
+            setSelectedFeatures,
+            _mbMap,
+            _layerGroups,
+          } = get()
+
+          let usedAllowedLayers: string[] = []
+          if (!allowedLayers) {
+            usedAllowedLayers = getSelectableLayers(sourceId, _layerGroups)
+          } else {
+            usedAllowedLayers = allowedLayers
+          }
+
+          const newFeatures = fetchFeaturesByIds(
+            featureIds,
+            sourceId,
+            idField,
+            usedAllowedLayers,
+            _mbMap
+          )
+
+          setSelectedFeatures(uniq([...selectedFeatures, ...newFeatures]))
+        },
         // TODO: The logic of this function is getting too complex. Now we have
         // LayerConfs fetched from the common storage and LayerConfs supplied by the calling
         // component. Solution:
