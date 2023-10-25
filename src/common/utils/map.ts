@@ -468,7 +468,7 @@ export const getFeaturesFromSourceById = (
 }
 
 export const fetchFeaturesByIds = (
-  ids: string,
+  ids: string[],
   sourceId: string,
   idField: string,
   allowedLayers: string[],
@@ -476,7 +476,7 @@ export const fetchFeaturesByIds = (
 ) => {
   if (!_mbMap) {
     console.error('Map object is not available')
-    return
+    return []
   }
 
   // Query the rendered features from all layers
