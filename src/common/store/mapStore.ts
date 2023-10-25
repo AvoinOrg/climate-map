@@ -194,17 +194,22 @@ export type Actions = {
     options?: FitBoundsOptions,
     _queueOptions?: QueueOptions
   ) => Promise<any>
-  setSelectedFeatures: (features: MapboxGeoJSONFeature[]) => void
+  setSelectedFeatures: (
+    features: MapboxGeoJSONFeature[],
+    updateDrawSelect?: boolean
+  ) => void
   removeSelectedFeaturesByIds: (
     featureIds: string[],
     idField: string,
-    sourceId: string
+    sourceId: string,
+    updateDrawSelect?: boolean
   ) => void
   addSelectedFeaturesByIds: (
     featureIds: string[],
     idField: string,
     sourceId: string,
-    allowedLayers?: string[]
+    allowedLayers?: string[],
+    updateDrawSelect?: boolean
   ) => void
   setMapLibraryMode: (mode: MapLibraryMode) => void
   getGeocoder: () => void
@@ -452,8 +457,11 @@ export const useMapStore = create<State>()(
           })
         },
 
-        setSelectedFeatures: (features: MapboxGeoJSONFeature[]) => {
-          const { _mbMap, selectedFeatures } = get()
+        setSelectedFeatures: (
+          features: MapboxGeoJSONFeature[],
+          updateDrawSelect?: boolean
+        ) => {
+          const { _mbMap, selectedFeatures, _drawOptions, setDrawMode } = get()
 
           if (!isEqual(features, selectedFeatures)) {
             let selectedLayerIds: string[] = []
@@ -499,13 +507,20 @@ export const useMapStore = create<State>()(
                 draft.selectedFeatures = features
               })
             )
+
+            if (updateDrawSelect) {
+              if (_drawOptions.isEnabled && _drawOptions.draw != null) {
+                setDrawMode('edit', { skipQueue: true })
+              }
+            }
           }
         },
 
         removeSelectedFeaturesByIds: (
           featureIds: string[],
           idField: string,
-          sourceId: string
+          sourceId: string,
+          updateDrawSelect?: boolean
         ) => {
           const { selectedFeatures, setSelectedFeatures } = get()
 
@@ -522,14 +537,15 @@ export const useMapStore = create<State>()(
             return true
           })
 
-          setSelectedFeatures(newSelectedFeatures)
+          setSelectedFeatures(newSelectedFeatures, updateDrawSelect)
         },
 
         addSelectedFeaturesByIds: (
           featureIds: string[],
           idField: string,
           sourceId: string,
-          allowedLayers?: string[]
+          allowedLayers?: string[],
+          updateDrawSelect?: boolean
         ) => {
           const {
             selectedFeatures,
@@ -553,7 +569,10 @@ export const useMapStore = create<State>()(
             _mbMap
           )
 
-          setSelectedFeatures(uniq([...selectedFeatures, ...newFeatures]))
+          setSelectedFeatures(
+            uniq([...selectedFeatures, ...newFeatures]),
+            updateDrawSelect
+          )
         },
         // TODO: The logic of this function is getting too complex. Now we have
         // LayerConfs fetched from the common storage and LayerConfs supplied by the calling
