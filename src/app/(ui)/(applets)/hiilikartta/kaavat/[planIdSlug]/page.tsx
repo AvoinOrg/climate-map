@@ -144,11 +144,11 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     <>
       {isLoaded && planConf && (
         <>
-          <Folder sx={{ width: '100%' }}>
+          <Folder height={80}>
             <Box
               sx={(theme) => ({
                 typography: theme.typography.h2,
-                margin: '50px 0 0 25px',
+                margin: '10px 0 0 25px',
                 color: theme.palette.neutral.darker,
               })}
             >
@@ -166,7 +166,10 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             </MenuButton>
           </MuiLink> */}
 
-          <ZoneAccordion planConfId={planConf.id}></ZoneAccordion>
+          <ZoneAccordion
+            planConfId={planConf.id}
+            sx={{ mt: 4 }}
+          ></ZoneAccordion>
 
           <Box sx={{}}>
             {/* {!planConf.reportData && ( */}
