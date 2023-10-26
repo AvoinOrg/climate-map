@@ -12,12 +12,15 @@ import SvgFolder from './SvgFolder'
 import { useTheme } from '@mui/material/styles'
 import { resolveColor } from '#/common/utils/styling'
 
+const defaultHeight = 86
+
 type Props = {
+  height?: number
   children?: React.ReactNode
   sx?: SxProps<Theme>
 }
 
-const Folder = ({ children, sx }: Props) => {
+const Folder = ({ height = defaultHeight, children, sx }: Props) => {
   const theme = useTheme()
   let color = theme.palette.neutral.darker
   let borderColor = theme.palette.neutral.main
@@ -79,7 +82,7 @@ const Folder = ({ children, sx }: Props) => {
       }}
     >
       <SvgFolder
-        sx={{ width: '100%', height: 'auto', display: 'block' }}
+        height={height}
         color={backgroundColor}
         borderColor={borderColor}
       />
