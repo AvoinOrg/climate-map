@@ -17,12 +17,13 @@ import { useMapStore } from '#/common/store'
 
 interface Props {
   planConfId: string
+  sx?: any
 }
 
-const ZoneAccordion = (props: Props) => {
+const ZoneAccordion = ({ planConfId, sx }: Props) => {
   const planConf = useStore(
     useAppletStore,
-    (state) => state.planConfs[props.planConfId]
+    (state) => state.planConfs[planConfId]
   )
   const removeSelectedFeaturesByIds = useMapStore(
     (state) => state.removeSelectedFeaturesByIds
@@ -32,7 +33,7 @@ const ZoneAccordion = (props: Props) => {
   )
 
   const selectedFeatures = useSelectedFeaturesFilteredByLayer([
-    getPlanLayerGroupId(props.planConfId) + '-fill',
+    getPlanLayerGroupId(planConfId) + '-fill',
   ])
   const { t } = useTranslate('hiilikartta')
   const [expandedAccordions, setExpandedAccordions] = useState<string[]>([])
@@ -68,7 +69,7 @@ const ZoneAccordion = (props: Props) => {
         addSelectedFeaturesByIds(
           [featureId],
           'id',
-          getPlanLayerGroupId(props.planConfId),
+          getPlanLayerGroupId(planConfId),
           undefined,
           true
         )
@@ -76,7 +77,7 @@ const ZoneAccordion = (props: Props) => {
         removeSelectedFeaturesByIds(
           [featureId],
           'id',
-          getPlanLayerGroupId(props.planConfId),
+          getPlanLayerGroupId(planConfId),
           true
         )
       }
@@ -127,6 +128,7 @@ const ZoneAccordion = (props: Props) => {
             borderBottom: `1px solid ${theme.palette.primary.dark}`, // Add border for the last item
           },
         },
+        ...sx,
       })}
     >
       {planConf &&
