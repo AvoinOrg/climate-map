@@ -31,6 +31,7 @@ export const createLayerConf = (
         type: 'geojson',
         // Use a URL for the value for the `data` property.
         data: json,
+        promoteId: 'id',
       },
     },
     layers: [
@@ -56,6 +57,34 @@ export const createLayerConf = (
           // ],
           'fill-opacity': 0.7,
         },
+        selectable: true,
+        multiSelectable: true,
+        selectionOptions: {
+          'fill-color': 'red',
+          // 'fill-color': [
+          //   'coalesce',
+          //   ['match', ['get', featureColorCol], ...colorArr, 'white'],
+          //   'white',
+          // ],
+          'fill-opacity': 0.8,
+          filter: ['in', 'id', ''],
+        },
+      },
+      {
+        id: `${sourceId}-highlighted`,
+        type: 'fill',
+        source: sourceId, // reference the data source
+        layout: {},
+        paint: {
+          'fill-color': 'red',
+          // 'fill-color': [
+          //   'coalesce',
+          //   ['match', ['get', featureColorCol], ...colorArr, 'white'],
+          //   'white',
+          // ],
+          'fill-opacity': 0.8,
+        },
+        filter: ['in', 'id', ''],
       },
       {
         id: `${sourceId}-symbol`,
