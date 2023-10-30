@@ -7,8 +7,10 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
 import { Box } from '@mui/material'
 import { Tolgee, DevTools, TolgeeProvider, FormatSimple } from '@tolgee/react'
+import { QueryClientProvider } from '@tanstack/react-query'
 
 import theme from '#/common/style/theme'
+import { queryClient } from '#/common/queries/queryClient'
 import { Sidebar } from '#/components/Sidebar'
 import { NavBar } from '#/components/NavBar'
 import { Map } from '#/components/Map'
@@ -32,34 +34,36 @@ const Layout = ({
   children: React.ReactNode
 }) => {
   return (
-    <ThemeProvider theme={theme}>
-      {/* <UserStateProvider> */}
-      <CssBaseline>
-        <TolgeeProvider
-          tolgee={tolgee}
-          fallback="" // loading fallback
-        >
-          <Map>
-            {/* <UserModal /> */}
-            <Box
-              className="layout-container"
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                height: '100vh',
-                width: '100vw',
-                zIndex: 'drawer',
-              }}
-            >
-              <Sidebar>{children}</Sidebar>
-              <NavBar />
-            </Box>
-            <LoginModal></LoginModal>
-          </Map>
-        </TolgeeProvider>
-      </CssBaseline>
-      {/* </UserStateProvider> */}
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={theme}>
+        {/* <UserStateProvider> */}
+        <CssBaseline>
+          <TolgeeProvider
+            tolgee={tolgee}
+            fallback="" // loading fallback
+          >
+            <Map>
+              {/* <UserModal /> */}
+              <Box
+                className="layout-container"
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100vh',
+                  width: '100vw',
+                  zIndex: 'drawer',
+                }}
+              >
+                <Sidebar>{children}</Sidebar>
+                <NavBar />
+              </Box>
+              <LoginModal></LoginModal>
+            </Map>
+          </TolgeeProvider>
+        </CssBaseline>
+        {/* </UserStateProvider> */}
+      </ThemeProvider>
+    </QueryClientProvider>
   )
 }
 
