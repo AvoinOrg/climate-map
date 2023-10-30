@@ -7,9 +7,8 @@ import { styled } from '@mui/material/styles'
 // import SettingsIcon from '@mui/icons-material/Settings'
 // import MuiLink from '@mui/material/Link'
 // import Link from 'next/link'
-import axios from 'axios'
-import JSZip from 'jszip'
 import { T } from '@tolgee/react'
+import { useMutation } from '@tanstack/react-query'
 
 import { getRoute } from '#/common/utils/routing'
 import useStore from '#/common/hooks/useStore'
@@ -17,13 +16,11 @@ import useStore from '#/common/hooks/useStore'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { useMapStore } from '#/common/store'
-import {
-  getPlanLayerGroupId,
-  transformCalcGeojsonToNestedStructure,
-} from 'applets/hiilikartta/common/utils'
+import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
 import Folder from '#/components/common/Folder'
 import { ArrowNextBig, Delete } from '#/components/icons'
 import ZoneAccordion from 'applets/hiilikartta/components/ZoneAccordion'
+import { calcPostMutation } from 'applets/hiilikartta/common/queries/calcPostMutation'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const removeSerializableLayerGroup = useMapStore(
@@ -33,85 +30,15 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     useAppletStore,
     (state) => state.planConfs[params.planIdSlug]
   )
-  const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
   const deletePlanConf = useAppletStore((state) => state.deletePlanConf)
+  const calcPost = useMutation(calcPostMutation())
 
   const [isLoaded, setIsLoaded] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async () => {
     if (planConf) {
-      updatePlanConf(planConf.id, { isCalculating: true })
-
-      const zip = new JSZip()
-      zip.file('file', JSON.stringify(planConf.data))
-
-      const zipBlob = await zip.generateAsync({ type: 'blob' })
-
-      const formData = new FormData()
-      formData.append('file', zipBlob, 'file.zip')
-      formData.append('zoning_col', planConf.fileSettings.zoningColumn)
-
-      // const response = await useFileUploadMutation("http://localhost:8000/calculate", uploadFile)
-
-      try {
-        // Start the calculation by making a POST request
-        const postRes = await axios.post(
-          `${'http://localhost:3000/api/hiilikartta/data'}`,
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-            params: { id: planConf.serverId },
-          }
-        )
-
-        if (postRes.status !== 200) {
-          throw new Error('Failed to start calculation.')
-        }
-
-        let isCompleted = false
-        let response
-
-        // Poll the GET request in a loop to check for completion
-        while (!isCompleted) {
-          await new Promise((res) => setTimeout(res, 5000)) // Wait for 5 seconds before polling again
-
-          response = await axios.get(
-            `${'http://localhost:3000/api/hiilikartta/data'}`,
-            {
-              params: { id: planConf.serverId },
-            }
-          )
-
-          if (response.status === 200) {
-            isCompleted = true
-          }
-
-          const areas = transformCalcGeojsonToNestedStructure(
-            response.data.data.areas
-          )
-          const totals = transformCalcGeojsonToNestedStructure(
-            response.data.data.totals
-          )
-
-          const metadata = {
-            timestamp: Number(response.data.data.metadata.calculated_ts),
-          }
-
-          updatePlanConf(planConf.id, {
-            reportData: { areas: areas, totals: totals, metadata: metadata },
-            isCalculating: false,
-          })
-        }
-      } catch (e) {
-        console.log(e)
-        updatePlanConf(planConf.id, {
-          isCalculating: false,
-          reportData: undefined,
-        })
-      }
+      calcPost.mutate(planConf)
     }
   }
 
@@ -185,7 +112,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             )}
           </Box>
 
-          {!planConf.isCalculating && (
+          {!planConf.isCalculating && !calcPost.isPending && (
             <>
               {/* <Box sx={{ display: 'flex', flexDirection: 'row' }}> */}
               <Box
