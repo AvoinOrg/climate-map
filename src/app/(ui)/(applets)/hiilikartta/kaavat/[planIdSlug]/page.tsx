@@ -17,10 +17,10 @@ import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { useMapStore } from '#/common/store'
 import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
-import Folder from '#/components/common/Folder'
 import { ArrowNextBig, Delete } from '#/components/icons'
 import ZoneAccordion from 'applets/hiilikartta/components/ZoneAccordion'
 import { calcPostMutation } from 'applets/hiilikartta/common/queries/calcPostMutation'
+import PlanFolder from 'applets/hiilikartta/components/PlanFolder'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const removeSerializableLayerGroup = useMapStore(
@@ -71,17 +71,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     <>
       {isLoaded && planConf && (
         <>
-          <Folder height={80}>
-            <Box
-              sx={(theme) => ({
-                typography: theme.typography.h2,
-                margin: '10px 0 0 25px',
-                color: theme.palette.neutral.darker,
-              })}
-            >
-              {planConf.name}
-            </Box>
-          </Folder>
+          <PlanFolder planConf={planConf} height={90} />
 
           {/* <MuiLink
             href={getRoute(routeTree.plans.plan.settings, routeTree, [planConf.id])}

@@ -9,6 +9,7 @@ import Folder from '#/components/common/Folder'
 import { PlanConf } from '../common/types'
 import { routeTree } from '../common/routes'
 import { getRoute } from '#/common/utils/routing'
+import PlanFolder from './PlanFolder'
 
 interface Props {
   planConf: PlanConf
@@ -22,9 +23,7 @@ const PlanListItem = ({ planConf, sx }: Props) => {
         href={getRoute(routeTree.plans.plan, routeTree, [planConf.id])}
         sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
       >
-        <Folder sx={{ pt: 6, pl: 3 }}>
-          <Typography variant="h2">{planConf.name}</Typography>
-        </Folder>
+        <PlanFolder planConf={planConf} height={120} />
       </Link>
     </Box>
   )
