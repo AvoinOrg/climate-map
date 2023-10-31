@@ -24,11 +24,11 @@ export type PlanData<G extends Geometry | null = Geometry> = FeatureCollection<
 export type PlanDataFeature = PlanData['features'][number]
 
 export enum CalculationState {
-  NotStarted = 'not-started',
-  Initializing = 'initializing',
-  Calculating = 'calculating',
-  Errored = 'errored',
-  Finished = 'finished',
+  NOT_STARTED = 'not-started',
+  INITIALIZING = 'initializing',
+  CALCULATING = 'calculating',
+  ERRORED = 'errored',
+  FINISHED = 'finished',
 }
 
 export type NewPlanConf = {
