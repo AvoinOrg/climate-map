@@ -1,10 +1,12 @@
 import { UseQueryOptions } from '@tanstack/react-query'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import axios from 'axios'
-import { PlanConf, ReportData } from '../types'
+import { CalculationState, PlanConf, ReportData } from '../types'
 import { transformCalcGeojsonToNestedStructure } from '../utils'
 
-export const calcPollQuery = (planConf: PlanConf): UseQueryOptions<ReportData> => {
+export const calcPollQuery = (
+  planConf: PlanConf
+): UseQueryOptions<ReportData> => {
   const updatePlanConf = useAppletStore.getState().updatePlanConf
   const tryAgainError: Error = new Error('Calculation not yet complete.')
 
@@ -31,10 +33,14 @@ export const calcPollQuery = (planConf: PlanConf): UseQueryOptions<ReportData> =
 
         updatePlanConf(planConf.id, {
           reportData: { areas: areas, totals: totals, metadata: metadata },
-          isCalculating: false,
+          calculationState: CalculationState.FINISHED,
         })
 
         return { areas, totals, metadata }
+      } else if (response.status === 422) {
+        updatePlanConf(planConf.id, {
+          calculationState: CalculationState.ERRORED,
+        })
       }
 
       throw tryAgainError
