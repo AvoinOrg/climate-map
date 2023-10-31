@@ -3,8 +3,9 @@ import { Box, Typography, CircularProgress } from '@mui/material'
 import { T } from '@tolgee/react'
 
 import Folder from '#/components/common/Folder'
+import { Error as ErrorIcon, Info } from '#/components/icons'
 
-import { PlanConf } from '../common/types'
+import { CalculationState, PlanConf } from '../common/types'
 
 const PlanFolder = ({
   planConf,
@@ -31,7 +32,9 @@ const PlanFolder = ({
         <Typography sx={{ typography: 'h2', color: 'neutral.darker' }}>
           {planConf.name}
         </Typography>
-        {!planConf.isCalculating && (
+        {![CalculationState.NOT_STARTED].includes(
+          planConf.calculationState
+        ) && (
           <Box
             sx={{
               display: 'flex',
@@ -40,24 +43,72 @@ const PlanFolder = ({
               justifyContent: 'space-between',
             }}
           >
-            <Box
-              sx={{
-                typography: 'h7',
-                color: 'secondary.dark',
-                lineHeight: '1',
-              }}
-            >
-              <T
-                keyName={'sidebar.my_plans.calculations_in_progress'}
-                ns={'hiilikartta'}
-              ></T>
-            </Box>
+            {[
+              CalculationState.INITIALIZING,
+              CalculationState.CALCULATING,
+            ].includes(planConf.calculationState) && (
+              <>
+                <Box
+                  sx={{
+                    typography: 'h7',
+                    color: 'secondary.dark',
+                    lineHeight: '1',
+                  }}
+                >
+                  <T
+                    keyName={
+                      planConf.calculationState ===
+                      CalculationState.INITIALIZING
+                        ? 'sidebar.my_plans.calculations_starting'
+                        : 'sidebar.my_plans.calculations_in_progress'
+                    }
+                    ns={'hiilikartta'}
+                  ></T>
+                </Box>
 
-            <CircularProgress
-              color="secondary"
-              size={25}
-              sx={{ height: '10px' }}
-            />
+                <CircularProgress
+                  color="secondary"
+                  size={25}
+                  sx={{ height: '10px' }}
+                />
+              </>
+            )}
+            {planConf.calculationState === CalculationState.ERRORED && (
+              <>
+                <Box
+                  sx={{
+                    typography: 'h7',
+                    color: 'warning.dark',
+                    lineHeight: '1',
+                  }}
+                >
+                  <T
+                    keyName={'sidebar.my_plans.calculations_errored'}
+                    ns={'hiilikartta'}
+                  ></T>
+                </Box>
+                <ErrorIcon
+                  sx={{ color: 'warning.dark', height: '24px' }}
+                ></ErrorIcon>
+              </>
+            )}
+            {planConf.calculationState === CalculationState.FINISHED && (
+              <>
+                <Box
+                  sx={{
+                    typography: 'h7',
+                    color: 'secondary.dark',
+                    lineHeight: '1',
+                  }}
+                >
+                  <T
+                    keyName={'sidebar.my_plans.calculations_finished'}
+                    ns={'hiilikartta'}
+                  ></T>
+                </Box>
+                <Info sx={{ color: 'secondary.dark', height: '24px' }}></Info>
+              </>
+            )}
           </Box>
         )}
       </Box>
