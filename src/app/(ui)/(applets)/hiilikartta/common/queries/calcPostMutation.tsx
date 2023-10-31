@@ -1,7 +1,7 @@
 import { UseMutationOptions } from '@tanstack/react-query'
 import axios from 'axios'
 import JSZip from 'jszip'
-import { PlanConf } from '../types'
+import { CalculationState, PlanConf } from '../types'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
@@ -20,6 +20,9 @@ export const calcPostMutation = (): UseMutationOptions<
 
   return {
     mutationFn: async (planConf: PlanConf) => {
+      updatePlanConf(planConf.id, {
+        calculationState: CalculationState.INITIALIZING,
+      })
       const zip = new JSZip()
       zip.file('file', JSON.stringify(planConf.data))
       const zipBlob = await zip.generateAsync({ type: 'blob' })
@@ -43,13 +46,15 @@ export const calcPostMutation = (): UseMutationOptions<
         throw new Error('Failed to start calculation.')
       }
 
-      updatePlanConf(planConf.id, { isCalculating: true })
+      updatePlanConf(planConf.id, {
+        calculationState: CalculationState.CALCULATING,
+      })
       return postRes.data
     },
     onError: (error, planConf, context) => {
       console.error(error)
       updatePlanConf(planConf.id, {
-        isCalculating: false,
+        calculationState: CalculationState.ERRORED,
         reportData: undefined,
       })
     },
