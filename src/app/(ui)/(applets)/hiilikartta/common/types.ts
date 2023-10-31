@@ -12,7 +12,7 @@ export interface PlanConf extends NewPlanConf {
   id: string
   serverId: string
   created: number
-  isCalculating: boolean
+  calculationState: CalculationState
   reportData: undefined | ReportData
 }
 
@@ -35,7 +35,7 @@ export type NewPlanConf = {
   name: string
   areaHa: number
   data: PlanData
-  calculationState: CalculationState
+  calculationState?: CalculationState
   reportData?: ReportData
   fileSettings: {
     fileType: FileType
