@@ -10,7 +10,7 @@ import { pickBy } from 'lodash-es'
 import { generateShortId, generateUUID } from '#/common/utils/general'
 import { queryClient } from '#/common/queries/queryClient'
 
-import { NewPlanConf, PlanConf } from '../common/types'
+import { CalculationState, NewPlanConf, PlanConf } from '../common/types'
 import { calcPollQuery } from '../common/queries/calcPollQuery'
 
 type State = {
@@ -45,7 +45,7 @@ export const useAppletStore = create<State & Actions>()(
             serverId,
             created,
             reportData: undefined,
-            isCalculating: false,
+            calculationState: CalculationState.NOT_STARTED,
             ...newPlanConf,
           }
           await set((state) => {
@@ -79,7 +79,11 @@ export const useAppletStore = create<State & Actions>()(
 )
 
 useAppletStore.subscribe(
-  (state) => pickBy(state.planConfs, (planConf) => planConf.isCalculating),
+  (state) =>
+    pickBy(
+      state.planConfs,
+      (planConf) => planConf.calculationState === CalculationState.CALCULATING
+    ),
   (planConfs, _previousPlanConfs) => {
     Object.keys(planConfs).forEach((planId: string) => {
       queryClient.fetchQuery(calcPollQuery(planConfs[planId]))
