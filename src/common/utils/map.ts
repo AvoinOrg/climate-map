@@ -554,38 +554,29 @@ export const getSelectableLayers = (
   return []
 }
 
-export const getMatchingDrawFeatureIds = (
+export const getMatchingDrawFeatures = (
   draw: any,
   features: MapboxGeoJSONFeature[],
   idField: string | undefined
-): string[] => {
+): Feature[] => {
   const drawData = draw.getAll()
-
-  const matchingFeatures: Feature[] = drawData.features.filter(
-    (drawFeature: Feature) => {
-      return features.some((feature) => {
-        if (idField) {
-          if (
-            feature.properties &&
-            feature.properties[idField] != null &&
-            drawFeature.properties &&
-            drawFeature.properties[idField] != null
-          ) {
-            return (
-              drawFeature.properties[idField] === feature.properties[idField]
-            )
-          }
-          return false
-        } else {
-          return drawFeature.properties?.id === feature.id
+  const matchingFeatures = drawData.features.filter((drawFeature: Feature) => {
+    return features.some((feature) => {
+      if (idField) {
+        if (
+          feature.properties &&
+          feature.properties[idField] != null &&
+          drawFeature.properties &&
+          drawFeature.properties[idField] != null
+        ) {
+          return drawFeature.properties[idField] === feature.properties[idField]
         }
-      })
-    }
-  )
+        return false
+      } else {
+        return drawFeature.properties?.id === feature.id
+      }
+    })
+  })
 
-  const matchingFeatureIds = matchingFeatures.map(
-    (feature: Feature) => feature.id as string
-  )
-
-  return matchingFeatureIds
+  return matchingFeatures
 }
