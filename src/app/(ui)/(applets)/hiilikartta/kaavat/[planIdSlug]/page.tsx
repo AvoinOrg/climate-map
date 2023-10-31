@@ -21,6 +21,7 @@ import { ArrowNextBig, Delete } from '#/components/icons'
 import ZoneAccordion from 'applets/hiilikartta/components/ZoneAccordion'
 import { calcPostMutation } from 'applets/hiilikartta/common/queries/calcPostMutation'
 import PlanFolder from 'applets/hiilikartta/components/PlanFolder'
+import { CalculationState } from 'applets/hiilikartta/common/types'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const removeSerializableLayerGroup = useMapStore(
@@ -102,7 +103,10 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             )}
           </Box>
 
-          {!planConf.isCalculating && !calcPost.isPending && (
+          {![
+            CalculationState.CALCULATING,
+            CalculationState.INITIALIZING,
+          ].includes(planConf.calculationState) && (
             <>
               {/* <Box sx={{ display: 'flex', flexDirection: 'row' }}> */}
               <Box
