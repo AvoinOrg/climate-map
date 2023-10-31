@@ -64,7 +64,7 @@ import {
   isLayerGroupSelectable,
   fetchFeaturesByIds,
   getSelectableLayers,
-  getMatchingDrawFeatureIds,
+  getMatchingDrawFeatures,
 } from '#/common/utils/map'
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
@@ -1252,6 +1252,7 @@ export const useMapStore = create<State>()(
             selectedFeatures,
             _layerGroups,
             setSelectedFeatures,
+            _mbMap,
           } = get()
 
           let newSelectedFeatures: MapboxGeoJSONFeature[] = []
@@ -1262,14 +1263,22 @@ export const useMapStore = create<State>()(
             )
           })
 
-          const matchingFeatureIds = getMatchingDrawFeatureIds(
+          const matchingFeatures = getMatchingDrawFeatures(
             _drawOptions.draw,
             newSelectedFeatures,
             _drawOptions.idField
           )
 
+          const matchingFeatureIds = matchingFeatures.map(
+            (feature: Feature) => feature.id as string
+          )
+
           _drawOptions.draw?.changeMode('simple_select', {
             featureIds: matchingFeatureIds,
+          })
+
+          _mbMap?.fire('draw.selectionchange', {
+            features: matchingFeatures,
           })
 
           if (updateSelectedFeatures) {
