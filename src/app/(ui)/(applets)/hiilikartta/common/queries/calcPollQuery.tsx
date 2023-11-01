@@ -4,6 +4,8 @@ import axios from 'axios'
 import { CalculationState, PlanConf, ReportData } from '../types'
 import { transformCalcGeojsonToNestedStructure } from '../utils'
 
+const API_URL = process.env.NEXT_PUBLIC_HIILIKARTTA_API_URL
+
 export const calcPollQuery = (
   planConf: PlanConf
 ): UseQueryOptions<ReportData> => {
@@ -13,7 +15,7 @@ export const calcPollQuery = (
   return {
     queryKey: ['calcPoll', planConf.serverId],
     queryFn: async () => {
-      const response = await axios.get('/api/hiilikartta/data', {
+      const response = await axios.get(`${API_URL}/api/hiilikartta/data`, {
         params: { id: planConf.serverId },
       })
 

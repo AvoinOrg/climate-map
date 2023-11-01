@@ -4,6 +4,8 @@ import JSZip from 'jszip'
 import { CalculationState, PlanConf } from '../types'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 
+const API_URL = process.env.NEXT_PUBLIC_HIILIKARTTA_API_URL
+
 type ResponseData = {
   status: string
   id: string
@@ -30,7 +32,7 @@ export const calcPostMutation = (): UseMutationOptions<
       formData.append('zoning_col', planConf.fileSettings.zoningColumn)
 
       const postRes = await axios.post(
-        `/api/hiilikartta/data`,
+        `${API_URL}/hiilikartta/data`,
         formData,
         {
           headers: {
