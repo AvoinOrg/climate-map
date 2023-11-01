@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Box from '@mui/material/Box'
 import Accordion from '@mui/material/Accordion'
 import AccordionSummary from '@mui/material/AccordionSummary'
@@ -42,6 +42,9 @@ const ZoneAccordion = ({ planConfId, sx }: Props) => {
     isExpanded: boolean
   } | null>(null)
 
+  const accordionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const selectedFeatureIdsRef = useRef<string[]>([])
+
   useEffect(() => {
     const selectedFeatureIds = selectedFeatures.reduce((acc: string[], f) => {
       if (f.properties && f.properties.id != null) {
@@ -52,7 +55,41 @@ const ZoneAccordion = ({ planConfId, sx }: Props) => {
     }, [])
 
     setExpandedAccordions(selectedFeatureIds)
+
+    const previousSelectedFeatureIds = selectedFeatureIdsRef.current
+    const newFeatureId = selectedFeatureIds.find(
+      (id) => !previousSelectedFeatureIds.includes(id)
+    )
+
+    if (newFeatureId != null) {
+      const accordionElement = accordionRefs.current[newFeatureId]
+      if (accordionElement) {
+        accordionElement.scrollIntoView({
+          behavior: 'auto',
+          block: 'start',
+
+        })
+      }
+    }
+
+    selectedFeatureIdsRef.current = selectedFeatureIds
   }, [selectedFeatures])
+
+  useEffect(() => {
+    if (lastAction && lastAction.isExpanded && planConf) {
+      const featureId = lastAction.featureId
+      const accordionIndex = planConf.data.features.findIndex(
+        (f) => f.properties.id === featureId
+      )
+      const accordionElement = accordionRefs.current[accordionIndex]
+      if (accordionElement) {
+        accordionElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        })
+      }
+    }
+  }, [lastAction, planConf])
 
   useEffect(() => {
     if (lastAction) {
@@ -128,46 +165,52 @@ const ZoneAccordion = ({ planConfId, sx }: Props) => {
             borderBottom: `1px solid ${theme.palette.primary.dark}`, // Add border for the last item
           },
         },
+        overflow: 'scroll',
+        direction: 'rtl',
+        maxHeight: '100%',
         ...sx,
       })}
     >
-      {planConf &&
-        planConf.data.features.map((feature, index) => (
-          <Accordion
-            key={feature.properties.id}
-            sx={{
-              width: '100%',
-              backgroundColor: 'background.paper', // Default color
-              ':before': {
-                opacity: 0,
-              },
-              '&.Mui-expanded': {
-                margin: 'auto', // Override the default behavior
-                backgroundColor: 'primary.light', // Color when expanded
-              },
-              '&:before': {
-                display: 'none', // Disable the default focus visible
-              },
-            }}
-            TransitionProps={{ unmountOnExit: true }} // Prevent margin transition
-            expanded={isAccordionExpanded(feature.properties.id)}
-            onChange={handleAccordionChange(feature.properties.id)}
-          >
-            <AccordionSummary
-              expandIcon={<ArrowDown />}
-              aria-controls={`panel${index + 1}-content`}
-              id={`panel${index + 1}-header`}
+      <Box sx={{ direction: 'ltr', pl: 2 }}>
+        {planConf &&
+          planConf.data.features.map((feature, index) => (
+            <Accordion
+              key={feature.properties.id}
+              sx={{
+                width: '100%',
+                backgroundColor: 'background.paper', // Default color
+                ':before': {
+                  opacity: 0,
+                },
+                '&.Mui-expanded': {
+                  margin: 'auto', // Override the default behavior
+                  backgroundColor: 'primary.light', // Color when expanded
+                },
+                '&:before': {
+                  display: 'none', // Disable the default focus visible
+                },
+              }}
+              TransitionProps={{ unmountOnExit: true }} // Prevent margin transition
+              expanded={isAccordionExpanded(feature.properties.id)}
+              onChange={handleAccordionChange(feature.properties.id)}
+              ref={(el) => (accordionRefs.current[feature.properties.id] = el)}
             >
-              <Typography></Typography>
-              <Typography>{getTitle(feature)}</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography>
-                {/* Replace with your feature description or component */}
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
-        ))}
+              <AccordionSummary
+                expandIcon={<ArrowDown />}
+                aria-controls={`panel${index + 1}-content`}
+                id={`panel${index + 1}-header`}
+              >
+                <Typography></Typography>
+                <Typography>{getTitle(feature)}</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography>
+                  {/* Replace with your feature description or component */}
+                </Typography>
+              </AccordionDetails>
+            </Accordion>
+          ))}
+      </Box>
     </Box>
   )
 }
