@@ -246,18 +246,14 @@ const components = {
     styleOverrides: {
       '*': {
         scrollbarWidth: 'thin',
-        scrollbarColor: 'transparent transparent',
+        scrollbarColor: `${palette.neutral.dark} ${palette.neutral.main}`,
         '&::-webkit-scrollbar': {
           width: '12px',
         },
         '&::-webkit-scrollbar-thumb': {
-          backgroundColor: 'transparent',
-        },
-        '&:hover': {
-          scrollbarColor: `${palette.neutral.darker} ${palette.neutral.dark}`,
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: palette.neutral.dark,
-          },
+          backgroundColor: palette.neutral.main,
+          borderRadius: '7px',
+          boxShadow: '0px 4px 4px 0px rgba(159, 159, 159, 0.25)', // Added box-shadow
         },
         boxSizing: 'border-box',
         borderCollapse: 'collapse',
