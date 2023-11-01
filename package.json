@@ -53,6 +53,7 @@
     "@visx/scale": "^3.3.0",
     "@visx/shape": "^3.3.0",
     "@visx/zoom": "^3.3.0",
+    "adm-zip": "^0.5.10",
     "autoprefixer": "^10.4.13",
     "axios": "^1.2.6",
     "buffer": "^6.0.3",

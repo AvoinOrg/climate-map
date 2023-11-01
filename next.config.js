@@ -43,6 +43,10 @@ const nextConfig = {
     { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }
   ) => {
     // Important: return the modified config
+    // Inside the webpack configuration function
+    if (!dev) {
+      execSync('node scripts/download-translations.js', { stdio: 'inherit' })
+    }
 
     config.plugins = config.plugins.concat([
       new webpack.ProvidePlugin({

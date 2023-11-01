@@ -6100,6 +6100,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"adm-zip@npm:^0.5.10":
+  version: 0.5.10
+  resolution: "adm-zip@npm:0.5.10"
+  checksum: 07ed91cf6423bf5dca4ee63977bc7635e91b8d21829c00829d48dce4c6932e1b19e6cfcbe44f1931c956e68795ae97183fc775913883fa48ce88a1ac11fb2034
+  languageName: node
+  linkType: hard
+
 "agent-base@npm:6, agent-base@npm:^6.0.2":
   version: 6.0.2
   resolution: "agent-base@npm:6.0.2"
@@ -7274,6 +7281,7 @@ __metadata:
     "@visx/scale": ^3.3.0
     "@visx/shape": ^3.3.0
     "@visx/zoom": ^3.3.0
+    adm-zip: ^0.5.10
     autoprefixer: ^10.4.13
     axios: ^1.2.6
     babel-loader: ^9.1.2
