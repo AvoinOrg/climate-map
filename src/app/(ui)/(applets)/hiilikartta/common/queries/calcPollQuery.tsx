@@ -13,12 +13,9 @@ export const calcPollQuery = (
   return {
     queryKey: ['calcPoll', planConf.serverId],
     queryFn: async () => {
-      const response = await axios.get(
-        `${'http://localhost:3000/api/hiilikartta/data'}`,
-        {
-          params: { id: planConf.serverId },
-        }
-      )
+      const response = await axios.get('/api/hiilikartta/data', {
+        params: { id: planConf.serverId },
+      })
 
       if (response.status === 200) {
         const areas = transformCalcGeojsonToNestedStructure(
