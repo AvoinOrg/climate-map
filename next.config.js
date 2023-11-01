@@ -26,6 +26,11 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  i18n: {
+    locales: ['en', 'fi'],
+    localeDetection: true,
+    defaultLocale: 'en',
+  },
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if
