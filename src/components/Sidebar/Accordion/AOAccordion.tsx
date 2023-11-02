@@ -9,7 +9,7 @@ import {
 import FormControlLabel from '@mui/material/FormControlLabel'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import React from 'react'
-import Link from 'next/link'
+import Link from '#/components/common/Link'
 
 import { useMapStore } from '#/common/store'
 import { LayerGroupId } from '#/common/types/map'
