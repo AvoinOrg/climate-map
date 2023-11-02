@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react'
 import { Box, Typography } from '@mui/material'
-import Link from 'next/link'
+import Link from '#/components/common/Link'
 import { T } from '@tolgee/react'
 
 import { getRoute } from '#/common/utils/routing'
@@ -25,13 +25,12 @@ const Page = () => {
           <T keyName={'sidebar.main.add_new'} ns="hiilikartta"></T>
         </Box>
       </Link>
-      <Link href={getRoute(routeTree.plans, routeTree)}>
+      <Link href={getRoute(routeTree.plans, routeTree)} sx={{ mt: 18 }}>
         <Folder
           sx={{
             color: 'neutral.lighter',
             backgroundColor: 'primary.dark',
             borderColor: 'primary.light',
-            mt: 18,
             pt: 6,
             pl: 4,
           }}
