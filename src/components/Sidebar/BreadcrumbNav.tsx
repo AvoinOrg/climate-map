@@ -1,9 +1,9 @@
 import React from 'react'
 import { usePathname } from 'next/navigation'
-import Link from 'next/link'
-import { Box, Link as MuiLink, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 
+import Link from '#/components/common/Link'
 import { getRoutesForPath } from '#/common/utils/routing'
 import { RouteTree } from '#/common/types/routing'
 
@@ -17,7 +17,7 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
   const routes = getRoutesForPath(pathname, routeTree)
 
   const RouteElement = ({ route, name }: { route: string; name: string }) => (
-    <MuiLink href={route} sx={{ color: 'inherit' }} component={Link}>
+    <Link href={route} sx={{ color: 'inherit' }}>
       <Typography
         sx={(theme) => ({
           display: 'inline-block',
@@ -28,7 +28,7 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
       >
         {name}
       </Typography>
-    </MuiLink>
+    </Link>
   )
 
   const RouteElementInert = ({ name }: { name: string }) => (
@@ -59,7 +59,7 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
         <Box
           sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
         >
-          <MuiLink href={routes[routes.length - 2].path} component={Link}>
+          <Link href={routes[routes.length - 2].path}>
             <ArrowBackIosNewIcon
               sx={(theme) => ({
                 float: 'left',
@@ -69,7 +69,7 @@ const BreadcrumbNav = ({ routeTree }: Props) => {
                 '&:hover': { color: theme.palette.neutral.main },
               })}
             ></ArrowBackIosNewIcon>
-          </MuiLink>
+          </Link>
           <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
             {routes.map((route) => {
               if (route === routes[routes.length - 1]) {
