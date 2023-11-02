@@ -6,8 +6,7 @@ import { styled } from '@mui/material/styles'
 
 import { getRoute } from '#/common/utils/routing'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Link as MuiLink } from '@mui/material'
+import Link from '#/components/common/Link'
 import { T } from '@tolgee/react'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
@@ -68,15 +67,14 @@ const Page = () => {
 
   return (
     <>
-      <MuiLink
+      <Link
         href={getRoute(routeTree.create.import, routeTree)}
         sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
-        component={Link}
       >
         <BigMenuButton variant="contained" component="label">
           <T keyName={'sidebar.create.upload'} ns={'hiilikartta'}></T>
         </BigMenuButton>
-      </MuiLink>
+      </Link>
 
       <BigMenuButton variant="contained" onClick={handleNewPlanClick}>
         <T keyName={'sidebar.create.draw_new'} ns={'hiilikartta'}></T>
