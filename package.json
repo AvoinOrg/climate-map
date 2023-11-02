@@ -8,7 +8,7 @@
     "start": "next start",
     "dev": "next dev",
     "prebuild": "node ./utils/scripts/downloadTranslations.js",
-    "build": "next build",
+    "build": "yarn run prebuild && next build",
     "build-analyze": "ANALYZE=true yarn build",
     "test": "jest",
     "test:watch": "jest --watch",
