@@ -1,3 +1,4 @@
+require('dotenv').config()
 const axios = require('axios')
 const AdmZip = require('adm-zip')
 const fs = require('fs')
