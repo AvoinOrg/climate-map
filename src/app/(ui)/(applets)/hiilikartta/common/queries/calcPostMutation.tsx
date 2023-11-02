@@ -32,7 +32,7 @@ export const calcPostMutation = (): UseMutationOptions<
       formData.append('zoning_col', planConf.fileSettings.zoningColumn)
 
       const postRes = await axios.post(
-        `${API_URL}/hiilikartta/data`,
+        `${API_URL}/calculation`,
         formData,
         {
           headers: {

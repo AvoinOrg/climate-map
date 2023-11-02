@@ -15,7 +15,7 @@ export const calcPollQuery = (
   return {
     queryKey: ['calcPoll', planConf.serverId],
     queryFn: async () => {
-      const response = await axios.get(`${API_URL}/api/hiilikartta/data`, {
+      const response = await axios.get(`${API_URL}/calculation`, {
         params: { id: planConf.serverId },
       })
 
