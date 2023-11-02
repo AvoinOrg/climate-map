@@ -33,7 +33,6 @@ const NavigationBack = ({
       <Link
         href={route}
         sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
-        component={Link}
       >
         <ArrowBackIosNewIcon
           sx={(theme) => ({ float: 'left', cursor: 'pointer' })}
