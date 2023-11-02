@@ -36,8 +36,11 @@ async function downloadTranslations() {
         const language = path.basename(languageFile, '.json')
         const outputPath = path.resolve(
           __dirname,
-          `../public/locales/${language}/${namespace}.json`
+          `../../src/i18n/${namespace}/${language}.json`
         )
+
+        // Ensure the directory exists
+        fs.mkdirSync(path.dirname(outputPath), { recursive: true })
 
         const content = JSON.parse(entry.getData().toString('utf8'))
         fs.writeFileSync(outputPath, JSON.stringify(content, null, 2))
