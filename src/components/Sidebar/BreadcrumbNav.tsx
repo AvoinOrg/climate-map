@@ -2,7 +2,6 @@ import React from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Box, Link as MuiLink, Typography } from '@mui/material'
-import { styled } from '@mui/material/styles'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 
 import { getRoutesForPath } from '#/common/utils/routing'
