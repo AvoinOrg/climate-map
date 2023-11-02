@@ -115,6 +115,7 @@ yarn-debug.log*
 yarn-error.log*
 
 .vscode
+.devcontainer
 
 # Local Netlify folder
 .netlify
@@ -143,3 +144,7 @@ next-env.d.ts
 src/app/api/*
 !src/app/api/auth/
 !src/app/api/userinfo/
+
+
+# i18n files, which are downloaded dynamically
+src/i18n/*
