@@ -9,7 +9,7 @@ const Link = ({ sx, children, ...props }: LinkProps) => {
     <MuiLink
       component={NextLink}
       sx={{
-        display: 'flex',
+        display: 'inline-flex',
         color: 'inherit',
         textDecoration: 'none',
         ...sx,
