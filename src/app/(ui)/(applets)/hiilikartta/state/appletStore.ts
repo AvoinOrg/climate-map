@@ -65,15 +65,24 @@ export const useAppletStore = create<State & Actions>()(
     {
       name: 'hiilikarttaStore', // name of item in the storage (must be unique)
       storage: createJSONStorage(() => sessionStorage), // (optional) by default the 'localStorage' is used
-      // onRehydrateStorage: (state) => {
-      //   return (state, error) => {
-      //     if (error) {
-      //       console.log('an error happened during hydration', error)
-      //     } else {
-      //       console.log('hydration finished')
-      //     }
-      //   }
-      // },
+      onRehydrateStorage: (state) => {
+        return (state, error) => {
+          if (error) {
+            console.log('an error happened during hydration', error)
+          }
+          if (state) {
+            for (const planId of Object.keys(state.planConfs)) {
+              if (
+                state.planConfs[planId].calculationState ===
+                CalculationState.INITIALIZING
+              ) {
+                state.planConfs[planId].calculationState =
+                  CalculationState.NOT_STARTED
+              }
+            }
+          }
+        }
+      },
     }
   )
 )
