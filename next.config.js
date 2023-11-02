@@ -1,5 +1,6 @@
 const path = require('path')
 const CopyPlugin = require('copy-webpack-plugin')
+// const { execSync } = require('child_process')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -49,9 +50,14 @@ const nextConfig = {
   ) => {
     // Important: return the modified config
     // Inside the webpack configuration function
-    if (!dev) {
-      execSync('node scripts/download-translations.js', { stdio: 'inherit' })
-    }
+
+    // This runs multiple times for some reason (webpack config being loaded multiple times?),
+    // so it has been moved to prebuilt script in package.json
+    // if (!dev) {
+    //   execSync('node utils/scripts/downloadTranslations.js', {
+    //     stdio: 'inherit',
+    //   })
+    // }
 
     config.plugins = config.plugins.concat([
       new webpack.ProvidePlugin({
