@@ -44,8 +44,12 @@ const tolgee = Tolgee()
   .init({
     language: 'en',
     defaultNs: 'avoin-map',
-    apiUrl: process.env.NEXT_PUBLIC_TOLGEE_API_URL,
-    apiKey: process.env.NEXT_PUBLIC_TOLGEE_API_KEY,
+    ...(process.env.NEXT_PUBLIC_TOLGEE_API_URL && {
+      apiUrl: process.env.NEXT_PUBLIC_TOLGEE_API_URL,
+    }),
+    ...(process.env.NEXT_PUBLIC_TOLGEE_API_KEY && {
+      apiKey: process.env.NEXT_PUBLIC_TOLGEE_API_KEY,
+    }),
     staticData: {
       'en:avoin-map': () => loadTranslation('avoin-map', 'en'),
       'fi:hiilikartta': () => loadTranslation('hiilikartta', 'fi'),
