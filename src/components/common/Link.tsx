@@ -1,25 +1,21 @@
 import React from 'react'
-import type { SxProps, Theme } from '@mui/system'
-import MuiLink from '@mui/material/Link'
-import NextLink from 'next/link'
+import { LinkProps as MuiLinkProps, Link as MuiLink } from '@mui/material'
+import NextLink, { LinkProps as NextLinkProps } from 'next/link'
 
-type Props = {
-  href: string
-  children?: React.ReactNode
-  sx?: SxProps<Theme>
-}
+type LinkProps = MuiLinkProps & NextLinkProps
 
-const Link = ({ href, children, sx }: Props) => {
+const Link = ({ sx, children, ...props }: LinkProps) => {
   return (
     <MuiLink
-      href={href}
+      component={NextLink}
       sx={{
         display: 'flex',
         color: 'inherit',
         textDecoration: 'none',
         ...sx,
       }}
-      component={NextLink}
+      prefetch={true}
+      {...props}
     >
       {children}
     </MuiLink>
