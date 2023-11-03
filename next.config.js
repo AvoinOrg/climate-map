@@ -4,9 +4,7 @@ const CopyPlugin = require('copy-webpack-plugin')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // If set to true (default) openlayers will render blank.
-  // Will probably be fixed later, either by swcMinify or Openlayers
-  swcMinify: false,
+  swcMinify: true,
   // emotion: true,
   compiler: {
     styledComponents: true,
@@ -29,7 +27,7 @@ const nextConfig = {
   },
   i18n: {
     locales: ['en', 'fi'],
-    localeDetection: true,
+    // localeDetection: false,
     defaultLocale: 'en',
   },
   typescript: {
