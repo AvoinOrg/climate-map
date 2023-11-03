@@ -146,7 +146,7 @@ const PlanImportGpkg = ({
       )}
       <PlanImportActionsRow
         onClickAccept={handleExtract}
-        isAcceptDisabled={table != null && zoningCol != null}
+        isAcceptDisabled={table == null || zoningCol == null}
       ></PlanImportActionsRow>
     </>
   )
