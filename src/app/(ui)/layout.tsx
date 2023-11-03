@@ -52,6 +52,8 @@ const tolgee = Tolgee()
     }),
     staticData: {
       'en:avoin-map': () => loadTranslation('avoin-map', 'en'),
+      'fi:avoin-map': () => loadTranslation('avoin-map', 'fi'),
+      'en:hiilikartta': () => loadTranslation('hiilikartta', 'en'),
       'fi:hiilikartta': () => loadTranslation('hiilikartta', 'fi'),
       // Add more translations as needed
     },
