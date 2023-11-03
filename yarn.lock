@@ -2804,7 +2804,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@netlify/plugin-nextjs@npm:^4.41.1":
+"@netlify/plugin-nextjs@npm:^4.29.5-appdir.0":
   version: 4.41.1
   resolution: "@netlify/plugin-nextjs@npm:4.41.1"
   dependencies:
@@ -7251,7 +7251,7 @@ __metadata:
     "@mapbox/mapbox-gl-draw": ^1.4.0
     "@mui/icons-material": ^5.11.0
     "@mui/material": ^5.11.7
-    "@netlify/plugin-nextjs": ^4.41.1
+    "@netlify/plugin-nextjs": ^4.29.5-appdir.0
     "@next/bundle-analyzer": ^13.2.4
     "@next/font": canary
     "@ngageoint/geopackage": ^4.2.3

@@ -94,7 +94,7 @@
     "@babel/eslint-parser": "^7.19.1",
     "@babel/preset-typescript": "^7.18.6",
     "@babel/register": "^7.18.9",
-    "@netlify/plugin-nextjs": "^4.41.1",
+    "@netlify/plugin-nextjs": "^4.29.5-appdir.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.10",
     "@tanstack/eslint-plugin-query": "rc",
     "@testing-library/jest-dom": "^5.16.5",
