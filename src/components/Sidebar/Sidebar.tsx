@@ -9,6 +9,7 @@ import { useMapStore } from '#/common/store'
 import Drawer from './Drawer'
 import PopupDrawer from './PopupDrawer'
 import { SidebarHeader } from '#/components/Sidebar'
+import { SCROLLBAR_WIDTH_REM } from '#/common/style/theme/constants'
 
 export const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const isSidebarOpen = useUIStore((state) => state.isSidebarOpen)
@@ -20,6 +21,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
     (state) => state.setSidebarHeaderElementSetter
   )
   const setSidebarWidth = useUIStore((state) => state.setSidebarWidth)
+  const sidebarWidth = useUIStore((state) => state.sidebarWidth)
 
   // Initialize with empty header title to make the change of header smoother
   const [sidebarHeader, setSidebarHeader] = useState(
@@ -68,25 +70,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
         >
           <Drawer open={isSidebarOpen}>
             {sidebarHeader}
-            <Box
-              className="sidebar-children-container"
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                direction: 'rtl',
-                overflowY: 'scroll',
-                '& > :not(style)': {
-                  // apply to direct children that aren't style tags
-                  direction: 'ltr',
-                },
-                margin: '0 12px 0 0',
-                pr: 4,
-                pl: 4,
-                pb: 4,
-                pt: 4,
-                height: '100%',
-              }}
-            >
+            <Box ref={sidebarRef} sx={{ overflow: 'auto' }}>
               {children}
             </Box>
           </Drawer>
