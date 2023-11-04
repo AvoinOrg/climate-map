@@ -12,10 +12,10 @@ import { useMutation } from '@tanstack/react-query'
 
 import { getRoute } from '#/common/utils/routing'
 import useStore from '#/common/hooks/useStore'
+import { useMapStore } from '#/common/store'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import { useMapStore } from '#/common/store'
 import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
 import { ArrowNextBig, Delete } from '#/components/icons'
 import ZoneAccordion from 'applets/hiilikartta/components/ZoneAccordion'
