@@ -8,8 +8,10 @@ import { T } from '@tolgee/react'
 import { getRoute } from '#/common/utils/routing'
 import Folder from '#/components/common/Folder'
 import { useMapStore } from '#/common/store'
+import { SidebarContentBox } from '#/components/Sidebar'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
+import { SIDEBAR_WIDTH_REM } from './common/constants'
 
 const Page = () => {
   const setMapLibraryMode = useMapStore((state) => state.setMapLibraryMode)
@@ -19,7 +21,7 @@ const Page = () => {
   }, [])
 
   return (
-    <>
+    <SidebarContentBox sx={{ width: SIDEBAR_WIDTH_REM + 'rem' }}>
       <Link href={getRoute(routeTree.create, routeTree)}>
         <Box sx={{ typography: 'h2', textAlign: 'start', mt: 5 }}>
           <T keyName={'sidebar.main.add_new'} ns="hiilikartta"></T>
@@ -40,7 +42,7 @@ const Page = () => {
           </Typography>
         </Folder>
       </Link>
-    </>
+    </SidebarContentBox>
   )
 }
 
