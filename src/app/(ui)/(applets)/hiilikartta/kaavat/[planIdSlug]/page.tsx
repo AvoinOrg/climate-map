@@ -21,7 +21,12 @@ import { ArrowNextBig, Delete } from '#/components/icons'
 import ZoneAccordion from 'applets/hiilikartta/components/ZoneAccordion'
 import { calcPostMutation } from 'applets/hiilikartta/common/queries/calcPostMutation'
 import PlanFolder from 'applets/hiilikartta/components/PlanFolder'
-import { CalculationState } from 'applets/hiilikartta/common/types'
+import {
+  SCROLLBAR_WIDTH_REM,
+  SIDEBAR_PADDING_REM,
+  SIDEBAR_PADDING_WITH_SCROLLBAR_REM,
+} from '#/common/style/theme/constants'
+import { SIDEBAR_WIDTH_REM } from 'applets/hiilikartta/common/constants'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const removeSerializableLayerGroup = useMapStore(
@@ -69,125 +74,159 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   }, [planConf])
 
   return (
-    <>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        width: SIDEBAR_WIDTH_REM + 'rem',
+      }}
+    >
       {isLoaded && planConf && (
         <>
-          <PlanFolder planConf={planConf} height={90} />
+          <Box
+            sx={{
+              overflowY: 'scroll',
+              direction: 'rtl',
+            }}
+          >
+            <Box
+              sx={{
+                direction: 'ltr',
+                overflow: 'visible',
+                p: SIDEBAR_PADDING_REM + 'rem',
+                mr: SCROLLBAR_WIDTH_REM + 'rem',
+              }}
+            >
+              <PlanFolder planConf={planConf} height={90} />
 
-          {/* <MuiLink
+              {/* <MuiLink
             href={getRoute(routeTree.plans.plan.settings, routeTree, [planConf.id])}
             sx={{ display: 'flex', color: 'inherit', textDecoration: 'none' }}
             component={Link}
-          >
+            >
             <MenuButton sx={{ margin: '25px 0 0 0' }} variant="outlined">
-              Kaavatiedoston asetukset <SettingsIcon />
+            Kaavatiedoston asetukset <SettingsIcon />
             </MenuButton>
           </MuiLink> */}
 
-          <ZoneAccordion
-            planConfId={planConf.id}
-            sx={{ mt: 4 }}
-          ></ZoneAccordion>
+              <ZoneAccordion
+                planConfId={planConf.id}
+                sx={{ mt: 4 }}
+              ></ZoneAccordion>
 
-          <Box sx={{}}>
-            {/* {!planConf.reportData && ( */}
+              <Box sx={{}}>
+                {/* {!planConf.reportData && ( */}
 
-            {/* )} */}
-            {planConf.reportData && (
-              <SmallMenuButton variant="outlined" onClick={handleOpenReport}>
-                <T
-                  keyName={'sidebar.plan_settings.open_full_report'}
-                  ns={'hiilikartta'}
-                ></T>
-              </SmallMenuButton>
-            )}
+                {/* )} */}
+                {planConf.reportData && (
+                  <SmallMenuButton
+                    variant="outlined"
+                    onClick={handleOpenReport}
+                  >
+                    <T
+                      keyName={'sidebar.plan_settings.open_full_report'}
+                      ns={'hiilikartta'}
+                    ></T>
+                  </SmallMenuButton>
+                )}
+              </Box>
+            </Box>
           </Box>
 
-          {![
-            CalculationState.CALCULATING,
-            CalculationState.INITIALIZING,
-          ].includes(planConf.calculationState) && (
-            <>
-              {/* <Box sx={{ display: 'flex', flexDirection: 'row' }}> */}
-              <Box
-                sx={{
-                  display: 'inline-flex',
-                  flexDirection: 'row',
-                  '&:hover': { cursor: 'pointer' },
-                  mt: 4,
-                  color: 'neutral.dark',
-                  flex: '0',
-                  whiteSpace: 'nowrap',
-                  alignSelf: 'flex-start',
-                }}
-                onClick={handleDeleteClick}
-              >
-                <Box sx={{ mr: 1.5 }}>
-                  <Delete></Delete>
-                </Box>
-                <Box
-                  sx={{
-                    typography: 'h3',
-                  }}
-                >
-                  <T
-                    keyName={'sidebar.plan_settings.delete'}
-                    ns={'hiilikartta'}
-                  />
-                </Box>
-                {/* </Box> */}
+          <Box
+            sx={(theme) => ({
+              display: 'flex',
+              flexDirection: 'column',
+              width:
+                SIDEBAR_WIDTH_REM +
+                // SIDEBAR_PADDING_WITH_SCROLLBAR_REM +
+                // SIDEBAR_PADDING_REM +
+                'rem',
+              pl: SIDEBAR_PADDING_WITH_SCROLLBAR_REM + 'rem',
+              pr: SIDEBAR_PADDING_WITH_SCROLLBAR_REM + 'rem',
+              pt: 2,
+              pb: 2,
+              zIndex: 9999,
+              borderTop: 1,
+              borderColor: 'primary.lighter',
+            })}
+          >
+            <Box
+              sx={{
+                display: 'inline-flex',
+                flexDirection: 'row',
+                '&:hover': { cursor: 'pointer' },
+                color: 'neutral.dark',
+                flex: '0',
+                whiteSpace: 'nowrap',
+                alignSelf: 'flex-start',
+              }}
+              onClick={handleDeleteClick}
+            >
+              <Box sx={{ mr: 1.5 }}>
+                <Delete></Delete>
               </Box>
               <Box
                 sx={{
+                  typography: 'h3',
+                }}
+              >
+                <T
+                  keyName={'sidebar.plan_settings.delete'}
+                  ns={'hiilikartta'}
+                />
+              </Box>
+              {/* </Box> */}
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                flex: 1,
+                flexDirection: 'column',
+                justifyContent: 'flex-end',
+              }}
+            >
+              <Box
+                sx={{
                   display: 'flex',
-                  flex: 1,
-                  flexDirection: 'column',
+                  flexDirection: 'row',
                   justifyContent: 'flex-end',
                 }}
               >
                 <Box
                   sx={{
-                    display: 'flex',
+                    display: 'inline-flex',
                     flexDirection: 'row',
-                    justifyContent: 'flex-end',
+                    '&:hover': { cursor: 'pointer' },
+                    mt: 4,
+                    flex: '0',
                   }}
+                  onClick={handleSubmit}
                 >
                   <Box
                     sx={{
-                      display: 'inline-flex',
-                      flexDirection: 'row',
-                      '&:hover': { cursor: 'pointer' },
-                      mt: 4,
-                      flex: '0',
+                      typography: 'h1',
+                      textAlign: 'end',
+                      mr: 3,
+                      minWidth: '270px',
                     }}
-                    onClick={handleSubmit}
                   >
-                    <Box
-                      sx={{
-                        typography: 'h1',
-                        textAlign: 'end',
-                        mr: 3,
-                        minWidth: '270px',
-                      }}
-                    >
-                      <T
-                        keyName={
-                          'sidebar.plan_settings.calculate_carbon_effect'
-                        }
-                        ns={'hiilikartta'}
-                      />
-                    </Box>
-                    <Box sx={{ mt: 0.2 }}>
-                      <ArrowNextBig></ArrowNextBig>
-                    </Box>
+                    <T
+                      keyName={'sidebar.plan_settings.calculate_carbon_effect'}
+                      ns={'hiilikartta'}
+                    />
+                  </Box>
+                  <Box sx={{ mt: 0.2 }}>
+                    <ArrowNextBig></ArrowNextBig>
                   </Box>
                 </Box>
               </Box>
-            </>
-          )}
+            </Box>
+          </Box>
         </>
       )}
-    </>
+    </Box>
   )
 }
 
