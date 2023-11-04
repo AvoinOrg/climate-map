@@ -67,7 +67,6 @@ const ZoneAccordion = ({ planConfId, sx }: Props) => {
         accordionElement.scrollIntoView({
           behavior: 'auto',
           block: 'start',
-
         })
       }
     }
@@ -165,52 +164,47 @@ const ZoneAccordion = ({ planConfId, sx }: Props) => {
             borderBottom: `1px solid ${theme.palette.primary.dark}`, // Add border for the last item
           },
         },
-        overflow: 'scroll',
-        direction: 'rtl',
-        maxHeight: '100%',
         ...sx,
       })}
     >
-      <Box sx={{ direction: 'ltr', pl: 2 }}>
-        {planConf &&
-          planConf.data.features.map((feature, index) => (
-            <Accordion
-              key={feature.properties.id}
-              sx={{
-                width: '100%',
-                backgroundColor: 'background.paper', // Default color
-                ':before': {
-                  opacity: 0,
-                },
-                '&.Mui-expanded': {
-                  margin: 'auto', // Override the default behavior
-                  backgroundColor: 'primary.light', // Color when expanded
-                },
-                '&:before': {
-                  display: 'none', // Disable the default focus visible
-                },
-              }}
-              TransitionProps={{ unmountOnExit: true }} // Prevent margin transition
-              expanded={isAccordionExpanded(feature.properties.id)}
-              onChange={handleAccordionChange(feature.properties.id)}
-              ref={(el) => (accordionRefs.current[feature.properties.id] = el)}
+      {planConf &&
+        planConf.data.features.map((feature, index) => (
+          <Accordion
+            key={feature.properties.id}
+            sx={{
+              width: '100%',
+              backgroundColor: 'background.paper', // Default color
+              ':before': {
+                opacity: 0,
+              },
+              '&.Mui-expanded': {
+                margin: 'auto', // Override the default behavior
+                backgroundColor: 'primary.light', // Color when expanded
+              },
+              '&:before': {
+                display: 'none', // Disable the default focus visible
+              },
+            }}
+            TransitionProps={{ unmountOnExit: true }} // Prevent margin transition
+            expanded={isAccordionExpanded(feature.properties.id)}
+            onChange={handleAccordionChange(feature.properties.id)}
+            ref={(el) => (accordionRefs.current[feature.properties.id] = el)}
+          >
+            <AccordionSummary
+              expandIcon={<ArrowDown />}
+              aria-controls={`panel${index + 1}-content`}
+              id={`panel${index + 1}-header`}
             >
-              <AccordionSummary
-                expandIcon={<ArrowDown />}
-                aria-controls={`panel${index + 1}-content`}
-                id={`panel${index + 1}-header`}
-              >
-                <Typography></Typography>
-                <Typography>{getTitle(feature)}</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography>
-                  {/* Replace with your feature description or component */}
-                </Typography>
-              </AccordionDetails>
-            </Accordion>
-          ))}
-      </Box>
+              <Typography></Typography>
+              <Typography>{getTitle(feature)}</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography>
+                {/* Replace with your feature description or component */}
+              </Typography>
+            </AccordionDetails>
+          </Accordion>
+        ))}
     </Box>
   )
 }
