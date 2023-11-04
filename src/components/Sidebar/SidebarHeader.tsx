@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material'
 import React from 'react'
+
 import SidebarToggleButton from './SidebarToggleButton'
 
 interface Props {
@@ -19,7 +20,6 @@ const SidebarHeader = ({ children, title, sx }: Props) => {
         borderColor: 'primary.dark',
         flexDirection: 'column',
         ...sx,
-        width: '100%',
       }}
     >
       <Box
