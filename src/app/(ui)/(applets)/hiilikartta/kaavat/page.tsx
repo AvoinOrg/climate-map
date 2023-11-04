@@ -10,12 +10,14 @@ import useStore from '#/common/hooks/useStore'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 
 import PlanListItem from '../components/PlanListItem'
+import { SidebarContentBox } from '#/components/Sidebar'
+import { SIDEBAR_WIDTH_REM } from '../common/constants'
 
 const Page = () => {
   const planConfs = useStore(useAppletStore, (state) => state.planConfs)
 
   return (
-    <>
+    <SidebarContentBox sx={{ width: SIDEBAR_WIDTH_REM + 'rem' }}>
       <Typography variant="h2">
         <T keyName={'sidebar.my_plans.title'} ns="hiilikartta"></T>
       </Typography>
@@ -34,7 +36,7 @@ const Page = () => {
           </Box>
         </>
       )}
-    </>
+    </SidebarContentBox>
   )
 }
 
