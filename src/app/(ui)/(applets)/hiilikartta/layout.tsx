@@ -8,13 +8,15 @@ import { SidebarHeader } from '#/components/Sidebar'
 import { BreadcrumbNav } from '#/components/Sidebar'
 import AppletWrapper from '#/components/common/AppletWrapper'
 
+import { SIDEBAR_WIDTH_REM } from './common/constants'
+
 const localizationNamespace = 'hiilikartta'
 const defaultLanguage = 'fi'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const SidebarHeaderElement = (
     <SidebarHeader title={'Hiilikartta'}>
-      <Box sx={{ mt: 8 }}>
+      <Box sx={{ mt: 8, maxWidth: SIDEBAR_WIDTH_REM - 6 + 'rem' }}>
         <BreadcrumbNav routeTree={routeTree}></BreadcrumbNav>
       </Box>
     </SidebarHeader>
@@ -27,7 +29,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       defaultLanguage={defaultLanguage}
       SidebarHeaderElement={SidebarHeaderElement}
       sx={{
-        width: '400px',
         pt: 0,
         display: 'flex',
         flexDirection: 'column',
