@@ -2,6 +2,7 @@ import { createTheme, Shadows, ThemeOptions } from '@mui/material/styles'
 import { TypographyOptions } from '@mui/material/styles/createTypography'
 import { Arimo } from '@next/font/google'
 import '@mui/material/styles/createPalette'
+import { SCROLLBAR_WIDTH_REM } from './constants'
 
 //extending palette to add background color
 
@@ -248,7 +249,7 @@ const components = {
         scrollbarWidth: 'thin',
         scrollbarColor: `${palette.neutral.dark} ${palette.neutral.main}`,
         '&::-webkit-scrollbar': {
-          width: '12px',
+          width: SCROLLBAR_WIDTH_REM + 'rem',
         },
         '&::-webkit-scrollbar-thumb': {
           backgroundColor: palette.neutral.main,
