@@ -7,8 +7,9 @@ import { styled } from '@mui/material/styles'
 // import SettingsIcon from '@mui/icons-material/Settings'
 // import MuiLink from '@mui/material/Link'
 // import Link from 'next/link'
-import { T } from '@tolgee/react'
+import { T, useTranslate } from '@tolgee/react'
 import { useMutation } from '@tanstack/react-query'
+import FolderCopy from '@mui/icons-material/FolderCopyOutlined'
 
 import { getRoute } from '#/common/utils/routing'
 import useStore from '#/common/hooks/useStore'
@@ -37,10 +38,12 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     (state) => state.planConfs[params.planIdSlug]
   )
   const deletePlanConf = useAppletStore((state) => state.deletePlanConf)
+  const copyPlanConf = useAppletStore((state) => state.copyPlanConf)
   const calcPost = useMutation(calcPostMutation())
 
   const [isLoaded, setIsLoaded] = useState(false)
   const router = useRouter()
+  const { t } = useTranslate('hiilikartta')
 
   const handleSubmit = async () => {
     if (planConf) {
@@ -61,6 +64,16 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     if (planConf) {
       await removeSerializableLayerGroup(getPlanLayerGroupId(planConf.id))
       await deletePlanConf(planConf.id)
+      router.push(getRoute(routeTree, routeTree))
+    }
+  }
+
+  const handleCopyClick = async () => {
+    if (planConf) {
+      const { id } = await copyPlanConf(
+        planConf.id,
+        t('sidebar.plan_settings.copy_suffix')
+      )
       router.push(getRoute(routeTree, routeTree))
     }
   }
@@ -152,19 +165,21 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               borderColor: 'primary.lighter',
             })}
           >
-            <Box
-              sx={{
-                display: 'inline-flex',
-                flexDirection: 'row',
-                '&:hover': { cursor: 'pointer' },
-                color: 'neutral.dark',
-                flex: '0',
-                whiteSpace: 'nowrap',
-                alignSelf: 'flex-start',
-              }}
-              onClick={handleDeleteClick}
-            >
+            <FooterButtonContainer onClick={handleCopyClick}>
               <Box sx={{ mr: 1.5 }}>
+                <FolderCopy></FolderCopy>
+              </Box>
+              <Box
+                sx={{
+                  typography: 'h3',
+                }}
+              >
+                <T keyName={'sidebar.plan_settings.copy'} ns={'hiilikartta'} />
+              </Box>
+              {/* </Box> */}
+            </FooterButtonContainer>
+            <FooterButtonContainer onClick={handleDeleteClick} sx={{mt: 0.8}}>
+              <Box sx={{ mr: 1.7 }}>
                 <Delete></Delete>
               </Box>
               <Box
@@ -178,7 +193,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 />
               </Box>
               {/* </Box> */}
-            </Box>
+            </FooterButtonContainer>
             <Box
               sx={{
                 display: 'flex',
@@ -230,12 +245,14 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   )
 }
 
-const MenuButton = styled(Button)<{ component?: string }>({
-  width: '300px',
-  height: '50px',
-  margin: '15px 0 0 0',
-  display: 'flex',
-  justifyContent: 'space-between',
+const FooterButtonContainer = styled(Box)<{ component?: string }>({
+  display: 'inline-flex',
+  flexDirection: 'row',
+  '&:hover': { cursor: 'pointer' },
+  color: 'neutral.dark',
+  flex: '0',
+  whiteSpace: 'nowrap',
+  alignSelf: 'flex-start',
 })
 
 const SmallMenuButton = styled(Button)<{ component?: string }>({
