@@ -5,7 +5,7 @@ import {
   subscribeWithSelector,
 } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
-import { pickBy } from 'lodash-es'
+import { cloneDeep, pickBy } from 'lodash-es'
 
 import { generateShortId, generateUUID } from '#/common/utils/general'
 import { queryClient } from '#/common/queries/queryClient'
@@ -24,6 +24,7 @@ type Actions = {
     planId: string,
     planConf: Partial<PlanConf>
   ) => Promise<PlanConf>
+  copyPlanConf: (planId: string, nameSuffix?: string) => Promise<PlanConf>
 }
 
 export const useAppletStore = create<State & Actions>()(
@@ -59,6 +60,19 @@ export const useAppletStore = create<State & Actions>()(
             state.planConfs[planId] = updatedPlanConf
           })
           return updatedPlanConf
+        },
+        copyPlanConf: async (planId: string, nameSuffix?: string) => {
+          const { addPlanConf, planConfs } = get()
+          const planConf = planConfs[planId]
+
+          const newPlanConf: NewPlanConf = {
+            name: `${planConf.name}${nameSuffix != null && ' ' + nameSuffix}`,
+            areaHa: planConf.areaHa,
+            data: cloneDeep(planConf.data),
+            fileSettings: cloneDeep(planConf.fileSettings),
+          }
+          const copiedPlanConf = await addPlanConf(newPlanConf)
+          return copiedPlanConf
         },
       }))
     ),
