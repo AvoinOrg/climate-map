@@ -1,5 +1,10 @@
 import React, { useEffect } from 'react'
-import { FormControl, Select, SelectChangeEvent } from '@mui/material'
+import {
+  FormControl,
+  Select,
+  SelectChangeEvent,
+  Typography,
+} from '@mui/material'
 import { styled } from '@mui/material/styles'
 import DownIcon from '#/components/icons/DownIcon'
 
@@ -9,14 +14,24 @@ interface Props {
   onChange: (event: SelectChangeEvent) => void
   label?: string
   sx?: any
+  labelSx?: any
 }
 
-const DropDownSelect = ({ value, options, onChange, label, sx }: Props) => {
+const DropDownSelect = ({
+  value,
+  options,
+  onChange,
+  label,
+  sx,
+  labelSx,
+}: Props) => {
   const [hasEmpty, setHasEmpty] = React.useState(value == null)
 
   return (
     <FormControl sx={sx}>
-      {label && <Label>{label}</Label>}
+      {label && (
+        <Typography sx={{ typography: 'h7', mb: 2, ...labelSx }}>{label}</Typography>
+      )}
       <Select
         native
         value={value == null ? '' : value}
@@ -32,7 +47,10 @@ const DropDownSelect = ({ value, options, onChange, label, sx }: Props) => {
             horizontal: 'left',
           },
         }}
-        sx={{ backgroundColor: 'background.main', '.MuiSvgIcon-root': { fontSize: '16px', margin: '0 10px 0 0' } }}
+        sx={{
+          backgroundColor: 'background.main',
+          '.MuiSvgIcon-root': { fontSize: '16px', margin: '0 10px 0 0' },
+        }}
       >
         {...[
           hasEmpty == true && <option key={''} value={undefined}></option>,
@@ -46,9 +64,5 @@ const DropDownSelect = ({ value, options, onChange, label, sx }: Props) => {
     </FormControl>
   )
 }
-
-const Label = styled('p')({
-  fontSize: '16px',
-})
 
 export default DropDownSelect
