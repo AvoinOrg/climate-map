@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { Box, Button } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import { styled } from '@mui/material/styles'
 // import SettingsIcon from '@mui/icons-material/Settings'
@@ -28,6 +28,8 @@ import {
   SIDEBAR_PADDING_WITH_SCROLLBAR_REM,
 } from '#/common/style/theme/constants'
 import { SIDEBAR_WIDTH_REM } from 'applets/hiilikartta/common/constants'
+import { pp } from '#/common/utils/general'
+import { featureYears } from 'applets/hiilikartta/common/types'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const removeSerializableLayerGroup = useMapStore(
@@ -123,27 +125,130 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             </MenuButton>
           </MuiLink> */}
 
-              <ZoneAccordion
-                planConfId={planConf.id}
-                sx={{ mt: 4 }}
-              ></ZoneAccordion>
-
-              <Box sx={{}}>
-                {/* {!planConf.reportData && ( */}
-
-                {/* )} */}
-                {planConf.reportData && (
-                  <SmallMenuButton
-                    variant="outlined"
+              {planConf.reportData && (
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                  <Box
+                    sx={{
+                      flexDirection: 'row',
+                      typography: 'h2',
+                      justifyContent: 'space-between',
+                      mt: 4,
+                      mb: 2,
+                    }}
+                  >
+                    <T
+                      keyName={
+                        'sidebar.plan_settings.report_preview.impact_on_carbon_stock'
+                      }
+                      ns="hiilikartta"
+                    ></T>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: 'row',
+                      justifyContent: 'flex-end',
+                      mt: 2,
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        display: 'inline-flex',
+                        typography: 'h6',
+                        textAlign: 'end',
+                      }}
+                    >
+                      <T
+                        keyName={'sidebar.plan_settings.report_preview.on_year'}
+                        ns="hiilikartta"
+                      ></T>
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      typography: 'h4',
+                      justifyContent: 'space-between',
+                      mt: 4,
+                      mb: 2,
+                    }}
+                  >
+                    <Box
+                      sx={{ display: 'inline-flex', maxWidth: '15rem', mr: 3 }}
+                    >
+                      <T
+                        keyName={
+                          'sidebar.plan_settings.report_preview.carbon_stores_shrink'
+                        }
+                        ns="hiilikartta"
+                      ></T>
+                    </Box>
+                    <Box
+                      sx={{
+                        display: 'inline-flex',
+                        flexDirection: 'column',
+                        alignItems: 'end',
+                        textAlign: 'end',
+                      }}
+                    >
+                      <Typography typography={'h1'}>
+                        {pp(
+                          planConf.reportData.agg.totals.bio_carbon_sum_diff[
+                            featureYears[1]
+                          ] +
+                            planConf.reportData.agg.totals
+                              .ground_carbon_sum_diff[featureYears[1]],
+                          4
+                        )}
+                      </Typography>
+                      <Typography mt={0.5} typography={'h5'}>
+                        <T
+                          keyName="sidebar.plan_settings.report_preview.carbon_eqv_unit"
+                          ns="hiilikartta"
+                        ></T>
+                      </Typography>
+                      <Typography mt={2} typography={'h1'}>
+                        {pp(
+                          planConf.reportData.agg.totals
+                            .bio_carbon_per_area_diff[featureYears[1]] +
+                            planConf.reportData.agg.totals
+                              .ground_carbon_per_area_diff[featureYears[1]],
+                          2
+                        )}
+                      </Typography>
+                      <Typography mt={0.5} typography={'h5'}>
+                        <T
+                          keyName="sidebar.plan_settings.report_preview.carbon_eqv_unit_hectare"
+                          ns="hiilikartta"
+                        ></T>
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box
+                    sx={{
+                      typography: 'h2',
+                      textAlign: 'end',
+                      mt: 6,
+                      mb: 1,
+                      minWidth: '270px',
+                      '&:hover': { cursor: 'pointer' },
+                      textDecoration: 'underline',
+                    }}
                     onClick={handleOpenReport}
                   >
                     <T
                       keyName={'sidebar.plan_settings.open_full_report'}
                       ns={'hiilikartta'}
                     ></T>
-                  </SmallMenuButton>
-                )}
-              </Box>
+                  </Box>
+                </Box>
+              )}
+
+              <ZoneAccordion
+                planConfId={planConf.id}
+                sx={{ mt: 4 }}
+              ></ZoneAccordion>
             </Box>
           </Box>
 
@@ -257,14 +362,6 @@ const FooterButtonContainer = styled(Box)<{ component?: string }>({
   flex: '0',
   whiteSpace: 'nowrap',
   alignSelf: 'flex-start',
-})
-
-const SmallMenuButton = styled(Button)<{ component?: string }>({
-  width: '300px',
-  height: '35px',
-  margin: '15px 0 0 0',
-  display: 'flex',
-  justifyContent: 'space-between',
 })
 
 export default Page
