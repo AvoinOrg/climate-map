@@ -65,8 +65,8 @@ const ZoneAccordion = ({ planConfId, sx }: Props) => {
       const accordionElement = accordionRefs.current[newFeatureId]
       if (accordionElement) {
         accordionElement.scrollIntoView({
-          behavior: 'auto',
-          block: 'start',
+          behavior: 'smooth',
+          block: 'nearest',
         })
       }
     }
