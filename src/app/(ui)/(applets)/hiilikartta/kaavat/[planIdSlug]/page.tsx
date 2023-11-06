@@ -165,7 +165,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               borderColor: 'primary.lighter',
             })}
           >
-            <FooterButtonContainer onClick={handleCopyClick}>
+            <FooterButtonContainer mt={0.4} onClick={handleCopyClick}>
               <Box sx={{ mr: 1.5 }}>
                 <FolderCopy></FolderCopy>
               </Box>
@@ -178,7 +178,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               </Box>
               {/* </Box> */}
             </FooterButtonContainer>
-            <FooterButtonContainer onClick={handleDeleteClick} sx={{mt: 0.8}}>
+            <FooterButtonContainer onClick={handleDeleteClick} sx={{ mt: 1.3 }}>
               <Box sx={{ mr: 1.7 }}>
                 <Delete></Delete>
               </Box>
