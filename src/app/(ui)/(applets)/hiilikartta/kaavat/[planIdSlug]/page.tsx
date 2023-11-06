@@ -194,50 +194,54 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               </Box>
               {/* </Box> */}
             </FooterButtonContainer>
-            <Box
-              sx={{
-                display: 'flex',
-                flex: 1,
-                flexDirection: 'column',
-                justifyContent: 'flex-end',
-              }}
-            >
+            {!planConf.reportData && (
               <Box
                 sx={{
                   display: 'flex',
-                  flexDirection: 'row',
+                  flex: 1,
+                  flexDirection: 'column',
                   justifyContent: 'flex-end',
                 }}
               >
                 <Box
                   sx={{
-                    display: 'inline-flex',
+                    display: 'flex',
                     flexDirection: 'row',
-                    '&:hover': { cursor: 'pointer' },
-                    mt: 4,
-                    flex: '0',
+                    justifyContent: 'flex-end',
                   }}
-                  onClick={handleSubmit}
                 >
                   <Box
                     sx={{
-                      typography: 'h1',
-                      textAlign: 'end',
-                      mr: 3,
-                      minWidth: '270px',
+                      display: 'inline-flex',
+                      flexDirection: 'row',
+                      '&:hover': { cursor: 'pointer' },
+                      mt: 4,
+                      flex: '0',
                     }}
+                    onClick={handleSubmit}
                   >
-                    <T
-                      keyName={'sidebar.plan_settings.calculate_carbon_effect'}
-                      ns={'hiilikartta'}
-                    />
-                  </Box>
-                  <Box sx={{ mt: 0.2 }}>
-                    <ArrowNextBig></ArrowNextBig>
+                    <Box
+                      sx={{
+                        typography: 'h1',
+                        textAlign: 'end',
+                        mr: 3,
+                        minWidth: '270px',
+                      }}
+                    >
+                      <T
+                        keyName={
+                          'sidebar.plan_settings.calculate_carbon_effect'
+                        }
+                        ns={'hiilikartta'}
+                      />
+                    </Box>
+                    <Box sx={{ mt: 0.2 }}>
+                      <ArrowNextBig></ArrowNextBig>
+                    </Box>
                   </Box>
                 </Box>
               </Box>
-            </Box>
+            )}
           </Box>
         </>
       )}
