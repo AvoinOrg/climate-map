@@ -78,7 +78,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         planConf.id,
         t('sidebar.plan_settings.copy_suffix')
       )
-      router.push(getRoute(routeTree, routeTree))
+      router.push(getRoute(routeTree, routeTree, { planId: id }))
     }
   }
 
