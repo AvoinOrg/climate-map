@@ -27,7 +27,11 @@ const getRouteWithoutChildren = (routeTree: RouteTree) => {
   return route
 }
 
-const findRouteObjects = (route: RouteTree, routeTree: RouteTree, routeObjects: RouteObject[] = []): any => {
+const findRouteObjects = (
+  route: RouteTree,
+  routeTree: RouteTree,
+  routeObjects: RouteObject[] = []
+): any => {
   const currentRoute = getRouteWithoutChildren(routeTree)
   const routeObjectsCopy = [...routeObjects]
   routeObjectsCopy.push(currentRoute)
@@ -43,7 +47,12 @@ const findRouteObjects = (route: RouteTree, routeTree: RouteTree, routeObjects: 
   }
 }
 
-export const getRoute = (route: RouteTree, routeTree: RouteTree, params: string[] = [], removeSteps = 0) => {
+export const getRoute = (
+  route: RouteTree,
+  routeTree: RouteTree,
+  params: Record<string, string> = {},
+  removeSteps = 0
+) => {
   let routeObjects = findRouteObjects(route, routeTree)
 
   if (!routeObjects) {
@@ -56,21 +65,20 @@ export const getRoute = (route: RouteTree, routeTree: RouteTree, params: string[
     throw new Error('Route not found: ' + route + ' in ' + routeTree)
   }
 
-  let paramIndex = 0
   let path = ''
   for (const routeObject of routeObjects) {
     if (routeObject._conf) {
       const pathParts: string[] = routeObject._conf.path.split('/')
       for (const pathPart of pathParts) {
         if (pathPart.length > 0) {
-          if (pathPart.charAt(0) === ':') {
-            if (paramIndex + 1 > params.length) {
+          if (pathPart.startsWith('[') && pathPart.endsWith(']')) {
+            const paramName = pathPart.slice(1, -1) // Remove the brackets
+            if (params[paramName] == null) {
               throw new Error(
-                'Not enough params provided for route: ' + route + ' in ' + routeTree + ' with params: ' + params
+                `Not enough params provided for route: ${route} in ${routeTree} with params: ${params}`
               )
             }
-            path += `/${params[paramIndex]}`
-            paramIndex++
+            path += `/${params[paramName]}`
           } else {
             path += `/${pathPart}`
           }
@@ -87,7 +95,11 @@ export const getRoute = (route: RouteTree, routeTree: RouteTree, params: string[
   return path
 }
 
-export const getRouteParent = (route: RouteTree, routeTree: RouteTree, params: string[] = []) => {
+export const getRouteParent = (
+  route: RouteTree,
+  routeTree: RouteTree,
+  params: Record<string, string> = {}
+) => {
   const path = getRoute(route, routeTree, params, 1)
   return path
 }
@@ -102,7 +114,7 @@ export const getRoutesForPath = (path: string, routeTree: RouteTree) => {
   const basePath = '/' + routeTree._conf.path.replace(/^\/|\/$/g, '')
   const routes = [{ name: routeTree._conf.name, path: basePath }]
 
-  if (basePath === "/" + subPaths[0]) {
+  if (basePath === '/' + subPaths[0]) {
     subPaths.shift()
   }
 
@@ -128,8 +140,14 @@ export const getRoutesForPath = (path: string, routeTree: RouteTree) => {
           i++
           break
         } else {
-          const childPaths = child._conf.path.split('/').filter((p: string) => p.length > 0)
-          if (childPaths[0] !== subPath && childPaths[0].charAt(0) !== ':') {
+          const childPaths = child._conf.path
+            .split('/')
+            .filter((p: string) => p.length > 0)
+          if (
+            childPaths[0] !== subPath &&
+            !childPaths[0].startsWith('[') &&
+            !childPaths[0].endsWith(']')
+          ) {
             break
           }
 
@@ -145,10 +163,15 @@ export const getRoutesForPath = (path: string, routeTree: RouteTree) => {
             foundChild = true
             break
           } else {
-            throw new Error('RouteTree contains invalid paths: ' + child + ' in ' + routeTree)
+            throw new Error(
+              'RouteTree contains invalid paths: ' + child + ' in ' + routeTree
+            )
           }
         }
-      } else if (child._conf.path.charAt(0) === ':') {
+      } else if (
+        child._conf.path.startsWith('[') &&
+        child._conf.path.endsWith(']')
+      ) {
         currentPath += `/${subPath}`
 
         routes.push({ name: child._conf.name, path: currentPath })
@@ -156,6 +179,8 @@ export const getRoutesForPath = (path: string, routeTree: RouteTree) => {
         foundChild = true
         i++
         break
+      } else {
+        console.log(child._conf.path)
       }
     }
 
