@@ -8,6 +8,9 @@ import {
   CalcFeatureProperties,
   featureCols,
   CalcFeature,
+  CalcFeatureYearValues,
+  FeatureCalcs,
+  featureYears,
 } from './types'
 
 export const getPlanLayerGroupId = (planId: string) => {
@@ -163,4 +166,25 @@ export const transformCalcGeojsonToNestedStructure = (
   })
 
   return output
+}
+
+export const getAggregatedCalcs = (calcFeature: CalcFeature): FeatureCalcs => {
+  const calculations: Partial<FeatureCalcs> = {} // Start as a partial for intermediate computations
+
+  featureCols.forEach((col) => {
+    const nochange = calcFeature.properties[col].nochange
+    const planned = calcFeature.properties[col].planned
+    const yearDiffs: Partial<CalcFeatureYearValues> = {}
+
+    // Dynamically compute differences for each year
+    featureYears.forEach((year) => {
+      if (nochange[year] !== undefined && planned[year] !== undefined) {
+        yearDiffs[year] = planned[year] - nochange[year]
+      }
+    })
+
+    calculations[`${col}_diff`] = yearDiffs as CalcFeatureYearValues
+  })
+
+  return calculations as FeatureCalcs // Cast back to FeatureCalcs after computing all the values
 }
