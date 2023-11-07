@@ -29,7 +29,8 @@ import {
 } from '#/common/style/theme/constants'
 import { SIDEBAR_WIDTH_REM } from 'applets/hiilikartta/common/constants'
 import { pp } from '#/common/utils/general'
-import { featureYears } from 'applets/hiilikartta/common/types'
+import { FeatureYear, featureYears } from 'applets/hiilikartta/common/types'
+import DropDownSelectMinimal from '#/components/common/DropDownSelectMinimal'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const removeSerializableLayerGroup = useMapStore(
@@ -42,6 +43,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const deletePlanConf = useAppletStore((state) => state.deletePlanConf)
   const copyPlanConf = useAppletStore((state) => state.copyPlanConf)
   const calcPost = useMutation(calcPostMutation())
+  const [currentYear, setCurrentYear] = useState<FeatureYear>(featureYears[1])
 
   const [isLoaded, setIsLoaded] = useState(false)
   const router = useRouter()
@@ -145,9 +147,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                   </Box>
                   <Box
                     sx={{
-                      display: "flex",
-                      flexDirection: 'row',
-                      justifyContent: 'flex-end',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-end',
                       mt: 2,
                     }}
                   >
@@ -163,6 +165,20 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                         ns="hiilikartta"
                       ></T>
                     </Typography>
+                    <DropDownSelectMinimal
+                      value={currentYear}
+                      isIconOnTheRight={false}
+                      sx={{ mr: -3 }}
+                      onChange={(e) =>
+                        setCurrentYear(e.target.value as FeatureYear)
+                      }
+                      options={featureYears.slice(1).map((year) => {
+                        return {
+                          value: year,
+                          label: year,
+                        }
+                      })}
+                    ></DropDownSelectMinimal>
                   </Box>
                   <Box
                     sx={{
@@ -195,10 +211,10 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                       <Typography typography={'h1'}>
                         {pp(
                           planConf.reportData.agg.totals.bio_carbon_sum_diff[
-                            featureYears[1]
+                            currentYear
                           ] +
                             planConf.reportData.agg.totals
-                              .ground_carbon_sum_diff[featureYears[1]],
+                              .ground_carbon_sum_diff[currentYear],
                           4
                         )}
                       </Typography>
@@ -211,9 +227,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                       <Typography mt={2} typography={'h1'}>
                         {pp(
                           planConf.reportData.agg.totals
-                            .bio_carbon_per_area_diff[featureYears[1]] +
+                            .bio_carbon_per_area_diff[currentYear] +
                             planConf.reportData.agg.totals
-                              .ground_carbon_per_area_diff[featureYears[1]],
+                              .ground_carbon_per_area_diff[currentYear],
                           2
                         )}
                       </Typography>
