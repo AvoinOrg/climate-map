@@ -6,6 +6,7 @@ export interface ReportData {
   metadata: {
     timestamp: number
   }
+  agg: { totals: FeatureCalcs }
 }
 
 export interface PlanConf extends NewPlanConf {
