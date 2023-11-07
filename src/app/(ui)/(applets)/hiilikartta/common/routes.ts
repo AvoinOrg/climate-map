@@ -24,7 +24,7 @@ export const routeTree: RouteTree = {
     },
     plan: {
       _conf: {
-        path: ':id',
+        path: '[planId]',
         name: 'Kaavan tiedot',
       },
       report: {
