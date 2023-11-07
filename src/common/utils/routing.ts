@@ -179,8 +179,6 @@ export const getRoutesForPath = (path: string, routeTree: RouteTree) => {
         foundChild = true
         i++
         break
-      } else {
-        console.log(child._conf.path)
       }
     }
 
