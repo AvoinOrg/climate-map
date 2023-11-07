@@ -2,70 +2,27 @@
 import React, { useContext, useEffect, useState } from 'react'
 
 import useStore from '#/common/hooks/useStore'
-import { useUIStore } from '#/common/store'
 import Link from '#/components/common/Link'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
-import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
 import { Box, Typography } from '@mui/material'
 import { styled } from '@mui/system'
 import { pp } from '#/common/utils/general'
 import { getRoute } from '#/common/utils/routing'
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { T } from '@tolgee/react'
-import {
-  CalcFeature,
-  CalcFeatureYearValues,
-  FeatureCalcs,
-  featureCols,
-  featureYears,
-} from 'applets/hiilikartta/common/types'
+import { featureYears } from 'applets/hiilikartta/common/types'
 import CarbonMapGraph from 'applets/hiilikartta/components/CarbonMapGraph'
 import CarbonLineChart from 'applets/hiilikartta/components/CarbonLineChart'
 
 const MAX_WIDTH = '1000px'
 
-const getCalculations = (calcFeature: CalcFeature): FeatureCalcs => {
-  const calculations: Partial<FeatureCalcs> = {} // Start as a partial for intermediate computations
-
-  featureCols.forEach((col) => {
-    const nochange = calcFeature.properties[col].nochange
-    const planned = calcFeature.properties[col].planned
-    const yearDiffs: Partial<CalcFeatureYearValues> = {}
-
-    // Dynamically compute differences for each year
-    featureYears.forEach((year) => {
-      if (nochange[year] !== undefined && planned[year] !== undefined) {
-        yearDiffs[year] = planned[year] - nochange[year]
-      }
-    })
-
-    calculations[`${col}_diff`] = yearDiffs as CalcFeatureYearValues
-  })
-
-  return calculations as FeatureCalcs // Cast back to FeatureCalcs after computing all the values
-}
-
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [totalsCalcs, setTotalsCalcs] = useState<FeatureCalcs>()
+  const [isLoaded, setIsLoaded] = useState(true)
   const planConf = useStore(
     useAppletStore,
     (state) => state.planConfs[params.planIdSlug]
   )
-
-  useEffect(() => {
-    // useUIStore.setState((state) => {
-    //   state.appBarTitle = 'Kaavat'
-    // })
-    if (planConf?.reportData != null) {
-      const newTotalsCalcs = getCalculations(
-        planConf.reportData.totals.features[0]
-      )
-      setTotalsCalcs(newTotalsCalcs)
-      setIsLoaded(true)
-    }
-  }, [planConf])
 
   // useEffect(() => {
   //   const planLayerGroupId = getPlanLayerGroupId(params.planIdSlug)
@@ -81,7 +38,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   // }, [])
   return (
     <>
-      {isLoaded && totalsCalcs && planConf && planConf.reportData && (
+      {isLoaded && planConf && planConf.reportData && (
         <Box
           sx={(theme) => ({
             position: 'absolute',
@@ -120,7 +77,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 Hiiliraportti
               </Typography>
               <Link
-                href={getRoute(routeTree.plans.plan, routeTree, [params.planIdSlug])}
+                href={getRoute(routeTree.plans.plan, routeTree, [
+                  params.planIdSlug,
+                ])}
               >
                 <Typography
                   sx={(theme) => ({
@@ -204,8 +163,12 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 </Typography>
                 <Typography mt={1} typography={'h1'}>
                   {pp(
-                    totalsCalcs.bio_carbon_sum_diff[featureYears[1]] +
-                      totalsCalcs.ground_carbon_sum_diff[featureYears[1]],
+                    planConf.reportData.agg.totals.bio_carbon_sum_diff[
+                      featureYears[1]
+                    ] +
+                      planConf.reportData.agg.totals.ground_carbon_sum_diff[
+                        featureYears[1]
+                      ],
                     4
                   )}
                 </Typography>
@@ -217,8 +180,11 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 </Typography>
                 <Typography mt={1} typography={'h1'}>
                   {pp(
-                    totalsCalcs.bio_carbon_per_area_diff[featureYears[1]] +
-                      totalsCalcs.ground_carbon_per_area_diff[featureYears[1]],
+                    planConf.reportData.agg.totals.bio_carbon_per_area_diff[
+                      featureYears[1]
+                    ] +
+                      planConf.reportData.agg.totals
+                        .ground_carbon_per_area_diff[featureYears[1]],
                     2
                   )}
                 </Typography>
