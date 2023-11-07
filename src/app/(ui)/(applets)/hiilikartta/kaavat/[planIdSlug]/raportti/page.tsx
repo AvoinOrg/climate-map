@@ -77,9 +77,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 Hiiliraportti
               </Typography>
               <Link
-                href={getRoute(routeTree.plans.plan, routeTree, [
-                  params.planIdSlug,
-                ])}
+                href={getRoute(routeTree.plans.plan, routeTree, {
+                  planId: params.planIdSlug,
+                })}
               >
                 <Typography
                   sx={(theme) => ({

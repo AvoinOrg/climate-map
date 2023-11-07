@@ -60,7 +60,7 @@ const Page = () => {
     const id = await initializePlan()
     // TODO: throw error if id is null, i.e. if file is invalid
     if (id) {
-      const route = getRoute(routeTree.plans.plan, routeTree, [id])
+      const route = getRoute(routeTree.plans.plan, routeTree, { planId: id })
       router.push(route)
     }
   }

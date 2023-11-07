@@ -57,9 +57,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
 
   const handleOpenReport = async () => {
     if (planConf) {
-      const route = getRoute(routeTree.plans.plan.report, routeTree, [
-        params.planIdSlug,
-      ])
+      const route = getRoute(routeTree.plans.plan.report, routeTree, {
+        planId: params.planIdSlug,
+      })
       router.push(route)
     }
   }

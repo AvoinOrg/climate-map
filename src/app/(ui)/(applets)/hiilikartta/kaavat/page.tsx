@@ -30,7 +30,9 @@ const Page = () => {
               return (
                 <Box sx={{ mb: 2 }} key={id}>
                   <Link
-                    href={getRoute(routeTree.plans.plan, routeTree, [id])}
+                    href={getRoute(routeTree.plans.plan, routeTree, {
+                      planId: id,
+                    })}
                     sx={{
                       display: 'flex',
                       color: 'inherit',
