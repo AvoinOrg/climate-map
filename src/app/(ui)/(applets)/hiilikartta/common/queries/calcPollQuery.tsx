@@ -2,7 +2,10 @@ import { UseQueryOptions } from '@tanstack/react-query'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import axios from 'axios'
 import { CalculationState, PlanConf, ReportData } from '../types'
-import { transformCalcGeojsonToNestedStructure } from '../utils'
+import {
+  getAggregatedCalcs,
+  transformCalcGeojsonToNestedStructure,
+} from '../utils'
 
 const API_URL = process.env.NEXT_PUBLIC_HIILIKARTTA_API_URL
 
@@ -30,12 +33,23 @@ export const calcPollQuery = (
           timestamp: Number(response.data.data.metadata.calculated_ts),
         }
 
+        const totalsAgg = getAggregatedCalcs(totals.features[0])
+
+        const agg = { totals: totalsAgg }
+
+        const reportData = {
+          areas: areas,
+          totals: totals,
+          metadata: metadata,
+          agg: agg,
+        }
+
         updatePlanConf(planConf.id, {
-          reportData: { areas: areas, totals: totals, metadata: metadata },
+          reportData: reportData,
           calculationState: CalculationState.FINISHED,
         })
 
-        return { areas, totals, metadata }
+        return reportData
       } else if (response.status === 422) {
         updatePlanConf(planConf.id, {
           calculationState: CalculationState.ERRORED,
