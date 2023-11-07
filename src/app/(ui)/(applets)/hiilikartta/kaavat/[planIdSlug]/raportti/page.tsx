@@ -140,7 +140,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 })}
               >
                 <T
-                  keyName="report.impact_on_carbon_stock_in_year"
+                  keyName="report.impact_on_carbon_stock"
                   ns={'hiilikartta'}
                 ></T>{' '}
                 {featureYears[1]}
