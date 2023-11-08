@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState, memo } from 'react'
 import Box from '@mui/material/Box'
 import Accordion from '@mui/material/Accordion'
 import AccordionSummary from '@mui/material/AccordionSummary'
@@ -169,44 +169,87 @@ const ZoneAccordion = ({ planConfId, sx }: Props) => {
     >
       {planConf &&
         planConf.data.features.map((feature, index) => (
-          <Accordion
+          <CustomAccordion
             key={feature.properties.id}
-            sx={{
-              width: '100%',
-              backgroundColor: 'background.paper', // Default color
-              ':before': {
-                opacity: 0,
-              },
-              '&.Mui-expanded': {
-                margin: 'auto', // Override the default behavior
-                backgroundColor: 'primary.light', // Color when expanded
-              },
-              '&:before': {
-                display: 'none', // Disable the default focus visible
-              },
-            }}
-            TransitionProps={{ unmountOnExit: true }} // Prevent margin transition
+            feature={feature}
+            index={index}
             expanded={isAccordionExpanded(feature.properties.id)}
-            onChange={handleAccordionChange(feature.properties.id)}
-            ref={(el) => (accordionRefs.current[feature.properties.id] = el)}
-          >
-            <AccordionSummary
-              expandIcon={<ArrowDown />}
-              aria-controls={`panel${index + 1}-content`}
-              id={`panel${index + 1}-header`}
-            >
-              <Typography></Typography>
-              <Typography>{getTitle(feature)}</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography>
-                {/* Replace with your feature description or component */}
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
+            onChange={handleAccordionChange}
+            getTitle={getTitle}
+            accordionRefs={accordionRefs}
+          />
         ))}
     </Box>
   )
 }
 
 export default ZoneAccordion
+
+interface CustomAccordionProps {
+  feature: PlanDataFeature
+  index: number
+  expanded: boolean
+  onChange: (
+    featureId: string
+  ) => (event: React.SyntheticEvent, isExpanded: boolean) => void
+  getTitle: (feature: PlanDataFeature) => string
+  accordionRefs: React.MutableRefObject<{
+    [key: string]: HTMLDivElement | null
+  }>
+}
+
+const CustomAccordion = memo(
+  ({
+    feature,
+    index,
+    expanded,
+    onChange,
+    getTitle,
+    accordionRefs,
+  }: CustomAccordionProps) => {
+    return (
+      <Accordion
+        key={feature.properties.id}
+        sx={{
+          width: '100%',
+          backgroundColor: 'background.paper',
+          ':before': {
+            opacity: 0,
+          },
+          '&.Mui-expanded': {
+            margin: 'auto',
+            backgroundColor: 'primary.light',
+          },
+          '&:before': {
+            display: 'none',
+          },
+        }}
+        TransitionProps={{ unmountOnExit: true }}
+        expanded={expanded}
+        onChange={onChange(feature.properties.id)}
+        ref={(el) => (accordionRefs.current[feature.properties.id] = el)}
+      >
+        <AccordionSummary
+          expandIcon={<ArrowDown />}
+          aria-controls={`panel${index + 1}-content`}
+          id={`panel${index + 1}-header`}
+        >
+          <Typography></Typography>
+          <Typography>{getTitle(feature)}</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography>
+            {/* Replace with your feature description or component */}
+          </Typography>
+        </AccordionDetails>
+      </Accordion>
+    )
+  },
+  (prevProps, nextProps) => {
+    return (
+      prevProps.expanded === nextProps.expanded &&
+      prevProps.getTitle(prevProps.feature) ===
+        nextProps.getTitle(nextProps.feature)
+    )
+  }
+)
