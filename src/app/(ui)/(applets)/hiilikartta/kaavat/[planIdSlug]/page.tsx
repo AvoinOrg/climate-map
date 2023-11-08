@@ -170,7 +170,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                       isIconOnTheRight={false}
                       sx={{ mr: -4, mt: -0.5 }}
                       iconSx={{ ml: 2, mt: 0.8 }}
-                      optionSx={{ mr: 1, typography: 'h8'}}
+                      optionSx={{ mr: 1, typography: 'h8' }}
                       onChange={(e) =>
                         setCurrentYear(e.target.value as FeatureYear)
                       }
