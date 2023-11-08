@@ -23,7 +23,7 @@ type Actions = {
   updatePlanConf: (
     planId: string,
     planConf: Partial<PlanConf>
-  ) => Promise<PlanConf>
+  ) => Promise<PlanConf | null>
   copyPlanConf: (planId: string, nameSuffix?: string) => Promise<PlanConf>
 }
 
@@ -55,7 +55,13 @@ export const useAppletStore = create<State & Actions>()(
           return planConf
         },
         updatePlanConf: async (planId: string, planConf: Partial<PlanConf>) => {
-          const updatedPlanConf = { ...get().planConfs[planId], ...planConf }
+          const oldPlanConf = get().planConfs[planId]
+          if (oldPlanConf == null) {
+            console.error("Can't update a planConf that does not exist")
+            return null
+          }
+
+          const updatedPlanConf = { ...oldPlanConf, ...planConf }
           await set((state) => {
             state.planConfs[planId] = updatedPlanConf
           })
