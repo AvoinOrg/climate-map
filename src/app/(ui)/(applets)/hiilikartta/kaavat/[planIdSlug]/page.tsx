@@ -78,7 +78,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         planConf.id,
         t('sidebar.plan_settings.copy_suffix')
       )
-      router.push(getRoute(routeTree, routeTree, { planId: id }))
+      router.push(getRoute(routeTree.plans.plan, routeTree, { planId: id }))
     }
   }
 
@@ -168,7 +168,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                     <DropDownSelectMinimal
                       value={currentYear}
                       isIconOnTheRight={false}
-                      sx={{ mr: -3 }}
+                      sx={{ mr: -4, mt: -0.5 }}
+                      iconSx={{ ml: 2, mt: 0.8 }}
+                      optionSx={{ mr: 1, typography: 'h8' }}
                       onChange={(e) =>
                         setCurrentYear(e.target.value as FeatureYear)
                       }

@@ -6,6 +6,7 @@ interface Props {
   selectedColumn?: string
   onColumnChange: (column: string | undefined) => void
   label?: string
+  sx?: any
 }
 
 const PlanImportCodeRecordSelect = ({
@@ -13,6 +14,7 @@ const PlanImportCodeRecordSelect = ({
   selectedColumn,
   onColumnChange,
   label,
+  sx,
 }: Props) => {
   const handleSelectColumn = (event: SelectChangeEvent) => {
     const { value } = event.target
@@ -29,7 +31,7 @@ const PlanImportCodeRecordSelect = ({
     <>
       {columns.length > 0 && (
         <DropDownSelect
-          sx={() => ({ margin: '20px 0 0 0' })}
+          sx={() => ({ ...sx })}
           value={selectedColumn}
           options={columns.map((table) => {
             return { value: table, label: table }

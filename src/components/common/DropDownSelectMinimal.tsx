@@ -1,5 +1,11 @@
 import React, { useState } from 'react'
-import { FormControl, Select, SelectChangeEvent } from '@mui/material'
+import {
+  FormControl,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  Typography,
+} from '@mui/material'
 import { styled } from '@mui/material/styles'
 import DownIcon from '#/components/icons/DownIcon'
 
@@ -8,6 +14,8 @@ interface Props {
   options: { value: any; label: string }[]
   onChange: (event: SelectChangeEvent) => void
   sx?: any
+  optionSx?: any
+  iconSx?: any
   isIconOnTheRight?: boolean // added prop
 }
 
@@ -16,6 +24,8 @@ const DropDownSelectMinimal = ({
   options,
   onChange,
   sx,
+  optionSx,
+  iconSx,
   isIconOnTheRight = true,
 }: Props) => {
   const [hasEmpty, setHasEmpty] = useState(value == null)
@@ -23,39 +33,64 @@ const DropDownSelectMinimal = ({
   return (
     <FormControl variant={'standard'}>
       <Select
-        native
         value={value == null ? '' : value}
         onChange={onChange}
         IconComponent={StyledDownIcon}
         disableUnderline={true}
         MenuProps={{
           anchorOrigin: {
-            vertical: 'top',
+            vertical: 'bottom',
             horizontal: 'left',
           },
           transformOrigin: {
             vertical: 'top',
             horizontal: 'left',
           },
+          PaperProps: {
+            sx: {
+              // You can define the top position to make it nearer to the top of the anchor element
+              m: 0, // This negative margin will pull the menu up closer to the Select
+              p: 0,
+              '& .MuiList-root': {
+                m: 0,
+                p: 0,
+              },
+            },
+          },
         }}
         sx={{
-          ...sx,
-
           '.MuiSelect-icon': {
-            height: '10px',
+            ...iconSx,
+          },
+          '& .MuiSelect-select': {
+            m: 0,
+            p: 0,
           },
 
-          '& .Mui-selected': {
+          '& .MuiSelect-select:focus': {
             backgroundColor: 'transparent',
-            color: 'inherit', // or your desired color
           },
+          m: 0,
+          p: 0,
+          ...sx,
         }}
       >
         {hasEmpty && <option key={''} value={''}></option>}
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
+          <MenuItem
+            sx={{
+              m: 0,
+              p: 0,
+            }}
+            key={option.value}
+            value={option.value}
+          >
+            <Typography
+              sx={{ textAlign: 'left', pl: 1, pt: 0.5, pb: 0.5, ...optionSx }}
+            >
+              {option.label}
+            </Typography>
+          </MenuItem>
         ))}
       </Select>
     </FormControl>

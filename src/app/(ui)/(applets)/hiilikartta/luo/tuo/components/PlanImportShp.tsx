@@ -92,6 +92,7 @@ const PlanImportShp = ({
             selectedColumn={nameCol}
             onColumnChange={handleNameColChange}
             label={t('sidebar.create.select_zone_name_record')}
+            sx={{ mt: 5 }}
           />
         </>
       )}

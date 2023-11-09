@@ -126,6 +126,7 @@ const PlanImportGpkg = ({
           })}
           onChange={handleSelectTable}
           label="Valitse tietokantataulu"
+          sx={{ mb: 5 }}
         ></DropDownSelect>
       )}
       {columns.length > 0 && (
@@ -141,6 +142,7 @@ const PlanImportGpkg = ({
             selectedColumn={nameCol}
             onColumnChange={handleNameColChange}
             label={t('sidebar.create.select_zone_name_record')}
+            sx={{ mt: 5 }}
           />
         </>
       )}

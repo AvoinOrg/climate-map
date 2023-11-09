@@ -180,7 +180,7 @@ const Page = () => {
         sx={(theme) => ({
           width: '100%',
           height: '60px',
-          mb: 5
+          mb: 6,
         })}
       >
         {fileName ? fileName : 'Valitse tiedosto'}
