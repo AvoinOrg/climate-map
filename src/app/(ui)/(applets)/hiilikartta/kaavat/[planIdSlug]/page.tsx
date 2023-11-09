@@ -191,7 +191,13 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                     }}
                   >
                     <Box
-                      sx={{ display: 'inline-flex', maxWidth: '15rem', mr: 3 }}
+                      sx={{
+                        display: 'inline-flex',
+                        maxWidth: '15rem',
+                        mr: 3,
+                        pt: 0.3,
+                        lineHeight: 1.2,
+                      }}
                     >
                       <T
                         keyName={
