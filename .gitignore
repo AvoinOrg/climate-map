@@ -137,6 +137,7 @@ yarn-error.log*
 out
 .next
 next-env.d.ts
+.vercel
 
 # Api folders. We want to ignore everything included by the applets,
 # which are simply copied into the api folder.
