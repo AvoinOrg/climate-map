@@ -1,10 +1,23 @@
 import { RouteTree, RouteObject, Params } from '../types/routing'
 
-const toQueryString = (params: Record<string, string>): string => {
-  const parts = Object.keys(params).map((key) => {
-    const value = params[key]
-    return `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`
-  })
+const toQueryString = (queryParams: Params['queryParams']): string => {
+  if (!queryParams) {
+    return ''
+  }
+
+  // Handle URLSearchParams and ReadonlyURLSearchParams
+  if (queryParams instanceof URLSearchParams) {
+    return `?${queryParams.toString()}`
+  }
+
+  // Handle Record<string, string>
+  const parts = Object.keys(queryParams as Record<string, string>).map(
+    (key) => {
+      const value = (queryParams as Record<string, string>)[key]
+      return `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`
+    }
+  )
+
   return parts.length > 0 ? `?${parts.join('&')}` : ''
 }
 
@@ -113,7 +126,7 @@ export const getRouteParent = (
 }
 
 export const getRoutesForPath = (path: string, routeTree: RouteTree) => {
-  const pathWithoutQuery = path.split("?")[0]
+  const pathWithoutQuery = path.split('?')[0]
   const subPaths = pathWithoutQuery
     .toLowerCase()
     .split('/')
