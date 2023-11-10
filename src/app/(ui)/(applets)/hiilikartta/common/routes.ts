@@ -27,12 +27,12 @@ export const routeTree: RouteTree = {
         path: '[planId]',
         name: 'Kaavan tiedot',
       },
-      report: {
-        _conf: {
-          path: 'raportti',
-          name: 'Raportti',
-        },
-      },
+    },
+  },
+  report: {
+    _conf: {
+      path: 'raportti',
+      name: 'Raportti',
     },
   },
 }
