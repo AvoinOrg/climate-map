@@ -127,6 +127,22 @@ describe('routing utils', () => {
       )
     })
 
+    it('returns the correct route with route parameters and URLSearchParameters as query parameters', () => {
+      const route = getRoute(routeTree.products.product.order, routeTree, {
+        routeParams: {
+          productId: '123',
+          orderId: '456',
+        },
+        queryParams: new URLSearchParams({
+          extraValue: 'true',
+          sessionId: 'abc123',
+        }),
+      })
+      expect(route).toBe(
+        '/products/123/order/456?extraValue=true&sessionId=abc123'
+      )
+    })
+
     it('returns the correct route with query and route parameters for a route tree with a base path', () => {
       const route = getRoute(
         routeTreeWithBase.stuff.settings,
@@ -201,7 +217,10 @@ describe('routing utils', () => {
     })
 
     it('returns a correct set of routes for a path with query parameters', () => {
-      const routes = getRoutesForPath('/products/123/?extraValue=true&sessionId=abc123', routeTree)
+      const routes = getRoutesForPath(
+        '/products/123/?extraValue=true&sessionId=abc123',
+        routeTree
+      )
       expect(routes).toEqual([
         { name: 'Home', path: '/' },
         { name: 'Products', path: '/products' },
