@@ -51,45 +51,96 @@ describe('routing utils', () => {
       expect(route).toBe('/home/about')
     })
 
-    it('returns the correct route with parameters', () => {
+    it('returns the correct route with route parameters', () => {
       const route = getRoute(routeTree.products.product, routeTree, {
-        productId: '123',
+        routeParams: {
+          productId: '123',
+        },
       })
       expect(route).toBe('/products/123')
     })
 
-    it('returns the correct route with parameters', () => {
+    it('returns the correct route with route parameters', () => {
       const route = getRoute(routeTree.products.product.order, routeTree, {
-        productId: '123',
-        orderId: '456',
+        routeParams: {
+          productId: '123',
+          orderId: '456',
+        },
       })
       expect(route).toBe('/products/123/order/456')
     })
 
-    it('returns the correct route with parameters', () => {
+    it('returns the correct route with route parameters', () => {
       const route = getRoute(routeTree.stuff.settings, routeTree, {
-        stuffId: '123',
+        routeParams: {
+          stuffId: '123',
+        },
       })
       expect(route).toBe('/stuff/123/settings')
     })
 
-    it('returns the correct route with parameters', () => {
+    it('returns the correct route with route parameters', () => {
       const route = getRoute(routeTree.stuff.extras.extra, routeTree, {
-        stuffId: '123',
-        extraId: '456',
+        routeParams: {
+          stuffId: '123',
+          extraId: '456',
+        },
       })
       expect(route).toBe('/stuff/123/extras/456')
     })
 
-    it('returns the correct route with parameters for a route tree with a base path', () => {
+    it('returns the correct route with route parameters for a route tree with a base path', () => {
       const route = getRoute(
         routeTreeWithBase.stuff.settings,
         routeTreeWithBase,
         {
-          stuffId: '123',
+          routeParams: {
+            stuffId: '123',
+          },
         }
       )
       expect(route).toBe('/home/stuff/123/settings')
+    })
+
+    it('returns the correct route with query parameters', () => {
+      const route = getRoute(routeTree.products, routeTree, {
+        queryParams: {
+          productId: '123',
+        },
+      })
+      expect(route).toBe('/products?productId=123')
+    })
+
+    it('returns the correct route with query and route parameters', () => {
+      const route = getRoute(routeTree.products.product.order, routeTree, {
+        routeParams: {
+          productId: '123',
+          orderId: '456',
+        },
+        queryParams: {
+          extraValue: 'true',
+          sessionId: 'abc123',
+        },
+      })
+      expect(route).toBe(
+        '/products/123/order/456?extraValue=true&sessionId=abc123'
+      )
+    })
+
+    it('returns the correct route with query and route parameters for a route tree with a base path', () => {
+      const route = getRoute(
+        routeTreeWithBase.stuff.settings,
+        routeTreeWithBase,
+        {
+          routeParams: {
+            stuffId: '123',
+          },
+          queryParams: {
+            extraValue: 'true',
+          },
+        }
+      )
+      expect(route).toBe('/home/stuff/123/settings?extraValue=true')
     })
 
     it('throws an error if route not found', () => {
@@ -98,7 +149,7 @@ describe('routing utils', () => {
       ).toThrowError('Route not found')
     })
 
-    it('throws an error if not enough parameters are provided', () => {
+    it('throws an error if not enough route parameters are provided', () => {
       expect(() =>
         getRoute(routeTree.products.product, routeTree)
       ).toThrowError('Not enough params provided')
@@ -106,20 +157,24 @@ describe('routing utils', () => {
 
     it('throws an error if incorrect parameters are provided', () => {
       expect(() =>
-        getRoute(routeTree.products.product, routeTree, { incorrectId: '123' })
+        getRoute(routeTree.products.product, routeTree, {
+          routeParams: { incorrectId: '123' },
+        })
       ).toThrowError('Not enough params provided')
     })
   })
 
   describe('getRouteParent', () => {
-    it('returns the correct parent route with no parameters', () => {
+    it('returns the correct parent route with no route parameters', () => {
       const route = getRouteParent(routeTree.products.product, routeTree)
       expect(route).toBe('/products')
     })
 
-    it('returns the correct parent route with parameters', () => {
+    it('returns the correct parent route with route parameters', () => {
       const route = getRouteParent(routeTree.products.product, routeTree, {
-        productId: '123',
+        routeParams: {
+          productId: '123',
+        },
       })
       expect(route).toBe('/products')
     })
@@ -145,6 +200,15 @@ describe('routing utils', () => {
       ])
     })
 
+    it('returns a correct set of routes for a path with query parameters', () => {
+      const routes = getRoutesForPath('/products/123/?extraValue=true&sessionId=abc123', routeTree)
+      expect(routes).toEqual([
+        { name: 'Home', path: '/' },
+        { name: 'Products', path: '/products' },
+        { name: 'Product', path: '/products/123' },
+      ])
+    })
+
     it('returns a correct set of routes for a path', () => {
       const routes = getRoutesForPath('/products/123/order/456', routeTree)
       expect(routes).toEqual([
@@ -155,8 +219,11 @@ describe('routing utils', () => {
       ])
     })
 
-    it('returns a correct set of routes for a path', () => {
-      const routes = getRoutesForPath('/stuff/123/settings', routeTree)
+    it('returns a correct set of routes for a path with query parameters', () => {
+      const routes = getRoutesForPath(
+        '/stuff/123/settings?extraValue=true',
+        routeTree
+      )
       expect(routes).toEqual([
         { name: 'Home', path: '/' },
         { name: 'Stuff', path: '/stuff/123' },
