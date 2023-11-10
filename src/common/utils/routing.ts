@@ -1,3 +1,4 @@
+import { ReadonlyURLSearchParams } from 'next/navigation'
 import { RouteTree, RouteObject, Params } from '../types/routing'
 
 const toQueryString = (queryParams: Params['queryParams']): string => {
@@ -6,7 +7,10 @@ const toQueryString = (queryParams: Params['queryParams']): string => {
   }
 
   // Handle URLSearchParams and ReadonlyURLSearchParams
-  if (queryParams instanceof URLSearchParams) {
+  if (
+    queryParams instanceof URLSearchParams ||
+    queryParams instanceof ReadonlyURLSearchParams
+  ) {
     return `?${queryParams.toString()}`
   }
 
