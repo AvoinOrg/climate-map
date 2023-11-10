@@ -1,4 +1,12 @@
-import { RouteTree, RouteObject } from '../types/routing'
+import { RouteTree, RouteObject, Params } from '../types/routing'
+
+const toQueryString = (params: Record<string, string>): string => {
+  const parts = Object.keys(params).map((key) => {
+    const value = params[key]
+    return `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`
+  })
+  return parts.length > 0 ? `?${parts.join('&')}` : ''
+}
 
 const getRouteChildren = (routeTree: RouteTree) => {
   const children = []
@@ -50,7 +58,7 @@ const findRouteObjects = (
 export const getRoute = (
   route: RouteTree,
   routeTree: RouteTree,
-  params: Record<string, string> = {},
+  { routeParams = {}, queryParams = {} }: Params = {},
   removeSteps = 0
 ) => {
   let routeObjects = findRouteObjects(route, routeTree)
@@ -73,12 +81,12 @@ export const getRoute = (
         if (pathPart.length > 0) {
           if (pathPart.startsWith('[') && pathPart.endsWith(']')) {
             const paramName = pathPart.slice(1, -1) // Remove the brackets
-            if (params[paramName] == null) {
+            if (routeParams[paramName] == null) {
               throw new Error(
-                `Not enough params provided for route: ${route} in ${routeTree} with params: ${params}`
+                `Not enough params provided for route: ${route} in ${routeTree} with params: ${routeParams}`
               )
             }
-            path += `/${params[paramName]}`
+            path += `/${routeParams[paramName]}`
           } else {
             path += `/${pathPart}`
           }
@@ -89,23 +97,24 @@ export const getRoute = (
 
   // check if the path is empty, if so, return the root path
   if (path === '') {
-    return '/'
+    path = '/'
   }
 
-  return path
+  return path + toQueryString(queryParams)
 }
 
 export const getRouteParent = (
   route: RouteTree,
   routeTree: RouteTree,
-  params: Record<string, string> = {}
+  params: Params = {}
 ) => {
   const path = getRoute(route, routeTree, params, 1)
   return path
 }
 
 export const getRoutesForPath = (path: string, routeTree: RouteTree) => {
-  const subPaths = path
+  const pathWithoutQuery = path.split("?")[0]
+  const subPaths = pathWithoutQuery
     .toLowerCase()
     .split('/')
     .filter((p) => p.length > 0)
