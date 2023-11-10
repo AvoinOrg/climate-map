@@ -57,8 +57,8 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
 
   const handleOpenReport = async () => {
     if (planConf) {
-      const route = getRoute(routeTree.plans.plan.report, routeTree, {
-        planId: params.planIdSlug,
+      const route = getRoute(routeTree.report, routeTree, {
+        queryParams: { planIds: params.planIdSlug },
       })
       router.push(route)
     }
@@ -78,7 +78,11 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         planConf.id,
         t('sidebar.plan_settings.copy_suffix')
       )
-      router.push(getRoute(routeTree.plans.plan, routeTree, { planId: id }))
+      router.push(
+        getRoute(routeTree.plans.plan, routeTree, {
+          routeParams: { planId: id },
+        })
+      )
     }
   }
 
