@@ -3,6 +3,8 @@ import React, { useContext, useEffect, useState } from 'react'
 
 import useStore from '#/common/hooks/useStore'
 import Link from '#/components/common/Link'
+import { useSearchParams } from 'next/navigation'
+import { map, isEqual } from 'lodash-es'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { Box, Typography } from '@mui/material'
@@ -11,18 +13,55 @@ import { pp } from '#/common/utils/general'
 import { getRoute } from '#/common/utils/routing'
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { T } from '@tolgee/react'
-import { featureYears } from 'applets/hiilikartta/common/types'
+import {
+  featureYears,
+  PlanConf,
+  ReportData,
+} from 'applets/hiilikartta/common/types'
 import CarbonMapGraph from 'applets/hiilikartta/components/CarbonMapGraph'
 import CarbonLineChart from 'applets/hiilikartta/components/CarbonLineChart'
 
 const MAX_WIDTH = '1000px'
 
+type PlanConfWithReportData = PlanConf & { reportData: ReportData }
+
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
+  const searchParams = useSearchParams()
+  const [planConfs, setPlanConfs] = useState<PlanConfWithReportData[]>([])
+  const allPlanConfs = useStore(useAppletStore, (state) => state.planConfs)
+
   const [isLoaded, setIsLoaded] = useState(true)
-  const planConf = useStore(
-    useAppletStore,
-    (state) => state.planConfs[params.planIdSlug]
-  )
+
+  useEffect(() => {
+    const idString = searchParams.get('planIds')
+    if (idString != null && allPlanConfs != null) {
+      const ids = idString.split(',')
+
+      const paramPlanConfs: PlanConfWithReportData[] = []
+      for (const id of ids) {
+        if (allPlanConfs[id]) {
+          if (allPlanConfs[id].reportData != null) {
+            paramPlanConfs.push(allPlanConfs[id] as PlanConfWithReportData)
+          } else {
+            // TODO: add error notification popup
+            setErrorState(ErrorState.NO_DATA)
+          }
+        }
+      }
+      const areIdsEqualAndInOrder = isEqual(
+        map(planConfs, 'id'),
+        map(paramPlanConfs, 'id')
+      )
+
+      if (!areIdsEqualAndInOrder) {
+        setPlanConfs(paramPlanConfs)
+      }
+
+      if (!isLoaded) {
+        setIsLoaded(true)
+      }
+    }
+  }, [searchParams, allPlanConfs])
 
   // useEffect(() => {
   //   const planLayerGroupId = getPlanLayerGroupId(params.planIdSlug)
@@ -38,7 +77,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   // }, [])
   return (
     <>
-      {isLoaded && planConf && planConf.reportData && (
+      {isLoaded && planConfs.length > 0 && (
         <Box
           sx={(theme) => ({
             position: 'absolute',
@@ -78,7 +117,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               </Typography>
               <Link
                 href={getRoute(routeTree.plans.plan, routeTree, {
-                  planId: params.planIdSlug,
+                  routeParams: { planId: params.planIdSlug },
                 })}
               >
                 <Typography
@@ -98,33 +137,24 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               })}
             >
               <Col>
-                <Typography
+                {/* <Typography
                   sx={(theme) => ({
                     typography: theme.typography.h4,
                     display: 'inline',
                   })}
                 >
                   {planConf?.name}
-                </Typography>
-                <Typography
+                </Typography> */}
+                {/* <Typography
                   sx={(theme) => ({
                     typography: theme.typography.h5,
                     display: 'inline',
                     mt: theme.spacing(0.5),
                   })}
-                >
-                  {/* {pp(reportData.area / 10000, 2)} hehtaaria */}
-                </Typography>
+                > */}
+                {/* {pp(reportData.area / 10000, 2)} hehtaaria */}
+                {/* </Typography> */}
               </Col>
-              {/* <Typography
-            sx={(theme) => ({
-              typography: theme.typography.caption,
-              display: 'inline',
-              color: theme.palette.neutral.light,
-            })}
-          >
-            <u>Sulje raportti</u>
-          </Typography> */}
             </Row>
           </Section>
           <Section>
@@ -146,54 +176,63 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 {featureYears[1]}
               </Typography>
             </Row>
-            <Row sx={{ mt: 6 }}>
-              <Col>
-                <Typography typography={'h8'}>
-                  <T keyName="report.plan" ns="hiilikartta"></T>
-                </Typography>
-                <Typography typography={'h7'}>{planConf?.name}</Typography>
-                <Typography typography={'h5'} sx={{ mt: 2 }}>
-                  <T
-                    keyName="report.carbon_stock_decreases"
-                    ns="hiilikartta"
-                  ></T>
-                </Typography>
-                <Typography mt={4} typography={'h5'}>
-                  <T keyName="report.carbon_eqv_unit" ns="hiilikartta"></T>
-                </Typography>
-                <Typography mt={1} typography={'h1'}>
-                  {pp(
-                    planConf.reportData.agg.totals.bio_carbon_sum_diff[
-                      featureYears[1]
-                    ] +
-                      planConf.reportData.agg.totals.ground_carbon_sum_diff[
-                        featureYears[1]
-                      ],
-                    4
-                  )}
-                </Typography>
-                <Typography mt={3} typography={'h5'}>
-                  <T
-                    keyName="report.carbon_eqv_unit_hectare"
-                    ns="hiilikartta"
-                  ></T>
-                </Typography>
-                <Typography mt={1} typography={'h1'}>
-                  {pp(
-                    planConf.reportData.agg.totals.bio_carbon_per_area_diff[
-                      featureYears[1]
-                    ] +
-                      planConf.reportData.agg.totals
-                        .ground_carbon_per_area_diff[featureYears[1]],
-                    2
-                  )}
-                </Typography>
-              </Col>
-              <Col sx={{}}></Col>
+            <Row sx={{ mt: 2 }}>
+              {planConfs.map((planConf) => {
+                return (
+                  <Row sx={{ mt: 4 }}>
+                    <Col>
+                      <Typography typography={'h8'}>
+                        <T keyName="report.plan" ns="hiilikartta"></T>
+                      </Typography>
+                      <Typography typography={'h7'}>
+                        {planConf?.name}
+                      </Typography>
+                      <Typography typography={'h5'} sx={{ mt: 2 }}>
+                        <T
+                          keyName="report.carbon_stock_decreases"
+                          ns="hiilikartta"
+                        ></T>
+                      </Typography>
+                      <Typography mt={4} typography={'h5'}>
+                        <T
+                          keyName="report.carbon_eqv_unit"
+                          ns="hiilikartta"
+                        ></T>
+                      </Typography>
+                      <Typography mt={1} typography={'h1'}>
+                        {pp(
+                          planConf.reportData.agg.totals.bio_carbon_sum_diff[
+                            featureYears[1]
+                          ] +
+                            planConf.reportData.agg.totals
+                              .ground_carbon_sum_diff[featureYears[1]],
+                          4
+                        )}
+                      </Typography>
+                      <Typography mt={3} typography={'h5'}>
+                        <T
+                          keyName="report.carbon_eqv_unit_hectare"
+                          ns="hiilikartta"
+                        ></T>
+                      </Typography>
+                      <Typography mt={1} typography={'h1'}>
+                        {pp(
+                          planConf.reportData.agg.totals
+                            .bio_carbon_per_area_diff[featureYears[1]] +
+                            planConf.reportData.agg.totals
+                              .ground_carbon_per_area_diff[featureYears[1]],
+                          2
+                        )}
+                      </Typography>
+                    </Col>
+                    <Col sx={{}}></Col>
+                  </Row>
+                )
+              })}
             </Row>
           </Section>
           <Breaker sx={{ mt: 8 }} />
-          <Section sx={{ mt: 8 }}>
+          {/* <Section sx={{ mt: 8 }}>
             <Row>
               <Typography
                 sx={(theme) => ({
@@ -229,7 +268,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             <Row>
               <CarbonLineChart data={planConf.reportData.totals} />
             </Row>
-          </Section>
+          </Section> */}
         </Box>
       )}
     </>
