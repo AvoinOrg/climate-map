@@ -5,6 +5,7 @@ import useStore from '#/common/hooks/useStore'
 import Link from '#/components/common/Link'
 import { useSearchParams } from 'next/navigation'
 import { map, isEqual } from 'lodash-es'
+import { useRouter } from 'next/navigation'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { Box, Typography } from '@mui/material'
@@ -27,38 +28,60 @@ type PlanConfWithReportData = PlanConf & { reportData: ReportData }
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const searchParams = useSearchParams()
-  const [planConfs, setPlanConfs] = useState<PlanConfWithReportData[]>([])
+  const router = useRouter()
+
   const allPlanConfs = useStore(useAppletStore, (state) => state.planConfs)
 
+  const [planConfs, setPlanConfs] = useState<PlanConfWithReportData[]>([])
+  const [prevPageId, setPrevPageId] = useState<string>()
   const [isLoaded, setIsLoaded] = useState(true)
 
   useEffect(() => {
-    const idString = searchParams.get('planIds')
-    if (idString != null && allPlanConfs != null) {
-      const ids = idString.split(',')
+    if (allPlanConfs != null) {
+      const paramPlanIds = searchParams.get('planIds')
+      if (paramPlanIds != null) {
+        const ids = paramPlanIds.split(',')
 
-      const paramPlanConfs: PlanConfWithReportData[] = []
-      for (const id of ids) {
-        if (allPlanConfs[id]) {
-          if (allPlanConfs[id].reportData != null) {
-            paramPlanConfs.push(allPlanConfs[id] as PlanConfWithReportData)
-          } else {
-            // TODO: add error notification popup
-            setErrorState(ErrorState.NO_DATA)
+        const paramPlanConfs: PlanConfWithReportData[] = []
+        for (const id of ids) {
+          if (allPlanConfs[id]) {
+            if (allPlanConfs[id].reportData != null) {
+              paramPlanConfs.push(allPlanConfs[id] as PlanConfWithReportData)
+            } else {
+              // TODO: add error notification popup
+              setErrorState(ErrorState.NO_DATA)
+            }
           }
         }
-      }
-      const areIdsEqualAndInOrder = isEqual(
-        map(planConfs, 'id'),
-        map(paramPlanConfs, 'id')
-      )
+        const areIdsEqualAndInOrder = isEqual(
+          map(planConfs, 'id'),
+          map(paramPlanConfs, 'id')
+        )
 
-      if (!areIdsEqualAndInOrder) {
-        setPlanConfs(paramPlanConfs)
+        if (!areIdsEqualAndInOrder) {
+          setPlanConfs(paramPlanConfs)
+        }
+
+        if (!isLoaded) {
+          setIsLoaded(true)
+        }
       }
 
-      if (!isLoaded) {
-        setIsLoaded(true)
+      const paramPrevPageId = searchParams.get('prevPageId')
+      if (paramPrevPageId != null) {
+        if (allPlanConfs[paramPrevPageId] != null) {
+          setPrevPageId(paramPrevPageId)
+        } else {
+          const newSearchParams = new URLSearchParams(searchParams)
+          newSearchParams.delete('prevPageId')
+
+          // Use router.replace to update the URL without adding a new history entry
+          router.replace(
+            getRoute(routeTree.report, routeTree, {
+              queryParams: newSearchParams,
+            })
+          )
+        }
       }
     }
   }, [searchParams, allPlanConfs])
@@ -116,9 +139,13 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 Hiiliraportti
               </Typography>
               <Link
-                href={getRoute(routeTree.plans.plan, routeTree, {
-                  routeParams: { planId: params.planIdSlug },
-                })}
+                href={
+                  prevPageId != null
+                    ? getRoute(routeTree.plans.plan, routeTree, {
+                        routeParams: { planId: prevPageId },
+                      })
+                    : getRoute(routeTree, routeTree)
+                }
               >
                 <Typography
                   sx={(theme) => ({
