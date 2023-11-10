@@ -1,3 +1,5 @@
+import { ReadonlyURLSearchParams } from 'next/navigation'
+
 export type RouteObject = {
   name: string
   path: string
@@ -11,5 +13,8 @@ export type RouteTree = {
 
 export type Params = {
   routeParams?: Record<string, string>
-  queryParams?: Record<string, string>
+  queryParams?:
+    | Record<string, string>
+    | URLSearchParams
+    | ReadonlyURLSearchParams
 }
