@@ -8,3 +8,8 @@ export type RouteTree = {
 } & {
   [key: string]: RouteTree | any
 }
+
+export type Params = {
+  routeParams?: Record<string, string>
+  queryParams?: Record<string, string>
+}
