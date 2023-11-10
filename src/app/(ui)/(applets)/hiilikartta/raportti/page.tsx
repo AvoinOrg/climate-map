@@ -206,7 +206,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             <Row sx={{ mt: 2 }}>
               {planConfs.map((planConf) => {
                 return (
-                  <Row sx={{ mt: 4 }}>
+                  <Row sx={{ mt: 4 }} key={planConf.id}>
                     <Col>
                       <Typography typography={'h8'}>
                         <T keyName="report.plan" ns="hiilikartta"></T>
