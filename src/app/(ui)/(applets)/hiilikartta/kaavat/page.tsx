@@ -31,7 +31,9 @@ const Page = () => {
                 <Box sx={{ mb: 2 }} key={id}>
                   <Link
                     href={getRoute(routeTree.plans.plan, routeTree, {
-                      planId: id,
+                      routeParams: {
+                        planId: id,
+                      },
                     })}
                     sx={{
                       display: 'flex',
