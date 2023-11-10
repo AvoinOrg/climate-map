@@ -6,14 +6,15 @@ import Link from '#/components/common/Link'
 import { useSearchParams } from 'next/navigation'
 import { map, isEqual } from 'lodash-es'
 import { useRouter } from 'next/navigation'
-
-import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
-import { Box, Typography } from '@mui/material'
 import { styled } from '@mui/system'
+import { Box, SelectChangeEvent, Typography } from '@mui/material'
+import { T } from '@tolgee/react'
+
 import { pp } from '#/common/utils/general'
 import { getRoute } from '#/common/utils/routing'
+
+import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import { T } from '@tolgee/react'
 import {
   featureYears,
   PlanConf,
