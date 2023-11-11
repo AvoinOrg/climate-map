@@ -7,12 +7,14 @@ import {
   Typography,
 } from '@mui/material'
 import { styled } from '@mui/material/styles'
+
 import DownIcon from '#/components/icons/DownIcon'
+import { SelectOption } from '#/common/types/general'
 
 interface Props {
   value: any
-  options: { value: any; label: string }[]
-  onChange: (event: SelectChangeEvent) => void
+  options: SelectOption[]
+  onChange: (event: SelectChangeEvent<string[]>) => void
   sx?: any
   optionSx?: any
   iconSx?: any
