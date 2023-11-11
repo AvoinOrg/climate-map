@@ -120,88 +120,86 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   //   setMapLibraryMode('mapbox')
   // }, [])
   return (
-    <>
-      {isLoaded && planConfs.length > 0 && (
-        <Box
+    <Box
+      sx={(theme) => ({
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        width: '100vw',
+        backgroundColor: theme.palette.neutral.light,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'auto',
+        pb: theme.spacing(20),
+        alignItems: 'center',
+      })}
+    >
+      <Section
+        sx={(theme) => ({
+          backgroundColor: theme.palette.primary.dark,
+          pt: theme.spacing(10),
+          pb: theme.spacing(4),
+          px: theme.spacing(4),
+        })}
+      >
+        <Row
           sx={(theme) => ({
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            width: '100vw',
-            backgroundColor: theme.palette.neutral.light,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'auto',
-            pb: theme.spacing(20),
-            alignItems: 'center',
+            mt: theme.spacing(4),
           })}
         >
-          <Section
+          <Typography
             sx={(theme) => ({
-              backgroundColor: theme.palette.primary.dark,
-              pt: theme.spacing(10),
-              pb: theme.spacing(4),
-              px: theme.spacing(4),
+              typography: theme.typography.h1,
+              display: 'inline',
             })}
           >
-            <Row
+            Hiiliraportti
+          </Typography>
+          <Link
+            href={
+              prevPageId != null
+                ? getRoute(routeTree.plans.plan, routeTree, {
+                    routeParams: { planId: prevPageId },
+                  })
+                : getRoute(routeTree, routeTree)
+            }
+          >
+            <Typography
               sx={(theme) => ({
-                mt: theme.spacing(4),
+                typography: theme.typography.body1,
+                display: 'inline',
+                color: theme.palette.neutral.light,
               })}
             >
-              <Typography
-                sx={(theme) => ({
-                  typography: theme.typography.h1,
-                  display: 'inline',
-                })}
-              >
-                Hiiliraportti
-              </Typography>
-              <Link
-                href={
-                  prevPageId != null
-                    ? getRoute(routeTree.plans.plan, routeTree, {
-                        routeParams: { planId: prevPageId },
+              <u>Sulje raportti</u>
+            </Typography>
+          </Link>
+        </Row>
+        <Row
+          sx={(theme) => ({
+            mt: theme.spacing(4),
+          })}
+        >
+          <Col>
+            <MultiSelectChip
+              value={planConfs.map((planConf) => planConf.id)}
+              options={
+                allPlanConfs != null
+                  ? Object.keys(allPlanConfs)
+                      .filter((id) => allPlanConfs[id].reportData != null)
+                      .map((id) => {
+                        return {
+                          value: id,
+                          label: allPlanConfs[id].name,
+                        }
                       })
-                    : getRoute(routeTree, routeTree)
-                }
-              >
-                <Typography
-                  sx={(theme) => ({
-                    typography: theme.typography.body1,
-                    display: 'inline',
-                    color: theme.palette.neutral.light,
-                  })}
-                >
-                  <u>Sulje raportti</u>
-                </Typography>
-              </Link>
-            </Row>
-            <Row
-              sx={(theme) => ({
-                mt: theme.spacing(4),
-              })}
-            >
-              <Col>
-                <MultiSelectChip
-                  value={planConfs.map((planConf) => planConf.id)}
-                  options={
-                    allPlanConfs != null
-                      ? Object.keys(allPlanConfs)
-                          .filter((id) => allPlanConfs[id].reportData != null)
-                          .map((id) => {
-                            return {
-                              value: id,
-                              label: allPlanConfs[id].name,
-                            }
-                          })
-                      : []
-                  }
-                  onChange={handlePlanSelectClick}
-                ></MultiSelectChip>
-                {/* <Typography
+                  : []
+              }
+              onChange={handlePlanSelectClick}
+            ></MultiSelectChip>
+            {/* <Typography
                   sx={(theme) => ({
                     typography: theme.typography.h4,
                     display: 'inline',
@@ -209,18 +207,20 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 >
                   {planConf?.name}
                 </Typography> */}
-                {/* <Typography
+            {/* <Typography
                   sx={(theme) => ({
                     typography: theme.typography.h5,
                     display: 'inline',
                     mt: theme.spacing(0.5),
                   })}
                 > */}
-                {/* {pp(reportData.area / 10000, 2)} hehtaaria */}
-                {/* </Typography> */}
-              </Col>
-            </Row>
-          </Section>
+            {/* {pp(reportData.area / 10000, 2)} hehtaaria */}
+            {/* </Typography> */}
+          </Col>
+        </Row>
+      </Section>
+      {isLoaded && planConfs.length > 0 && (
+        <>
           <Section>
             <Row
               sx={(theme) => ({
@@ -333,9 +333,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               <CarbonLineChart data={planConf.reportData.totals} />
             </Row>
           </Section> */}
-        </Box>
+        </>
       )}
-    </>
+    </Box>
   )
 }
 
