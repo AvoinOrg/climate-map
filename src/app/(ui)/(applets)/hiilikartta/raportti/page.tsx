@@ -26,6 +26,12 @@ import CarbonLineChart from 'applets/hiilikartta/components/CarbonLineChart'
 
 const MAX_WIDTH = '1000px'
 
+enum ErrorState {
+  NO_IDS = 'NO_IDS',
+  INVALID_IDS = 'INVALID_IDS',
+  NO_DATA = 'NO_DATA',
+}
+
 type PlanConfWithReportData = PlanConf & { reportData: ReportData }
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
@@ -36,6 +42,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
 
   const [planConfs, setPlanConfs] = useState<PlanConfWithReportData[]>([])
   const [prevPageId, setPrevPageId] = useState<string>()
+  const [errorState, setErrorState] = useState<ErrorState>()
   const [isLoaded, setIsLoaded] = useState(true)
 
   useEffect(() => {
