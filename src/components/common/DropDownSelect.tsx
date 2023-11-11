@@ -5,12 +5,13 @@ import {
   SelectChangeEvent,
   Typography,
 } from '@mui/material'
-import { styled } from '@mui/material/styles'
+
 import DownIcon from '#/components/icons/DownIcon'
+import { SelectOption } from '#/common/types/general'
 
 interface Props {
   value: any
-  options: { value: any; label: string }[]
+  options: SelectOption[]
   onChange: (event: SelectChangeEvent) => void
   label?: string
   sx?: any
@@ -30,7 +31,9 @@ const DropDownSelect = ({
   return (
     <FormControl sx={sx}>
       {label && (
-        <Typography sx={{ typography: 'h7', mb: 2, ...labelSx }}>{label}</Typography>
+        <Typography sx={{ typography: 'h7', mb: 2, ...labelSx }}>
+          {label}
+        </Typography>
       )}
       <Select
         native
