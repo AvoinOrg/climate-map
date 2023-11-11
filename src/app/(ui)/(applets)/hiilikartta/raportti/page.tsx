@@ -12,6 +12,7 @@ import { T } from '@tolgee/react'
 
 import { pp } from '#/common/utils/general'
 import { getRoute } from '#/common/utils/routing'
+import MultiSelectChip from '#/components/common/MultiSelectChip'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
@@ -86,6 +87,25 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
       }
     }
   }, [searchParams, allPlanConfs])
+
+  const handlePlanSelectClick = (event: SelectChangeEvent<string[]>) => {
+    const {
+      target: { value },
+    } = event
+
+    if (typeof value !== 'string') {
+      const newSearchParams = new URLSearchParams(searchParams)
+      const valueString = value.join(',')
+      newSearchParams.set('planIds', valueString)
+
+      // Use router.replace to update the URL without adding a new history entry
+      router.replace(
+        getRoute(routeTree.report, routeTree, {
+          queryParams: newSearchParams,
+        })
+      )
+    }
+  }
 
   // useEffect(() => {
   //   const planLayerGroupId = getPlanLayerGroupId(params.planIdSlug)
@@ -165,6 +185,22 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               })}
             >
               <Col>
+                <MultiSelectChip
+                  value={planConfs.map((planConf) => planConf.id)}
+                  options={
+                    allPlanConfs != null
+                      ? Object.keys(allPlanConfs)
+                          .filter((id) => allPlanConfs[id].reportData != null)
+                          .map((id) => {
+                            return {
+                              value: id,
+                              label: allPlanConfs[id].name,
+                            }
+                          })
+                      : []
+                  }
+                  onChange={handlePlanSelectClick}
+                ></MultiSelectChip>
                 {/* <Typography
                   sx={(theme) => ({
                     typography: theme.typography.h4,
