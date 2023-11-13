@@ -7,6 +7,9 @@ import MenuItem from '@mui/material/MenuItem'
 import FormControl from '@mui/material/FormControl'
 import Select, { SelectChangeEvent } from '@mui/material/Select'
 import Chip from '@mui/material/Chip'
+import { find } from 'lodash-es'
+
+import { SelectOption } from '#/common/types/general'
 
 const ITEM_HEIGHT = 48
 const ITEM_PADDING_TOP = 8
@@ -28,9 +31,14 @@ function getStyles(name: string, personName: readonly string[], theme: Theme) {
   }
 }
 
+const findLabelByValue = (valueToFind: string, data: SelectOption[]) => {
+  const item = find(data, { value: valueToFind })
+  return item ? item.label : undefined
+}
+
 interface Props {
   value: string[]
-  options: { value: any; label: string }[]
+  options: SelectOption[]
   onChange: (event: SelectChangeEvent<string[]>) => void
   sx?: any
   optionSx?: any
@@ -60,7 +68,7 @@ const MultiSelectChip = ({
         renderValue={(selected) => (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
             {selected.map((value) => (
-              <Chip key={value} label={value} />
+              <Chip key={value} label={findLabelByValue(value, options)} />
             ))}
           </Box>
         )}
