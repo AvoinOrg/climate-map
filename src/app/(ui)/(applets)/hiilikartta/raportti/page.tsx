@@ -23,6 +23,7 @@ import {
 } from 'applets/hiilikartta/common/types'
 import CarbonMapGraph from 'applets/hiilikartta/components/CarbonMapGraph'
 import CarbonLineChart from 'applets/hiilikartta/components/CarbonLineChart'
+import { SelectOption } from '#/common/types/general'
 
 const MAX_WIDTH = '1000px'
 
@@ -95,23 +96,20 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     }
   }, [searchParams, allPlanConfs])
 
-  const handlePlanSelectClick = (event: SelectChangeEvent<string[]>) => {
-    const {
-      target: { value },
-    } = event
+  const handlePlanSelectClick = (
+    event: React.SyntheticEvent<Element, Event>,
+    newValue: SelectOption[]
+  ) => {
+    const newSearchParams = new URLSearchParams(searchParams)
+    const valueString = newValue.map((option) => option.value).join(',')
+    newSearchParams.set('planIds', valueString)
 
-    if (typeof value !== 'string') {
-      const newSearchParams = new URLSearchParams(searchParams)
-      const valueString = value.join(',')
-      newSearchParams.set('planIds', valueString)
-
-      // Use router.replace to update the URL without adding a new history entry
-      router.replace(
-        getRoute(routeTree.report, routeTree, {
-          queryParams: newSearchParams,
-        })
-      )
-    }
+    // Use router.replace to update the URL without adding a new history entry
+    router.replace(
+      getRoute(routeTree.report, routeTree, {
+        queryParams: newSearchParams,
+      })
+    )
   }
 
   // useEffect(() => {
@@ -191,7 +189,10 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         >
           <Col>
             <MultiSelectChip
-              value={planConfs.map((planConf) => planConf.id)}
+              value={planConfs.map((planConf) => ({
+                value: planConf.id,
+                label: planConf.name,
+              }))}
               options={
                 allPlanConfs != null
                   ? Object.keys(allPlanConfs)
