@@ -31,7 +31,6 @@ const MultiSelectChip = ({
   return (
     <Autocomplete
       multiple
-      id="fixed-tags-demo"
       value={value}
       sx={sx}
       onChange={onChange}
