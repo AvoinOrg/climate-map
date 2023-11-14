@@ -1,6 +1,7 @@
 import * as React from 'react'
 import Box from '@mui/material/Box'
 import Chip from '@mui/material/Chip'
+import { useTranslate } from '@tolgee/react'
 import { Autocomplete, TextField } from '@mui/material'
 
 import { SelectOption } from '#/common/types/general'
@@ -25,7 +26,7 @@ const MultiSelectChip = ({
   optionSx,
   iconSx,
 }: Props) => {
-  const theme = useTheme()
+  const { t } = useTranslate('avoin-map')
 
   return (
     <Autocomplete
