@@ -18,7 +18,7 @@ interface Props {
   iconSx?: any
 }
 
-const MultiSelectChip = ({
+const MultiSelectAutocomplete = ({
   value,
   options,
   onChange,
@@ -68,4 +68,4 @@ const MultiSelectChip = ({
   )
 }
 
-export default MultiSelectChip
+export default MultiSelectAutocomplete

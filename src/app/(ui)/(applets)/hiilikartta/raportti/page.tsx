@@ -12,7 +12,7 @@ import { T } from '@tolgee/react'
 
 import { pp } from '#/common/utils/general'
 import { getRoute } from '#/common/utils/routing'
-import MultiSelectChip from '#/components/common/MultiSelectChip'
+import MultiSelectAutocomplete from '#/components/common/MultiSelectAutocomplete'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
@@ -188,7 +188,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
           })}
         >
           <Col>
-            <MultiSelectChip
+            <MultiSelectAutocomplete
               value={planConfs.map((planConf) => ({
                 value: planConf.id,
                 label: planConf.name,
@@ -206,7 +206,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                   : []
               }
               onChange={handlePlanSelectClick}
-            ></MultiSelectChip>
+            ></MultiSelectAutocomplete>
             {/* <Typography
                   sx={(theme) => ({
                     typography: theme.typography.h4,
