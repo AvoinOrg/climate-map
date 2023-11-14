@@ -44,12 +44,9 @@ const MultiSelectChip = ({
           return <Chip label={option.label} key={key} {...tagProps} />
         })
       }
-      style={{ width: 500 }}
       isOptionEqualToValue={(option, value) => option.value === value.value}
       renderInput={(params) => {
-        return (
-          <TextField {...params} label="Fixed tag" placeholder="Favorites" />
-        )
+        return <TextField {...params} />
       }}
       renderOption={(props, option) => {
         return (
