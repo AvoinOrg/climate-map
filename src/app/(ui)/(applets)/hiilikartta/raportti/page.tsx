@@ -7,8 +7,8 @@ import { useSearchParams } from 'next/navigation'
 import { map, isEqual } from 'lodash-es'
 import { useRouter } from 'next/navigation'
 import { styled } from '@mui/system'
-import { Box, SelectChangeEvent, Typography } from '@mui/material'
-import { T } from '@tolgee/react'
+import { Box, Typography } from '@mui/material'
+import { T, useTranslate } from '@tolgee/react'
 
 import { pp } from '#/common/utils/general'
 import { getRoute } from '#/common/utils/routing'
@@ -38,6 +38,7 @@ type PlanConfWithReportData = PlanConf & { reportData: ReportData }
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { t } = useTranslate('hiilikartta')
 
   const allPlanConfs = useStore(useAppletStore, (state) => state.planConfs)
 
@@ -144,23 +145,35 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
       <Section
         sx={(theme) => ({
           backgroundColor: theme.palette.primary.dark,
-          pt: theme.spacing(10),
-          pb: theme.spacing(4),
-          px: theme.spacing(4),
+          pt: 10,
+          pb: 4,
+          px: 4,
+          [theme.breakpoints.down('md')]: {
+            p: 3,
+          },
         })}
       >
         <Row
           sx={(theme) => ({
-            mt: theme.spacing(4),
+            [theme.breakpoints.down('md')]: {
+              flexDirection: 'column-reverse',
+              flexWrap: 'wrap',
+              alignItems: 'flex-end',
+              mb: 2,
+            },
           })}
         >
           <Typography
             sx={(theme) => ({
               typography: theme.typography.h1,
               display: 'inline',
+              [theme.breakpoints.down('md')]: {
+                width: '100%',
+                mt: 7,
+              },
             })}
           >
-            Hiiliraportti
+            <T keyName={'report.header.title'} ns={'hiilikartta'}></T>
           </Typography>
           <Link
             href={
@@ -178,53 +191,97 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 color: theme.palette.neutral.light,
               })}
             >
-              <u>Sulje raportti</u>
+              <u>
+                <T keyName={'report.header.close'} ns={'hiilikartta'}></T>
+              </u>
             </Typography>
           </Link>
         </Row>
         <Row
           sx={(theme) => ({
-            mt: theme.spacing(4),
+            mt: 4,
+            justifyContent: 'flex-start',
+            flexWrap: 'wrap',
           })}
         >
-          <Col>
-            <MultiSelectAutocomplete
-              value={planConfs.map((planConf) => ({
-                value: planConf.id,
-                label: planConf.name,
-              }))}
-              options={
-                allPlanConfs != null
-                  ? Object.keys(allPlanConfs)
-                      .filter((id) => allPlanConfs[id].reportData != null)
-                      .map((id) => {
-                        return {
-                          value: id,
-                          label: allPlanConfs[id].name,
-                        }
-                      })
-                  : []
-              }
-              onChange={handlePlanSelectClick}
-            ></MultiSelectAutocomplete>
-            {/* <Typography
-                  sx={(theme) => ({
-                    typography: theme.typography.h4,
-                    display: 'inline',
-                  })}
-                >
-                  {planConf?.name}
-                </Typography> */}
-            {/* <Typography
-                  sx={(theme) => ({
-                    typography: theme.typography.h5,
-                    display: 'inline',
-                    mt: theme.spacing(0.5),
-                  })}
-                > */}
-            {/* {pp(reportData.area / 10000, 2)} hehtaaria */}
-            {/* </Typography> */}
-          </Col>
+          <Typography
+            sx={(theme) => ({
+              typography: 'h3',
+              lineHeight: '1.375rem',
+              display: 'inline-flex',
+              maxWidth: '15rem',
+              [theme.breakpoints.down('md')]: {
+                mb: 3,
+              },
+            })}
+          >
+            <T
+              keyName={'report.header.compare_with_other_plans'}
+              ns={'hiilikartta'}
+            ></T>
+          </Typography>
+          <MultiSelectAutocomplete
+            sx={(theme) => ({
+              width: '21rem',
+              [theme.breakpoints.down('md')]: {
+                width: '100%',
+              },
+            })}
+            value={planConfs.map((planConf) => ({
+              value: planConf.id,
+              label: planConf.name,
+            }))}
+            options={
+              allPlanConfs != null
+                ? Object.keys(allPlanConfs)
+                    .filter((id) => allPlanConfs[id].reportData != null)
+                    .map((id) => {
+                      return {
+                        value: id,
+                        label: allPlanConfs[id].name,
+                      }
+                    })
+                : []
+            }
+            placeholder={t('report.header.plan_select_placeholder')}
+            onChange={handlePlanSelectClick}
+          ></MultiSelectAutocomplete>
+
+          {planConfs.length === 1 && (
+            <Col
+              sx={(theme) => ({
+                flex: 1,
+                alignItems: 'end',
+                letterSpacing: '0.075rem',
+                color: 'neutral.lighter',
+                [theme.breakpoints.down('md')]: {
+                  mt: 3,
+                },
+              })}
+            >
+              <Typography
+                sx={(theme) => ({
+                  display: 'inline',
+                  typography: 'body7',
+                  flexWrap: 'no-wrap',
+                  mt: theme.spacing(0.5),
+                })}
+              >
+                <T
+                  keyName={'report.report_calculated_on'}
+                  ns={'hiilikartta'}
+                ></T>
+              </Typography>
+              <Typography
+                sx={(theme) => ({
+                  typography: 'body7',
+                  display: 'inline',
+                })}
+              >
+                {planConfs[0].reportData.metadata.timestamp}
+              </Typography>
+            </Col>
+          )}
         </Row>
       </Section>
       {isLoaded && planConfs.length > 0 && (
@@ -232,7 +289,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
           <Section>
             <Row
               sx={(theme) => ({
-                mt: theme.spacing(6),
+                mt: 6,
               })}
             >
               <Typography
@@ -248,10 +305,10 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 {featureYears[1]}
               </Typography>
             </Row>
-            <Row sx={{ mt: 2 }}>
+            <Row sx={{ mt: 10, flexWrap: 'wrap', justifyContent: 'normal' }}>
               {planConfs.map((planConf) => {
                 return (
-                  <Row sx={{ mt: 4 }} key={planConf.id}>
+                  <Row sx={{ mb: 10, flex: 0, mr: 'auto' }} key={planConf.id}>
                     <Col>
                       <Typography typography={'h8'}>
                         <T keyName="report.plan" ns="hiilikartta"></T>
@@ -303,7 +360,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               })}
             </Row>
           </Section>
-          <Breaker sx={{ mt: 8 }} />
+          <Breaker sx={{ mt: 2 }} />
           {/* <Section sx={{ mt: 8 }}>
             <Row>
               <Typography
@@ -353,6 +410,7 @@ const Section = styled('div')(({ theme }) => ({
   justifyContent: 'center',
   alignItems: 'center',
   width: '100%',
+  padding: theme.spacing(3),
 }))
 
 const Breaker = styled('div')(({ theme }) => ({
