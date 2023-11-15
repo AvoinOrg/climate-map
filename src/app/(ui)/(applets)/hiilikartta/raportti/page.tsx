@@ -278,7 +278,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                   display: 'inline',
                 })}
               >
-                {planConfs[0].reportData.metadata.timestamp}
+                {new Date(
+                  planConfs[0].reportData.metadata.timestamp * 1000
+                ).toLocaleDateString(navigator.language)}
               </Typography>
             </Col>
           )}
