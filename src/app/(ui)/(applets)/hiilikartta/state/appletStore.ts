@@ -13,7 +13,7 @@ import { queryClient } from '#/common/queries/queryClient'
 import { CalculationState, NewPlanConf, PlanConf } from '../common/types'
 import { calcPollQuery } from '../common/queries/calcPollQuery'
 
-type State = {
+type Vars = {
   planConfs: { [key: string]: PlanConf }
 }
 
@@ -27,60 +27,72 @@ type Actions = {
   copyPlanConf: (planId: string, nameSuffix?: string) => Promise<PlanConf>
 }
 
-export const useAppletStore = create<State & Actions>()(
+export const useAppletStore = create<Vars & Actions>()(
   persist(
     subscribeWithSelector(
-      immer((set, get) => ({
-        planConfs: {},
-        deletePlanConf: async (planId: string) => {
-          set((state) => {
-            delete state.planConfs[planId]
-          })
-        },
-        addPlanConf: async (newPlanConf: NewPlanConf) => {
-          const id = generateShortId()
-          const serverId = generateUUID()
-          const created = new Date().getTime()
-          const planConf = {
-            id,
-            serverId,
-            created,
-            reportData: undefined,
-            calculationState: CalculationState.NOT_STARTED,
-            ...newPlanConf,
-          }
-          await set((state) => {
-            state.planConfs[id] = planConf
-          })
-          return planConf
-        },
-        updatePlanConf: async (planId: string, planConf: Partial<PlanConf>) => {
-          const oldPlanConf = get().planConfs[planId]
-          if (oldPlanConf == null) {
-            console.error("Can't update a planConf that does not exist")
-            return null
-          }
+      immer((set, get) => {
+        const vars: Vars = {
+          planConfs: {},
+        }
 
-          const updatedPlanConf = { ...oldPlanConf, ...planConf }
-          await set((state) => {
-            state.planConfs[planId] = updatedPlanConf
-          })
-          return updatedPlanConf
-        },
-        copyPlanConf: async (planId: string, nameSuffix?: string) => {
-          const { addPlanConf, planConfs } = get()
-          const planConf = planConfs[planId]
+        const actions: Actions = {
+          deletePlanConf: async (planId: string) => {
+            set((state) => {
+              delete state.planConfs[planId]
+            })
+          },
 
-          const newPlanConf: NewPlanConf = {
-            name: `${planConf.name}${nameSuffix != null && ' ' + nameSuffix}`,
-            areaHa: planConf.areaHa,
-            data: cloneDeep(planConf.data),
-            fileSettings: cloneDeep(planConf.fileSettings),
-          }
-          const copiedPlanConf = await addPlanConf(newPlanConf)
-          return copiedPlanConf
-        },
-      }))
+          addPlanConf: async (newPlanConf: NewPlanConf) => {
+            const id = generateShortId()
+            const serverId = generateUUID()
+            const created = new Date().getTime()
+            const planConf = {
+              id,
+              serverId,
+              created,
+              reportData: undefined,
+              calculationState: CalculationState.NOT_STARTED,
+              ...newPlanConf,
+            }
+            await set((state) => {
+              state.planConfs[id] = planConf
+            })
+            return planConf
+          },
+
+          updatePlanConf: async (
+            planId: string,
+            planConf: Partial<PlanConf>
+          ) => {
+            const oldPlanConf = get().planConfs[planId]
+            if (oldPlanConf == null) {
+              console.error("Can't update a planConf that does not exist")
+              return null
+            }
+
+            const updatedPlanConf = { ...oldPlanConf, ...planConf }
+            await set((state) => {
+              state.planConfs[planId] = updatedPlanConf
+            })
+            return updatedPlanConf
+          },
+
+          copyPlanConf: async (planId: string, nameSuffix?: string) => {
+            const { addPlanConf, planConfs } = get()
+            const planConf = planConfs[planId]
+
+            const newPlanConf: NewPlanConf = {
+              name: `${planConf.name}${nameSuffix != null && ' ' + nameSuffix}`,
+              areaHa: planConf.areaHa,
+              data: cloneDeep(planConf.data),
+              fileSettings: cloneDeep(planConf.fileSettings),
+            }
+            const copiedPlanConf = await addPlanConf(newPlanConf)
+            return copiedPlanConf
+          },
+        }
+        return { ...vars, ...actions }
+      })
     ),
     {
       name: 'hiilikarttaStore', // name of item in the storage (must be unique)
