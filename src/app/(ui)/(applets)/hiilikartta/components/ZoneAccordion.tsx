@@ -4,7 +4,7 @@ import Accordion from '@mui/material/Accordion'
 import AccordionSummary from '@mui/material/AccordionSummary'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import Typography from '@mui/material/Typography'
-import { useTranslate } from '@tolgee/react'
+import { T, useTranslate } from '@tolgee/react'
 
 import useStore from '#/common/hooks/useStore'
 import { ArrowDown } from '#/components/icons'
@@ -14,6 +14,9 @@ import { PlanDataFeature } from '../common/types'
 import useSelectedFeaturesFilteredByLayer from '#/common/hooks/map/useSelectedFeaturesFilteredByLayer'
 import { getPlanLayerGroupId } from '../common/utils'
 import { useMapStore } from '#/common/store'
+import { ZONING_CLASSES } from '../common/constants'
+import { styled } from '@mui/material/styles'
+import DropDownSelect from '#/components/common/DropDownSelect'
 
 interface Props {
   planConfId: string
@@ -24,6 +27,9 @@ const ZoneAccordion = ({ planConfId, sx }: Props) => {
   const planConf = useStore(
     useAppletStore,
     (state) => state.planConfs[planConfId]
+  )
+  const updatePlanConfDataFeature = useAppletStore(
+    (state) => state.updatePlanConfDataFeature
   )
   const removeSelectedFeaturesByIds = useMapStore(
     (state) => state.removeSelectedFeaturesByIds
@@ -120,7 +126,6 @@ const ZoneAccordion = ({ planConfId, sx }: Props) => {
     }
   }, [lastAction, addSelectedFeaturesByIds, removeSelectedFeaturesByIds])
 
-  // Check if the accordion is expanded
   const isAccordionExpanded = (featureId: string) => {
     return expandedAccordions.includes(featureId)
   }
@@ -155,6 +160,15 @@ const ZoneAccordion = ({ planConfId, sx }: Props) => {
     return `${name}`
   }
 
+  const updateFeature = (
+    featureId: string,
+    feature: Partial<PlanDataFeature>
+  ) => {
+    if (planConf) {
+      updatePlanConfDataFeature(planConf.id, featureId, feature)
+    }
+  }
+
   return (
     <Box
       sx={(theme) => ({
@@ -177,6 +191,7 @@ const ZoneAccordion = ({ planConfId, sx }: Props) => {
             onChange={handleAccordionChange}
             getTitle={getTitle}
             accordionRefs={accordionRefs}
+            updateFeature={updateFeature}
           />
         ))}
     </Box>
@@ -196,6 +211,7 @@ interface CustomAccordionProps {
   accordionRefs: React.MutableRefObject<{
     [key: string]: HTMLDivElement | null
   }>
+  updateFeature: (id: string, feature: Partial<PlanDataFeature>) => void
 }
 
 const CustomAccordion = memo(
@@ -206,7 +222,24 @@ const CustomAccordion = memo(
     onChange,
     getTitle,
     accordionRefs,
+    updateFeature,
   }: CustomAccordionProps) => {
+    const [isValid, setIsValid] = useState(true)
+
+    useEffect(() => {
+      setIsValid(checkIsValidZoningCode(feature.properties.zoning_code))
+    }, [feature.properties.zoning_code])
+
+    const handleZoningCodeChange = (event: any) => {
+      const zoningCode = event.target.value
+
+      if (zoningCode != null) {
+        updateFeature(feature.properties.id, {
+          properties: { ...feature.properties, zoning_code: zoningCode },
+        })
+      }
+    }
+
     return (
       <Accordion
         key={feature.properties.id}
@@ -234,13 +267,22 @@ const CustomAccordion = memo(
           aria-controls={`panel${index + 1}-content`}
           id={`panel${index + 1}-header`}
         >
-          <Typography></Typography>
-          <Typography>{getTitle(feature)}</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography>
-            {/* Replace with your feature description or component */}
+          <Typography sx={{ display: 'inline' }}>
+            {getTitle(feature)}
           </Typography>
+        </AccordionSummary>
+        <AccordionDetails sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Row>
+            <T
+              keyName={'sidebar.plan_settings.zones.area_information'}
+              ns="hiilikartta"
+            ></T>
+          </Row>
+          <DropDownSelect
+            value={feature.properties.zoning_code}
+            options={zoningCodeOptions}
+            onChange={handleZoningCodeChange}
+          ></DropDownSelect>
         </AccordionDetails>
       </Accordion>
     )
@@ -253,3 +295,30 @@ const CustomAccordion = memo(
     )
   }
 )
+
+const zoningCodeOptions = ZONING_CLASSES.map((zoning) => ({
+  value: zoning.code,
+  label: zoning.name,
+}))
+
+const checkIsValidZoningCode = (zoningCode: string | null) => {
+  if (zoningCode == null) {
+    return false
+  }
+
+  for (let zoning of ZONING_CLASSES) {
+    // Split the code by comma and trim spaces, then check if zoningCode is one of them
+    const codes = zoning.code.split(',').map((code) => code.trim())
+    if (codes.includes(zoningCode.trim())) {
+      return true
+    }
+  }
+  return false
+}
+
+const Row = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  width: '100%',
+}))
