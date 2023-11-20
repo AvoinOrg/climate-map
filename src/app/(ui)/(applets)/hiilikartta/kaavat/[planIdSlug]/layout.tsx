@@ -40,6 +40,8 @@ const Layout = ({
     (state) => state.disableSerializableLayerGroup
   )
 
+  const updateSourceData = useMapStore((state) => state.updateSourceData)
+
   const planConf = useStore(
     useAppletStore,
     (state) => state.planConfs[params.planIdSlug]
@@ -54,65 +56,69 @@ const Layout = ({
   // const setIsDrawEnabled = useMapStore((state) => state.setIsDrawEnabled)
 
   useEffect(() => {
+    const init = async () => {
+      if (planConf && !isLoaded.current && doesLayerGroupExist != null) {
+        const layerGroupId = getPlanLayerGroupId(params.planIdSlug)
+        const layerGroupAddOptions: SerializableLayerGroupAddOptions = {
+          zoomToExtent: true,
+          dataUpdateMutator: async (data: FeatureCollection) => {
+            if (updatePlanConf != null) {
+              updatePlanConf(params.planIdSlug, { data: data as PlanData })
+            } else {
+              console.error('Unable to add dataUpdateMutator')
+            }
+          },
+          drawOptions: {
+            idField: 'id',
+            polygonEnabled: true,
+            editEnabled: true,
+            deleteEnabled: true,
+            featureAddMutator: (feature: Feature) => {
+              const properties: FeatureProperties = {
+                id: generateUUID(),
+                name: '',
+                area_ha: getGeoJsonArea(feature) / 10000,
+                zoning_code: '',
+              }
+
+              feature.properties = properties
+
+              return feature
+            },
+            featureUpdateMutator: (feature: Feature) => {
+              const properties = feature.properties as FeatureProperties
+              const newProperties: FeatureProperties = {
+                ...properties,
+                area_ha: getGeoJsonArea(feature) / 10000,
+              }
+
+              feature.properties = newProperties
+
+              return feature
+            },
+          },
+        }
+
+        if (doesLayerGroupExist) {
+          await enableSerializableLayerGroup(layerGroupId, layerGroupAddOptions)
+        } else {
+          const layerConf = createLayerConf(
+            planConf.data,
+            planConf.id,
+            ZONING_CODE_COL
+          )
+
+          await addSerializableLayerGroup(layerGroupId, {
+            ...layerGroupAddOptions,
+            layerConf: layerConf,
+          })
+        }
+
+        isLoaded.current = true
+      }
+    }
     if (planConf && !isLoaded.current && doesLayerGroupExist != null) {
-      isLoaded.current = true
-      const layerGroupId = getPlanLayerGroupId(params.planIdSlug)
-
-      const layerGroupAddOptions: SerializableLayerGroupAddOptions = {
-        zoomToExtent: true,
-        dataUpdateMutator: async (data: FeatureCollection) => {
-          if (updatePlanConf != null) {
-            updatePlanConf(params.planIdSlug, { data: data as PlanData })
-          } else {
-            console.error('Unable to add dataUpdateMutator')
-          }
-        },
-        drawOptions: {
-          idField: 'id',
-          polygonEnabled: true,
-          editEnabled: true,
-          deleteEnabled: true,
-          featureAddMutator: (feature: Feature) => {
-            const properties: FeatureProperties = {
-              id: generateUUID(),
-              name: '',
-              area_ha: getGeoJsonArea(feature) / 10000,
-              zoning_code: '',
-            }
-
-            feature.properties = properties
-
-            return feature
-          },
-          featureUpdateMutator: (feature: Feature) => {
-            const properties = feature.properties as FeatureProperties
-            const newProperties: FeatureProperties = {
-              ...properties,
-              area_ha: getGeoJsonArea(feature) / 10000,
-            }
-
-            feature.properties = newProperties
-
-            return feature
-          },
-        },
-      }
-
-      if (doesLayerGroupExist) {
-        enableSerializableLayerGroup(layerGroupId, layerGroupAddOptions)
-      } else {
-        const layerConf = createLayerConf(
-          planConf.data,
-          planConf.id,
-          ZONING_CODE_COL
-        )
-
-        addSerializableLayerGroup(layerGroupId, {
-          ...layerGroupAddOptions,
-          layerConf: layerConf,
-        })
-      }
-
+      init()
       // return () => {
       //   try {
       //     disableSerializableLayerGroup(layerGroupId)
@@ -122,6 +128,13 @@ const Layout = ({
       // }
     }
   }, [planConf, isLoaded, doesLayerGroupExist])
+
+  useEffect(() => {
+    if (planConf?.data != null && isLoaded.current) {
+      const layerGroupId = getPlanLayerGroupId(planConf?.id)
+      updateSourceData(layerGroupId, planConf?.data)
+    }
+  }, [planConf?.data, isLoaded.current])
 
   useEffect(() => {
     return () => {
