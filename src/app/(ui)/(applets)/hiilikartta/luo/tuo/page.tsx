@@ -21,6 +21,7 @@ import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { createLayerConf } from '../../common/utils'
 import { Feature, FeatureCollection } from 'geojson'
 import { generateUUID } from '#/common/utils/general'
+import { ZONING_CLASSES } from 'applets/hiilikartta/common/constants'
 
 const Page = () => {
   const addSerializableLayerGroup = useMapStore(
@@ -52,9 +53,11 @@ const Page = () => {
       type: 'FeatureCollection',
       features: json.features.map((feature: Feature, index) => {
         // Get the value of the property using colName and remove other properties
-        const zoningCode = feature.properties?.[zoningColName]
+        let zoningCode = feature.properties?.[zoningColName]
 
-        if (!zoningCode) return feature
+        if (!zoningCode) {
+          zoningCode === null
+        }
 
         let name: string | number = index + 1
         if (nameColName && feature.properties?.[nameColName] != null) {
@@ -71,6 +74,25 @@ const Page = () => {
           zoning_code: zoningCode,
           area_ha: featureAreaHa,
           old_id: feature.id != null ? feature.id : undefined,
+        }
+
+        const trimmedZoningCode = zoningCode
+          .trim()
+          .split(' ')[0]
+          .split('-')[0]
+          .split('.')[0]
+
+        const zoningClass = ZONING_CLASSES.find((zoningClass) => {
+          let code = zoningClass.code
+          if (code.includes(',')) {
+            return zoningClass.code.split(',').includes(trimmedZoningCode)
+          } else {
+            return code === trimmedZoningCode
+          }
+        })
+
+        if (zoningClass) {
+          properties.zoning_code = zoningClass.code
         }
 
         // Return the new feature with only zoning_code and area in hectares in its properties
