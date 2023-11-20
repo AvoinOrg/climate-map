@@ -10,7 +10,12 @@ import { cloneDeep, pickBy } from 'lodash-es'
 import { generateShortId, generateUUID } from '#/common/utils/general'
 import { queryClient } from '#/common/queries/queryClient'
 
-import { CalculationState, NewPlanConf, PlanConf } from '../common/types'
+import {
+  CalculationState,
+  NewPlanConf,
+  PlanConf,
+  PlanDataFeature,
+} from '../common/types'
 import { calcPollQuery } from '../common/queries/calcPollQuery'
 
 type Vars = {
@@ -24,6 +29,11 @@ type Actions = {
     planId: string,
     planConf: Partial<PlanConf>
   ) => Promise<PlanConf | null>
+  updatePlanConfDataFeature: (
+    planId: string,
+    featureId: string,
+    feature: Partial<PlanDataFeature>
+  ) => Promise<PlanDataFeature | null>
   copyPlanConf: (planId: string, nameSuffix?: string) => Promise<PlanConf>
 }
 
@@ -75,6 +85,50 @@ export const useAppletStore = create<Vars & Actions>()(
               state.planConfs[planId] = updatedPlanConf
             })
             return updatedPlanConf
+          },
+
+          updatePlanConfDataFeature: async (
+            planId: string,
+            featureId: string,
+            feature: Partial<PlanDataFeature>
+          ) => {
+            const planConf = get().planConfs[planId]
+            if (!planConf) {
+              console.error(
+                "Can't update a feature in a planConf that does not exist"
+              )
+              return null
+            }
+
+            const features = planConf.data.features
+            const featureIndex = features.findIndex(
+              (f) => f.properties.id === featureId
+            )
+            if (featureIndex === -1) {
+              console.error('Feature not found')
+              return null
+            }
+
+            const featureProperties = {
+              ...features[featureIndex].properties,
+              ...feature.properties,
+            }
+
+            await set((state) => {
+              if (feature.geometry != null) {
+                state.planConfs[planId].data.features[featureIndex].geometry =
+                  feature.geometry
+              }
+              if (feature.properties != null) {
+                const featureProperties = {
+                  ...features[featureIndex].properties,
+                  ...feature.properties,
+                }
+                state.planConfs[planId].data.features[featureIndex].properties =
+                  featureProperties
+              }
+            })
+            return features[featureIndex]
           },
 
           copyPlanConf: async (planId: string, nameSuffix?: string) => {
