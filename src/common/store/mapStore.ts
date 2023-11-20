@@ -65,6 +65,7 @@ import {
   fetchFeaturesByIds,
   getSelectableLayers,
   getMatchingDrawFeatures,
+  getSourceData,
 } from '#/common/utils/map'
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
@@ -230,6 +231,7 @@ export type Actions = {
   disableDraw: (_queueOptions?: QueueOptions) => Promise<void>
   deleteDrawFeatures: (features: Feature[]) => void
   setMapContext: (mapContext: MapContext) => void
+  updateSourceData: (layerGroupId: string, data: FeatureCollection) => void
   // The below are internal variables
   // ----------------------------------
   _setIsHydrated: { (isHydrated: boolean): void }
@@ -1016,6 +1018,26 @@ export const useMapStore = create<State>()(
           set((state) => {
             state.mapContext = mapContext
           })
+        },
+
+        updateSourceData: (layerGroupId: string, data: FeatureCollection) => {
+          const { _mbMap } = get() // Get the Mapbox map instance from the state
+
+          const source = _mbMap?.getSource(layerGroupId)
+
+          if (!source) {
+            console.error('No source found with id ' + layerGroupId)
+            return
+          }
+
+          if (source.type !== 'geojson') {
+            console.error(
+              'Cannot update data in a non-geojson source: ' + layerGroupId
+            )
+            return
+          }
+
+          source.setData(data)
         },
 
         _enableDraw: queueableFnInit(
