@@ -54,6 +54,7 @@ export interface FeatureProperties {
   name: string | number
   area_ha: number
   zoning_code: string | null
+  old_zoning_code?: string
   old_id?: string | number
 }
 

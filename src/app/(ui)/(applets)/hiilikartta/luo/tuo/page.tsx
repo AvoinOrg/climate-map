@@ -93,6 +93,7 @@ const Page = () => {
 
         if (zoningClass) {
           properties.zoning_code = zoningClass.code
+          properties.old_zoning_code = zoningCode
         }
 
         // Return the new feature with only zoning_code and area in hectares in its properties
