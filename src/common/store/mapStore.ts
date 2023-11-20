@@ -65,7 +65,6 @@ import {
   fetchFeaturesByIds,
   getSelectableLayers,
   getMatchingDrawFeatures,
-  getSourceData,
 } from '#/common/utils/map'
 
 const DEFAULT_MAP_LIBRARY_MODE: MapLibraryMode = 'mapbox'
