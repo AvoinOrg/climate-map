@@ -264,23 +264,6 @@ export const getLayerGroupIdForLayer = (
   return null // return null if no group is found containing the layerId
 }
 
-export const assertValidHighlightingConf = (
-  layerOpt: LayerOptions,
-  layers: ExtendedAnyLayer[]
-) => {
-  if (layerOpt.layerType === 'fill') {
-    if (layerOpt.selectable) {
-      if (!layers.find((l: any) => l.id === layerOpt.name + '-highlighted')) {
-        console.error(
-          "Layer '" +
-            layerOpt.name +
-            "' is selectable but missing the corresponding highlighted layer."
-        )
-      }
-    }
-  }
-}
-
 // A helper function for resolving a style
 // that can be either a style object or
 // a function returning a style object.
