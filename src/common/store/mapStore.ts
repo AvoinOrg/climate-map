@@ -1610,35 +1610,24 @@ export const useMapStore = create<State>()(
 
               layerGroup.layers[layer.id] = layerOptions
 
-              if (layerOptions.layerType === 'fill') {
-                if (layer.selectable) {
-                  if (
-                    !style.layers.find(
-                      (l: any) => l.id === layerOptions.name + '-highlighted'
-                    )
-                  ) {
-                    console.error(
-                      "Layer '" +
-                        layerOptions.name +
-                        "' is selectable but missing the corresponding highlighted layer."
-                    )
-                  } else {
-                    const mouseEnterHandler = () => {
-                      if (_mbMap) {
-                        _mbMap.getCanvas().style.cursor = 'pointer'
-                      }
-                    }
-
-                    const mouseLeaveHandler = () => {
-                      if (_mbMap) {
-                        _mbMap.getCanvas().style.cursor = ''
-                      }
-                    }
-                    layerOptions.eventHandlers['mouseenter'] = mouseEnterHandler
-                    layerOptions.eventHandlers['mouseleave'] = mouseLeaveHandler
-                  }
+              const mouseEnterHandler = () => {
+                if (_mbMap) {
+                  _mbMap.getCanvas().style.cursor = 'pointer'
                 }
+              }
 
+              const mouseLeaveHandler = () => {
+                if (_mbMap) {
+                  _mbMap.getCanvas().style.cursor = ''
+                }
+              }
+
+              if (layer.selectable) {
+                layerOptions.eventHandlers['mouseenter'] = mouseEnterHandler
+                layerOptions.eventHandlers['mouseleave'] = mouseLeaveHandler
+              }
+
+              if (layerOptions.layerType === 'fill') {
                 if (layerOptions.popup) {
                   const Popup: any = layerOptions.popup
 
