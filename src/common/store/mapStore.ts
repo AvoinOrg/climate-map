@@ -53,7 +53,6 @@ import { layerConfs } from '#/components/Map/Layers'
 import {
   getLayerName,
   getLayerType,
-  assertValidHighlightingConf,
   resolveMbStyle,
   getVisibleLayerGroups,
   updateFeatureInDrawSource,
@@ -470,43 +469,30 @@ export const useMapStore = create<State>()(
             _updateDrawSelectedFeatures,
           } = get()
 
+          const keptFeatures = []
+
           if (!isEqual(features, selectedFeatures)) {
-            let selectedLayerIds: string[] = []
-            features.map((feature) => {
-              selectedLayerIds.push(feature.layer.id)
-            })
-
-            if (features)
-              // add layer ids from the previous selection
-              selectedFeatures.map((feature) => {
-                selectedLayerIds.push(feature.layer.id)
-              })
-
-            selectedLayerIds = uniq(selectedLayerIds)
-
-            const highlightedLayers: string[] = []
-            for (const id of selectedLayerIds) {
-              const featureIds = features
-                .filter((f) => f.layer.id === id)
-                .map((feature) => {
-                  return feature.id
-                })
-
-              const highlightedLayerName = getLayerName(id) + '-highlighted'
-              if (highlightedLayers.includes(highlightedLayerName)) {
-                console.error(
-                  `The layer ${highlightedLayerName} is being highlighted more than once. Ensure your layer config does not have multiple selectable layers for one highlight-layer`
-                )
+            for (const feature of features) {
+              const selectedFeature = selectedFeatures.find(
+                (f) => f.id === feature.id && f.source === feature.source
+              )
+              if (selectedFeature != null) {
+                keptFeatures.push(selectedFeature)
               } else {
-                highlightedLayers.push(highlightedLayerName)
+                _mbMap?.setFeatureState(
+                  { source: feature.source, id: feature.id },
+                  { selected: true }
+                )
               }
+            }
 
-              // highlight the selected features using the highlighted-layer in the group
-              _mbMap?.setFilter(highlightedLayerName, [
-                'in',
-                'id',
-                ...featureIds,
-              ])
+            for (const selectedFeature of selectedFeatures) {
+              if (!keptFeatures.includes(selectedFeature)) {
+                _mbMap?.setFeatureState(
+                  { source: selectedFeature.source, id: selectedFeature.id },
+                  { selected: false }
+                )
+              }
             }
 
             set(
@@ -1089,25 +1075,21 @@ export const useMapStore = create<State>()(
                     break
                 }
 
-                if (opacityProperty) {
-                  let originalOpacity = 1
-                  try {
-                    const opacity = _mbMap.getPaintProperty(
-                      layer.id,
-                      opacityProperty
-                    ) as number | undefined
-                    if (typeof opacity === 'number' && opacity > 0.3) {
-                      originalOpacity = opacity
-                      _mbMap.setPaintProperty(layer.id, opacityProperty, 0.3)
-                    }
-                  } catch (e) {
-                    console.error(
-                      `Error adjusting ${opacityProperty} for layer ${layer.id}: `,
-                      e
-                    )
+                if (opacityProperty != null) {
+                  let originalOpacity = _mbMap.getPaintProperty(
+                    layer.id,
+                    opacityProperty
+                  )
+                  if (
+                    typeof originalOpacity === 'number' &&
+                    originalOpacity > 0.3
+                  ) {
+                    _mbMap.setPaintProperty(layer.id, opacityProperty, 0.3)
                   }
 
-                  if (!originalStyles[layer.id]) originalStyles[layer.id] = {}
+                  if (!originalStyles[layer.id]) {
+                    originalStyles[layer.id] = {}
+                  }
                   originalStyles[layer.id][opacityProperty] = originalOpacity
                 }
               }
@@ -1500,8 +1482,6 @@ export const useMapStore = create<State>()(
                       useMb: false,
                     }
 
-                    assertValidHighlightingConf(layerOpt, layers)
-
                     layer.set('group', id)
                     layerGroup[layerKeys[0]] = layer
 
@@ -1649,8 +1629,6 @@ export const useMapStore = create<State>()(
                   _addMbPopup(layer.id, popupFn)
                 }
               }
-
-              assertValidHighlightingConf(layerOptions, style.layers)
 
               set((state) => {
                 state._layerInstances[layer.id] = layer
