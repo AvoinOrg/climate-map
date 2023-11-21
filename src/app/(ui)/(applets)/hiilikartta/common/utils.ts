@@ -45,6 +45,10 @@ export const createLayerConf = (
         paint: {
           'line-opacity': 0.9,
         },
+        // selectable: true,
+        // multiSelectable: true,
+        // highlightLayerId: `${sourceId}-outline-highlighted`,
+        // filter: ['!=', 'id', ''],
       },
       {
         id: `${sourceId}-fill`,
@@ -53,41 +57,15 @@ export const createLayerConf = (
         layout: {},
         paint: {
           'fill-color': 'gray',
-          // 'fill-color': [
-          //   'coalesce',
-          //   ['match', ['get', featureColorCol], ...colorArr, 'white'],
-          //   'white',
-          // ],
-          'fill-opacity': 0.7,
+          'fill-opacity': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            1,
+            0.5,
+          ],
         },
         selectable: true,
         multiSelectable: true,
-        selectionOptions: {
-          'fill-color': 'red',
-          // 'fill-color': [
-          //   'coalesce',
-          //   ['match', ['get', featureColorCol], ...colorArr, 'white'],
-          //   'white',
-          // ],
-          'fill-opacity': 0.8,
-          filter: ['in', 'id', ''],
-        },
-      },
-      {
-        id: `${sourceId}-highlighted`,
-        type: 'fill',
-        source: sourceId, // reference the data source
-        layout: {},
-        paint: {
-          'fill-color': 'red',
-          // 'fill-color': [
-          //   'coalesce',
-          //   ['match', ['get', featureColorCol], ...colorArr, 'white'],
-          //   'white',
-          // ],
-          'fill-opacity': 0.8,
-        },
-        filter: ['in', 'id', ''],
       },
       {
         id: `${sourceId}-symbol`,
