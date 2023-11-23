@@ -282,6 +282,11 @@ const CustomAccordion = memo(
             value={feature.properties.zoning_code}
             options={zoningCodeOptions}
             onChange={handleZoningCodeChange}
+            sx={{
+              backgroundColor: 'neutral.lighter',
+              borderColor: 'primary.light',
+              mt: 1,
+            }}
           ></DropDownSelect>
         </AccordionDetails>
       </Accordion>
@@ -298,7 +303,7 @@ const CustomAccordion = memo(
 
 const zoningCodeOptions = ZONING_CLASSES.map((zoning) => ({
   value: zoning.code,
-  label: zoning.name,
+  label: `${zoning.name} (${zoning.code})`,
 }))
 
 const checkIsValidZoningCode = (zoningCode: string | null) => {
