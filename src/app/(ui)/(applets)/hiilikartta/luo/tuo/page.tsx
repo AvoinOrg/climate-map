@@ -22,6 +22,7 @@ import { createLayerConf } from '../../common/utils'
 import { Feature, FeatureCollection } from 'geojson'
 import { generateUUID } from '#/common/utils/general'
 import { ZONING_CLASSES } from 'applets/hiilikartta/common/constants'
+import { type } from 'os'
 
 const Page = () => {
   const addSerializableLayerGroup = useMapStore(
@@ -57,15 +58,19 @@ const Page = () => {
 
         if (!zoningCode) {
           zoningCode = null
-        }
-
-        if (typeof zoningCode !== 'string') {
+        } else if (typeof zoningCode !== 'string') {
           zoningCode = String(zoningCode)
         }
 
         let name: string | number = index + 1
-        if (nameColName && feature.properties?.[nameColName] != null) {
-          name = feature.properties?.[nameColName]
+        if (nameColName != null) {
+          const nameColVal = feature.properties?.[nameColName]
+          if (
+            (nameColVal != null && typeof nameColVal === 'string') ||
+            typeof nameColVal === 'number'
+          ) {
+            name = feature.properties?.[nameColName]
+          }
         }
 
         // If the desired property is not found, don't modify the feature
@@ -80,24 +85,26 @@ const Page = () => {
           old_id: feature.id != null ? feature.id : undefined,
         }
 
-        const trimmedZoningCode = zoningCode
-          .trim()
-          .split(' ')[0]
-          .split('-')[0]
-          .split('.')[0]
+        if (zoningCode != null) {
+          const trimmedZoningCode = zoningCode
+            .trim()
+            .split(' ')[0]
+            .split('-')[0]
+            .split('.')[0]
 
-        const zoningClass = ZONING_CLASSES.find((zoningClass) => {
-          let code = zoningClass.code
-          if (code.includes(',')) {
-            return zoningClass.code.split(',').includes(trimmedZoningCode)
-          } else {
-            return code === trimmedZoningCode
+          const zoningClass = ZONING_CLASSES.find((zoningClass) => {
+            let code = zoningClass.code
+            if (code.includes(',')) {
+              return zoningClass.code.split(',').includes(trimmedZoningCode)
+            } else {
+              return code === trimmedZoningCode
+            }
+          })
+
+          if (zoningClass) {
+            properties.zoning_code = zoningClass.code
+            properties.old_zoning_code = zoningCode
           }
-        })
-
-        if (zoningClass) {
-          properties.zoning_code = zoningClass.code
-          properties.old_zoning_code = zoningCode
         }
 
         // Return the new feature with only zoning_code and area in hectares in its properties
