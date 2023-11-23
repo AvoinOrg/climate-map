@@ -56,7 +56,11 @@ const Page = () => {
         let zoningCode = feature.properties?.[zoningColName]
 
         if (!zoningCode) {
-          zoningCode === null
+          zoningCode = null
+        }
+
+        if (typeof zoningCode !== 'string') {
+          zoningCode = String(zoningCode)
         }
 
         let name: string | number = index + 1
