@@ -1,8 +1,9 @@
 import { map, uniq } from 'lodash-es'
+import { Expression } from 'mapbox-gl'
+import GeoJSON from 'geojson'
 
 import { getColorExpressionArrForValues } from '#/common/utils/map'
 import { ExtendedMbStyle, SerializableLayerConf } from '#/common/types/map'
-import GeoJSON from 'geojson'
 import {
   CalcFeatureCollection,
   CalcFeatureProperties,
@@ -12,9 +13,41 @@ import {
   FeatureCalcs,
   featureYears,
 } from './types'
+import { ZONING_CLASSES } from './constants'
 
 export const getPlanLayerGroupId = (planId: string) => {
   return `${planId}_zoning_plan`
+}
+
+const zoningFillColorExpression = (defaultColor = 'white'): Expression => {
+  const expression: Expression = ['match', ['get', 'zoning_code']]
+
+  ZONING_CLASSES.forEach((zoningClass) => {
+    expression.push(zoningClass.code, zoningClass.color_hex)
+  })
+
+  // Default color if no match is found
+  expression.push(defaultColor)
+
+  return expression
+}
+
+const isZoningClassValidExpression = () => {
+  // This array will hold the zoning codes to check
+  let validZoningCodes: string[] = []
+
+  // Populate the array with valid zoning codes
+  ZONING_CLASSES.forEach((zoningClass) => {
+    validZoningCodes.push(zoningClass.code)
+  })
+
+  // Return a Mapbox expression that checks if the zoning code is in the list of valid codes
+  // The expression uses the 'in' operator to check if the zoning code is in the array of valid codes
+  return [
+    'in',
+    ['get', 'zoning_code'],
+    ['literal', validZoningCodes],
+  ] as Expression
 }
 
 export const createLayerConf = (
@@ -43,12 +76,31 @@ export const createLayerConf = (
         type: 'line',
         source: sourceId,
         paint: {
-          'line-opacity': 0.9,
+          'line-color': 'black',
+          'line-opacity': 1,
+          'line-width': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            3,
+            1.5,
+          ],
+          'line-dasharray': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            [
+              'case',
+              isZoningClassValidExpression(),
+              ['literal', [1, 0]],
+              ['literal', [1, 1]],
+            ],
+            [
+              'case',
+              isZoningClassValidExpression(),
+              ['literal', [1, 0]],
+              ['literal', [3, 3]],
+            ],
+          ],
         },
-        // selectable: true,
-        // multiSelectable: true,
-        // highlightLayerId: `${sourceId}-outline-highlighted`,
-        // filter: ['!=', 'id', ''],
       },
       {
         id: `${sourceId}-fill`,
@@ -56,12 +108,17 @@ export const createLayerConf = (
         source: sourceId, // reference the data source
         layout: {},
         paint: {
-          'fill-color': 'gray',
+          'fill-color': zoningFillColorExpression(),
           'fill-opacity': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false],
-            1,
-            0.5,
+            ['boolean', ['feature-state', 'selected'], false], // Check if the feature is selected
+            [
+              'case',
+              isZoningClassValidExpression(),
+              0.9, // Opacity for selected and valid zoning class
+              0.9, // Opacity for selected but not valid zoning class
+            ],
+            ['case', isZoningClassValidExpression(), 0.6, 0.5],
           ],
         },
         selectable: true,
