@@ -251,7 +251,7 @@ const CustomAccordion = memo(
           },
           '&.Mui-expanded': {
             margin: 'auto',
-            backgroundColor: 'primary.light',
+            backgroundColor: 'primary.lighter',
           },
           '&:before': {
             display: 'none',
