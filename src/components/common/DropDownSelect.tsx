@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import {
   FormControl,
+  MenuItem,
   Select,
   SelectChangeEvent,
   Typography,
@@ -8,6 +9,7 @@ import {
 
 import DownIcon from '#/components/icons/DownIcon'
 import { SelectOption } from '#/common/types/general'
+import { T } from '@tolgee/react'
 
 interface Props {
   value: any
@@ -26,7 +28,13 @@ const DropDownSelect = ({
   sx,
   labelSx,
 }: Props) => {
-  const [hasEmpty, setHasEmpty] = React.useState(value == null)
+  const [hasEmpty, setHasEmpty] = React.useState(true)
+
+  useEffect(() => {
+    setHasEmpty(
+      Object.values(options).find((option) => option.value === value) == null
+    )
+  }, [value, options])
 
   return (
     <FormControl sx={sx}>
@@ -36,7 +44,6 @@ const DropDownSelect = ({
         </Typography>
       )}
       <Select
-        native
         value={value == null ? '' : value}
         onChange={onChange}
         IconComponent={DownIcon}
@@ -56,11 +63,21 @@ const DropDownSelect = ({
         }}
       >
         {...[
-          hasEmpty == true && <option key={''} value={undefined}></option>,
+          hasEmpty == true && value != null && (
+            <MenuItem key={''} value={value}>
+              <i>
+                <T
+                  keyName={'components.drop_down_select.invalid_value'}
+                  ns={'avoin-map'}
+                ></T>
+                {` (${value})`}
+              </i>
+            </MenuItem>
+          ),
           options.map((option) => (
-            <option key={option.value} value={option.value}>
+            <MenuItem key={option.value} value={option.value}>
               {option.label}
-            </option>
+            </MenuItem>
           )),
         ]}
       </Select>
