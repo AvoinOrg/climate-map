@@ -9,9 +9,8 @@ export default [
       ['!=', 'mode', 'static'],
     ],
     paint: {
-      'fill-color': '#3bb2d0',
-      'fill-outline-color': '#3bb2d0',
-      'fill-opacity': 0.1,
+      'fill-color': 'transparent',
+      'fill-outline-color': 'transparent',
     },
   },
   {
@@ -19,9 +18,8 @@ export default [
     type: 'fill',
     filter: ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
     paint: {
-      'fill-color': '#fb793b',
-      'fill-outline-color': '#fb793b',
-      'fill-opacity': 0.1,
+      'fill-color': 'transparent',
+      'fill-outline-color': 'transparent',
     },
   },
   {
