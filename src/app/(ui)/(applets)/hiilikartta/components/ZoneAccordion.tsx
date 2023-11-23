@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography'
 import { T, useTranslate } from '@tolgee/react'
 
 import useStore from '#/common/hooks/useStore'
-import { ArrowDown } from '#/components/icons'
+import { ArrowDown, Exclamation } from '#/components/icons'
 
 import { useAppletStore } from '../state/appletStore'
 import { PlanDataFeature } from '../common/types'
@@ -41,7 +41,6 @@ const ZoneAccordion = ({ planConfId, sx }: Props) => {
   const selectedFeatures = useSelectedFeaturesFilteredByLayer([
     getPlanLayerGroupId(planConfId) + '-fill',
   ])
-  const { t } = useTranslate('hiilikartta')
   const [expandedAccordions, setExpandedAccordions] = useState<string[]>([])
   const [lastAction, setLastAction] = useState<{
     featureId: string
@@ -138,28 +137,6 @@ const ZoneAccordion = ({ planConfId, sx }: Props) => {
     []
   )
 
-  const getTitle = (feature: PlanDataFeature) => {
-    let name = ''
-    if (typeof feature.properties.name === 'string') {
-      if (feature.properties.name === '') {
-        name += t('sidebar.plan_settings.new_area')
-      } else {
-        name += feature.properties.name
-      }
-    } else {
-      name += `${t('sidebar.plan_settings.area')} ${feature.properties.name}`
-    }
-
-    if (
-      feature.properties.zoning_code != null &&
-      feature.properties.zoning_code != ''
-    ) {
-      return `${name} (${feature.properties.zoning_code})`
-    }
-
-    return `${name}`
-  }
-
   const updateFeature = (
     featureId: string,
     feature: Partial<PlanDataFeature>
@@ -189,7 +166,6 @@ const ZoneAccordion = ({ planConfId, sx }: Props) => {
             index={index}
             expanded={isAccordionExpanded(feature.properties.id)}
             onChange={handleAccordionChange}
-            getTitle={getTitle}
             accordionRefs={accordionRefs}
             updateFeature={updateFeature}
           />
@@ -207,7 +183,6 @@ interface CustomAccordionProps {
   onChange: (
     featureId: string
   ) => (event: React.SyntheticEvent, isExpanded: boolean) => void
-  getTitle: (feature: PlanDataFeature) => string
   accordionRefs: React.MutableRefObject<{
     [key: string]: HTMLDivElement | null
   }>
@@ -220,7 +195,6 @@ const CustomAccordion = memo(
     index,
     expanded,
     onChange,
-    getTitle,
     accordionRefs,
     updateFeature,
   }: CustomAccordionProps) => {
@@ -267,9 +241,10 @@ const CustomAccordion = memo(
           aria-controls={`panel${index + 1}-content`}
           id={`panel${index + 1}-header`}
         >
-          <Typography sx={{ display: 'inline' }}>
-            {getTitle(feature)}
-          </Typography>
+          <CustomAccordionTitle
+            name={feature.properties.name}
+            zoningCode={feature.properties.zoning_code}
+          ></CustomAccordionTitle>
         </AccordionSummary>
         <AccordionDetails sx={{ display: 'flex', flexDirection: 'column' }}>
           <Row>
@@ -295,8 +270,9 @@ const CustomAccordion = memo(
   (prevProps, nextProps) => {
     return (
       prevProps.expanded === nextProps.expanded &&
-      prevProps.getTitle(prevProps.feature) ===
-        nextProps.getTitle(nextProps.feature)
+      prevProps.feature.properties.zoning_code ===
+        nextProps.feature.properties.zoning_code &&
+      prevProps.feature.properties.name === nextProps.feature.properties.name
     )
   }
 )
@@ -327,3 +303,51 @@ const Row = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   width: '100%',
 }))
+
+const CustomAccordionTitle = ({
+  name,
+  zoningCode,
+}: {
+  name: PlanDataFeature['properties']['name']
+  zoningCode: PlanDataFeature['properties']['zoning_code']
+}) => {
+  const { t } = useTranslate('hiilikartta')
+
+  let title = ''
+  if (typeof name === 'string') {
+    if (name === '') {
+      title += t('sidebar.plan_settings.new_area')
+    } else {
+      title += name
+    }
+  } else {
+    title += `${t('sidebar.plan_settings.area')} ${name}`
+  }
+
+  let isZoningCodeValid = false
+
+  if (zoningCode != null && zoningCode != '') {
+    title = `${name} (${zoningCode})`
+    isZoningCodeValid = true
+  }
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        color: isZoningCodeValid ? 'auto' : 'warning.main',
+        justifyContent: 'space-between',
+        flex: '1',
+        height: '100%',
+        alignItems: 'center',
+        pr: 1,
+      }}
+    >
+      <Typography sx={{ display: 'inline' }}>{`${title}`}</Typography>
+      {!isZoningCodeValid && (
+        <Exclamation sx={{ height: '1.4rem' }}></Exclamation>
+      )}
+    </Box>
+  )
+}
