@@ -63,15 +63,19 @@ const DropDownSelect = ({
         }}
       >
         {...[
-          hasEmpty == true && value != null && (
+          hasEmpty === true && (
             <MenuItem key={''} value={value}>
-              <i>
-                <T
-                  keyName={'components.drop_down_select.invalid_value'}
-                  ns={'avoin-map'}
-                ></T>
-                {` (${value})`}
-              </i>
+              {value != null ? (
+                <i>
+                  <T
+                    keyName={'components.drop_down_select.invalid_value'}
+                    ns={'avoin-map'}
+                  ></T>
+                  {` (${value})`}
+                </i>
+              ) : (
+                ''
+              )}
             </MenuItem>
           ),
           options.map((option) => (
