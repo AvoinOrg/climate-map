@@ -7,9 +7,11 @@ import { PlanDataFeature } from '../../../../common/types'
 const ZoneAccordionItemTitle = ({
   name,
   zoningCode,
+  isValidZoningCode,
 }: {
   name: PlanDataFeature['properties']['name']
   zoningCode: PlanDataFeature['properties']['zoning_code']
+  isValidZoningCode: boolean
 }) => {
   const { t } = useTranslate('hiilikartta')
 
@@ -24,11 +26,8 @@ const ZoneAccordionItemTitle = ({
     title += `${t('sidebar.plan_settings.area')} ${name}`
   }
 
-  let isZoningCodeValid = false
-
   if (zoningCode != null && zoningCode != '') {
     title = `${name} (${zoningCode})`
-    isZoningCodeValid = true
   }
 
   return (
@@ -36,7 +35,7 @@ const ZoneAccordionItemTitle = ({
       sx={{
         display: 'flex',
         flexDirection: 'row',
-        color: isZoningCodeValid ? 'auto' : 'warning.main',
+        color: isValidZoningCode ? 'auto' : 'warning.main',
         justifyContent: 'space-between',
         flex: '1',
         height: '100%',
@@ -45,7 +44,7 @@ const ZoneAccordionItemTitle = ({
       }}
     >
       <Typography sx={{ display: 'inline' }}>{`${title}`}</Typography>
-      {!isZoningCodeValid && (
+      {!isValidZoningCode && (
         <Exclamation sx={{ height: '1.4rem' }}></Exclamation>
       )}
     </Box>

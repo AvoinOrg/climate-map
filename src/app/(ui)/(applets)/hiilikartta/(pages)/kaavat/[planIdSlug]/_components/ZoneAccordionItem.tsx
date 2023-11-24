@@ -103,6 +103,7 @@ const ZoneAccordionItem = memo(
           <ZoneAccordionItemTitle
             name={feature.properties.name}
             zoningCode={feature.properties.zoning_code}
+            isValidZoningCode={isValid}
           ></ZoneAccordionItemTitle>
         </AccordionSummary>
         <AccordionDetails sx={{ display: 'flex', flexDirection: 'column' }}>
