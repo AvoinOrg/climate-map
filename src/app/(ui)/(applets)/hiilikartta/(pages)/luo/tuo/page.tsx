@@ -15,8 +15,8 @@ import {
 import { getGeoJsonArea } from '#/common/utils/gis'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import PlanImportGpkg from './components/PlanImportGpkg'
-import PlanImportShp from './components/PlanImportShp'
+import PlanImportGpkg from './_components/PlanImportGpkg'
+import PlanImportShp from './_components/PlanImportShp'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { createLayerConf } from '../../../common/utils'
 import { Feature, FeatureCollection } from 'geojson'
