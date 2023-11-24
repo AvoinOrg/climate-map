@@ -3,12 +3,12 @@
 import React from 'react'
 import { Box } from '@mui/material'
 
-import { routeTree } from './common/routes'
+import { routeTree } from '../common/routes'
 import { SidebarHeader } from '#/components/Sidebar'
 import { BreadcrumbNav } from '#/components/Sidebar'
 import AppletWrapper from '#/components/common/AppletWrapper'
 
-import { SIDEBAR_WIDTH_REM } from './common/constants'
+import { SIDEBAR_WIDTH_REM } from '../common/constants'
 
 const localizationNamespace = 'hiilikartta'
 const defaultLanguage = 'fi'

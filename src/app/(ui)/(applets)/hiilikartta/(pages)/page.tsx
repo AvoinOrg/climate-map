@@ -11,7 +11,7 @@ import { useMapStore } from '#/common/store'
 import { SidebarContentBox } from '#/components/Sidebar'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import { SIDEBAR_WIDTH_REM } from './common/constants'
+import { SIDEBAR_WIDTH_REM } from '../common/constants'
 
 const Page = () => {
   const setMapLibraryMode = useMapStore((state) => state.setMapLibraryMode)

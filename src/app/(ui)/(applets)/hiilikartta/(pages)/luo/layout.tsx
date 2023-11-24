@@ -5,7 +5,7 @@ import { Typography } from '@mui/material'
 
 import { SidebarContentBox } from '#/components/Sidebar'
 
-import { SIDEBAR_WIDTH_REM } from '../common/constants'
+import { SIDEBAR_WIDTH_REM } from '../../common/constants'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (

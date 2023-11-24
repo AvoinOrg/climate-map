@@ -10,9 +10,9 @@ import Link from '#/components/common/Link'
 import { T } from '@tolgee/react'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import { NewPlanConf, PlanData, ZONING_CODE_COL } from '../common/types'
-import { useAppletStore } from '../state/appletStore'
-import { createLayerConf } from '../common/utils'
+import { NewPlanConf, PlanData, ZONING_CODE_COL } from '../../common/types'
+import { useAppletStore } from '../../state/appletStore'
+import { createLayerConf } from '../../common/utils'
 import { useMapStore } from '#/common/store'
 
 const Page = () => {

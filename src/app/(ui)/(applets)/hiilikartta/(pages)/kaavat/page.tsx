@@ -11,9 +11,9 @@ import { SidebarContentBox } from '#/components/Sidebar'
 import Link from '#/components/common/Link'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
-import { routeTree } from '../common/routes'
-import { SIDEBAR_WIDTH_REM } from '../common/constants'
-import PlanFolder from '../components/PlanFolder'
+import { routeTree } from 'applets/hiilikartta/common/routes'
+import { SIDEBAR_WIDTH_REM } from 'applets/hiilikartta/common/constants'
+import PlanFolder from 'applets/hiilikartta/components/PlanFolder'
 
 const Page = () => {
   const planConfs = useStore(useAppletStore, (state) => state.planConfs)
