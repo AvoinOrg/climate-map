@@ -7,19 +7,12 @@ import { T } from '@tolgee/react'
 
 import { getRoute } from '#/common/utils/routing'
 import Folder from '#/components/common/Folder'
-import { useMapStore } from '#/common/store'
 import { SidebarContentBox } from '#/components/Sidebar'
 
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { SIDEBAR_WIDTH_REM } from '../common/constants'
 
 const Page = () => {
-  const setMapLibraryMode = useMapStore((state) => state.setMapLibraryMode)
-
-  useEffect(() => {
-    setMapLibraryMode('mapbox')
-  }, [])
-
   return (
     <SidebarContentBox sx={{ width: SIDEBAR_WIDTH_REM + 'rem' }}>
       <Link href={getRoute(routeTree.create, routeTree)}>
