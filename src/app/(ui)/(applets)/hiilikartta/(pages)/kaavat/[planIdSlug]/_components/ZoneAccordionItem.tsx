@@ -11,8 +11,8 @@ import { T } from '@tolgee/react'
 import DropDownSelect from '#/components/common/DropDownSelect'
 import { ArrowDown } from '#/components/icons'
 
-import { ZONING_CLASSES } from '../common/constants'
-import { PlanDataFeature } from '../common/types'
+import { ZONING_CLASSES } from '../../../../common/constants'
+import { PlanDataFeature } from '../../../../common/types'
 import ZoneAccordionItemTitle from './ZoneAccordionItemTitle'
 
 const zoningCodeOptions = ZONING_CLASSES.map((zoning) => ({

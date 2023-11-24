@@ -19,7 +19,7 @@ import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
 import { ArrowNextBig, Delete } from '#/components/icons'
-import ZoneAccordion from 'applets/hiilikartta/components/ZoneAccordion'
+import ZoneAccordion from './_components/ZoneAccordion'
 import { calcPostMutation } from 'applets/hiilikartta/common/queries/calcPostMutation'
 import PlanFolder from 'applets/hiilikartta/components/PlanFolder'
 import {

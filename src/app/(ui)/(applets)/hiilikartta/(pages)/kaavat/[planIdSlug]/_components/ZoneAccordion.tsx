@@ -2,12 +2,12 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Box from '@mui/material/Box'
 
 import useStore from '#/common/hooks/useStore'
-import { PlanDataFeature } from '../common/types'
+import { PlanDataFeature } from '../../../../common/types'
 import { useMapStore } from '#/common/store'
 import useSelectedFeaturesFilteredByLayer from '#/common/hooks/map/useSelectedFeaturesFilteredByLayer'
 
-import { useAppletStore } from '../state/appletStore'
-import { getPlanLayerGroupId } from '../common/utils'
+import { useAppletStore } from '../../../../state/appletStore'
+import { getPlanLayerGroupId } from '../../../../common/utils'
 import ZoneAccordionItem from './ZoneAccordionItem'
 
 interface Props {

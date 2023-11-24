@@ -2,7 +2,7 @@ import { Box, Typography } from '@mui/material'
 import { useTranslate } from '@tolgee/react'
 
 import { Exclamation } from '#/components/icons'
-import { PlanDataFeature } from '../common/types'
+import { PlanDataFeature } from '../../../../common/types'
 
 const ZoneAccordionItemTitle = ({
   name,
