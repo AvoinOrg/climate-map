@@ -122,7 +122,11 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 mr: SCROLLBAR_WIDTH_REM + 'rem',
               }}
             >
-              <PlanFolder planConf={planConf} height={90} />
+              <PlanFolder
+                isNameEditable={true}
+                planConf={planConf}
+                height={90}
+              />
 
               {/* <MuiLink
             href={getRoute(routeTree.plans.plan.settings, routeTree, [planConf.id])}
