@@ -73,6 +73,16 @@ const ZoneAccordionItem = memo(
       }
     }
 
+    const handleNameChange = (event: any) => {
+      const name = event.target.value
+
+      if (name != null && name != '') {
+        updateFeature(feature.properties.id, {
+          properties: { ...feature.properties, name: name },
+        })
+      }
+    }
+
     return (
       <Accordion
         key={feature.properties.id}
@@ -99,11 +109,19 @@ const ZoneAccordionItem = memo(
           expandIcon={<ArrowDown />}
           aria-controls={`panel${index + 1}-content`}
           id={`panel${index + 1}-header`}
+          sx={{
+            '& .MuiAccordionSummary-content': {
+              width: '100%',
+              display: 'flex',
+              flexGrow: 1,
+            },
+          }}
         >
           <ZoneAccordionItemTitle
             name={feature.properties.name}
             zoningCode={feature.properties.zoning_code}
             isValidZoningCode={isValid}
+            onChange={handleNameChange}
           ></ZoneAccordionItemTitle>
         </AccordionSummary>
         <AccordionDetails sx={{ display: 'flex', flexDirection: 'column' }}>
