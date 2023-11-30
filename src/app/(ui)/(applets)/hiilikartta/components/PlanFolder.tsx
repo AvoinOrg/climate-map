@@ -4,16 +4,26 @@ import { T } from '@tolgee/react'
 
 import Folder from '#/components/common/Folder'
 import { Error as ErrorIcon, Info } from '#/components/icons'
+import EditableText from '#/components/common/EditableText'
 
 import { CalculationState, PlanConf } from '../common/types'
+import { useAppletStore } from '../state/appletStore'
 
 const PlanFolder = ({
   planConf,
   height,
+  isNameEditable = false,
 }: {
   planConf: PlanConf
   height: number
+  isNameEditable?: boolean
 }) => {
+  const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
+
+  const handleNameChange = (event: any) => {
+    updatePlanConf(planConf.id, { name: event.target.value })
+  }
+
   return (
     <Folder height={height}>
       <Box
@@ -29,9 +39,18 @@ const PlanFolder = ({
           height: '100%',
         })}
       >
-        <Typography sx={{ typography: 'h2', color: 'neutral.darker' }}>
-          {planConf.name}
-        </Typography>
+        {isNameEditable ? (
+          <EditableText
+            textSx={{ typography: 'h2', color: 'neutral.darker' }}
+            value={planConf.name}
+            onChange={handleNameChange}
+          />
+        ) : (
+          <Typography sx={{ typography: 'h2', color: 'neutral.darker' }}>
+            {planConf.name}
+          </Typography>
+        )}
+
         {![CalculationState.NOT_STARTED].includes(
           planConf.calculationState
         ) && (
