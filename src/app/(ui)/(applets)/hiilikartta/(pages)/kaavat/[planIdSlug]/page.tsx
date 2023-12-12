@@ -363,59 +363,58 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               </Box>
               {/* </Box> */}
             </FooterButtonContainer>
-            {!planConf.reportData &&
-              [
-                CalculationState.NOT_STARTED,
-                CalculationState.ERRORED,
-                CalculationState.FINISHED,
-              ].includes(planConf.calculationState) && (
+            {[
+              CalculationState.NOT_STARTED,
+              CalculationState.ERRORED,
+              CalculationState.FINISHED,
+            ].includes(planConf.calculationState) && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flex: 1,
+                  flexDirection: 'column',
+                  justifyContent: 'flex-end',
+                }}
+              >
                 <Box
                   sx={{
                     display: 'flex',
-                    flex: 1,
-                    flexDirection: 'column',
+                    flexDirection: 'row',
                     justifyContent: 'flex-end',
                   }}
                 >
                   <Box
                     sx={{
-                      display: 'flex',
+                      display: 'inline-flex',
                       flexDirection: 'row',
-                      justifyContent: 'flex-end',
+                      '&:hover': { cursor: 'pointer' },
+                      mt: 4,
+                      flex: '0',
                     }}
+                    onClick={handleSubmit}
                   >
                     <Box
                       sx={{
-                        display: 'inline-flex',
-                        flexDirection: 'row',
-                        '&:hover': { cursor: 'pointer' },
-                        mt: 4,
-                        flex: '0',
+                        typography: 'h1',
+                        textAlign: 'end',
+                        mr: 3,
+                        minWidth: '270px',
                       }}
-                      onClick={handleSubmit}
                     >
-                      <Box
-                        sx={{
-                          typography: 'h1',
-                          textAlign: 'end',
-                          mr: 3,
-                          minWidth: '270px',
-                        }}
-                      >
-                        <T
-                          keyName={
-                            'sidebar.plan_settings.calculate_carbon_effect'
-                          }
-                          ns={'hiilikartta'}
-                        />
-                      </Box>
-                      <Box sx={{ mt: 0.2 }}>
-                        <ArrowNextBig></ArrowNextBig>
-                      </Box>
+                      <T
+                        keyName={
+                          'sidebar.plan_settings.calculate_carbon_effect'
+                        }
+                        ns={'hiilikartta'}
+                      />
+                    </Box>
+                    <Box sx={{ mt: 0.2 }}>
+                      <ArrowNextBig></ArrowNextBig>
                     </Box>
                   </Box>
                 </Box>
-              )}
+              </Box>
+            )}
           </Box>
         </>
       )}
