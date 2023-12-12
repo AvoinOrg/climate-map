@@ -43,7 +43,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const deletePlanConf = useAppletStore((state) => state.deletePlanConf)
   const copyPlanConf = useAppletStore((state) => state.copyPlanConf)
   const calcPost = useMutation(calcPostMutation())
-  const [currentYear, setCurrentYear] = useState<FeatureYear>(featureYears[1])
+  const [currentYear, setCurrentYear] = useState<string>()
 
   const [isLoaded, setIsLoaded] = useState(false)
   const router = useRouter()
@@ -93,6 +93,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     if (planConf === undefined) {
       router.push(getRoute(routeTree, routeTree))
     } else {
+      if (planConf?.reportData) {
+        setCurrentYear(planConf.reportData.metadata.featureYears[1])
+      }
       setIsLoaded(true)
     }
   }, [planConf])
@@ -138,7 +141,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             </MenuButton>
           </MuiLink> */}
 
-              {planConf.reportData && (
+              {planConf.reportData && currentYear != null && (
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                   <Box
                     sx={{
@@ -182,15 +185,15 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                       sx={{ mr: -4, mt: -0.5 }}
                       iconSx={{ ml: 2, mt: 0.8 }}
                       optionSx={{ mr: 1, typography: 'h8' }}
-                      onChange={(e) =>
-                        setCurrentYear(e.target.value as FeatureYear)
-                      }
-                      options={featureYears.slice(1).map((year) => {
-                        return {
-                          value: year,
-                          label: year,
-                        }
-                      })}
+                      onChange={(e) => setCurrentYear(e.target.value as string)}
+                      options={planConf.reportData.metadata.featureYears
+                        .slice(1)
+                        .map((year) => {
+                          return {
+                            value: year,
+                            label: year,
+                          }
+                        })}
                     ></DropDownSelectMinimal>
                   </Box>
                   <Box
