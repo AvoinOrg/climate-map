@@ -263,12 +263,12 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                     >
                       <Typography typography={'h1'}>
                         {pp(
-                          planConf.reportData.agg.totals.bio_carbon_sum_diff[
+                          planConf.reportData.agg.totals.bio_carbon_total_diff[
                             currentYear
                           ] +
                             planConf.reportData.agg.totals
-                              .ground_carbon_sum_diff[currentYear],
-                          4
+                              .ground_carbon_total_diff[currentYear],
+                          2
                         )}
                       </Typography>
                       <Typography mt={0.5} typography={'h5'}>
@@ -279,10 +279,11 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                       </Typography>
                       <Typography mt={2} typography={'h1'}>
                         {pp(
-                          planConf.reportData.agg.totals
-                            .bio_carbon_per_area_diff[currentYear] +
+                          planConf.reportData.agg.totals.bio_carbon_ha_diff[
+                            currentYear
+                          ] +
                             planConf.reportData.agg.totals
-                              .ground_carbon_per_area_diff[currentYear],
+                              .ground_carbon_ha_diff[currentYear],
                           2
                         )}
                       </Typography>
