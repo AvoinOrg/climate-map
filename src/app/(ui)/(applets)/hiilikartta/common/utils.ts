@@ -132,7 +132,7 @@ export const createLayerConf = (
             'case',
             isZoningClassValidExpression(),
             ['get', featureColorCol],
-            '??',
+            '!',
           ],
         },
         paint: {
