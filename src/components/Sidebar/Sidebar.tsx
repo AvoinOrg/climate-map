@@ -70,7 +70,10 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
         >
           <Drawer open={isSidebarOpen}>
             {sidebarHeader}
-            <Box ref={sidebarRef} sx={{ overflow: 'auto' }}>
+            <Box
+              ref={sidebarRef}
+              sx={{ overflow: 'auto', display: 'flex', flexGrow: 1 }}
+            >
               {children}
             </Box>
           </Drawer>
