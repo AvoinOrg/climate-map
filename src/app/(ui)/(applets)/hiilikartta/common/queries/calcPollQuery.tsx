@@ -1,7 +1,7 @@
 import { UseQueryOptions } from '@tanstack/react-query'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import axios from 'axios'
-import { CalculationState, PlanConf, ReportData } from '../types'
+import { CalculationState, featureCols, PlanConf, ReportData } from '../types'
 import {
   getAggregatedCalcs,
   transformCalcGeojsonToNestedStructure,
@@ -29,11 +29,16 @@ export const calcPollQuery = (
         const totals = transformCalcGeojsonToNestedStructure(
           response.data.data.totals
         )
+
+        const featureYears = Object.keys(
+          totals.features[0].properties[featureCols[0]].nochange
+        )
         const metadata = {
           timestamp: Number(response.data.data.metadata.calculated_ts),
+          featureYears,
         }
 
-        const totalsAgg = getAggregatedCalcs(totals.features[0])
+        const totalsAgg = getAggregatedCalcs(totals.features[0], featureYears)
 
         const agg = { totals: totalsAgg }
 
