@@ -31,16 +31,12 @@ export const calcPostMutation = (): UseMutationOptions<
       formData.append('file', zipBlob, 'file.zip')
       formData.append('zoning_col', planConf.fileSettings.zoningColumn)
 
-      const postRes = await axios.post(
-        `${API_URL}/calculation`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          params: { id: planConf.serverId },
-        }
-      )
+      const postRes = await axios.post(`${API_URL}/calculation`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        params: { id: planConf.serverId },
+      })
 
       if (postRes.status !== 200) {
         throw new Error('Failed to start calculation.')
