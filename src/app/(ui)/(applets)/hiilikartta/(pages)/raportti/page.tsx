@@ -13,17 +13,13 @@ import { T, useTranslate } from '@tolgee/react'
 import { pp } from '#/common/utils/general'
 import { getRoute } from '#/common/utils/routing'
 import MultiSelectAutocomplete from '#/components/common/MultiSelectAutocomplete'
+import { SelectOption } from '#/common/types/general'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import {
-  featureYears,
-  PlanConf,
-  ReportData,
-} from 'applets/hiilikartta/common/types'
+import { PlanConf, ReportData } from 'applets/hiilikartta/common/types'
 import CarbonMapGraph from 'applets/hiilikartta/components/CarbonMapGraph'
 import CarbonLineChart from 'applets/hiilikartta/components/CarbonLineChart'
-import { SelectOption } from '#/common/types/general'
 
 const MAX_WIDTH = '1000px'
 
@@ -46,6 +42,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const [prevPageId, setPrevPageId] = useState<string>()
   const [errorState, setErrorState] = useState<ErrorState>()
   const [isLoaded, setIsLoaded] = useState(true)
+  const [featureYears, setFeatureYears] = useState<string[]>([])
 
   useEffect(() => {
     if (allPlanConfs != null) {
@@ -71,6 +68,20 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
 
         if (!areIdsEqualAndInOrder) {
           setPlanConfs(paramPlanConfs)
+
+          for (const planConf of paramPlanConfs) {
+            const allFeatureYears: string[][] = []
+            if (planConf.reportData.metadata.featureYears != null) {
+              allFeatureYears.push(planConf.reportData.metadata.featureYears)
+            }
+            const commonFeatureYears = allFeatureYears[0].filter(
+              (item: string) =>
+                allFeatureYears.every((featureYearArray: string[]) =>
+                  featureYearArray.includes(item)
+                )
+            )
+            setFeatureYears(commonFeatureYears)
+          }
         }
 
         if (!isLoaded) {
@@ -332,11 +343,10 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                       </Typography>
                       <Typography mt={1} typography={'h1'}>
                         {pp(
-                          planConf.reportData.agg.totals.bio_carbon_sum_diff[
-                            featureYears[1]
-                          ] +
+                          planConf.reportData.agg.totals
+                            .bio_carbon_total_diff[featureYears[1]] +
                             planConf.reportData.agg.totals
-                              .ground_carbon_sum_diff[featureYears[1]],
+                              .ground_carbon_total_diff[featureYears[1]],
                           4
                         )}
                       </Typography>
@@ -348,10 +358,11 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                       </Typography>
                       <Typography mt={1} typography={'h1'}>
                         {pp(
-                          planConf.reportData.agg.totals
-                            .bio_carbon_per_area_diff[featureYears[1]] +
+                          planConf.reportData.agg.totals.bio_carbon_ha_diff[
+                            featureYears[1]
+                          ] +
                             planConf.reportData.agg.totals
-                              .ground_carbon_per_area_diff[featureYears[1]],
+                              .ground_carbon_ha_diff[featureYears[1]],
                           2
                         )}
                       </Typography>
