@@ -10,7 +10,6 @@ import {
   CalcFeature,
   CalcFeatureYearValues,
   FeatureCalcs,
-  featureYears,
 } from './types'
 import { ZONING_CLASSES } from './constants'
 
@@ -167,20 +166,33 @@ export const transformCalcGeojsonToNestedStructure = (
     const newProperties: CalcFeatureProperties = {} as CalcFeatureProperties
 
     featureCols.forEach((col) => {
+      const nochange = Object.keys(feature.properties).reduce(
+        (obj: any, key) => {
+          if (key.startsWith(`${col}_nochange_`)) {
+            const year = key.split(`${col}_nochange_`)[1]
+            obj[year] = feature.properties[key]
+          }
+          return obj
+        },
+        {}
+      )
+
+      const planned = Object.keys(feature.properties).reduce(
+        (obj: any, key) => {
+          if (key.startsWith(`${col}_planned_`)) {
+            const year = key.split(`${col}_planned_`)[1]
+            obj[year] = feature.properties[key]
+          }
+          return obj
+        },
+        {}
+      )
+
       newProperties[col] = {
-        nochange: {
-          now: feature.properties[`${col}_nochange_now`],
-          '2035': feature.properties[`${col}_nochange_2035`],
-          '2045': feature.properties[`${col}_nochange_2045`],
-          '2055': feature.properties[`${col}_nochange_2055`],
-        },
-        planned: {
-          now: feature.properties[`${col}_planned_now`],
-          '2035': feature.properties[`${col}_planned_2035`],
-          '2045': feature.properties[`${col}_planned_2045`],
-          '2055': feature.properties[`${col}_planned_2055`],
-        },
+        nochange,
+        planned,
       }
+      newProperties
     })
 
     newProperties.area = feature.properties.area
@@ -199,7 +211,10 @@ export const transformCalcGeojsonToNestedStructure = (
   return output
 }
 
-export const getAggregatedCalcs = (calcFeature: CalcFeature): FeatureCalcs => {
+export const getAggregatedCalcs = (
+  calcFeature: CalcFeature,
+  featureYears: string[]
+): FeatureCalcs => {
   const calculations: Partial<FeatureCalcs> = {} // Start as a partial for intermediate computations
 
   featureCols.forEach((col) => {
@@ -208,7 +223,7 @@ export const getAggregatedCalcs = (calcFeature: CalcFeature): FeatureCalcs => {
     const yearDiffs: Partial<CalcFeatureYearValues> = {}
 
     // Dynamically compute differences for each year
-    featureYears.forEach((year) => {
+    featureYears.forEach((year: string) => {
       if (nochange[year] !== undefined && planned[year] !== undefined) {
         yearDiffs[year] = planned[year] - nochange[year]
       }
