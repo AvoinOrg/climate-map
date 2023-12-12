@@ -5,6 +5,7 @@ export interface ReportData {
   totals: CalcFeatureCollection
   metadata: {
     timestamp: number
+    featureYears: string[]
   }
   agg: { totals: FeatureCalcs }
 }
@@ -58,10 +59,6 @@ export interface FeatureProperties {
   old_id?: string | number
 }
 
-export const featureYears = ['now', '2035', '2045', '2055'] as const
-
-export type FeatureYear = (typeof featureYears)[number]
-
 export const featureCols = [
   'bio_carbon_total',
   'ground_carbon_total',
@@ -70,7 +67,7 @@ export const featureCols = [
 ] as const
 
 export type CalcFeatureYearValues = {
-  [K in (typeof featureYears)[number]]: number
+  [key: string]: number
 }
 
 export type CarbonData = {
