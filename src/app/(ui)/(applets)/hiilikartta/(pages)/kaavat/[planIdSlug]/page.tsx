@@ -14,23 +14,23 @@ import FolderCopy from '@mui/icons-material/FolderCopyOutlined'
 import { getRoute } from '#/common/utils/routing'
 import useStore from '#/common/hooks/useStore'
 import { useMapStore } from '#/common/store'
-
-import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
-import { routeTree } from 'applets/hiilikartta/common/routes'
-import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
-import { ArrowNextBig, Delete } from '#/components/icons'
-import ZoneAccordion from './_components/ZoneAccordion'
-import { calcPostMutation } from 'applets/hiilikartta/common/queries/calcPostMutation'
-import PlanFolder from 'applets/hiilikartta/components/PlanFolder'
+import DropDownSelectMinimal from '#/components/common/DropDownSelectMinimal'
+import { pp } from '#/common/utils/general'
 import {
   SCROLLBAR_WIDTH_REM,
   SIDEBAR_PADDING_REM,
   SIDEBAR_PADDING_WITH_SCROLLBAR_REM,
 } from '#/common/style/theme/constants'
+import { ArrowNextBig, Delete } from '#/components/icons'
+
+import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
+import { routeTree } from 'applets/hiilikartta/common/routes'
+import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
+import ZoneAccordion from './_components/ZoneAccordion'
+import { calcPostMutation } from 'applets/hiilikartta/common/queries/calcPostMutation'
+import PlanFolder from 'applets/hiilikartta/components/PlanFolder'
 import { SIDEBAR_WIDTH_REM } from 'applets/hiilikartta/common/constants'
-import { pp } from '#/common/utils/general'
-import { FeatureYear, featureYears } from 'applets/hiilikartta/common/types'
-import DropDownSelectMinimal from '#/components/common/DropDownSelectMinimal'
+import { CalculationState } from 'applets/hiilikartta/common/types'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const removeSerializableLayerGroup = useMapStore(
