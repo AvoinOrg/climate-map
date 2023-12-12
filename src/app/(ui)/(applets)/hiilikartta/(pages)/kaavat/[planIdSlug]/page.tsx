@@ -52,6 +52,28 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const handleSubmit = async () => {
     if (planConf) {
       calcPost.mutate(planConf)
+
+      // Download plan as JSON. A feature to be added later.
+      // const jsonString = JSON.stringify(planConf, null, 2)
+
+      // // Create a Blob from the JSON string
+      // const blob = new Blob([jsonString], { type: 'application/json' })
+
+      // // Create a URL for the Blob
+      // const url = URL.createObjectURL(blob)
+
+      // // Create a temporary anchor element and set the necessary attributes
+      // const a = document.createElement('a')
+      // a.href = url
+      // a.download = planConf.name + '.json'
+      // document.body.appendChild(a) // Append the anchor to the body
+
+      // // Programmatically click the anchor to trigger the download
+      // a.click()
+
+      // // Clean up by removing the anchor and revoking the Blob URL
+      // document.body.removeChild(a)
+      // URL.revokeObjectURL(url)
     }
   }
 
