@@ -40,6 +40,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     useAppletStore,
     (state) => state.planConfs[params.planIdSlug]
   )
+  const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
   const deletePlanConf = useAppletStore((state) => state.deletePlanConf)
   const copyPlanConf = useAppletStore((state) => state.copyPlanConf)
   const calcPost = useMutation(calcPostMutation())
@@ -52,6 +53,10 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const handleSubmit = async () => {
     if (planConf) {
       calcPost.mutate(planConf)
+
+      if (planConf.reportData != null) {
+        updatePlanConf(planConf.id, { reportData: undefined })
+      }
 
       // Download plan as JSON. A feature to be added later.
       // const jsonString = JSON.stringify(planConf, null, 2)
