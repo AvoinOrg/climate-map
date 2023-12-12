@@ -63,10 +63,10 @@ export const featureYears = ['now', '2035', '2045', '2055'] as const
 export type FeatureYear = (typeof featureYears)[number]
 
 export const featureCols = [
-  'bio_carbon_sum',
-  'ground_carbon_sum',
-  'bio_carbon_per_area',
-  'ground_carbon_per_area',
+  'bio_carbon_total',
+  'ground_carbon_total',
+  'bio_carbon_ha',
+  'ground_carbon_ha',
 ] as const
 
 export type CalcFeatureYearValues = {
