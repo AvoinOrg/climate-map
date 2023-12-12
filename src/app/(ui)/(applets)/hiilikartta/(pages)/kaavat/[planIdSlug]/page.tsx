@@ -108,6 +108,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         height: '100%',
         width: SIDEBAR_WIDTH_REM + 'rem',
       }}
+      className={'plan-sidebar-container'}
     >
       {isLoaded && planConf && (
         <>
@@ -115,6 +116,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             sx={{
               overflowY: 'scroll',
               direction: 'rtl',
+              display: 'flex',
+              flexGrow: 1,
+              flexDirection: 'column',
             }}
           >
             <Box
