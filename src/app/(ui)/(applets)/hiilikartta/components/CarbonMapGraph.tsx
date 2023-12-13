@@ -5,18 +5,17 @@ import { scaleLinear } from 'd3-scale'
 import { extent } from 'd3-array'
 
 const width = 600
-const height = 600
-
+const height = 300
 interface FeatureShape {
   type: 'Feature'
   id: string
   geometry: { coordinates: [number, number][][]; type: 'Polygon' }
   properties: {
-    bio_carbon_per_area: {
+    bio_carbon_ha: {
       planned: { [year: string]: number }
       nochange: { [year: string]: number }
     }
-    ground_carbon_per_area: {
+    ground_carbon_ha: {
       planned: { [year: string]: number }
       nochange: { [year: string]: number }
     }
@@ -52,10 +51,10 @@ const CarbonMapGraph = ({ geojsonData }: Props) => {
   const pathGenerator = geoPath().projection(projection)
 
   const colorDifference = (feature: FeatureShape) =>
-    feature.properties.bio_carbon_per_area.planned['2035'] +
-    feature.properties.ground_carbon_per_area.planned['2035'] -
-    (feature.properties.bio_carbon_per_area.nochange['2035'] +
-      feature.properties.ground_carbon_per_area.nochange['2035'])
+    feature.properties.bio_carbon_ha.planned['2040'] +
+    feature.properties.ground_carbon_ha.planned['2040'] -
+    (feature.properties.bio_carbon_ha.nochange['2040'] +
+      feature.properties.ground_carbon_ha.nochange['2040'])
 
   const calculatedDomain = extent(geojsonData.features, colorDifference)
   const colorDomain =
