@@ -297,7 +297,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
           )}
         </Row>
       </Section>
-      {isLoaded && planConfs.length > 0 && (
+      {isLoaded && planConfs.length > 0 && featureYears.length > 0 && (
         <>
           <Section>
             <Row
@@ -326,7 +326,10 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                       <Typography typography={'h8'}>
                         <T keyName="report.plan" ns="hiilikartta"></T>
                       </Typography>
-                      <Typography typography={'h7'}>
+                      <Typography
+                        typography={'h7'}
+                        sx={{ whiteSpace: 'nowrap' }}
+                      >
                         {planConf?.name}
                       </Typography>
                       <Typography typography={'h5'} sx={{ mt: 2 }}>
@@ -343,8 +346,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                       </Typography>
                       <Typography mt={1} typography={'h1'}>
                         {pp(
-                          planConf.reportData.agg.totals
-                            .bio_carbon_total_diff[featureYears[1]] +
+                          planConf.reportData.agg.totals.bio_carbon_total_diff[
+                            featureYears[1]
+                          ] +
                             planConf.reportData.agg.totals
                               .ground_carbon_total_diff[featureYears[1]],
                           4
@@ -374,25 +378,6 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             </Row>
           </Section>
           <Breaker sx={{ mt: 2 }} />
-          {/* <Section sx={{ mt: 8 }}>
-            <Row>
-              <Typography
-                sx={(theme) => ({
-                  typography: theme.typography.h1,
-                  display: 'inline',
-                })}
-              >
-                <T
-                  keyName="report.carbon_stock_development"
-                  ns={'hiilikartta'}
-                ></T>{' '}
-              </Typography>
-            </Row>
-            <Row>
-              <CarbonMapGraph geojsonData={planConf.reportData.areas} />
-            </Row>
-          </Section>
-          <Breaker sx={{ mt: 8 }} />
           <Section sx={{ mt: 8 }}>
             <Row>
               <Typography
@@ -408,9 +393,51 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               </Typography>
             </Row>
             <Row>
-              <CarbonLineChart data={planConf.reportData.totals} />
+              <CarbonLineChart
+                data={planConfs.map((planConf) => planConf.reportData.totals)}
+                featureYears={featureYears}
+                planNames={planConfs.map((planConf) => planConf.name)}
+              />
             </Row>
-          </Section> */}
+          </Section>
+          <Section sx={{ mt: 8 }}>
+            <Row sx={{ mb: 4 }}>
+              <Typography
+                sx={(theme) => ({
+                  typography: theme.typography.h1,
+                  display: 'inline',
+                })}
+              >
+                <T
+                  keyName="report.carbon_stock_development"
+                  ns={'hiilikartta'}
+                ></T>{' '}
+              </Typography>
+            </Row>
+            <Row>
+              <Col>
+                {planConfs.map((planConf) => (
+                  <Box
+                    sx={{
+                      mt: 4,
+                      width: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                    key={planConf.id}
+                  >
+                    <Typography sx={{ typography: 'h2', mb: 2, ml: 12 }}>
+                      {planConf.name}
+                    </Typography>
+                    <Row>
+                      <CarbonMapGraph geojsonData={planConf.reportData.areas} />
+                    </Row>
+                  </Box>
+                ))}
+              </Col>
+            </Row>
+          </Section>
+          <Breaker sx={{ mt: 8 }} />
         </>
       )}
     </Box>
