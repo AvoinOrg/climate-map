@@ -17,7 +17,7 @@ import { SelectOption } from '#/common/types/general'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import { PlanConf, ReportData } from 'applets/hiilikartta/common/types'
+import { PlanConfWithReportData } from 'applets/hiilikartta/common/types'
 import CarbonMapGraph from 'applets/hiilikartta/components/CarbonMapGraph'
 import CarbonLineChart from 'applets/hiilikartta/components/CarbonLineChart'
 
@@ -28,8 +28,6 @@ enum ErrorState {
   INVALID_IDS = 'INVALID_IDS',
   NO_DATA = 'NO_DATA',
 }
-
-type PlanConfWithReportData = PlanConf & { reportData: ReportData }
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const searchParams = useSearchParams()
