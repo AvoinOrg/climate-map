@@ -25,6 +25,8 @@ export type PlanData<G extends Geometry | null = Geometry> = FeatureCollection<
 
 export type PlanDataFeature = PlanData['features'][number]
 
+export type PlanConfWithReportData = PlanConf & { reportData: ReportData }
+
 export enum CalculationState {
   NOT_STARTED = 'not-started',
   INITIALIZING = 'initializing',
