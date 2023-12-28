@@ -75,6 +75,10 @@ const EditableText = ({
     setIsInputFocused(true)
   }
 
+  const handleInputChange = (event: any) => {
+    setInternalValue(event.target.value)
+  }
+
   return (
     <Box
       sx={[
@@ -136,7 +140,7 @@ const EditableText = ({
             ],
           }} // Use inline styles for inputProps
           value={internalValue}
-          onChange={(event) => setInternalValue(event.target.value)}
+          onChange={handleInputChange}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           onClick={(event) => event.stopPropagation()}
