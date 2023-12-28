@@ -414,24 +414,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             </Row>
             <Row>
               <Col>
-                {planConfs.map((planConf) => (
-                  <Box
-                    sx={{
-                      mt: 4,
-                      width: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                    }}
-                    key={planConf.id}
-                  >
-                    <Typography sx={{ typography: 'h2', mb: 2, ml: 12 }}>
-                      {planConf.name}
-                    </Typography>
-                    <Row>
-                      <CarbonMapGraph geojsonData={planConf.reportData.areas} />
-                    </Row>
-                  </Box>
-                ))}
+                <CarbonMapGraph planConfs={planConfs} />
               </Col>
             </Row>
           </Section>
