@@ -1,13 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
-import { Box, Button, ButtonGroup, Typography } from '@mui/material'
-import turfBbox from '@turf/bbox'
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Typography,
+} from '@mui/material'
 
-import { CalcFeatureCollection } from 'applets/hiilikartta/common/types'
+import {
+  CalcFeatureCollection,
+} from 'applets/hiilikartta/common/types'
 import {
   addPaddingToLngLatBounds,
   getCombinedBoundsInLngLat,
 } from '#/common/utils/gis'
+import DropDownSelectMinimal from '#/components/common/DropDownSelectMinimal'
 
 type Props = {
   datas: {
@@ -15,7 +26,9 @@ type Props = {
     name: string
     data: CalcFeatureCollection
   }[]
-  activeYear: number
+  activeYear: string
+  featureYears: string[]
+  setActiveYear: (year: string) => void
   activeDataId: string
   setActiveDataId: (dataName: string) => void
 }
@@ -23,6 +36,8 @@ type Props = {
 const CarbonMapGraphMap = ({
   datas,
   activeYear,
+  featureYears,
+  setActiveYear,
   activeDataId,
   setActiveDataId,
 }: Props) => {
@@ -125,7 +140,34 @@ const CarbonMapGraphMap = ({
     >
       <Box ref={mapContainer} style={{ height: '100%', width: '100%' }} />
 
-      {/* UI for selecting GeoJSON data */}
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: '0.75rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1000, // ensure it's above the map layers
+          height: '2rem',
+          backgroundColor: 'neutral.lighter',
+          borderRadius: '1rem',
+          opacity: 0.85,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          pl: 2,
+          pr: 2,
+        }}
+      >
+        <DropDownSelectMinimal
+          value={activeYear}
+          options={featureYears.map((year) => ({
+            label: year,
+            value: year,
+          }))}
+          onChange={(event) => setActiveYear(event.target.value as string)}
+        ></DropDownSelectMinimal>
+      </Box>
+
       <Box
         sx={{
           position: 'absolute',
