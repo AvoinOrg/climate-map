@@ -414,7 +414,10 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             </Row>
             <Row>
               <Col>
-                <CarbonMapGraph planConfs={planConfs} />
+                <CarbonMapGraph
+                  planConfs={planConfs}
+                  featureYears={featureYears}
+                />
               </Col>
             </Row>
           </Section>
