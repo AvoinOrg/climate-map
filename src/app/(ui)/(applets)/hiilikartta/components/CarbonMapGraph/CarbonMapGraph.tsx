@@ -4,10 +4,12 @@ import CarbonMapGraphMap from './CarbonMapGraphMap'
 
 type Props = {
   planConfs: PlanConfWithReportData[]
+  featureYears: string[]
 }
 
-const CarbonMapGraph = ({ planConfs }: Props) => {
+const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
   const [activePlanConfId, setActivePlanConfId] = useState(planConfs[0].id)
+  const [activeYear, setActiveYear] = useState(featureYears[0])
 
   return (
     <CarbonMapGraphMap
@@ -16,7 +18,9 @@ const CarbonMapGraph = ({ planConfs }: Props) => {
         name: planConf.name,
         data: planConf.reportData.areas,
       }))}
-      activeYear={1234}
+      activeYear={activeYear}
+      featureYears={featureYears}
+      setActiveYear={setActiveYear}
       activeDataId={activePlanConfId}
       setActiveDataId={setActivePlanConfId}
     />
