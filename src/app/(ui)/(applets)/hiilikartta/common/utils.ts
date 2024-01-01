@@ -253,8 +253,14 @@ export const getCarbonChangeColorForProperties = (
     return CARBON_CHANGE_NO_DATA_COLOR
   }
 
-  let bioCarbon = properties.bio_carbon_ha?.nochange?.[year]
-  let groundCarbon = properties.ground_carbon_ha?.nochange?.[year]
+  const firstYear = Math.min(
+    ...Object.keys(properties.bio_carbon_ha.nochange).map((year) =>
+      Number(year)
+    )
+  )
+
+  let bioCarbon = properties.bio_carbon_ha?.nochange?.[firstYear]
+  let groundCarbon = properties.ground_carbon_ha?.nochange?.[firstYear]
 
   if (usePlanned) {
     if (
