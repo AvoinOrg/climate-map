@@ -3,11 +3,6 @@ import mapboxgl from 'mapbox-gl'
 import {
   Box,
   Button,
-  ButtonGroup,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
   Typography,
 } from '@mui/material'
 import { cloneDeep } from 'lodash-es'
@@ -20,9 +15,7 @@ import {
 
 import { ZONING_CODE_COL } from 'applets/hiilikartta/common/types'
 import {
-  CalcFeature,
   CalcFeatureCollection,
-  CalcFeatureProperties,
 } from 'applets/hiilikartta/common/types'
 import {
   getCarbonChangeColorForProperties,
