@@ -163,6 +163,8 @@ const CarbonMapGraphMap = ({
               'text-font': ['Open Sans Regular'],
               'text-field': [
                 'case',
+                ['==', ['get', ZONING_CODE_COL], 'none'],
+                '',
                 isZoningClassValidExpression(),
                 ['get', ZONING_CODE_COL],
                 '!',
