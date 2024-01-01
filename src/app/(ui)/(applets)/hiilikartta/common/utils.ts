@@ -11,7 +11,11 @@ import {
   CalcFeatureYearValues,
   FeatureCalcs,
 } from './types'
-import { ZONING_CLASSES } from './constants'
+import {
+  ZONING_CLASSES,
+  CARBON_CHANGE_COLORS,
+  CARBON_CHANGE_NO_DATA_COLOR,
+} from './constants'
 
 export const getPlanLayerGroupId = (planId: string) => {
   return `${planId}_zoning_plan`
@@ -233,4 +237,69 @@ export const getAggregatedCalcs = (
   })
 
   return calculations as FeatureCalcs // Cast back to FeatureCalcs after computing all the values
+}
+
+export const getCarbonChangeColorForProperties = (
+  properties: CalcFeatureProperties,
+  year: string,
+  usePlanned: boolean = true
+) => {
+  if (
+    properties.bio_carbon_ha?.nochange?.[year] == undefined ||
+    properties.ground_carbon_ha?.nochange?.[year] == undefined ||
+    properties.bio_carbon_ha?.nochange?.[year] < 0 ||
+    properties.ground_carbon_ha?.nochange?.[year] < 0
+  ) {
+    return CARBON_CHANGE_NO_DATA_COLOR
+  }
+
+  let bioCarbon = properties.bio_carbon_ha?.nochange?.[year]
+  let groundCarbon = properties.ground_carbon_ha?.nochange?.[year]
+
+  if (usePlanned) {
+    if (
+      properties.bio_carbon_ha?.planned?.[year] == undefined ||
+      properties.ground_carbon_ha?.planned?.[year] == undefined ||
+      properties.bio_carbon_ha?.planned?.[year] < 0 ||
+      properties.ground_carbon_ha?.planned?.[year] < 0
+    ) {
+      return CARBON_CHANGE_NO_DATA_COLOR
+    }
+
+    const bioCarbonPlanned = properties.bio_carbon_ha?.planned?.[year]
+    const groundCarbonPlanned = properties.ground_carbon_ha?.planned?.[year]
+
+    bioCarbon = bioCarbonPlanned - bioCarbon
+    groundCarbon = groundCarbonPlanned - groundCarbon
+  }
+
+  const totalCarbon = bioCarbon + groundCarbon
+
+  let color = ''
+
+  for (let i = 0; i < CARBON_CHANGE_COLORS.length; i++) {
+    if (i === 0) {
+      if (totalCarbon < CARBON_CHANGE_COLORS[i].min) {
+        color = CARBON_CHANGE_COLORS[i].color
+        break
+      }
+    }
+
+    if (i === CARBON_CHANGE_COLORS.length - 1) {
+      if (totalCarbon >= CARBON_CHANGE_COLORS[i].min) {
+        color = CARBON_CHANGE_COLORS[i].color
+        break
+      }
+    }
+
+    if (
+      totalCarbon >= CARBON_CHANGE_COLORS[i].min &&
+      totalCarbon < CARBON_CHANGE_COLORS[i + 1].min
+    ) {
+      color = CARBON_CHANGE_COLORS[i].color
+      break
+    }
+  }
+
+  return color || CARBON_CHANGE_NO_DATA_COLOR
 }
