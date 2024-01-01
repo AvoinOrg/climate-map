@@ -10,22 +10,33 @@ import {
   Select,
   Typography,
 } from '@mui/material'
+import { cloneDeep } from 'lodash-es'
 
-import {
-  CalcFeatureCollection,
-} from 'applets/hiilikartta/common/types'
+import DropDownSelectMinimal from '#/components/common/DropDownSelectMinimal'
 import {
   addPaddingToLngLatBounds,
   getCombinedBoundsInLngLat,
 } from '#/common/utils/gis'
-import DropDownSelectMinimal from '#/components/common/DropDownSelectMinimal'
+
+import { ZONING_CODE_COL } from 'applets/hiilikartta/common/types'
+import {
+  CalcFeature,
+  CalcFeatureCollection,
+  CalcFeatureProperties,
+} from 'applets/hiilikartta/common/types'
+import {
+  getCarbonChangeColorForProperties,
+  isZoningClassValidExpression,
+} from 'applets/hiilikartta/common/utils'
+
+type Data = {
+  id: string
+  name: string
+  data: CalcFeatureCollection
+}
 
 type Props = {
-  datas: {
-    id: string
-    name: string
-    data: CalcFeatureCollection
-  }[]
+  datas: Data[]
   activeYear: string
   featureYears: string[]
   setActiveYear: (year: string) => void
@@ -44,6 +55,7 @@ const CarbonMapGraphMap = ({
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const [mapIsLoaded, setMapIsLoaded] = useState(false)
+  const [localDatas, setLocalDatas] = useState<Data[]>([])
   const sourceIds = useRef<string[]>([])
 
   useEffect(() => {
@@ -69,6 +81,10 @@ const CarbonMapGraphMap = ({
   }, [])
 
   useEffect(() => {
+    setLocalDatas(cloneDeep(datas))
+  }, [datas])
+
+  useEffect(() => {
     if (mapIsLoaded) {
       const bounds = getCombinedBoundsInLngLat(datas.map((data) => data.data))
 
@@ -85,7 +101,7 @@ const CarbonMapGraphMap = ({
   useEffect(() => {
     if (mapIsLoaded) {
       // Remove old GeoJSON data
-      const dataIds = datas.map((data) => data.id)
+      const dataIds = localDatas.map((data) => data.id)
       sourceIds.current.forEach((sourceId) => {
         if (!dataIds.includes(sourceId)) {
           map.current!.removeLayer(`carbon-graph-layer-${sourceId}`)
@@ -94,18 +110,35 @@ const CarbonMapGraphMap = ({
       })
 
       // Show only the active GeoJSON data on the map
-      datas.forEach((data) => {
+      const updatedDatas = updateDataWithColor(localDatas, activeYear)
+
+      updatedDatas.forEach((data) => {
         const sourceId = `carbon-graph-source-${data.id}`
         const layerId = `carbon-graph-layer-${data.id}`
 
         if (map.current!.getSource(sourceId)) {
+          ;(map.current!.getSource(sourceId) as mapboxgl.GeoJSONSource).setData(
+            data.data
+          )
+
           if (data.id === activeDataId) {
             map.current!.setLayoutProperty(layerId, 'visibility', 'visible')
-            ;(
-              map.current!.getSource(sourceId) as mapboxgl.GeoJSONSource
-            ).setData(data.data)
+            map.current!.setLayoutProperty(
+              `${layerId}-symbol`,
+              'visibility',
+              'visible'
+            )
+            map.current!.setPaintProperty(layerId, 'fill-color', [
+              'get',
+              'color',
+            ])
           } else {
             map.current!.setLayoutProperty(layerId, 'visibility', 'none')
+            map.current!.setLayoutProperty(
+              `${layerId}-symbol`,
+              'visibility',
+              'none'
+            )
           }
         } else {
           map.current!.addSource(sourceId, {
@@ -121,9 +154,34 @@ const CarbonMapGraphMap = ({
               visibility: data.id === activeDataId ? 'visible' : 'none',
             },
             paint: {
-              'fill-color': '#888', // Customize the fill color
-              'fill-opacity': 0.4, // Customize the fill opacity
+              'fill-color': ['get', 'color'],
+              'fill-opacity': 0.9,
+              'fill-outline-color': '#274AFF',
             },
+          })
+
+          map.current!.addLayer({
+            id: `${layerId}-symbol`,
+            source: sourceId,
+            type: 'symbol',
+            layout: {
+              'symbol-placement': 'point',
+              'text-size': 20,
+              'text-font': ['Open Sans Regular'],
+              'text-field': [
+                'case',
+                isZoningClassValidExpression(),
+                ['get', ZONING_CODE_COL],
+                '!',
+              ],
+            },
+            paint: {
+              'text-color': 'black',
+              'text-halo-blur': 1,
+              'text-halo-color': 'rgb(242,243,240)',
+              'text-halo-width': 2,
+            },
+            minzoom: 12,
           })
         }
       })
@@ -223,6 +281,17 @@ const CarbonMapGraphMap = ({
       </Box>
     </Box>
   )
+}
+
+const updateDataWithColor = (datas: Data[], year: string) => {
+  return datas.map((data) => {
+    const updatedFeatures = data.data.features.map((feature) => {
+      const color = getCarbonChangeColorForProperties(feature.properties, year)
+      return { ...feature, properties: { ...feature.properties, color } }
+    })
+
+    return { ...data, data: { ...data.data, features: updatedFeatures } }
+  })
 }
 
 export default CarbonMapGraphMap
