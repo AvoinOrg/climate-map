@@ -406,10 +406,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                   display: 'inline',
                 })}
               >
-                <T
-                  keyName="report.carbon_stock_development"
-                  ns={'hiilikartta'}
-                ></T>{' '}
+                <T keyName="report.map_graph.title" ns={'hiilikartta'}></T>
               </Typography>
             </Row>
             <Row>
