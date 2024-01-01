@@ -30,7 +30,7 @@ const zoningFillColorExpression = (defaultColor = 'white'): Expression => {
   return expression
 }
 
-const isZoningClassValidExpression = () => {
+export const isZoningClassValidExpression = () => {
   // This array will hold the zoning codes to check
   let validZoningCodes: string[] = []
 
