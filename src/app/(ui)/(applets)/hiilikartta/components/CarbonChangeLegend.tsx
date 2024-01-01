@@ -71,7 +71,7 @@ const CarbonChangeLegend = ({ sx }: Props) => {
           height: '2rem',
         }}
       >
-        <Typography
+        <Box
           sx={{
             position: 'absolute',
             top: 0,
@@ -93,7 +93,7 @@ const CarbonChangeLegend = ({ sx }: Props) => {
               keyName={'report.carbon_change_legend.unit'}
             ></T>
           </Box>
-        </Typography>
+        </Box>
         <Typography
           ref={noChangeTextRef}
           sx={{
