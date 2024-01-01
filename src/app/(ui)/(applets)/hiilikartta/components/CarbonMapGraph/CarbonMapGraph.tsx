@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Box } from '@mui/material'
 
 import { PlanConfWithReportData } from 'applets/hiilikartta/common/types'
@@ -14,15 +14,19 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
   const [activePlanConfId, setActivePlanConfId] = useState(planConfs[0].id)
   const [activeYear, setActiveYear] = useState(featureYears[0])
 
+  const datas = useMemo(() => {
+    return planConfs.map((planConf) => ({
+      id: planConf.id,
+      name: planConf.name,
+      data: planConf.reportData.areas,
+    }))
+  }, [planConfs])
+
   return (
     <Box>
       <CarbonChangeLegend></CarbonChangeLegend>
       <CarbonMapGraphMap
-        datas={planConfs.map((planConf) => ({
-          id: planConf.id,
-          name: planConf.name,
-          data: planConf.reportData.areas,
-        }))}
+        datas={datas}
         activeYear={activeYear}
         featureYears={featureYears}
         setActiveYear={setActiveYear}
