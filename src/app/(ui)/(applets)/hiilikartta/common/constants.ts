@@ -1,4 +1,20 @@
+import { CarbonChangeColorItem } from './types'
+
 export const SIDEBAR_WIDTH_REM = 30
+
+export const CARBON_CHANGE_COLORS: CarbonChangeColorItem[] = [
+  { min: -100, max: -50, color: '#C54032' },
+  { min: -50, max: -25, color: '#F25050' },
+  { min: -25, max: -10, color: '##E9B76D' },
+  { min: -10, max: -1, color: '#F3F577' },
+  { min: -1, max: 1, color: '#E7E8BF' },
+  { min: 1, max: 10, color: '#C7DAD5' },
+  { min: 10, max: 25, color: '#AAC0BC' },
+  { min: 25, max: 50, color: '#87A19D' },
+  { min: 50, max: 100, color: '#568175' },
+]
+
+export const CARBON_CHANGE_NO_DATA_COLOR = '#D9D9D9'
 
 export const ZONING_CLASSES = [
   {

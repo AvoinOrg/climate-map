@@ -101,3 +101,9 @@ export type CalcFeatureCollection = {
 export type FeatureCalcs = {
   [K in `${(typeof featureCols)[number]}_diff`]: CalcFeatureYearValues
 }
+
+export type CarbonChangeColorItem = {
+  color: string
+  min: number
+  max: number
+}
