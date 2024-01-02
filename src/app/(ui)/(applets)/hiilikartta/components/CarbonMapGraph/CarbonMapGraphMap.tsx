@@ -1,10 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
-import {
-  Box,
-  Button,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { cloneDeep } from 'lodash-es'
 
 import DropDownSelectMinimal from '#/components/common/DropDownSelectMinimal'
@@ -14,9 +10,7 @@ import {
 } from '#/common/utils/gis'
 
 import { ZONING_CODE_COL } from 'applets/hiilikartta/common/types'
-import {
-  CalcFeatureCollection,
-} from 'applets/hiilikartta/common/types'
+import { CalcFeatureCollection } from 'applets/hiilikartta/common/types'
 import {
   getCarbonChangeColorForProperties,
   isZoningClassValidExpression,
