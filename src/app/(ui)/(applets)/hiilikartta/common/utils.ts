@@ -10,6 +10,7 @@ import {
   CalcFeature,
   CalcFeatureYearValues,
   FeatureCalcs,
+  GraphCalcType,
 } from './types'
 import {
   ZONING_CLASSES,
@@ -239,7 +240,46 @@ export const getAggregatedCalcs = (
   return calculations as FeatureCalcs // Cast back to FeatureCalcs after computing all the values
 }
 
-export const getCarbonChangeColorForProperties = (
+const getColorForBioOrGroundCarbon = (
+  bioOrGround: 'bio' | 'ground',
+  properties: CalcFeatureProperties,
+  year: string,
+  usePlanned: boolean = true
+) => {
+  const propName = bioOrGround === 'bio' ? 'bio_carbon_ha' : 'ground_carbon_ha'
+
+  if (
+    properties[propName].nochange?.[year] == undefined ||
+    properties[propName].nochange?.[year] < 0
+  ) {
+    return CARBON_CHANGE_NO_DATA_COLOR
+  }
+
+  const firstYear = Math.min(
+    ...Object.keys(properties.bio_carbon_ha.nochange).map((year) =>
+      Number(year)
+    )
+  )
+
+  let carbon = properties[propName].nochange?.[firstYear]
+
+  if (usePlanned) {
+    if (
+      properties[propName].planned?.[year] == undefined ||
+      properties[propName].planned?.[year] < 0
+    ) {
+      return CARBON_CHANGE_NO_DATA_COLOR
+    }
+
+    const carbonPlanned = properties[propName].planned?.[year]
+
+    carbon = carbonPlanned - carbon
+  }
+
+  return determineCarbonChangeColor(carbon)
+}
+
+const getColorForTotalCarbon = (
   properties: CalcFeatureProperties,
   year: string,
   usePlanned: boolean = true
@@ -281,26 +321,52 @@ export const getCarbonChangeColorForProperties = (
 
   const totalCarbon = bioCarbon + groundCarbon
 
+  return determineCarbonChangeColor(totalCarbon)
+}
+
+export const getCarbonChangeColorForProperties = (
+  properties: CalcFeatureProperties,
+  year: string,
+  calcType: GraphCalcType = 'total',
+  usePlanned: boolean = true
+) => {
+  switch (calcType) {
+    case 'bio':
+      return getColorForBioOrGroundCarbon('bio', properties, year, usePlanned)
+    case 'ground':
+      return getColorForBioOrGroundCarbon(
+        'ground',
+        properties,
+        year,
+        usePlanned
+      )
+    case 'total':
+    default:
+      return getColorForTotalCarbon(properties, year, usePlanned)
+  }
+}
+
+const determineCarbonChangeColor = (carbon: Number) => {
   let color = ''
 
   for (let i = 0; i < CARBON_CHANGE_COLORS.length; i++) {
     if (i === 0) {
-      if (totalCarbon < CARBON_CHANGE_COLORS[i].min) {
+      if (carbon < CARBON_CHANGE_COLORS[i].min) {
         color = CARBON_CHANGE_COLORS[i].color
         break
       }
     }
 
     if (i === CARBON_CHANGE_COLORS.length - 1) {
-      if (totalCarbon >= CARBON_CHANGE_COLORS[i].min) {
+      if (carbon >= CARBON_CHANGE_COLORS[i].min) {
         color = CARBON_CHANGE_COLORS[i].color
         break
       }
     }
 
     if (
-      totalCarbon >= CARBON_CHANGE_COLORS[i].min &&
-      totalCarbon < CARBON_CHANGE_COLORS[i + 1].min
+      carbon >= CARBON_CHANGE_COLORS[i].min &&
+      carbon < CARBON_CHANGE_COLORS[i + 1].min
     ) {
       color = CARBON_CHANGE_COLORS[i].color
       break
