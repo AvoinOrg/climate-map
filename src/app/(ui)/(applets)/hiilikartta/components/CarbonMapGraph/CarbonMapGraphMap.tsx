@@ -9,7 +9,10 @@ import {
   getCombinedBoundsInLngLat,
 } from '#/common/utils/gis'
 
-import { ZONING_CODE_COL } from 'applets/hiilikartta/common/types'
+import {
+  GraphCalcType,
+  ZONING_CODE_COL,
+} from 'applets/hiilikartta/common/types'
 import { CalcFeatureCollection } from 'applets/hiilikartta/common/types'
 import {
   getCarbonChangeColorForProperties,
@@ -29,6 +32,7 @@ type Props = {
   setActiveYear: (year: string) => void
   activeDataId: string
   setActiveDataId: (dataName: string) => void
+  activeCalcType: GraphCalcType
 }
 
 const CarbonMapGraphMap = ({
@@ -38,6 +42,7 @@ const CarbonMapGraphMap = ({
   setActiveYear,
   activeDataId,
   setActiveDataId,
+  activeCalcType,
 }: Props) => {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
@@ -97,7 +102,11 @@ const CarbonMapGraphMap = ({
       })
 
       // Show only the active GeoJSON data on the map
-      const updatedDatas = updateDataWithColor(localDatas, activeYear)
+      const updatedDatas = updateDataWithColor(
+        localDatas,
+        activeYear,
+        activeCalcType
+      )
 
       updatedDatas.forEach((data) => {
         const sourceId = `carbon-graph-source-${data.id}`
@@ -175,7 +184,7 @@ const CarbonMapGraphMap = ({
         }
       })
     }
-  }, [activeYear, mapIsLoaded, activeDataId, datas])
+  }, [activeYear, mapIsLoaded, activeDataId, datas, activeCalcType])
 
   return (
     <Box
@@ -272,10 +281,18 @@ const CarbonMapGraphMap = ({
   )
 }
 
-const updateDataWithColor = (datas: Data[], year: string) => {
+const updateDataWithColor = (
+  datas: Data[],
+  year: string,
+  calcType: GraphCalcType
+) => {
   return datas.map((data) => {
     const updatedFeatures = data.data.features.map((feature) => {
-      const color = getCarbonChangeColorForProperties(feature.properties, year)
+      const color = getCarbonChangeColorForProperties(
+        feature.properties,
+        year,
+        calcType
+      )
       return { ...feature, properties: { ...feature.properties, color } }
     })
 
