@@ -107,3 +107,5 @@ export type CarbonChangeColorItem = {
   min: number
   max: number
 }
+
+export type GraphCalcType = 'ground' | 'bio' | 'total'
