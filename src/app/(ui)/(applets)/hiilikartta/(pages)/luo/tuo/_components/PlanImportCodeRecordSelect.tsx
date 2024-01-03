@@ -33,8 +33,8 @@ const PlanImportCodeRecordSelect = ({
         <DropDownSelect
           sx={[...(Array.isArray(sx) ? sx : [sx])]}
           value={selectedColumn}
-          options={columns.map((table) => {
-            return { value: table, label: table }
+          options={columns.map((col) => {
+            return { value: col, label: col }
           })}
           onChange={handleSelectColumn}
           label={label}
