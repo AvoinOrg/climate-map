@@ -86,15 +86,15 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
       <Box
         sx={{
           display: 'flex',
-          flexDirection: { sm: 'column', md: 'row' },
-          flexWrap: { sm: 'wrap', md: 'nowrap' },
+          flexDirection: { xs: 'column', md: 'row' },
+          flexWrap: { xs: 'wrap', md: 'nowrap' },
         }}
       >
         <StyledToggleButton
           value="total"
           aria-label="total"
           sx={{
-            mr: { sm: 0, md: '0.75rem' },
+            mr: { xs: 0, md: '0.75rem' },
             typography: 'h5',
             letterSpacing: 'normal',
           }}
@@ -110,7 +110,7 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
           value="bio"
           aria-label="bio"
           sx={{
-            mr: { sm: 0, md: '0.75rem' },
+            mr: { xs: 0, md: '0.75rem' },
             typography: 'h5',
             letterSpacing: 'normal',
           }}
@@ -135,11 +135,11 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
       <Box
         sx={{
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: { xs: 'column', sm: 'row' },
           border: '1px solid',
           borderColor: 'neutral.main',
           borderRadius: '0.3125rem',
-          alignItems: 'center',
+          alignItems: { xs: 'flex-start', sm: 'center' },
           pt: '0.5rem',
           pb: '0.5rem',
           pl: '1.25rem',
@@ -151,7 +151,7 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
             typography: 'h5',
             letterSpacing: 'normal',
             width: 'auto',
-            mr: { sm: 0, md: '3rem' },
+            mr: { xs: 0, sm: '3rem' },
           }}
         >
           <T
@@ -214,6 +214,8 @@ const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
   paddingLeft: '1.25rem',
   paddingRight: '1.25rem',
   textAlign: 'left',
+  display: 'flex',
+  justifyContent: 'flex-start',
   '&.Mui-selected': {
     backgroundColor: theme.palette.neutral.light,
   },
