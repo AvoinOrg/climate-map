@@ -1,4 +1,5 @@
-import { SelectChangeEvent } from '@mui/material'
+import { SelectChangeEvent, SxProps, Theme } from '@mui/material'
+
 import DropDownSelect from '#/components/common/DropDownSelect'
 
 interface Props {
