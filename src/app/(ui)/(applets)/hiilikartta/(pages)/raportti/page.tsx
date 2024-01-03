@@ -143,7 +143,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         left: 0,
         right: 0,
         width: '100vw',
-        backgroundColor: theme.palette.neutral.light,
+        backgroundColor: theme.palette.neutral.lighter,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'auto',
