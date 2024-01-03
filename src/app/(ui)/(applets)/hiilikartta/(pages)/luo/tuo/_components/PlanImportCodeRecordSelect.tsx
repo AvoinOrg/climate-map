@@ -6,7 +6,7 @@ interface Props {
   selectedColumn?: string
   onColumnChange: (column: string | undefined) => void
   label?: string
-  sx?: any
+  sx?: SxProps<Theme>
 }
 
 const PlanImportCodeRecordSelect = ({
@@ -31,7 +31,7 @@ const PlanImportCodeRecordSelect = ({
     <>
       {columns.length > 0 && (
         <DropDownSelect
-          sx={() => ({ ...sx })}
+          sx={[...(Array.isArray(sx) ? sx : [sx])]}
           value={selectedColumn}
           options={columns.map((table) => {
             return { value: table, label: table }

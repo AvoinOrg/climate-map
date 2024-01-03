@@ -4,6 +4,8 @@ import {
   MenuItem,
   Select,
   SelectChangeEvent,
+  SxProps,
+  Theme,
   Typography,
 } from '@mui/material'
 
@@ -16,8 +18,10 @@ interface Props {
   options: SelectOption[]
   onChange: (event: SelectChangeEvent) => void
   label?: string
-  sx?: any
-  labelSx?: any
+  sx?: SxProps<Theme>
+  selectSx?: SxProps<Theme>
+  labelSx?: SxProps<Theme>
+  iconSx?: SxProps<Theme>
 }
 
 const DropDownSelect = ({
@@ -26,7 +30,9 @@ const DropDownSelect = ({
   onChange,
   label,
   sx,
+  selectSx,
   labelSx,
+  iconSx,
 }: Props) => {
   const [hasEmpty, setHasEmpty] = React.useState(true)
 
@@ -37,9 +43,17 @@ const DropDownSelect = ({
   }, [value, options])
 
   return (
-    <FormControl sx={sx}>
+    <FormControl sx={[...(Array.isArray(sx) ? sx : [sx])]}>
       {label && (
-        <Typography sx={{ typography: 'h7', mb: 2, ...labelSx }}>
+        <Typography
+          sx={[
+            {
+              typography: 'h7',
+              mb: 2,
+            },
+            ...(Array.isArray(labelSx) ? labelSx : [labelSx]),
+          ]}
+        >
           {label}
         </Typography>
       )}
@@ -57,10 +71,16 @@ const DropDownSelect = ({
             horizontal: 'left',
           },
         }}
-        sx={{
-          backgroundColor: 'background.main',
-          '.MuiSvgIcon-root': { fontSize: '16px', margin: '0 10px 0 0' },
-        }}
+        sx={[
+          {
+            backgroundColor: 'background.main',
+            '.MuiSvgIcon-root': { fontSize: '16px', margin: '0 10px 0 0' },
+            '.MuiSelect-icon': {
+              ...(iconSx as Record<string, any>),
+            },
+          },
+          ...(Array.isArray(selectSx) ? selectSx : [selectSx]),
+        ]}
       >
         {...[
           hasEmpty === true && (
