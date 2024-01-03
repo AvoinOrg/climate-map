@@ -182,6 +182,7 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
           pr: '3rem',
           pt: '1rem',
           pb: '1rem',
+          mt: '2rem',
         }}
       ></CarbonChangeLegend>
       <CarbonMapGraphMap
