@@ -18,6 +18,7 @@ interface Props {
   options: SelectOption[]
   onChange: (event: SelectChangeEvent) => void
   label?: string
+  allowEmpty?: boolean
   sx?: SxProps<Theme>
   selectSx?: SxProps<Theme>
   labelSx?: SxProps<Theme>
@@ -29,6 +30,7 @@ const DropDownSelect = ({
   options,
   onChange,
   label,
+  allowEmpty,
   sx,
   selectSx,
   labelSx,
@@ -41,6 +43,8 @@ const DropDownSelect = ({
       Object.values(options).find((option) => option.value === value) == null
     )
   }, [value, options])
+
+  const useEmpty = allowEmpty || value == null || value === ''
 
   return (
     <FormControl sx={[...(Array.isArray(sx) ? sx : [sx])]}>
@@ -82,28 +86,32 @@ const DropDownSelect = ({
           ...(Array.isArray(selectSx) ? selectSx : [selectSx]),
         ]}
       >
-        {...[
-          hasEmpty === true && (
-            <MenuItem key={''} value={value}>
-              {value != null ? (
-                <i>
-                  <T
-                    keyName={'components.drop_down_select.invalid_value'}
-                    ns={'avoin-map'}
-                  ></T>
-                  {` (${value})`}
-                </i>
-              ) : (
-                ''
-              )}
-            </MenuItem>
-          ),
-          options.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          )),
-        ]}
+        {hasEmpty === true && value != null && value != '' && (
+          <MenuItem key={value} value={value}>
+            <i>
+              <T
+                keyName={'components.drop_down_select.invalid_value'}
+                ns={'avoin-map'}
+              ></T>
+              {` (${value})`}
+            </i>
+          </MenuItem>
+        )}
+        {useEmpty && (
+          <MenuItem key={''} value={undefined}>
+            <i>
+              <T
+                keyName={'components.drop_down_select.empty_selection'}
+                ns={'avoin-map'}
+              ></T>
+            </i>
+          </MenuItem>
+        )}
+        {options.map((option) => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.label}
+          </MenuItem>
+        ))}
       </Select>
     </FormControl>
   )
