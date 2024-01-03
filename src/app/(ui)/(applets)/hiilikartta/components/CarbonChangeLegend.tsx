@@ -32,13 +32,15 @@ const CarbonChangeLegend = ({ sx }: Props) => {
 
   return (
     <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        width: '100%',
-        height: '5rem',
+      sx={[
+        {
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          height: '5rem',
+        },
         ...(Array.isArray(sx) ? sx : [sx]),
-      }}
+      ]}
     >
       <Box
         sx={{
