@@ -37,7 +37,6 @@ const CarbonChangeLegend = ({ sx }: Props) => {
           display: 'flex',
           flexDirection: 'column',
           width: '100%',
-          height: '5rem',
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
@@ -70,7 +69,7 @@ const CarbonChangeLegend = ({ sx }: Props) => {
           position: 'relative',
           width: '100%',
           mt: 1.5,
-          height: '2rem',
+          height: '1.5rem',
         }}
       >
         <Box
@@ -79,6 +78,9 @@ const CarbonChangeLegend = ({ sx }: Props) => {
             top: 0,
             left: 0, // Aligns to the far left
             typography: 'body7',
+            fontSize: '0.5rem',
+            lineHeight: 'normal',
+            letterSpacing: '0.05rem',
             display: 'flex',
             flexDirection: 'column',
           }}
@@ -103,9 +105,9 @@ const CarbonChangeLegend = ({ sx }: Props) => {
             top: 1,
             left: `calc((100% / ${NUMBER_OF_ITEMS}) * 5)`, // Aligns with the 6th item
             typography: 'body1',
-            fontSize: '0.625rem',
+            fontSize: '0.5rem',
             lineHeight: 'normal',
-            letterSpacing: '0.0625rem',
+            letterSpacing: '0.05rem',
           }}
         >
           <T
@@ -120,9 +122,9 @@ const CarbonChangeLegend = ({ sx }: Props) => {
             right: thirdTextRight,
             left: 'auto',
             typography: 'body1',
-            fontSize: '0.625rem',
+            fontSize: '0.5rem',
             lineHeight: 'normal',
-            letterSpacing: '0.0625rem',
+            letterSpacing: '0.05rem',
             color: '#C54032',
           }}
         >
@@ -138,9 +140,9 @@ const CarbonChangeLegend = ({ sx }: Props) => {
             top: 1,
             left: fourthTextLeft,
             typography: 'body1',
-            fontSize: '0.625rem',
+            fontSize: '0.5rem',
             lineHeight: 'normal',
-            letterSpacing: '0.0625rem',
+            letterSpacing: '0.05rem',
             color: '#568175',
           }}
         >
