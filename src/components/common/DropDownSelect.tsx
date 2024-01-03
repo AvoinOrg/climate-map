@@ -8,10 +8,10 @@ import {
   Theme,
   Typography,
 } from '@mui/material'
+import { T } from '@tolgee/react'
 
 import DownIcon from '#/components/icons/DownIcon'
 import { SelectOption } from '#/common/types/general'
-import { T } from '@tolgee/react'
 
 interface Props {
   value: any
