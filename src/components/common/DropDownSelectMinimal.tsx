@@ -4,6 +4,8 @@ import {
   MenuItem,
   Select,
   SelectChangeEvent,
+  SxProps,
+  Theme,
   Typography,
 } from '@mui/material'
 import { styled } from '@mui/material/styles'
@@ -15,9 +17,9 @@ interface Props {
   value: any
   options: SelectOption[]
   onChange: (event: SelectChangeEvent<string[]>) => void
-  sx?: any
-  optionSx?: any
-  iconSx?: any
+  sx?: SxProps<Theme>
+  optionSx?: SxProps<Theme>
+  iconSx?: SxProps<Theme>
   isIconOnTheRight?: boolean // added prop
 }
 
@@ -62,7 +64,7 @@ const DropDownSelectMinimal = ({
         }}
         sx={{
           '.MuiSelect-icon': {
-            ...iconSx,
+            ...(iconSx as Record<string, any>),
           },
           '& .MuiSelect-select': {
             m: 0,
@@ -74,7 +76,7 @@ const DropDownSelectMinimal = ({
           },
           m: 0,
           p: 0,
-          ...sx,
+          ...(Array.isArray(sx) ? sx : [sx]),
         }}
       >
         {hasEmpty && <option key={''} value={''}></option>}
@@ -88,7 +90,13 @@ const DropDownSelectMinimal = ({
             value={option.value}
           >
             <Typography
-              sx={{ textAlign: 'left', pl: 1, pt: 0.5, pb: 0.5, ...optionSx }}
+              sx={{
+                textAlign: 'left',
+                pl: 1,
+                pt: 0.5,
+                pb: 0.5,
+                ...(Array.isArray(optionSx) ? optionSx : [optionSx]),
+              }}
             >
               {option.label}
             </Typography>
