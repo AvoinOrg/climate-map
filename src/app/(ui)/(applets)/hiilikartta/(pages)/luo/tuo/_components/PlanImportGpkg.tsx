@@ -141,6 +141,7 @@ const PlanImportGpkg = ({
             columns={columns}
             selectedColumn={nameCol}
             onColumnChange={handleNameColChange}
+            allowEmpty={true}
             label={t('sidebar.create.select_zone_name_record')}
             sx={{ mt: 5 }}
           />
