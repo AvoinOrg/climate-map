@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Box, ToggleButton, Typography } from '@mui/material'
+import { Box, SelectChangeEvent, ToggleButton, Typography } from '@mui/material'
 import { cloneDeep } from 'lodash-es'
 import { T, useTranslate } from '@tolgee/react'
 import { styled } from '@mui/material/styles'
@@ -12,7 +12,8 @@ import {
 import CarbonMapGraphMap from './CarbonMapGraphMap'
 import CarbonChangeLegend from '../CarbonChangeLegend'
 import { GraphCalcType } from 'applets/hiilikartta/common/types'
-import DropDownSelectMinimal from '#/components/common/DropDownSelectMinimal'
+import { ZONING_CLASSES } from 'applets/hiilikartta/common/constants'
+import DropDownSelect from '#/components/common/DropDownSelect'
 
 type Props = {
   planConfs: PlanConfWithReportData[]
@@ -24,12 +25,17 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
   const [activePlanConfId, setActivePlanConfId] = useState(planConfs[0].id)
   const [activeYear, setActiveYear] = useState(featureYears[0])
   const [calcType, setCalcType] = React.useState<GraphCalcType>('total')
+  const [areaType, setAreaType] = React.useState<string>('all')
 
   const handleCalcTypeChange = (
     _event: React.MouseEvent<HTMLElement>,
     newCalcType: GraphCalcType
   ) => {
     setCalcType(newCalcType)
+  }
+
+  const handleAreaTypeChange = (event: SelectChangeEvent<string>) => {
+    setAreaType(event.target.value)
   }
 
   const datas = useMemo(() => {
@@ -60,6 +66,20 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
 
     return datas
   }, [planConfs])
+
+  const areaTypeOptions = useMemo(() => {
+    return [
+      { value: 'all', label: t('report.map_graph.select_all_types') },
+      ...ZONING_CLASSES.filter((zoningClass) => {
+        if (zoningClass.code.length === 1) return true
+      }).map((zoningClass) => {
+        return {
+          value: zoningClass.code,
+          label: zoningClass.name,
+        }
+      }),
+    ]
+  }, [])
 
   return (
     <Box>
@@ -112,6 +132,48 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
           ></T>
         </StyledToggleButton>
       </Box>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          border: '1px solid',
+          borderColor: 'neutral.main',
+          borderRadius: '0.3125rem',
+          alignItems: 'center',
+          pt: '0.5rem',
+          pb: '0.5rem',
+          pl: '1.25rem',
+          pr: '1.25rem',
+        }}
+      >
+        <Typography
+          sx={{
+            typography: 'h5',
+            letterSpacing: 'normal',
+            width: 'auto',
+            mr: { sm: 0, md: '3rem' },
+          }}
+        >
+          <T
+            ns="hiilikartta"
+            keyName={'report.map_graph.select_zoning_type'}
+          ></T>
+        </Typography>
+        <DropDownSelect
+          options={areaTypeOptions}
+          value={areaType}
+          onChange={handleAreaTypeChange}
+          sx={{ width: '100%', maxWidth: '300px' }}
+          selectSx={{
+            borderRadius: '0.3125rem',
+            height: '2.5rem',
+            typography: 'h5',
+            lineHeight: '1.5rem',
+            letterSpacing: 'normal',
+          }}
+          iconSx={{ fontSize: '1rem', mr: '0.5rem' }}
+        ></DropDownSelect>
+      </Box>
       <CarbonChangeLegend></CarbonChangeLegend>
       <CarbonMapGraphMap
         datas={datas}
@@ -121,6 +183,7 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
         activeDataId={activePlanConfId}
         setActiveDataId={setActivePlanConfId}
         activeCalcType={calcType}
+        activeAreaType={areaType}
       />
     </Box>
   )
@@ -131,12 +194,16 @@ const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
   border: '1px solid',
   borderColor: theme.palette.neutral.main,
   backgroundColor: theme.palette.neutral.lighter,
+  color: theme.palette.neutral.darker,
   flexGrow: 1,
   flexShrink: 1,
   whiteSpace: 'normal',
   textTransform: 'none',
   wordBreak: 'break-word',
-  marginBottom: '0.5rem',
+  marginBottom: '0.75rem',
+  paddingLeft: '1.25rem',
+  paddingRight: '1.25rem',
+  textAlign: 'left',
   '&.Mui-selected': {
     backgroundColor: theme.palette.neutral.light,
   },
