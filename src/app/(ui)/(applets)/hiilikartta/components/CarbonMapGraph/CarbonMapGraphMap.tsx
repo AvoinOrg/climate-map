@@ -16,7 +16,7 @@ import {
 import { CalcFeatureCollection } from 'applets/hiilikartta/common/types'
 import {
   getCarbonChangeColorForProperties,
-  isZoningClassValidExpression,
+  isZoningCodeValidExpression,
 } from 'applets/hiilikartta/common/utils'
 
 type Data = {
@@ -168,7 +168,7 @@ const CarbonMapGraphMap = ({
                 'case',
                 ['==', ['get', ZONING_CODE_COL], 'none'],
                 '',
-                isZoningClassValidExpression(),
+                isZoningCodeValidExpression(),
                 ['get', ZONING_CODE_COL],
                 '!',
               ],

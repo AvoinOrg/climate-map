@@ -35,7 +35,7 @@ const zoningFillColorExpression = (defaultColor = 'white'): Expression => {
   return expression
 }
 
-export const isZoningClassValidExpression = () => {
+export const isZoningCodeValidExpression = () => {
   // This array will hold the zoning codes to check
   let validZoningCodes: string[] = []
 
@@ -89,13 +89,13 @@ export const createLayerConf = (
             ['boolean', ['feature-state', 'selected'], false],
             [
               'case',
-              isZoningClassValidExpression(),
+              isZoningCodeValidExpression(),
               ['literal', [1, 0]],
               ['literal', [1, 1]],
             ],
             [
               'case',
-              isZoningClassValidExpression(),
+              isZoningCodeValidExpression(),
               ['literal', [1, 0]],
               ['literal', [3, 3]],
             ],
@@ -114,11 +114,11 @@ export const createLayerConf = (
             ['boolean', ['feature-state', 'selected'], false], // Check if the feature is selected
             [
               'case',
-              isZoningClassValidExpression(),
+              isZoningCodeValidExpression(),
               0.9, // Opacity for selected and valid zoning class
               0.9, // Opacity for selected but not valid zoning class
             ],
-            ['case', isZoningClassValidExpression(), 0.6, 0.5],
+            ['case', isZoningCodeValidExpression(), 0.6, 0.5],
           ],
         },
         selectable: true,
@@ -134,7 +134,7 @@ export const createLayerConf = (
           'text-font': ['Open Sans Regular'],
           'text-field': [
             'case',
-            isZoningClassValidExpression(),
+            isZoningCodeValidExpression(),
             ['get', featureColorCol],
             '!',
           ],
