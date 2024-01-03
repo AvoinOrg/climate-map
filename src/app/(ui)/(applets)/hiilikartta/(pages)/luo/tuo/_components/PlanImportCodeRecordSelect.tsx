@@ -6,6 +6,7 @@ interface Props {
   columns: string[]
   selectedColumn?: string
   onColumnChange: (column: string | undefined) => void
+  allowEmpty?: boolean
   label?: string
   sx?: SxProps<Theme>
 }
@@ -14,6 +15,7 @@ const PlanImportCodeRecordSelect = ({
   columns,
   selectedColumn,
   onColumnChange,
+  allowEmpty,
   label,
   sx,
 }: Props) => {
@@ -38,6 +40,7 @@ const PlanImportCodeRecordSelect = ({
             return { value: col, label: col }
           })}
           onChange={handleSelectColumn}
+          allowEmpty={allowEmpty}
           label={label}
         />
       )}
