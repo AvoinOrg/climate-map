@@ -17,6 +17,7 @@ import { CalcFeatureCollection } from 'applets/hiilikartta/common/types'
 import {
   getCarbonChangeColorForProperties,
   isZoningCodeValidExpression,
+  isZoningCodeValid,
 } from 'applets/hiilikartta/common/utils'
 
 type Data = {
@@ -33,6 +34,7 @@ type Props = {
   activeDataId: string
   setActiveDataId: (dataName: string) => void
   activeCalcType: GraphCalcType
+  activeAreaType: string
 }
 
 const CarbonMapGraphMap = ({
@@ -43,6 +45,7 @@ const CarbonMapGraphMap = ({
   activeDataId,
   setActiveDataId,
   activeCalcType,
+  activeAreaType,
 }: Props) => {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
@@ -105,7 +108,8 @@ const CarbonMapGraphMap = ({
       const updatedDatas = updateDataWithColor(
         localDatas,
         activeYear,
-        activeCalcType
+        activeCalcType,
+        activeAreaType
       )
 
       updatedDatas.forEach((data) => {
@@ -124,10 +128,13 @@ const CarbonMapGraphMap = ({
               'visibility',
               'visible'
             )
-            map.current!.setPaintProperty(layerId, 'fill-color', [
-              'get',
-              'color',
+            map.current!.setFilter(layerId, ['!=', 'isHidden', true])
+            map.current!.setFilter(`${layerId}-symbol`, [
+              '!=',
+              'isHidden',
+              true,
             ])
+            map.current!.setPaintProperty
           } else {
             map.current!.setLayoutProperty(layerId, 'visibility', 'none')
             map.current!.setLayoutProperty(
@@ -184,7 +191,14 @@ const CarbonMapGraphMap = ({
         }
       })
     }
-  }, [activeYear, mapIsLoaded, activeDataId, datas, activeCalcType])
+  }, [
+    activeYear,
+    mapIsLoaded,
+    activeDataId,
+    datas,
+    activeCalcType,
+    activeAreaType,
+  ])
 
   return (
     <Box
@@ -284,7 +298,8 @@ const CarbonMapGraphMap = ({
 const updateDataWithColor = (
   datas: Data[],
   year: string,
-  calcType: GraphCalcType
+  calcType: GraphCalcType,
+  areaType: string
 ) => {
   return datas.map((data) => {
     const updatedFeatures = data.data.features.map((feature) => {
@@ -293,7 +308,20 @@ const updateDataWithColor = (
         year,
         calcType
       )
-      return { ...feature, properties: { ...feature.properties, color } }
+
+      let isHidden = false
+      if (areaType !== 'all') {
+        const zoningCode = feature.properties[ZONING_CODE_COL]
+        if (
+          !isZoningCodeValid(zoningCode) ||
+          !feature.properties[ZONING_CODE_COL].startsWith(areaType)
+        )
+          isHidden = true
+      }
+      return {
+        ...feature,
+        properties: { ...feature.properties, color, isHidden },
+      }
     })
 
     return { ...data, data: { ...data.data, features: updatedFeatures } }
