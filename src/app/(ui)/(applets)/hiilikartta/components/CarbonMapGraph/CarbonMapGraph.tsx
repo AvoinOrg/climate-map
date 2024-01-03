@@ -174,7 +174,16 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
           iconSx={{ fontSize: '1rem', mr: '0.5rem' }}
         ></DropDownSelect>
       </Box>
-      <CarbonChangeLegend></CarbonChangeLegend>
+      <CarbonChangeLegend
+        sx={{
+          backgroundColor: 'rgba(217, 217, 217, 0.90)',
+          borderRadius: '0.3125rem',
+          pl: '3rem',
+          pr: '3rem',
+          pt: '1rem',
+          pb: '1rem',
+        }}
+      ></CarbonChangeLegend>
       <CarbonMapGraphMap
         datas={datas}
         activeYear={activeYear}
