@@ -35,6 +35,12 @@ const zoningFillColorExpression = (defaultColor = 'white'): Expression => {
   return expression
 }
 
+export const isZoningCodeValid = (zoningCode: string) => {
+  return ZONING_CLASSES.some(
+    (zoningClassObj) => zoningClassObj.code === zoningCode
+  )
+}
+
 export const isZoningCodeValidExpression = () => {
   // This array will hold the zoning codes to check
   let validZoningCodes: string[] = []
