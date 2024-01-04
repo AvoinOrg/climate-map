@@ -27,8 +27,6 @@ const CarbonMapGraphTable = ({ datas, activeYear }: Props) => {
         return acc
       }, 0)
 
-      console.log(totalArea)
-
       const weightedAreaHa = data.data.features.reduce((acc, feature) => {
         const properties = feature.properties
         if (!properties.isHidden) {
@@ -43,7 +41,6 @@ const CarbonMapGraphTable = ({ datas, activeYear }: Props) => {
 
   const co2TotalRowData = useMemo(() => {
     return datas.map((data) => {
-      console.log(data)
       const total = data.data.features.reduce((acc, feature) => {
         const properties = feature.properties
         if (!properties.isHidden) {
