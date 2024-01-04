@@ -110,8 +110,21 @@ export type CarbonChangeColorItem = {
 
 export type GraphCalcType = 'ground' | 'bio' | 'total'
 
+export interface MapGraphCalcFeature extends CalcFeature {
+  properties: CalcFeatureProperties & {
+    color: string
+    valueHa: number
+    valueTotal: number
+    isHidden?: boolean
+  }
+}
+export interface MapGraphCalcFeatureCollection extends CalcFeatureCollection {
+  type: 'FeatureCollection'
+  features: MapGraphCalcFeature[]
+}
+
 export type MapGraphData = {
   id: string
   name: string
-  data: CalcFeatureCollection
+  data: MapGraphCalcFeatureCollection
 }
