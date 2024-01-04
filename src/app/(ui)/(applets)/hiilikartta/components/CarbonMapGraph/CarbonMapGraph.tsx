@@ -178,8 +178,8 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
         sx={{
           backgroundColor: 'rgba(217, 217, 217, 0.90)',
           borderRadius: '0.3125rem',
-          pl: '3rem',
-          pr: '3rem',
+          pl: { xs: '0.75rem', md: '3rem' },
+          pr: { xs: '0.75rem', md: '3rem' },
           pt: '1rem',
           pb: '1rem',
           mt: '2rem',
