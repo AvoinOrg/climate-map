@@ -109,3 +109,9 @@ export type CarbonChangeColorItem = {
 }
 
 export type GraphCalcType = 'ground' | 'bio' | 'total'
+
+export type MapGraphData = {
+  id: string
+  name: string
+  data: CalcFeatureCollection
+}
