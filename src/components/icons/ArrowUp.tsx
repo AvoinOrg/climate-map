@@ -1,7 +1,13 @@
 import * as React from 'react'
-import type { SVGProps } from 'react'
-const SvgArrowUp = (props: SVGProps<SVGSVGElement>) => (
-  <svg
+import { Box, SxProps, Theme } from '@mui/material'
+
+type Props = {
+  sx?: SxProps<Theme>
+}
+
+const SvgArrowUp = (props: Props) => (
+  <Box
+    component="svg"
     xmlns="http://www.w3.org/2000/svg"
     width="17"
     height="11"
@@ -10,6 +16,7 @@ const SvgArrowUp = (props: SVGProps<SVGSVGElement>) => (
     {...props}
   >
     <path d="M1 10L8.5 2L16 10" stroke="currentColor" stroke-width="2" />
-  </svg>
+  </Box>
 )
+
 export default SvgArrowUp
