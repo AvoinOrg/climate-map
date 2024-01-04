@@ -27,12 +27,18 @@ declare module '@mui/material/styles/createPalette' {
 
 declare module '@mui/material/styles' {
   interface TypographyVariants {
-    buttonSmall: React.CSSProperties
+    h7?: React.CSSProperties
+    h8?: React.CSSProperties
+    h9?: React.CSSProperties
+    body7?: React.CSSProperties
   }
 
   // allow configuration using `createTheme`
   interface TypographyVariantsOptions {
-    buttonSmall?: React.CSSProperties
+    h7?: React.CSSProperties
+    h8?: React.CSSProperties
+    h9?: React.CSSProperties
+    body7?: React.CSSProperties
   }
 
   interface ZIndex {
