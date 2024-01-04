@@ -7,6 +7,7 @@ import { styled } from '@mui/material/styles'
 import DropDownSelect from '#/components/common/DropDownSelect'
 
 import {
+  CalcFeatureCollection,
   featureCols,
   MapGraphData,
   PlanConfWithReportData,
@@ -241,26 +242,28 @@ const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
 }))
 
 const updateDataWithColor = (
-  datas: MapGraphData[],
+  datas: {
+    id: string
+    name: string
+    data: CalcFeatureCollection
+  }[],
   year: string,
   calcType: GraphCalcType,
   areaType: string
-) => {
-  return datas.map((data) => {
+): MapGraphData[] => {
+  const newDatas = datas.map((data) => {
     const updatedFeatures = data.data.features.map((feature) => {
-      const valueHa = getCarbonValueForProperties(
-        feature.properties,
-        year,
-        calcType,
-        true
-      )
+      const valueHa =
+        getCarbonValueForProperties(feature.properties, year, calcType, true) ||
+        0
 
-      const valueTotal = getCarbonValueForProperties(
-        feature.properties,
-        year,
-        calcType,
-        false
-      )
+      const valueTotal =
+        getCarbonValueForProperties(
+          feature.properties,
+          year,
+          calcType,
+          false
+        ) || 0
 
       const color = getCarbonChangeColor(valueHa)
 
@@ -287,6 +290,8 @@ const updateDataWithColor = (
 
     return { ...data, data: { ...data.data, features: updatedFeatures } }
   })
+
+  return newDatas
 }
 
 export default CarbonMapGraph
