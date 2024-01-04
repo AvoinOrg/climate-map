@@ -252,7 +252,7 @@ const getValueForBioOrGroundCarbon = (
   year: string,
   useHa: boolean = true,
   usePlanned: boolean = true
-): Number | undefined => {
+): number | undefined => {
   let propName: keyof CalcFeatureProperties
 
   if (bioOrGround === 'bio') {
@@ -297,7 +297,7 @@ const getValueForTotalCarbon = (
   year: string,
   useHa: boolean = true,
   usePlanned: boolean = true
-): Number | undefined => {
+): number | undefined => {
   const bioPropName = useHa ? 'bio_carbon_ha' : 'bio_carbon_total'
   const groundPropName = useHa ? 'ground_carbon_ha' : 'ground_carbon_total'
 
