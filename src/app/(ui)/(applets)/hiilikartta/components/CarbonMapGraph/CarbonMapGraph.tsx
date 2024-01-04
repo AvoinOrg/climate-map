@@ -22,6 +22,7 @@ import {
   getCarbonValueForProperties,
   isZoningCodeValid,
 } from 'applets/hiilikartta/common/utils'
+import CarbonMapGraphTable from './CarbonMapGraphTable'
 
 type Props = {
   planConfs: PlanConfWithReportData[]
@@ -215,6 +216,7 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
         activeCalcType={calcType}
         activeAreaType={areaType}
       />
+      <CarbonMapGraphTable datas={localDatas} activeYear={activeYear} />
     </Box>
   )
 }
