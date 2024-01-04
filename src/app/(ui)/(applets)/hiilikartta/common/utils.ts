@@ -246,19 +246,26 @@ export const getAggregatedCalcs = (
   return calculations as FeatureCalcs // Cast back to FeatureCalcs after computing all the values
 }
 
-const getColorForBioOrGroundCarbon = (
+const getValueForBioOrGroundCarbon = (
   bioOrGround: 'bio' | 'ground',
   properties: CalcFeatureProperties,
   year: string,
+  useHa: boolean = true,
   usePlanned: boolean = true
-) => {
-  const propName = bioOrGround === 'bio' ? 'bio_carbon_ha' : 'ground_carbon_ha'
+): Number | undefined => {
+  let propName: keyof CalcFeatureProperties
+
+  if (bioOrGround === 'bio') {
+    propName = useHa ? 'bio_carbon_ha' : 'bio_carbon_total'
+  } else {
+    propName = useHa ? 'ground_carbon_ha' : 'ground_carbon_total'
+  }
 
   if (
     properties[propName].nochange?.[year] == undefined ||
     properties[propName].nochange?.[year] < 0
   ) {
-    return CARBON_CHANGE_NO_DATA_COLOR
+    return undefined
   }
 
   const firstYear = Math.min(
@@ -274,7 +281,7 @@ const getColorForBioOrGroundCarbon = (
       properties[propName].planned?.[year] == undefined ||
       properties[propName].planned?.[year] < 0
     ) {
-      return CARBON_CHANGE_NO_DATA_COLOR
+      return undefined
     }
 
     const carbonPlanned = properties[propName].planned?.[year]
@@ -282,21 +289,25 @@ const getColorForBioOrGroundCarbon = (
     carbon = carbonPlanned - carbon
   }
 
-  return determineCarbonChangeColor(carbon)
+  return carbon
 }
 
-const getColorForTotalCarbon = (
+const getValueForTotalCarbon = (
   properties: CalcFeatureProperties,
   year: string,
+  useHa: boolean = true,
   usePlanned: boolean = true
-) => {
+): Number | undefined => {
+  const bioPropName = useHa ? 'bio_carbon_ha' : 'bio_carbon_total'
+  const groundPropName = useHa ? 'ground_carbon_ha' : 'ground_carbon_total'
+
   if (
-    properties.bio_carbon_ha?.nochange?.[year] == undefined ||
-    properties.ground_carbon_ha?.nochange?.[year] == undefined ||
-    properties.bio_carbon_ha?.nochange?.[year] < 0 ||
-    properties.ground_carbon_ha?.nochange?.[year] < 0
+    properties[bioPropName].nochange?.[year] == undefined ||
+    properties[groundPropName].nochange?.[year] == undefined ||
+    properties[bioPropName].nochange?.[year] < 0 ||
+    properties[groundPropName].nochange?.[year] < 0
   ) {
-    return CARBON_CHANGE_NO_DATA_COLOR
+    return undefined
   }
 
   const firstYear = Math.min(
@@ -305,21 +316,21 @@ const getColorForTotalCarbon = (
     )
   )
 
-  let bioCarbon = properties.bio_carbon_ha?.nochange?.[firstYear]
-  let groundCarbon = properties.ground_carbon_ha?.nochange?.[firstYear]
+  let bioCarbon = properties[bioPropName].nochange?.[firstYear]
+  let groundCarbon = properties[groundPropName].nochange?.[firstYear]
 
   if (usePlanned) {
     if (
-      properties.bio_carbon_ha?.planned?.[year] == undefined ||
-      properties.ground_carbon_ha?.planned?.[year] == undefined ||
-      properties.bio_carbon_ha?.planned?.[year] < 0 ||
-      properties.ground_carbon_ha?.planned?.[year] < 0
+      properties[bioPropName].planned?.[year] == undefined ||
+      properties[groundPropName].planned?.[year] == undefined ||
+      properties[bioPropName].planned?.[year] < 0 ||
+      properties[groundPropName].planned?.[year] < 0
     ) {
-      return CARBON_CHANGE_NO_DATA_COLOR
+      return undefined
     }
 
-    const bioCarbonPlanned = properties.bio_carbon_ha?.planned?.[year]
-    const groundCarbonPlanned = properties.ground_carbon_ha?.planned?.[year]
+    const bioCarbonPlanned = properties[bioPropName].planned?.[year]
+    const groundCarbonPlanned = properties[groundPropName].planned?.[year]
 
     bioCarbon = bioCarbonPlanned - bioCarbon
     groundCarbon = groundCarbonPlanned - groundCarbon
@@ -327,33 +338,44 @@ const getColorForTotalCarbon = (
 
   const totalCarbon = bioCarbon + groundCarbon
 
-  return determineCarbonChangeColor(totalCarbon)
+  return totalCarbon
 }
 
-export const getCarbonChangeColorForProperties = (
+export const getCarbonValueForProperties = (
   properties: CalcFeatureProperties,
   year: string,
   calcType: GraphCalcType = 'total',
+  useHa: boolean = false,
   usePlanned: boolean = true
 ) => {
   switch (calcType) {
     case 'bio':
-      return getColorForBioOrGroundCarbon('bio', properties, year, usePlanned)
+      return getValueForBioOrGroundCarbon(
+        'bio',
+        properties,
+        year,
+        useHa,
+        usePlanned
+      )
     case 'ground':
-      return getColorForBioOrGroundCarbon(
+      return getValueForBioOrGroundCarbon(
         'ground',
         properties,
         year,
+        useHa,
         usePlanned
       )
     case 'total':
     default:
-      return getColorForTotalCarbon(properties, year, usePlanned)
+      return getValueForTotalCarbon(properties, year, useHa, usePlanned)
   }
 }
 
-const determineCarbonChangeColor = (carbon: Number) => {
-  let color = ''
+export const getCarbonChangeColor = (carbon: Number | null | undefined) => {
+  let color = CARBON_CHANGE_NO_DATA_COLOR
+  if (carbon == null) {
+    return color
+  }
 
   for (let i = 0; i < CARBON_CHANGE_COLORS.length; i++) {
     if (i === 0) {
