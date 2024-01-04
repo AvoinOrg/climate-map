@@ -14,11 +14,7 @@ import {
   ZONING_CODE_COL,
 } from 'applets/hiilikartta/common/types'
 import { CalcFeatureCollection } from 'applets/hiilikartta/common/types'
-import {
-  getCarbonChangeColorForProperties,
-  isZoningCodeValidExpression,
-  isZoningCodeValid,
-} from 'applets/hiilikartta/common/utils'
+import { isZoningCodeValidExpression } from 'applets/hiilikartta/common/utils'
 
 type Data = {
   id: string
@@ -44,14 +40,11 @@ const CarbonMapGraphMap = ({
   setActiveYear,
   activeDataId,
   setActiveDataId,
-  activeCalcType,
-  activeAreaType,
 }: Props) => {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const [mapIsLoaded, setMapIsLoaded] = useState(false)
-  const [localDatas, setLocalDatas] = useState<Data[]>([])
-  const sourceIds = useRef<string[]>([])
+  const allDataIds = useRef<string[]>([])
 
   useEffect(() => {
     // Ensure mapboxgl.accessToken is set
@@ -76,43 +69,34 @@ const CarbonMapGraphMap = ({
   }, [])
 
   useEffect(() => {
-    setLocalDatas(cloneDeep(datas))
-  }, [datas])
-
-  useEffect(() => {
-    if (mapIsLoaded) {
-      const bounds = getCombinedBoundsInLngLat(datas.map((data) => data.data))
-
-      if (bounds) {
-        const paddedBounds = addPaddingToLngLatBounds(bounds, 1)
-        map.current?.setMaxBounds(paddedBounds)
-        map.current?.fitBounds(bounds, {
-          padding: 20,
-        })
-      }
-    }
-  }, [datas, mapIsLoaded])
-
-  useEffect(() => {
     if (mapIsLoaded) {
       // Remove old GeoJSON data
-      const dataIds = localDatas.map((data) => data.id)
-      sourceIds.current.forEach((sourceId) => {
-        if (!dataIds.includes(sourceId)) {
-          map.current!.removeLayer(`carbon-graph-layer-${sourceId}`)
-          map.current!.removeSource(`carbon-graph-source-${sourceId}`)
+      const dataIds = datas.map((data) => data.id)
+      // Check if bounds need to be reset
+      if (
+        allDataIds.current.length != dataIds.length ||
+        !dataIds.every((dataId) => allDataIds.current.includes(dataId))
+      ) {
+        const bounds = getCombinedBoundsInLngLat(datas.map((data) => data.data))
+        if (bounds) {
+          const paddedBounds = addPaddingToLngLatBounds(bounds, 1)
+          map.current?.setMaxBounds(paddedBounds)
+          map.current?.fitBounds(bounds, {
+            padding: 20,
+          })
+        }
+      }
+      allDataIds.current.forEach((dataId) => {
+        if (!dataIds.includes(dataId)) {
+          map.current!.removeLayer(`carbon-graph-layer-${dataId}`)
+          map.current!.removeLayer(`carbon-graph-layer-${dataId}-symbol`)
+          map.current!.removeSource(`carbon-graph-source-${dataId}`)
         }
       })
 
-      // Show only the active GeoJSON data on the map
-      const updatedDatas = updateDataWithColor(
-        localDatas,
-        activeYear,
-        activeCalcType,
-        activeAreaType
-      )
+      allDataIds.current = dataIds
 
-      updatedDatas.forEach((data) => {
+      datas.forEach((data) => {
         const sourceId = `carbon-graph-source-${data.id}`
         const layerId = `carbon-graph-layer-${data.id}`
 
@@ -191,14 +175,7 @@ const CarbonMapGraphMap = ({
         }
       })
     }
-  }, [
-    activeYear,
-    mapIsLoaded,
-    activeDataId,
-    datas,
-    activeCalcType,
-    activeAreaType,
-  ])
+  }, [mapIsLoaded, datas])
 
   return (
     <Box
@@ -248,7 +225,7 @@ const CarbonMapGraphMap = ({
           pointerEvents: 'none',
         }}
       >
-        {localDatas.map((data) => (
+        {datas.map((data) => (
           <Button
             sx={{
               borderRadius: '0.3125rem',
@@ -293,39 +270,6 @@ const CarbonMapGraphMap = ({
       </Box>
     </Box>
   )
-}
-
-const updateDataWithColor = (
-  datas: Data[],
-  year: string,
-  calcType: GraphCalcType,
-  areaType: string
-) => {
-  return datas.map((data) => {
-    const updatedFeatures = data.data.features.map((feature) => {
-      const color = getCarbonChangeColorForProperties(
-        feature.properties,
-        year,
-        calcType
-      )
-
-      let isHidden = false
-      if (areaType !== 'all') {
-        const zoningCode = feature.properties[ZONING_CODE_COL]
-        if (
-          !isZoningCodeValid(zoningCode) ||
-          !feature.properties[ZONING_CODE_COL].startsWith(areaType)
-        )
-          isHidden = true
-      }
-      return {
-        ...feature,
-        properties: { ...feature.properties, color, isHidden },
-      }
-    })
-
-    return { ...data, data: { ...data.data, features: updatedFeatures } }
-  })
 }
 
 export default CarbonMapGraphMap
