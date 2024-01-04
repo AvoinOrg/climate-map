@@ -4,8 +4,11 @@ import { cloneDeep } from 'lodash-es'
 import { T, useTranslate } from '@tolgee/react'
 import { styled } from '@mui/material/styles'
 
+import DropDownSelect from '#/components/common/DropDownSelect'
+
 import {
   featureCols,
+  MapGraphData,
   PlanConfWithReportData,
   ZONING_CODE_COL,
 } from 'applets/hiilikartta/common/types'
@@ -13,7 +16,11 @@ import CarbonMapGraphMap from './CarbonMapGraphMap'
 import CarbonChangeLegend from '../CarbonChangeLegend'
 import { GraphCalcType } from 'applets/hiilikartta/common/types'
 import { ZONING_CLASSES } from 'applets/hiilikartta/common/constants'
-import DropDownSelect from '#/components/common/DropDownSelect'
+import {
+  getCarbonChangeColor,
+  getCarbonValueForProperties,
+  isZoningCodeValid,
+} from 'applets/hiilikartta/common/utils'
 
 type Props = {
   planConfs: PlanConfWithReportData[]
@@ -26,6 +33,7 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
   const [activeYear, setActiveYear] = useState(featureYears[0])
   const [calcType, setCalcType] = React.useState<GraphCalcType>('total')
   const [areaType, setAreaType] = React.useState<string>('all')
+  const [localDatas, setLocalDatas] = useState<MapGraphData[]>([])
 
   const handleCalcTypeChange = (
     _event: React.MouseEvent<HTMLElement>,
@@ -62,10 +70,21 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
     currentSituation.id = currentSituation.id + '-current'
     currentSituation.name = t('report.general.current_situation')
 
-    datas = [currentSituation, ...datas]
+    datas = [currentSituation, ...cloneDeep(datas)]
+
+    const dataIds = datas.map((data) => data.id)
+    if (!dataIds.includes(activePlanConfId)) {
+      setActivePlanConfId(dataIds[1])
+    }
 
     return datas
   }, [planConfs])
+
+  useEffect(() => {
+    if (datas.length === 0) return
+    const newDatas = updateDataWithColor(datas, activeYear, calcType, areaType)
+    setLocalDatas(newDatas)
+  }, [datas, activePlanConfId, activeYear, calcType, areaType])
 
   const areaTypeOptions = useMemo(() => {
     return [
@@ -186,7 +205,7 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
         }}
       ></CarbonChangeLegend>
       <CarbonMapGraphMap
-        datas={datas}
+        datas={localDatas}
         activeYear={activeYear}
         featureYears={featureYears}
         setActiveYear={setActiveYear}
@@ -220,5 +239,54 @@ const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
     backgroundColor: theme.palette.neutral.light,
   },
 }))
+
+const updateDataWithColor = (
+  datas: MapGraphData[],
+  year: string,
+  calcType: GraphCalcType,
+  areaType: string
+) => {
+  return datas.map((data) => {
+    const updatedFeatures = data.data.features.map((feature) => {
+      const valueHa = getCarbonValueForProperties(
+        feature.properties,
+        year,
+        calcType,
+        true
+      )
+
+      const valueTotal = getCarbonValueForProperties(
+        feature.properties,
+        year,
+        calcType,
+        false
+      )
+
+      const color = getCarbonChangeColor(valueHa)
+
+      let isHidden = false
+      if (areaType !== 'all') {
+        const zoningCode = feature.properties[ZONING_CODE_COL]
+        if (
+          !isZoningCodeValid(zoningCode) ||
+          !feature.properties[ZONING_CODE_COL].startsWith(areaType)
+        )
+          isHidden = true
+      }
+      return {
+        ...feature,
+        properties: {
+          ...feature.properties,
+          color,
+          valueTotal,
+          valueHa,
+          isHidden,
+        },
+      }
+    })
+
+    return { ...data, data: { ...data.data, features: updatedFeatures } }
+  })
+}
 
 export default CarbonMapGraph
