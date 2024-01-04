@@ -15,7 +15,7 @@ const SvgArrowUp = (props: Props) => (
     fill="none"
     {...props}
   >
-    <path d="M1 10L8.5 2L16 10" stroke="currentColor" stroke-width="2" />
+    <path d="M1 10L8.5 2L16 10" stroke="currentColor" strokeWidth="2" />
   </Box>
 )
 
