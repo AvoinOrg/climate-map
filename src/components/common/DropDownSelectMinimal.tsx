@@ -90,13 +90,15 @@ const DropDownSelectMinimal = ({
             value={option.value}
           >
             <Typography
-              sx={{
-                textAlign: 'left',
-                pl: 1,
-                pt: 0.5,
-                pb: 0.5,
+              sx={[
+                {
+                  textAlign: 'left',
+                  pl: 1,
+                  pt: 0.5,
+                  pb: 0.5,
+                },
                 ...(Array.isArray(optionSx) ? optionSx : [optionSx]),
-              }}
+              ]}
             >
               {option.label}
             </Typography>
