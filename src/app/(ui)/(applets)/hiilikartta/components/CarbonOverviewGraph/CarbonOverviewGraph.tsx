@@ -1,7 +1,10 @@
-import { pp } from '#/common/utils/general'
+import React, { useState } from 'react'
 import { styled } from '@mui/material/styles'
 import { Box, SxProps, Theme, Typography } from '@mui/material'
 import { T } from '@tolgee/react'
+
+import { pp } from '#/common/utils/general'
+
 import { PlanConfWithReportData } from 'applets/hiilikartta/common/types'
 import GeomGraphic from './GeomGraphic'
 
