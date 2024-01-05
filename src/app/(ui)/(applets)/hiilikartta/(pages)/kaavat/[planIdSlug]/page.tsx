@@ -214,9 +214,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                       value={currentYear}
                       isIconOnTheRight={false}
                       sx={{ mr: -4, mt: -0.5 }}
-                      iconSx={{ ml: 2, mt: 0.8 }}
-                      optionSx={{ mr: 1, typography: 'h8' }}
-                      onChange={(e) => setCurrentYear(e.target.value as string)}
+                      iconSx={{ mt: 0.25 }}
+                      optionSx={{ typography: 'h8' }}
+                      onChange={(e) => setCurrentYear(e.target.value)}
                       options={planConf.reportData.metadata.featureYears
                         .slice(1)
                         .map((year) => {
