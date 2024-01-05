@@ -16,7 +16,7 @@ import { SelectOption } from '#/common/types/general'
 interface Props {
   value: any
   options: SelectOption[]
-  onChange: (event: SelectChangeEvent<string[]>) => void
+  onChange: (event: SelectChangeEvent<string>) => void
   sx?: SxProps<Theme>
   optionSx?: SxProps<Theme>
   iconSx?: SxProps<Theme>
