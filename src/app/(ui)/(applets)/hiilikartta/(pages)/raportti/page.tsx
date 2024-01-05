@@ -20,6 +20,7 @@ import { routeTree } from 'applets/hiilikartta/common/routes'
 import { PlanConfWithReportData } from 'applets/hiilikartta/common/types'
 import CarbonMapGraph from 'applets/hiilikartta/components/CarbonMapGraph'
 import CarbonLineChart from 'applets/hiilikartta/components/CarbonLineChart'
+import CarbonOverviewGraph from 'applets/hiilikartta/components/CarbonOverviewGraph'
 
 const MAX_WIDTH = '1000px'
 
@@ -298,82 +299,11 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
       {isLoaded && planConfs.length > 0 && featureYears.length > 0 && (
         <>
           <Section>
-            <Row
-              sx={(theme) => ({
-                mt: 6,
-              })}
-            >
-              <Typography
-                sx={(theme) => ({
-                  typography: theme.typography.h1,
-                  display: 'inline',
-                })}
-              >
-                <T
-                  keyName="report.impact_on_carbon_stock"
-                  ns={'hiilikartta'}
-                ></T>{' '}
-                {featureYears[1]}
-              </Typography>
-            </Row>
-            <Row sx={{ mt: 10, flexWrap: 'wrap', justifyContent: 'normal' }}>
-              {planConfs.map((planConf) => {
-                return (
-                  <Row sx={{ mb: 10, flex: 0, mr: 'auto' }} key={planConf.id}>
-                    <Col>
-                      <Typography typography={'h8'}>
-                        <T keyName="report.plan" ns="hiilikartta"></T>
-                      </Typography>
-                      <Typography
-                        typography={'h7'}
-                        sx={{ whiteSpace: 'nowrap' }}
-                      >
-                        {planConf?.name}
-                      </Typography>
-                      <Typography typography={'h5'} sx={{ mt: 2 }}>
-                        <T
-                          keyName="report.carbon_stock_decreases"
-                          ns="hiilikartta"
-                        ></T>
-                      </Typography>
-                      <Typography mt={4} typography={'h5'}>
-                        <T
-                          keyName="report.carbon_eqv_unit"
-                          ns="hiilikartta"
-                        ></T>
-                      </Typography>
-                      <Typography mt={1} typography={'h1'}>
-                        {pp(
-                          planConf.reportData.agg.totals.bio_carbon_total_diff[
-                            featureYears[1]
-                          ] +
-                            planConf.reportData.agg.totals
-                              .ground_carbon_total_diff[featureYears[1]],
-                          4
-                        )}
-                      </Typography>
-                      <Typography mt={3} typography={'h5'}>
-                        <T
-                          keyName="report.carbon_eqv_unit_hectare"
-                          ns="hiilikartta"
-                        ></T>
-                      </Typography>
-                      <Typography mt={1} typography={'h1'}>
-                        {pp(
-                          planConf.reportData.agg.totals.bio_carbon_ha_diff[
-                            featureYears[1]
-                          ] +
-                            planConf.reportData.agg.totals
-                              .ground_carbon_ha_diff[featureYears[1]],
-                          2
-                        )}
-                      </Typography>
-                    </Col>
-                    <Col sx={{}}></Col>
-                  </Row>
-                )
-              })}
-            </Row>
+            <CarbonOverviewGraph
+              planConfs={planConfs}
+              featureYears={featureYears}
+              sx={{ maxWidth: MAX_WIDTH }}
+            />
           </Section>
           <Breaker sx={{ mt: 2 }} />
           <Section sx={{ mt: 8 }}>
