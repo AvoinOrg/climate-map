@@ -14,6 +14,7 @@ import DropDownSelectMinimal from '#/components/common/DropDownSelectMinimal'
 
 import { PlanConfWithReportData } from 'applets/hiilikartta/common/types'
 import GeomGraphic from './GeomGraphic'
+import CarbonChangeLegend from '../CarbonChangeLegend'
 
 type Props = {
   planConfs: PlanConfWithReportData[]
@@ -135,6 +136,7 @@ const CarbonOverviewGraph = ({ planConfs, featureYears, sx }: Props) => {
           )
         })}
       </Row>
+      <CarbonChangeLegend></CarbonChangeLegend>
     </Box>
   )
 }
