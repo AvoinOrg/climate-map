@@ -65,16 +65,36 @@ const CarbonOverviewGraph = ({ planConfs, featureYears, sx }: Props) => {
               }}
               iconSx={{
                 mt: 0.2,
-                height: "0.75rem",
+                height: '0.75rem',
               }}
             ></DropDownSelectMinimal>
           </Row>
         </Col>
       </Row>
-      <Row sx={{ mt: 10, flexWrap: 'wrap', justifyContent: 'normal' }}>
+      <Row
+        sx={{
+          mt: 3,
+          mb: 5,
+          flexWrap: 'wrap',
+          justifyContent: 'flex-start',
+          gap: '1.75rem',
+        }}
+      >
         {planConfs.map((planConf) => {
           return (
-            <Row sx={{ mb: 10, flex: 0, mr: 'auto' }} key={planConf.id}>
+            <Row
+              sx={{
+                flex: 0,
+                border: '1px solid',
+                borderRadius: '0.3125rem',
+                borderColor: 'primary.dark',
+                pt: '2rem',
+                pb: '2rem',
+                pl: '1.75rem',
+                pr: '1.75rem',
+              }}
+              key={planConf.id}
+            >
               <Col>
                 <Typography typography={'h8'}>
                   <T keyName="report.overview_graph.plan" ns="hiilikartta"></T>
