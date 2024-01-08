@@ -47,7 +47,12 @@ const CarbonOverviewGraph = ({ planConfs, featureYears, sx }: Props) => {
               ></T>{' '}
             </Typography>
             <Info
-              sx={{ height: '1.1rem', mt: 'auto', mb: '0.28rem', ml: '0.85rem' }}
+              sx={{
+                height: '1.1rem',
+                mt: 'auto',
+                mb: '0.28rem',
+                ml: '0.85rem',
+              }}
             ></Info>
           </Row>
           <Row sx={{ justifyContent: 'flex-start', mt: 0.5 }}>
@@ -99,6 +104,7 @@ const CarbonOverviewGraph = ({ planConfs, featureYears, sx }: Props) => {
                 pb: '2rem',
                 pl: '1.75rem',
                 pr: '1.75rem',
+                boxShadow: '1px 1px 4px 1px rgba(217, 217, 217, 0.50);',
               }}
               key={planConf.id}
             >
