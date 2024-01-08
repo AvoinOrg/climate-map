@@ -6,8 +6,8 @@ import Link from '#/components/common/Link'
 import { useSearchParams } from 'next/navigation'
 import { map, isEqual } from 'lodash-es'
 import { useRouter } from 'next/navigation'
-import { styled } from '@mui/system'
-import { Box, Typography } from '@mui/material'
+import { styled, SxProps } from '@mui/system'
+import { Box, Theme, Typography, useMediaQuery, useTheme } from '@mui/material'
 import { T, useTranslate } from '@tolgee/react'
 
 import { pp } from '#/common/utils/general'
@@ -34,6 +34,8 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { t } = useTranslate('hiilikartta')
+  const theme = useTheme()
+  const useNarrowLayout = useMediaQuery(theme.breakpoints.down('md'))
 
   const allPlanConfs = useStore(useAppletStore, (state) => state.planConfs)
 
@@ -297,7 +299,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         </Row>
       </Section>
       {isLoaded && planConfs.length > 0 && featureYears.length > 0 && (
-        <>
+        <Col sx={{ maxWidth: MAX_WIDTH, p: 3 }}>
           <Section>
             <CarbonOverviewGraph
               planConfs={planConfs}
@@ -305,7 +307,43 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               sx={{ maxWidth: MAX_WIDTH, width: '100%', mt: 5 }}
             />
           </Section>
-          <Breaker sx={{ mt: 2 }} />
+          {useNarrowLayout && <Breaker sx={{ mt: 8 }} />}
+
+          <Section
+            sx={{
+              mt: { xs: 8, md: 14 },
+              border: { xs: 'none', md: '1px solid' },
+              borderColor: { md: 'primary.dark' },
+              boxShadow: {
+                xs: 'none',
+                md: '1px 1px 4px 1px rgba(217, 217, 217, 0.50);',
+              },
+              p: {
+                xs: 0,
+                md: 3,
+              },
+              borderRadius: '0.3125rem',
+            }}
+          >
+            <Row sx={{ mb: 4 }}>
+              <Typography
+                sx={(theme) => ({
+                  typography: theme.typography.h1,
+                  display: 'inline',
+                })}
+              >
+                <T keyName="report.map_graph.title" ns={'hiilikartta'}></T>
+              </Typography>
+            </Row>
+            <Row>
+              <Col>
+                <CarbonMapGraph
+                  planConfs={planConfs}
+                  featureYears={featureYears}
+                />
+              </Col>
+            </Row>
+          </Section>
           <Section sx={{ mt: 8 }}>
             <Row>
               <Typography
@@ -328,28 +366,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               />
             </Row>
           </Section>
-          <Section sx={{ mt: 8 }}>
-            <Row sx={{ mb: 4 }}>
-              <Typography
-                sx={(theme) => ({
-                  typography: theme.typography.h1,
-                  display: 'inline',
-                })}
-              >
-                <T keyName="report.map_graph.title" ns={'hiilikartta'}></T>
-              </Typography>
-            </Row>
-            <Row>
-              <Col>
-                <CarbonMapGraph
-                  planConfs={planConfs}
-                  featureYears={featureYears}
-                />
-              </Col>
-            </Row>
-          </Section>
-          <Breaker sx={{ mt: 8 }} />
-        </>
+        </Col>
       )}
     </Box>
   )
@@ -361,13 +378,11 @@ const Section = styled('div')(({ theme }) => ({
   justifyContent: 'center',
   alignItems: 'center',
   width: '100%',
-  padding: theme.spacing(3),
 }))
 
 const Breaker = styled('div')(({ theme }) => ({
   width: '100%',
   borderTop: `3px solid ${theme.palette.primary.light}`,
-  maxWidth: MAX_WIDTH,
 }))
 
 const Row = styled('div')(({ theme }) => ({
