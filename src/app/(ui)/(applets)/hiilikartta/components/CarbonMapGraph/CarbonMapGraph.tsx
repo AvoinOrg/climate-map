@@ -217,6 +217,27 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
         activeAreaType={areaType}
       />
       <CarbonMapGraphTable datas={localDatas} activeYear={activeYear} />
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          mt: 2,
+        }}
+      >
+        <Typography sx={{ display: 'inline', typography: 'body2' }}>
+          <T ns="hiilikartta" keyName="report.overview_graph.calc_accuracy"></T>
+          {` ${''}+- XX%`}
+        </Typography>
+        <Typography sx={{ display: 'inline', typography: 'body2' }}>
+          <u>
+            <T
+              ns="hiilikartta"
+              keyName="report.general.read_more_about_calc"
+            ></T>
+          </u>
+        </Typography>
+      </Box>
     </Box>
   )
 }
