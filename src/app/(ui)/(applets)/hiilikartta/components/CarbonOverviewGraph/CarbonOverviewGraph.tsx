@@ -137,6 +137,20 @@ const CarbonOverviewGraph = ({ planConfs, featureYears, sx }: Props) => {
         })}
       </Row>
       <CarbonChangeLegend></CarbonChangeLegend>
+      <Col sx={{ alignItems: 'flex-end', mt: 2 }}>
+        <Typography sx={{ display: 'inline', typography: 'body2' }}>
+          <T ns="hiilikartta" keyName="report.overview_graph.calc_accuracy"></T>
+          {` ${''}+- XX%`}
+        </Typography>
+        <Typography sx={{ display: 'inline', typography: 'body2' }}>
+          <u>
+            <T
+              ns="hiilikartta"
+              keyName="report.general.read_more_about_calc"
+            ></T>
+          </u>
+        </Typography>
+      </Col>
     </Box>
   )
 }
