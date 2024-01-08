@@ -15,6 +15,7 @@ import DropDownSelectMinimal from '#/components/common/DropDownSelectMinimal'
 import { PlanConfWithReportData } from 'applets/hiilikartta/common/types'
 import GeomGraphic from './GeomGraphic'
 import CarbonChangeLegend from '../CarbonChangeLegend'
+import { Info } from '#/components/icons'
 
 type Props = {
   planConfs: PlanConfWithReportData[]
@@ -33,16 +34,22 @@ const CarbonOverviewGraph = ({ planConfs, featureYears, sx }: Props) => {
     <Box sx={[...(Array.isArray(sx) ? sx : [sx])]}>
       <Row>
         <Col>
-          <Typography
-            sx={(theme) => ({
-              typography: theme.typography.h1,
-            })}
-          >
-            <T
-              keyName="report.overview_graph.impact_on_carbon_stock"
-              ns={'hiilikartta'}
-            ></T>{' '}
-          </Typography>
+          <Row sx={{ justifyContent: 'flex-start' }}>
+            <Typography
+              sx={(theme) => ({
+                typography: theme.typography.h1,
+                display: 'inline',
+              })}
+            >
+              <T
+                keyName="report.overview_graph.impact_on_carbon_stock"
+                ns={'hiilikartta'}
+              ></T>{' '}
+            </Typography>
+            <Info
+              sx={{ height: '1.1rem', mt: 'auto', mb: '0.28rem', ml: '0.85rem' }}
+            ></Info>
+          </Row>
           <Row sx={{ justifyContent: 'flex-start', mt: 0.5 }}>
             <Typography
               sx={(theme) => ({
