@@ -302,7 +302,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             <CarbonOverviewGraph
               planConfs={planConfs}
               featureYears={featureYears}
-              sx={{ maxWidth: MAX_WIDTH }}
+              sx={{ maxWidth: MAX_WIDTH, width: '100%', mt: 5 }}
             />
           </Section>
           <Breaker sx={{ mt: 2 }} />
