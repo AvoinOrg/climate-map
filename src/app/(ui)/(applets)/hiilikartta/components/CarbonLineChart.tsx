@@ -108,7 +108,7 @@ const CarbonLineChart = ({
   }, [data, featureYears])
 
   const localPlanNames = useMemo(() => {
-    const currentSituationAppendix = t('report.current_situation_appendix')
+    const currentSituationAppendix = t('report.general.current_situation_appendix')
     const localPlanNames = []
 
     for (const item of planNames) {
