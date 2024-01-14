@@ -353,7 +353,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 })}
               >
                 <T
-                  keyName="report.carbon_stock_change_in_area_total"
+                  keyName="report.carbon_line_chart.title"
                   ns={'hiilikartta'}
                 ></T>{' '}
               </Typography>
@@ -363,6 +363,9 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                 data={planConfs.map((planConf) => planConf.reportData.totals)}
                 featureYears={featureYears}
                 planNames={planConfs.map((planConf) => planConf.name)}
+                width={useNarrowLayout ? 400 : 800}
+                height={500}
+                useHaVals={true}
               />
             </Row>
           </Section>
