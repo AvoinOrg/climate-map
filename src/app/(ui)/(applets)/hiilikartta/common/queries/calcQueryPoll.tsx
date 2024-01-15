@@ -9,7 +9,7 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_HIILIKARTTA_API_URL
 
-export const calcPollQuery = (
+export const calcQueryPoll = (
   planConf: PlanConf
 ): UseQueryOptions<ReportData> => {
   const updatePlanConf = useAppletStore.getState().updatePlanConf

@@ -16,7 +16,7 @@ import {
   PlanConf,
   PlanDataFeature,
 } from '../common/types'
-import { calcPollQuery } from '../common/queries/calcPollQuery'
+import { calcQueryPoll } from '../common/queries/calcQueryPoll'
 
 type Vars = {
   planConfs: { [key: string]: PlanConf }
@@ -181,7 +181,7 @@ useAppletStore.subscribe(
     ),
   (planConfs, _previousPlanConfs) => {
     Object.keys(planConfs).forEach((planId: string) => {
-      queryClient.fetchQuery(calcPollQuery(planConfs[planId]))
+      queryClient.fetchQuery(calcQueryPoll(planConfs[planId]))
     })
   }
 )
