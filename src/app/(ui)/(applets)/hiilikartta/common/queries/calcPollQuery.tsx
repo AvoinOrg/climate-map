@@ -35,6 +35,7 @@ export const calcPollQuery = (
         )
         const metadata = {
           timestamp: Number(response.data.data.metadata.calculated_ts),
+          reportName: response.data.data.metadata.report_name,
           featureYears,
         }
 

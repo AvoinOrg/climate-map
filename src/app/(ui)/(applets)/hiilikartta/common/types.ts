@@ -6,6 +6,7 @@ export interface ReportData {
   metadata: {
     timestamp: number
     featureYears: string[]
+    reportName: string
   }
   agg: { totals: FeatureCalcs }
 }
