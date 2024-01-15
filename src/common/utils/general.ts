@@ -1,5 +1,5 @@
 //TODO: FIX PP to format numbers correctly
-export const pp = (x: number, precision = 2) => (+x.toPrecision(precision))
+export const pp = (x: number, precision = 2) => +x.toPrecision(precision)
 
 export const assert = (expr: any, message: any) => {
   if (!expr) throw new Error(`Assertion error: ${message}`)
@@ -7,7 +7,11 @@ export const assert = (expr: any, message: any) => {
 
 export const generateUUID = () => {
   let d = new Date().getTime()
-  let d2 = (typeof performance !== 'undefined' && performance.now && performance.now() * 1000) || 0
+  let d2 =
+    (typeof performance !== 'undefined' &&
+      performance.now &&
+      performance.now() * 1000) ||
+    0
 
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     let r = Math.random() * 16
