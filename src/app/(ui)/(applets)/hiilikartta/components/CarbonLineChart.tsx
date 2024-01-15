@@ -16,6 +16,7 @@ import { schemeCategory10 } from 'd3-scale-chromatic'
 import { CalcFeatureCollection } from '../common/types'
 import { pp } from '#/common/utils/general'
 import { range } from 'lodash-es'
+import { LegendOrdinal } from '@visx/legend'
 
 type DataItem = {
   valHa: number
@@ -53,7 +54,7 @@ const CarbonLineChart = ({
   const localData = useMemo(() => {
     const seriesDatas = []
     for (const item of data) {
-      const dataItems: DataItem[] = []
+      let dataItems: DataItem[] = []
       item.features.forEach((feature) => {
         for (const year of featureYears) {
           if (feature.properties.bio_carbon_ha.planned[year] != null) {
@@ -78,10 +79,11 @@ const CarbonLineChart = ({
 
       seriesDatas.push(dataItems)
 
+      dataItems = []
+
       item.features.forEach((feature) => {
-        for (const year in featureYears) {
+        for (const year of featureYears) {
           if (feature.properties.bio_carbon_ha.nochange[year] != null) {
-            console.log(feature.properties.bio_carbon_ha)
             const valHa =
               feature.properties.bio_carbon_ha.nochange[year] +
               feature.properties.ground_carbon_ha.nochange[year]
@@ -108,7 +110,9 @@ const CarbonLineChart = ({
   }, [data, featureYears])
 
   const localPlanNames = useMemo(() => {
-    const currentSituationAppendix = t('report.general.current_situation_appendix')
+    const currentSituationAppendix = t(
+      'report.general.current_situation_appendix'
+    )
     const localPlanNames = []
 
     for (const item of planNames) {
@@ -125,12 +129,18 @@ const CarbonLineChart = ({
     return domainStr
   }
 
-  const colorScale = scaleOrdinal(schemeCategory10).domain(colorDomain())
-  const margin = { top: 40, right: 40, bottom: 40, left: 40 }
+  const colorScale = useMemo(() => {
+    return scaleOrdinal(schemeCategory10).domain(
+      localPlanNames.map((_, index) => index.toString())
+    )
+  }, [localPlanNames])
+  const getColorForIndex = (index: number): string => {
+    return colorScale('' + index) as string
+  }
+
+  const margin = { top: 40, right: 40, bottom: 40, left: 60 }
   const innerWidth = width - margin.left - margin.right
   const innerHeight = height - margin.top - margin.bottom
-
-  const colors = ['#43b284', '#fab255']
 
   const getValue = (d: DataItem) => {
     if (useHaVals) {
@@ -160,9 +170,13 @@ const CarbonLineChart = ({
     nice: true,
   })
 
+  const yMax = Math.max(
+    ...localData.flat().map((d) => getValue(d)) // Flattens all data and maps to the value
+  )
+
   const yScale = scaleLinear({
     range: [innerHeight, 0],
-    domain: extent(localData[0], (d) => getValue(d)) as [number, number],
+    domain: [-5, yMax],
     nice: true,
   })
 
@@ -173,32 +187,102 @@ const CarbonLineChart = ({
     color: 'black',
   }
 
+  // const handleTooltip = useCallback(
+  //   (
+  //     event: React.TouchEvent<SVGRectElement> | React.MouseEvent<SVGRectElement>
+  //   ) => {
+  //     const { x } = localPoint(event) || { x: 0 }
+  //     const x0 = xScale.invert(x - margin.left)
+  //     const index = bisectDate(localData[0], x0 as unknown as string, 1)
+  //     const d0 = localData[0][index - 1]
+  //     const d1 = localData[0][index]
+  //     let d = d0
+
+  //     if (d1 && getYear(d1)) {
+  //       d =
+  //         x0.valueOf() - getYear(d0).valueOf() >
+  //         getYear(d1).valueOf() - x0.valueOf()
+  //           ? d1
+  //           : d0
+  //     }
+  //     showTooltip({
+  //       tooltipData: getDataForYear(getYear(d)),
+  //       tooltipLeft: x,
+  //       tooltipTop: yScale(getValue(d)),
+  //     })
+  //   },
+  //   [showTooltip, data, xScale, yScale]
+  // )
+
+  // const handleTooltip = useCallback(
+  //   (
+  //     event: React.TouchEvent<SVGRectElement> | React.MouseEvent<SVGRectElement>
+  //   ) => {
+  //     const { x } = localPoint(event) || { x: 0 }
+  //     const x0 = xScale.invert(x - margin.left)
+
+  //     // Find the closest year to the mouse position
+  //     const closestYear = featureYears.reduce((prev, curr) => {
+  //       return Math.abs(Number(curr) - x0) < Math.abs(Number(prev) - x0)
+  //         ? curr
+  //         : prev
+  //     })
+
+  //     const tooltipData = getDataForYear(Number(closestYear))
+  //     const tooltipLeftPosition = xScale(Number(closestYear))
+
+  //     showTooltip({
+  //       tooltipData,
+  //       tooltipLeft: tooltipLeftPosition,
+  //       tooltipTop: yScale(getValue(tooltipData[0])),
+  //     })
+  //   },
+  //   [showTooltip, data, xScale, yScale, featureYears]
+  // )
+
   const handleTooltip = useCallback(
     (
       event: React.TouchEvent<SVGRectElement> | React.MouseEvent<SVGRectElement>
     ) => {
       const { x } = localPoint(event) || { x: 0 }
       const x0 = xScale.invert(x - margin.left)
-      const index = bisectDate(localData[0], x0 as unknown as string, 1)
-      const d0 = localData[0][index - 1]
-      const d1 = localData[0][index]
-      let d = d0
 
-      if (d1 && getYear(d1)) {
-        d =
-          x0.valueOf() - getYear(d0).valueOf() >
-          getYear(d1).valueOf() - x0.valueOf()
-            ? d1
-            : d0
-      }
+      // Find the closest year to the mouse position
+      const closestYear = featureYears.reduce((prev, curr) => {
+        return Math.abs(Number(curr) - x0) < Math.abs(Number(prev) - x0)
+          ? curr
+          : prev
+      })
+
+      const tooltipData = getDataForYear(Number(closestYear))
+      const tooltipLeftPosition = xScale(Number(closestYear)) + margin.left
+
       showTooltip({
-        tooltipData: getDataForYear(getYear(d)),
-        tooltipLeft: x,
-        tooltipTop: yScale(getValue(d)),
+        tooltipData,
+        tooltipLeft: tooltipLeftPosition, // Use the mouse's x-coordinate directly for alignment
+        tooltipTop: yScale(getValue(tooltipData[0])),
       })
     },
-    [showTooltip, data, xScale, yScale]
+    [showTooltip, xScale, yScale, featureYears, getDataForYear, getValue]
   )
+
+  const ChartLegend = () => {
+    return (
+      <LegendOrdinal
+        direction="row"
+        itemMargin="8px 8px 8px 0"
+        scale={colorScale}
+        labelFormat={(label) => localPlanNames[parseInt(label, 10)]}
+        legendLabelProps={{ color: 'black' }}
+        style={{
+          marginTop: 0,
+          paddingLeft: 0,
+          color: 'black',
+          display: 'flex',
+        }}
+      />
+    )
+  }
 
   return (
     <div style={{ position: 'relative' }}>
@@ -216,14 +300,14 @@ const CarbonLineChart = ({
             scale={yScale}
             width={innerWidth}
             height={innerHeight - margin.top}
-            stroke="#EDF2F7"
+            stroke="black"
             strokeOpacity={0.2}
           />
           <GridColumns
             scale={xScale}
             width={innerWidth}
             height={innerHeight}
-            stroke="#EDF2F7"
+            stroke="black"
             strokeOpacity={0.2}
           />
           <LinearGradient
@@ -233,34 +317,30 @@ const CarbonLineChart = ({
             toOpacity={0.1}
           />
           <AxisLeft
-            // tickTextFill={'#EDF2F7'}
-            stroke={'#EDF2F7'}
-            tickStroke={'#EDF2F7'}
             scale={yScale}
-            tickLabelProps={() => ({
-              fill: '#EDF2F7',
+            stroke={'black'}
+            tickStroke={'black'}
+            tickLabelProps={(value) => ({
+              fill: value < 0 ? 'transparent' : 'black', // Hide labels below 0
               fontSize: 11,
               textAnchor: 'end',
             })}
           />
           <text
-            x="-125"
-            y="20"
-            transform="rotate(-90)"
-            fontSize={12}
-            fill="#EDF2F7"
+            x={-10} // Adjust as necessary for horizontal positioning
+            y={height - margin.bottom - 22} // Adjust for vertical positioning
+            style={{ fontSize: '12px', textAnchor: 'end' }}
           >
-            R&D Spend, RDDUSD
+            tCO2e
           </text>
           <AxisBottom
             scale={xScale}
-            stroke={'#EDF2F7'}
-            // tickFormat={formatDate}
-            tickStroke={'#EDF2F7'}
-            // tickTextFill={'#EDF2F7'}
+            stroke={'black'}
             top={innerHeight}
-            tickLabelProps={() => ({
-              fill: '#EDF2F7',
+            tickFormat={(value) => `${value}`}
+            tickStroke={'black'}
+            tickLabelProps={(value, index) => ({
+              fill: index === 0 ? 'transparent' : 'black', // Hide first item
               fontSize: 11,
               textAnchor: 'middle',
             })}
@@ -269,7 +349,7 @@ const CarbonLineChart = ({
             <LinePath
               key={i}
               // @ts-ignore
-              stroke={colorScale(i.toString() as string)}
+              stroke={getColorForIndex(i)}
               strokeWidth={3}
               data={sData}
               x={(d) => xScale(+getYear(d)) ?? 0}
@@ -296,7 +376,7 @@ const CarbonLineChart = ({
                   left={tooltipLeft - margin.left}
                   top={yScale(getValue(d)) + 2}
                   size={110}
-                  fill={colors[i]}
+                  fill={getColorForIndex(i)}
                   stroke={'white'}
                   strokeWidth={2}
                 />
@@ -334,6 +414,7 @@ const CarbonLineChart = ({
           })}
         </TooltipWithBounds>
       ) : null}
+      <ChartLegend />
     </div>
   )
 }
