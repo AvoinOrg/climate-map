@@ -15,11 +15,15 @@ import {
   NewPlanConf,
   PlanConf,
   PlanDataFeature,
+  ExternalPlanConf,
 } from '../common/types'
 import { calcQueryPoll } from '../common/queries/calcQueryPoll'
+import { FetchStatus } from '#/common/types/general'
+import { externalPlanQuery } from '../common/queries/externalPlanQuery'
 
 type Vars = {
   planConfs: { [key: string]: PlanConf }
+  externalPlanConfs: { [key: string]: ExternalPlanConf }
 }
 
 type Actions = {
@@ -35,6 +39,14 @@ type Actions = {
     feature: Partial<PlanDataFeature>
   ) => Promise<PlanDataFeature | null>
   copyPlanConf: (planId: string, nameSuffix?: string) => Promise<PlanConf>
+  addExternalPlanConf: (
+    planId: string,
+    externalPlanConf?: ExternalPlanConf
+  ) => Promise<ExternalPlanConf>
+  updateExternalPlanConf: (
+    planId: string,
+    externalPlanConf: Partial<ExternalPlanConf>
+  ) => Promise<ExternalPlanConf | null>
 }
 
 export const useAppletStore = create<Vars & Actions>()(
@@ -43,6 +55,7 @@ export const useAppletStore = create<Vars & Actions>()(
       immer((set, get) => {
         const vars: Vars = {
           planConfs: {},
+          externalPlanConfs: {},
         }
 
         const actions: Actions = {
@@ -144,6 +157,40 @@ export const useAppletStore = create<Vars & Actions>()(
             const copiedPlanConf = await addPlanConf(newPlanConf)
             return copiedPlanConf
           },
+
+          addExternalPlanConf: async (
+            serverId: string,
+            externalPlanConf?: ExternalPlanConf
+          ) => {
+            let newExternalPlanConf = {
+              serverId: serverId,
+              status: FetchStatus.NOT_STARTED,
+            }
+            if (externalPlanConf != null) {
+              externalPlanConf = { ...newExternalPlanConf, ...externalPlanConf }
+            }
+            await set((state) => {
+              state.externalPlanConfs[serverId] = newExternalPlanConf
+            })
+            return newExternalPlanConf
+          },
+
+          updateExternalPlanConf: async (
+            planId: string,
+            planConf: Partial<ExternalPlanConf>
+          ) => {
+            const oldPlanConf = get().externalPlanConfs[planId]
+            if (oldPlanConf == null) {
+              console.error("Can't update a planConf that does not exist")
+              return null
+            }
+
+            const updatedPlanConf = { ...oldPlanConf, ...planConf }
+            await set((state) => {
+              state.externalPlanConfs[planId] = updatedPlanConf
+            })
+            return updatedPlanConf
+          },
         }
         return { ...vars, ...actions }
       })
@@ -166,6 +213,22 @@ export const useAppletStore = create<Vars & Actions>()(
                   CalculationState.NOT_STARTED
               }
             }
+            for (const extPlanId of Object.keys(state.externalPlanConfs)) {
+              if (
+                Object.keys(state.planConfs)
+                  .map((id) => state.planConfs[id]?.serverId)
+                  .includes(extPlanId)
+              ) {
+                delete state.externalPlanConfs[extPlanId]
+              } else if (
+                [FetchStatus.FETCHING, FetchStatus.ERRORED].includes(
+                  state.externalPlanConfs[extPlanId].status
+                )
+              ) {
+                state.externalPlanConfs[extPlanId].status =
+                  FetchStatus.NOT_STARTED
+              }
+            }
           }
         }
       },
@@ -184,4 +247,17 @@ useAppletStore.subscribe(
       queryClient.fetchQuery(calcQueryPoll(planConfs[planId]))
     })
   }
+)
+
+useAppletStore.subscribe(
+  (state) =>
+    pickBy(state.externalPlanConfs, (extPlanConf) =>
+      [FetchStatus.NOT_STARTED].includes(extPlanConf.status)
+    ),
+  (extPlanConfs, _previousPlanConfs) => {
+    Object.keys(extPlanConfs).forEach((planId: string) => {
+      queryClient.fetchQuery(externalPlanQuery(planId))
+    })
+  },
+  { fireImmediately: true }
 )
