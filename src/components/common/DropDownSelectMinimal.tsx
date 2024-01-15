@@ -64,6 +64,7 @@ const DropDownSelectMinimal = ({
         }}
         sx={{
           '.MuiSelect-icon': {
+            mt: 0.2,
             ...(iconSx as Record<string, any>),
           },
           '& .MuiSelect-select': {
