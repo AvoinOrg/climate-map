@@ -86,7 +86,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     if (planConf) {
       const route = getRoute(routeTree.report, routeTree, {
         queryParams: {
-          planIds: params.planIdSlug,
+          planIds: planConf.serverId,
           prevPageId: params.planIdSlug,
         },
       })
