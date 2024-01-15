@@ -106,7 +106,7 @@ const CarbonOverviewGraph = ({ planConfs, featureYears, sx }: Props) => {
                 pr: '1.75rem',
                 boxShadow: '1px 1px 4px 1px rgba(217, 217, 217, 0.50);',
               }}
-              key={planConf.id}
+              key={planConf.serverId}
             >
               <Col>
                 <Typography typography={'h8'}>
