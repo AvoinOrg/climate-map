@@ -158,7 +158,7 @@ const CarbonOverviewGraph = ({ planConfs, featureYears, sx }: Props) => {
               </Col>
               <Col sx={{ ml: 2 }}>
                 <GeomGraphic
-                  feature={planConf.reportData.totals.features[0]}
+                  calcFeatures={planConf.reportData.areas}
                   year={activeYear}
                   width={120}
                   height={200}
