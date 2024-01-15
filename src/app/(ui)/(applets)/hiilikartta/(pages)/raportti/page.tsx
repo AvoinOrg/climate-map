@@ -3,9 +3,8 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import useStore from '#/common/hooks/useStore'
 import Link from '#/components/common/Link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { map, isEqual, sortBy } from 'lodash-es'
-import { useRouter } from 'next/navigation'
 import { styled, SxProps } from '@mui/system'
 import { Box, Theme, Typography, useMediaQuery, useTheme } from '@mui/material'
 import { T, useTranslate } from '@tolgee/react'
@@ -13,6 +12,7 @@ import { T, useTranslate } from '@tolgee/react'
 import { getRoute } from '#/common/utils/routing'
 import MultiSelectAutocomplete from '#/components/common/MultiSelectAutocomplete'
 import { FetchStatus, SelectOption } from '#/common/types/general'
+import { Link as LinkIcon } from '#/components/icons'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
@@ -20,6 +20,7 @@ import { PlanConfWithReportData } from 'applets/hiilikartta/common/types'
 import CarbonMapGraph from 'applets/hiilikartta/components/CarbonMapGraph'
 import CarbonLineChart from 'applets/hiilikartta/components/CarbonLineChart'
 import CarbonOverviewGraph from 'applets/hiilikartta/components/CarbonOverviewGraph'
+import ClipboardCopyWrapper from '#/components/common/ClipboardCopyWrapper'
 
 const MAX_WIDTH = '1000px'
 
@@ -32,6 +33,7 @@ enum ErrorState {
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const pathName = usePathname()
   const { t } = useTranslate('hiilikartta')
   const theme = useTheme()
   const useNarrowLayout = useMediaQuery(theme.breakpoints.down('md'))
@@ -182,6 +184,12 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
       })
     )
   }
+
+  const fullUrl = useMemo(() => {
+    const newSearchParams = new URLSearchParams(searchParams)
+    newSearchParams.delete('prevPageId')
+    return `${window.location.origin}${pathName}?${newSearchParams.toString()}`
+  }, [pathName, searchParams])
 
   // useEffect(() => {
   //   const planLayerGroupId = getPlanLayerGroupId(params.planIdSlug)
@@ -343,6 +351,43 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               </Typography>
             </Col>
           )}
+        </Row>
+      </Section>
+      <Section
+        sx={{
+          width: '100%',
+          backgroundColor: 'primary.light',
+        }}
+      >
+        <Row
+          sx={{
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            minHeight: '4.75rem',
+          }}
+        >
+          <ClipboardCopyWrapper textToCopy={fullUrl}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                '&:hover': {
+                  cursor: 'pointer',
+                },
+              }}
+            >
+              <Typography
+                sx={(theme) => ({
+                  typography: theme.typography.body7,
+                  display: 'inline',
+                  fontWeight: '700',
+                })}
+              >
+                <T keyName="report.copy_link" ns={'hiilikartta'}></T>
+              </Typography>
+              <LinkIcon sx={{ ml: 1.5, mt: 0.2 }} />
+            </Box>
+          </ClipboardCopyWrapper>
         </Row>
       </Section>
       {isLoaded && planConfs.length > 0 && featureYears.length > 0 && (
