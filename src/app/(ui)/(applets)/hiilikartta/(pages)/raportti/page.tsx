@@ -1,19 +1,18 @@
 'use client'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import useStore from '#/common/hooks/useStore'
 import Link from '#/components/common/Link'
 import { useSearchParams } from 'next/navigation'
-import { map, isEqual } from 'lodash-es'
+import { map, isEqual, sortBy } from 'lodash-es'
 import { useRouter } from 'next/navigation'
 import { styled, SxProps } from '@mui/system'
 import { Box, Theme, Typography, useMediaQuery, useTheme } from '@mui/material'
 import { T, useTranslate } from '@tolgee/react'
 
-import { pp } from '#/common/utils/general'
 import { getRoute } from '#/common/utils/routing'
 import MultiSelectAutocomplete from '#/components/common/MultiSelectAutocomplete'
-import { SelectOption } from '#/common/types/general'
+import { FetchStatus, SelectOption } from '#/common/types/general'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
@@ -36,8 +35,16 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const { t } = useTranslate('hiilikartta')
   const theme = useTheme()
   const useNarrowLayout = useMediaQuery(theme.breakpoints.down('md'))
+  const addedExtPlanConfIds = useRef<string[]>([])
 
   const allPlanConfs = useStore(useAppletStore, (state) => state.planConfs)
+  const externalPlanConfs = useStore(
+    useAppletStore,
+    (state) => state.externalPlanConfs
+  )
+  const addExternalPlanConf = useAppletStore(
+    (state) => state.addExternalPlanConf
+  )
 
   const [planConfs, setPlanConfs] = useState<PlanConfWithReportData[]>([])
   const [prevPageId, setPrevPageId] = useState<string>()
@@ -45,21 +52,62 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const [isLoaded, setIsLoaded] = useState(true)
   const [featureYears, setFeatureYears] = useState<string[]>([])
 
+  const planConfSelectOptions = useMemo(() => {
+    if (allPlanConfs == null || externalPlanConfs == null) {
+      return []
+    }
+
+    const combinedPlanConfs = { ...externalPlanConfs, ...allPlanConfs }
+    return Object.keys(combinedPlanConfs)
+      .filter(
+        (id) =>
+          combinedPlanConfs[id].serverId != null &&
+          combinedPlanConfs[id].reportData != null
+      )
+      .map((id) => {
+        return {
+          value: combinedPlanConfs[id]?.serverId,
+          label: combinedPlanConfs[id]?.name || combinedPlanConfs[id]?.serverId,
+        }
+      })
+  }, [allPlanConfs, externalPlanConfs])
+
   useEffect(() => {
-    if (allPlanConfs != null) {
+    if (allPlanConfs != null && externalPlanConfs != null) {
       const paramPlanIds = searchParams.get('planIds')
       if (paramPlanIds != null) {
         const ids = paramPlanIds.split(',')
 
         const paramPlanConfs: PlanConfWithReportData[] = []
         for (const id of ids) {
-          if (allPlanConfs[id]) {
-            if (allPlanConfs[id].reportData != null) {
-              paramPlanConfs.push(allPlanConfs[id] as PlanConfWithReportData)
+          const foundPlanConfId = Object.keys(allPlanConfs).find(
+            (planConfId) => allPlanConfs[planConfId].serverId === id
+          )
+          const foundExtPlanConfId = Object.keys(externalPlanConfs).find(
+            (planConfId) => externalPlanConfs[planConfId].serverId === id
+          )
+
+          if (foundPlanConfId != null) {
+            if (allPlanConfs[foundPlanConfId].reportData != null) {
+              paramPlanConfs.push(
+                allPlanConfs[foundPlanConfId] as PlanConfWithReportData
+              )
             } else {
               // TODO: add error notification popup
               setErrorState(ErrorState.NO_DATA)
             }
+          } else if (foundExtPlanConfId != null) {
+            if (externalPlanConfs[foundExtPlanConfId].reportData != null) {
+              paramPlanConfs.push(
+                externalPlanConfs[foundExtPlanConfId] as PlanConfWithReportData
+              )
+            } else if (externalPlanConfs[id].status === FetchStatus.ERRORED) {
+              // TODO: add error notification popup
+              setErrorState(ErrorState.NO_DATA)
+            }
+          } else if (!addedExtPlanConfIds.current.includes(id)) {
+            addedExtPlanConfIds.current.push(id)
+            addExternalPlanConf(id)
           }
         }
         const areIdsEqualAndInOrder = isEqual(
@@ -86,7 +134,17 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         }
 
         if (!isLoaded) {
-          setIsLoaded(true)
+          let newLoaded = true
+          for (const id of ids) {
+            if (allPlanConfs[id] != null || externalPlanConfs[id] != null) {
+              newLoaded = false
+              break
+            }
+          }
+
+          if (newLoaded) {
+            setIsLoaded(true)
+          }
         }
       }
 
@@ -107,7 +165,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         }
       }
     }
-  }, [searchParams, allPlanConfs])
+  }, [searchParams, allPlanConfs, externalPlanConfs])
 
   const handlePlanSelectClick = (
     event: React.SyntheticEvent<Element, Event>,
@@ -240,21 +298,10 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               },
             })}
             value={planConfs.map((planConf) => ({
-              value: planConf.id,
+              value: planConf.serverId,
               label: planConf.name,
             }))}
-            options={
-              allPlanConfs != null
-                ? Object.keys(allPlanConfs)
-                    .filter((id) => allPlanConfs[id].reportData != null)
-                    .map((id) => {
-                      return {
-                        value: id,
-                        label: allPlanConfs[id].name,
-                      }
-                    })
-                : []
-            }
+            options={planConfSelectOptions}
             placeholder={t('report.header.plan_select_placeholder')}
             onChange={handlePlanSelectClick}
           ></MultiSelectAutocomplete>
