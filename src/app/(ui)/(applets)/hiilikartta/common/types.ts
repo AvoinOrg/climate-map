@@ -1,3 +1,4 @@
+import { FetchStatus } from '#/common/types/general'
 import { FeatureCollection, Geometry } from 'geojson'
 
 export interface ReportData {
@@ -18,6 +19,13 @@ export interface PlanConf extends NewPlanConf {
   reportData: undefined | ReportData
 }
 
+export interface ExternalPlanConf {
+  serverId: string
+  status: FetchStatus
+  name?: string
+  reportData?: ReportData
+}
+
 export type PlanData<G extends Geometry | null = Geometry> = FeatureCollection<
   G,
   FeatureProperties
@@ -25,7 +33,11 @@ export type PlanData<G extends Geometry | null = Geometry> = FeatureCollection<
 
 export type PlanDataFeature = PlanData['features'][number]
 
-export type PlanConfWithReportData = PlanConf & { reportData: ReportData }
+export type PlanConfWithReportData = {
+  serverId: string
+  name: string
+  reportData: ReportData
+}
 
 export enum CalculationState {
   NOT_STARTED = 'not-started',
