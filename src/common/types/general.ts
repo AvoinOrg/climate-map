@@ -6,3 +6,10 @@ export type SelectOption = {
   label: string
   value: string
 }
+
+export enum FetchStatus {
+  NOT_STARTED = 'notStarted',
+  FETCHING = 'fetching',
+  FETCHED = 'fetched',
+  ERRORED = 'errored',
+}
