@@ -11,6 +11,7 @@ import {
   CalcFeatureYearValues,
   FeatureCalcs,
   GraphCalcType,
+  ReportData,
 } from './types'
 import {
   ZONING_CLASSES,
@@ -402,4 +403,31 @@ export const getCarbonChangeColor = (carbon: Number | null | undefined) => {
   }
 
   return color || CARBON_CHANGE_NO_DATA_COLOR
+}
+
+export const processCalcQueryToReportData = (data: any): ReportData => {
+  const areas = transformCalcGeojsonToNestedStructure(data.areas)
+  const totals = transformCalcGeojsonToNestedStructure(data.totals)
+
+  const featureYears = Object.keys(
+    totals.features[0].properties[featureCols[0]].nochange
+  )
+  const metadata = {
+    timestamp: Number(data.metadata.calculated_ts),
+    reportName: data.metadata.report_name,
+    featureYears,
+  }
+
+  const totalsAgg = getAggregatedCalcs(totals.features[0], featureYears)
+
+  const agg = { totals: totalsAgg }
+
+  const reportData = {
+    areas: areas,
+    totals: totals,
+    metadata: metadata,
+    agg: agg,
+  }
+
+  return reportData
 }
