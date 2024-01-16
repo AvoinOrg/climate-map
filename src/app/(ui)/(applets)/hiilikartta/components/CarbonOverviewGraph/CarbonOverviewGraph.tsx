@@ -135,7 +135,7 @@ const CarbonOverviewGraph = ({ planConfs, featureYears, sx }: Props) => {
                       planConf.reportData.agg.totals.ground_carbon_total_diff[
                         activeYear
                       ],
-                    4
+                    0
                   )}
                 </Typography>
                 <Typography mt={3} typography={'h5'}>
@@ -152,7 +152,7 @@ const CarbonOverviewGraph = ({ planConfs, featureYears, sx }: Props) => {
                       planConf.reportData.agg.totals.ground_carbon_ha_diff[
                         activeYear
                       ],
-                    2
+                    0
                   )}
                 </Typography>
               </Col>

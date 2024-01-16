@@ -268,7 +268,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                           ] +
                             planConf.reportData.agg.totals
                               .ground_carbon_total_diff[currentYear],
-                          2
+                          0
                         )}
                       </Typography>
                       <Typography mt={0.5} typography={'h5'}>
@@ -284,7 +284,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                           ] +
                             planConf.reportData.agg.totals
                               .ground_carbon_ha_diff[currentYear],
-                          2
+                          0
                         )}
                       </Typography>
                       <Typography mt={0.5} typography={'h5'}>
