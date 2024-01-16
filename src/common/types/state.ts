@@ -26,4 +26,11 @@ export type NotificationMessage = {
   message: string
   severity: 'success' | 'error' | 'info' | 'warning'
   duration?: number
+  manualDismiss?: boolean
+}
+
+export interface InternalNotificationMessage extends NotificationMessage {
+  id: string
+  triggeredTs: number
+  shown: boolean
 }
