@@ -2,6 +2,8 @@ import React from 'react'
 import { Box } from '@mui/material'
 import { useTranslate } from '@tolgee/react'
 
+import { useUIStore } from '#/common/store'
+
 type Props = {
   textToCopy: string
   children: React.ReactNode
@@ -18,15 +20,16 @@ const ClipboardCopyWrapper = ({
   disabled,
 }: Props) => {
   const { t } = useTranslate('avoin-map')
+  const notify = useUIStore((state) => state.notify)
 
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(textToCopy)
       const text = onSuccessText || t('general.messages.clipboard_success')
-      alert(text)
+      notify({ message: text, variant: 'info' })
     } catch (err) {
       const text = onFailText || t('general.messages.clipboard_fail')
-      alert(text)
+      notify({ message: text, variant: 'error' })
     }
   }
 
