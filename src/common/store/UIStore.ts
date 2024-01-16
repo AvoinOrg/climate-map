@@ -79,7 +79,7 @@ export const useUIStore = create<State>()(
         const newNotification: InternalNotificationMessage = {
           id: generateUUID(),
           message: notification.message,
-          severity: notification.severity,
+          variant: notification.variant,
           duration: notification.duration || 6000,
           triggeredTs: new Date().getTime(),
           shown: false,

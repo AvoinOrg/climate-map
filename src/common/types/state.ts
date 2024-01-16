@@ -24,7 +24,7 @@ export type RouteState =
 
 export type NotificationMessage = {
   message: string
-  severity: 'success' | 'error' | 'info' | 'warning'
+  variant: 'default' | 'success' | 'error' | 'info' | 'warning'
   duration?: number
   manualDismiss?: boolean
 }
