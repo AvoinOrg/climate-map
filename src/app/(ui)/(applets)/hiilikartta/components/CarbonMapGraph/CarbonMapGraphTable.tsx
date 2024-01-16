@@ -10,8 +10,9 @@ import {
 import { styled } from '@mui/material/styles'
 import { T } from '@tolgee/react'
 
+import { pp } from '#/common/utils/general'
+
 import { MapGraphData } from 'applets/hiilikartta/common/types'
-import { round } from 'lodash-es'
 
 type Props = {
   datas: MapGraphData[]
@@ -100,7 +101,7 @@ const CarbonMapGraphTable = ({ datas, activeYear }: Props) => {
             </FirstColumnCell>
             {co2HaRowData.map((rowData, index) => (
               <DataCell key={index} align="left">
-                {round(rowData, 0)}
+                {pp(rowData, 0)}
               </DataCell>
             ))}
           </TableRow>
@@ -117,7 +118,7 @@ const CarbonMapGraphTable = ({ datas, activeYear }: Props) => {
             </FirstColumnCell>
             {co2TotalRowData.map((rowData, index) => (
               <DataCell key={index} align="left">
-                {round(rowData, 0)}
+                {pp(rowData, 0)}
               </DataCell>
             ))}
           </TableRow>
