@@ -31,7 +31,9 @@ type Props = {
 
 const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
   const { t } = useTranslate('hiilikartta')
-  const [activePlanConfId, setActivePlanConfId] = useState(planConfs[0].id)
+  const [activePlanConfId, setActivePlanConfId] = useState(
+    planConfs[0].serverId
+  )
   const [activeYear, setActiveYear] = useState(featureYears[1])
   const [calcType, setCalcType] = React.useState<GraphCalcType>('total')
   const [areaType, setAreaType] = React.useState<string>('all')
@@ -50,7 +52,7 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
 
   const datas = useMemo(() => {
     let datas = planConfs.map((planConf) => ({
-      id: planConf.id,
+      id: planConf.serverId,
       name: planConf.name,
       data: planConf.reportData.areas,
     }))
