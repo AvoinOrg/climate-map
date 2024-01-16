@@ -21,6 +21,7 @@ import { Sidebar } from '#/components/Sidebar'
 import { NavBar } from '#/components/NavBar'
 import { Map } from '#/components/Map'
 import { LoginModal } from '#/components/Modal'
+import { NotificationProvider } from '#/components/Notification'
 // import { UserModal } from '#/components/Profile'
 // import { UiStateProvider, UserStateProvider } from '#/components/State'
 // import RootStyleRegistry from './emotion'
@@ -75,23 +76,25 @@ const Layout = ({
             tolgee={tolgee}
             fallback="" // loading fallback
           >
-            <Map>
-              {/* <UserModal /> */}
-              <Box
-                className="layout-container"
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: '100vh',
-                  width: '100vw',
-                  zIndex: 'drawer',
-                }}
-              >
-                <Sidebar>{children}</Sidebar>
-                <NavBar />
-              </Box>
-              <LoginModal></LoginModal>
-            </Map>
+            <NotificationProvider>
+              <Map>
+                {/* <UserModal /> */}
+                <Box
+                  className="layout-container"
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100vh',
+                    width: '100vw',
+                    zIndex: 'drawer',
+                  }}
+                >
+                  <Sidebar>{children}</Sidebar>
+                  <NavBar />
+                </Box>
+                <LoginModal></LoginModal>
+              </Map>
+            </NotificationProvider>
           </TolgeeProvider>
         </CssBaseline>
         {/* </UserStateProvider> */}
