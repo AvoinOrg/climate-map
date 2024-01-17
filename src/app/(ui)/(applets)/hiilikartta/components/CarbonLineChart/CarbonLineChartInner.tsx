@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { use, useCallback, useMemo, useRef, useState } from 'react'
 import { Group } from '@visx/group'
 import { scaleLinear } from '@visx/scale'
 import { AxisLeft, AxisBottom } from '@visx/axis'
@@ -14,16 +14,16 @@ import { scaleOrdinal } from 'd3-scale'
 import { schemeCategory10 } from 'd3-scale-chromatic'
 import { useTheme } from '@mui/material/styles'
 
-import { CalcFeatureCollection } from '../../common/types'
+import { CalcFeatureCollection, UnitType } from '../../common/types'
 import { pp } from '#/common/utils/general'
-import { range } from 'lodash-es'
 import { LegendOrdinal } from '@visx/legend'
-import { Box } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 
 type DataItem = {
   valHa: number
   valTotal: number
   year: number
+  lineIndex?: number
 }
 
 interface Props {
@@ -32,7 +32,7 @@ interface Props {
   planNames: string[]
   width: number
   height: number
-  useHaVals: boolean
+  unitType?: UnitType
 }
 
 const CarbonLineChartInner = ({
@@ -41,7 +41,7 @@ const CarbonLineChartInner = ({
   planNames,
   width,
   height,
-  useHaVals = false,
+  unitType = 'ha',
 }: Props) => {
   const {
     tooltipData,
@@ -52,6 +52,10 @@ const CarbonLineChartInner = ({
   } = useTooltip<DataItem[]>()
 
   const { t } = useTranslate('hiilikartta')
+  const units = {
+    ha: t('report.carbon_line_chart.tooltip_unit_ha'),
+    total: t('report.carbon_line_chart.tooltip_unit_total'),
+  }
   const theme = useTheme()
   const textStyle = {
     fontSize: theme.typography.body2.fontSize,
@@ -144,12 +148,6 @@ const CarbonLineChartInner = ({
     })
   }, [])
 
-  const colorDomain = () => {
-    const domain = range(localPlanNames.length)
-    const domainStr = domain.map((d) => d.toString())
-    return domainStr
-  }
-
   const colorScale = useMemo(() => {
     return scaleOrdinal(schemeCategory10).domain(
       localPlanNames.map((_, index) => index.toString())
@@ -159,12 +157,12 @@ const CarbonLineChartInner = ({
     return colorScale('' + index) as string
   }
 
-  const margin = { top: 40, right: 40, bottom: 40, left: 60 }
+  const margin = { top: 40, right: 40, bottom: 40, left: 80 }
   const innerWidth = width - margin.left - margin.right
   const innerHeight = height - margin.top - margin.bottom
 
   const getValue = (d: DataItem) => {
-    if (useHaVals) {
+    if (unitType === 'ha') {
       return d.valHa
     }
     return d.valTotal
@@ -200,6 +198,14 @@ const CarbonLineChartInner = ({
     nice: true,
   })
 
+  const yAxisFormatter = useMemo(() => {
+    // TODO: adjust the locale dynamically
+    const formatter = new Intl.NumberFormat('en-FI', {
+      maximumFractionDigits: 0,
+    })
+    return (value: any) => formatter.format(value)
+  }, [])
+
   const tooltipStyles = {
     ...defaultStyles,
     minWidth: 60,
@@ -222,6 +228,9 @@ const CarbonLineChartInner = ({
       const tooltipData = getDataForYear(Number(closestYear)).filter(
         (_, i) => lineVisibility[i]
       )
+      for (let i = 0; i < tooltipData.length; i++) {
+        tooltipData[i].lineIndex = i
+      }
       if (tooltipData.length > 0) {
         const tooltipLeftPosition = xScale(Number(closestYear)) + margin.left
         showTooltip({
@@ -245,9 +254,15 @@ const CarbonLineChartInner = ({
     ]
   )
 
+  const sortedTooltipData = useMemo(() => {
+    if (tooltipData != null) {
+      return [...tooltipData].sort((a, b) => getValue(b) - getValue(a))
+    }
+  }, [tooltipData])
+
   const ChartLegend = () => {
     return (
-      <Box sx={{ mt: 1 }}>
+      <Box sx={{ mt: 1, ml: 9.5 }}>
         <LegendOrdinal
           scale={colorScale}
           labelFormat={(label) => localPlanNames[parseInt(label, 10)]}
@@ -340,6 +355,7 @@ const CarbonLineChartInner = ({
             scale={yScale}
             stroke={'black'}
             tickStroke={'black'}
+            tickFormat={yAxisFormatter}
             tickLabelProps={(value) => ({
               fill: value < 0 ? 'transparent' : 'black', // Hide labels below 0
               textAnchor: 'end',
@@ -432,19 +448,54 @@ const CarbonLineChartInner = ({
         </Group>
       </svg>
       {/* render a tooltip */}
-      {tooltipData && tooltipData.length > 0 && (
+      {sortedTooltipData && sortedTooltipData.length > 0 && (
         <TooltipWithBounds
           key={Math.random()}
           top={tooltipTop}
           left={tooltipLeft}
           style={tooltipStyles}
         >
-          {tooltipData.map((d, i) => (
-            <p key={i}>{`${localPlanNames[i]}: ${pp(
-              getValue(d),
-              2
-            )} ton/ha`}</p>
-          ))}
+          <Typography sx={{ mb: 1.5, ml: '18px', typography: 'body2' }}>
+            {t('report.carbon_line_chart.tooltip_year')}
+            <b>{` ${sortedTooltipData[0].year}`}</b>
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {sortedTooltipData.map(
+              (d) =>
+                d.lineIndex != null && (
+                  <Box
+                    key={d.lineIndex}
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                    }}
+                  >
+                    <Box sx={{}}>
+                      <Box
+                        sx={{
+                          width: '10px',
+                          height: '10px',
+                          backgroundColor: getColorForIndex(d.lineIndex),
+                          display: 'inline-flex',
+                          mr: 1,
+                        }}
+                      ></Box>
+                      <Typography
+                        sx={{ display: 'inline', typography: 'body2' }}
+                      >{`${localPlanNames[d.lineIndex]}:`}</Typography>
+                    </Box>
+                    <Typography
+                      sx={{ ml: 1, display: 'inline', typography: 'body2' }}
+                    >
+                      <b>{`${pp(getValue(d), 2)} `}</b>
+                      {`${units[unitType]}`}
+                    </Typography>
+                  </Box>
+                )
+            )}
+          </Box>
         </TooltipWithBounds>
       )}
       <ChartLegend />
