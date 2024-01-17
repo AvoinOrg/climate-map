@@ -30,13 +30,23 @@ const CarbonMapGraphTable = ({ datas, activeYear }: Props) => {
         return acc
       }, 0)
 
-      const weightedAreaHa = data.data.features.reduce((acc, feature) => {
-        const properties = feature.properties
-        if (!properties.isHidden) {
-          return acc + properties.valueHa * (properties.area / totalArea)
-        }
-        return acc
-      }, 0)
+      const weightedAreaHa = data.data.features.reduce(
+        (acc, feature) => {
+          const properties = feature.properties
+          if (!properties.isHidden) {
+            return {
+              planned:
+                acc.planned +
+                properties.valueHa * (properties.area / totalArea),
+              nochange:
+                acc.nochange +
+                properties.valueHaNochange * (properties.area / totalArea),
+            }
+          }
+          return acc
+        },
+        { planned: 0, nochange: 0 }
+      )
 
       return weightedAreaHa
     })
@@ -44,15 +54,21 @@ const CarbonMapGraphTable = ({ datas, activeYear }: Props) => {
 
   const co2TotalRowData = useMemo(() => {
     return datas.map((data) => {
-      const total = data.data.features.reduce((acc, feature) => {
-        const properties = feature.properties
-        if (!properties.isHidden) {
-          return acc + properties.valueTotal
-        }
-        return acc
-      }, 0)
+      const totals = data.data.features.reduce(
+        (acc, feature) => {
+          const properties = feature.properties
+          if (!properties.isHidden) {
+            return {
+              planned: acc.planned + properties.valueTotal,
+              nochange: acc.nochange + properties.valueTotalNochange,
+            }
+          }
+          return acc
+        },
+        { planned: 0, nochange: 0 }
+      )
 
-      return total
+      return totals
     })
   }, [datas])
 
@@ -101,7 +117,7 @@ const CarbonMapGraphTable = ({ datas, activeYear }: Props) => {
             </FirstColumnCell>
             {co2HaRowData.map((rowData, index) => (
               <DataCell key={index} align="left">
-                {pp(rowData, 0)}
+                {pp(rowData.planned, 0)}
               </DataCell>
             ))}
           </TableRow>
@@ -118,7 +134,63 @@ const CarbonMapGraphTable = ({ datas, activeYear }: Props) => {
             </FirstColumnCell>
             {co2TotalRowData.map((rowData, index) => (
               <DataCell key={index} align="left">
-                {pp(rowData, 0)}
+                {pp(rowData.planned, 0)}
+              </DataCell>
+            ))}
+          </TableRow>
+          <TableRow sx={{ height: '2rem' }}></TableRow>
+        </TableBody>
+        <TableHead>
+          <TableRow>
+            <TableCell></TableCell>
+            {datas.map((data, index) => (
+              <TableCell
+                sx={{
+                  typography: 'h7',
+                  lineHeight: 'normal',
+                  verticalAlign: 'top',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  minWidth: '8rem',
+                }}
+                key={index}
+              >
+                <T
+                  ns="hiilikartta"
+                  keyName="report.map_graph.table_current_situation"
+                ></T>
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          <TableRow key={'co2_ha'}>
+            <FirstColumnCell component="th" scope="row">
+              <T
+                ns="hiilikartta"
+                keyName="report.map_graph.unit_co2_ha_compared"
+              ></T>
+            </FirstColumnCell>
+            {co2HaRowData.map((rowData, index) => (
+              <DataCell key={index} align="left">
+                {pp(rowData.nochange, 0)}
+              </DataCell>
+            ))}
+          </TableRow>
+          <TableRow key={'co2_total'}>
+            <FirstColumnCell
+              sx={{ typography: 'body7' }}
+              component="th"
+              scope="row"
+            >
+              <T
+                ns="hiilikartta"
+                keyName="report.map_graph.unit_co2_total_compared"
+              ></T>
+            </FirstColumnCell>
+            {co2TotalRowData.map((rowData, index) => (
+              <DataCell key={index} align="left">
+                {pp(rowData.nochange, 0)}
               </DataCell>
             ))}
           </TableRow>
