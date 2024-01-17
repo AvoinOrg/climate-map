@@ -127,6 +127,9 @@ export interface MapGraphCalcFeature extends CalcFeature {
     color: string
     valueHa: number
     valueTotal: number
+    colorNochange: string
+    valueHaNochange: number
+    valueTotalNochange: number
     isHidden?: boolean
   }
 }
@@ -139,4 +142,10 @@ export type MapGraphData = {
   id: string
   name: string
   data: MapGraphCalcFeatureCollection
+  isCurrent?: boolean
+}
+
+export type MapGraphDataSelectOption = {
+  id: string
+  isCurrent: boolean
 }
