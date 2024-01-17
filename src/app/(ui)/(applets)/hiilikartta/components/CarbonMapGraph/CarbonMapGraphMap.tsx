@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import { Box, Button, Typography } from '@mui/material'
-import { cloneDeep } from 'lodash-es'
+import { useTranslate } from '@tolgee/react'
 
 import DropDownSelectMinimal from '#/components/common/DropDownSelectMinimal'
 import {
@@ -11,10 +11,12 @@ import {
 
 import {
   GraphCalcType,
+  MapGraphDataSelectOption,
   ZONING_CODE_COL,
 } from 'applets/hiilikartta/common/types'
 import { CalcFeatureCollection } from 'applets/hiilikartta/common/types'
 import { isZoningCodeValidExpression } from 'applets/hiilikartta/common/utils'
+import { mergeArraysAlternate } from '#/common/utils/general'
 
 type Data = {
   id: string
@@ -27,10 +29,11 @@ type Props = {
   activeYear: string
   featureYears: string[]
   setActiveYear: (year: string) => void
-  activeDataId: string
-  setActiveDataId: (dataName: string) => void
+  activeDataOption: MapGraphDataSelectOption
+  setActiveDataOption: (option: MapGraphDataSelectOption) => void
   activeCalcType: GraphCalcType
   activeAreaType: string
+  setUseCurrent: (useCurrent: boolean) => void
 }
 
 const CarbonMapGraphMap = ({
@@ -38,13 +41,30 @@ const CarbonMapGraphMap = ({
   activeYear,
   featureYears,
   setActiveYear,
-  activeDataId,
-  setActiveDataId,
+  activeDataOption,
+  setActiveDataOption,
 }: Props) => {
+  const { t } = useTranslate('hiilikartta')
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const [mapIsLoaded, setMapIsLoaded] = useState(false)
   const allDataIds = useRef<string[]>([])
+  const selectOptions = useMemo(() => {
+    const currentSituationAppendix = ` (${t(
+      'report.general.current_situation'
+    )})`
+    const datasCurrent = datas.map((data) => ({
+      id: data.id,
+      name: data.name + currentSituationAppendix,
+      isCurrent: true,
+    }))
+    const datasPlanned = datas.map((data) => ({
+      id: data.id,
+      name: data.name,
+      isCurrent: false,
+    }))
+    return mergeArraysAlternate(datasPlanned, datasCurrent)
+  }, [datas])
 
   useEffect(() => {
     // Ensure mapboxgl.accessToken is set
@@ -105,7 +125,7 @@ const CarbonMapGraphMap = ({
             data.data
           )
 
-          if (data.id === activeDataId) {
+          if (data.id === activeDataOption.id) {
             map.current!.setLayoutProperty(layerId, 'visibility', 'visible')
             map.current!.setLayoutProperty(
               `${layerId}-symbol`,
@@ -118,7 +138,17 @@ const CarbonMapGraphMap = ({
               'isHidden',
               true,
             ])
-            map.current!.setPaintProperty
+            if (activeDataOption.isCurrent) {
+              map.current!.setFilter(`${layerId}-symbol`, [
+                '!=',
+                'isHidden',
+                false,
+              ])
+            }
+            map.current!.setPaintProperty(layerId, 'fill-color', [
+              'get',
+              activeDataOption.isCurrent ? 'colorNochange' : 'color',
+            ])
           } else {
             map.current!.setLayoutProperty(layerId, 'visibility', 'none')
             map.current!.setLayoutProperty(
@@ -138,10 +168,13 @@ const CarbonMapGraphMap = ({
             type: 'fill',
             source: sourceId,
             layout: {
-              visibility: data.id === activeDataId ? 'visible' : 'none',
+              visibility: data.id === activeDataOption.id ? 'visible' : 'none',
             },
             paint: {
-              'fill-color': ['get', 'color'],
+              'fill-color': [
+                'get',
+                activeDataOption.isCurrent ? 'colorNochange' : 'color',
+              ],
               'fill-opacity': 0.9,
               'fill-outline-color': '#274AFF',
             },
@@ -172,10 +205,22 @@ const CarbonMapGraphMap = ({
             },
             minzoom: 12,
           })
+
+          if (activeDataOption.isCurrent) {
+            map.current!.setFilter(`${layerId}-symbol`, [
+              '!=',
+              'isHidden',
+              false,
+            ])
+          }
         }
       })
     }
-  }, [mapIsLoaded, datas])
+  }, [mapIsLoaded, datas, activeDataOption])
+
+  const handlePlanSelectClick = (data: MapGraphDataSelectOption) => {
+    setActiveDataOption(data)
+  }
 
   return (
     <Box
@@ -225,7 +270,7 @@ const CarbonMapGraphMap = ({
           pointerEvents: 'none',
         }}
       >
-        {datas.map((data) => (
+        {selectOptions.map((option) => (
           <Button
             sx={{
               borderRadius: '0.3125rem',
@@ -243,14 +288,15 @@ const CarbonMapGraphMap = ({
                 opacity: 0.95,
                 backgroundColor: 'neutral.lighter',
               },
-              ...(data.id === activeDataId && {
-                border: '1px solid',
-                borderColor: 'secondary.dark',
-                color: 'secondary.dark',
-              }),
+              ...(option.id === activeDataOption.id &&
+                option.isCurrent === activeDataOption.isCurrent && {
+                  border: '1px solid',
+                  borderColor: 'secondary.dark',
+                  color: 'secondary.dark',
+                }),
             }}
-            key={data.id}
-            onClick={() => setActiveDataId(data.id)}
+            key={option.id + option.isCurrent}
+            onClick={() => handlePlanSelectClick(option)}
           >
             <Typography
               sx={{
@@ -263,7 +309,7 @@ const CarbonMapGraphMap = ({
                 lineHeight: 'normal',
               }}
             >
-              {data.name}
+              {option.name}
             </Typography>
           </Button>
         ))}
