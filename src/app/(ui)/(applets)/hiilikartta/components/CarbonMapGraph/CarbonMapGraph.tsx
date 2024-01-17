@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Box, SelectChangeEvent, ToggleButton, Typography } from '@mui/material'
 import { cloneDeep } from 'lodash-es'
 import { T, useTranslate } from '@tolgee/react'
@@ -8,8 +8,8 @@ import DropDownSelect from '#/components/common/DropDownSelect'
 
 import {
   CalcFeatureCollection,
-  featureCols,
   MapGraphData,
+  MapGraphDataSelectOption,
   PlanConfWithReportData,
   ZONING_CODE_COL,
 } from 'applets/hiilikartta/common/types'
@@ -31,9 +31,12 @@ type Props = {
 
 const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
   const { t } = useTranslate('hiilikartta')
-  const [activePlanConfId, setActivePlanConfId] = useState(
-    planConfs[0].serverId
-  )
+  const [activePlanConfOption, setActivePlanConfOption] =
+    useState<MapGraphDataSelectOption>({
+      id: planConfs[0].serverId,
+      isCurrent: false,
+    })
+  const [useCurrent, setUseCurrent] = useState(false)
   const [activeYear, setActiveYear] = useState(featureYears[1])
   const [calcType, setCalcType] = React.useState<GraphCalcType>('total')
   const [areaType, setAreaType] = React.useState<string>('all')
@@ -57,38 +60,20 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
       data: planConf.reportData.areas,
     }))
 
-    const currentSituation = cloneDeep(datas[0])
-    for (const feature of currentSituation.data.features) {
-      featureCols.forEach((propertyKey) => {
-        const property = feature.properties[propertyKey]
-        if (property && property.planned && property.nochange) {
-          // Update each planned year with the corresponding nochange value
-          Object.keys(property.planned).forEach((year) => {
-            property.planned[year] =
-              property.nochange[year] ?? property.planned[year]
-          })
-        }
-        feature.properties[ZONING_CODE_COL] = 'none'
-      })
-    }
-    currentSituation.id = currentSituation.id + '-current'
-    currentSituation.name = t('report.general.current_situation')
-
-    datas = [currentSituation, ...cloneDeep(datas)]
-
     const dataIds = datas.map((data) => data.id)
-    if (!dataIds.includes(activePlanConfId)) {
-      setActivePlanConfId(dataIds[1])
+    if (!dataIds.includes(activePlanConfOption.id)) {
+      setActivePlanConfOption({ id: dataIds[0], isCurrent: false })
+      useCurrent && setUseCurrent(false)
     }
 
-    return datas
+    return cloneDeep(datas)
   }, [planConfs])
 
   useEffect(() => {
     if (datas.length === 0) return
     const newDatas = updateDataWithColor(datas, activeYear, calcType, areaType)
     setLocalDatas(newDatas)
-  }, [datas, activePlanConfId, activeYear, calcType, areaType])
+  }, [datas, activeYear, calcType, areaType])
 
   const areaTypeOptions = useMemo(() => {
     return [
@@ -213,8 +198,9 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
         activeYear={activeYear}
         featureYears={featureYears}
         setActiveYear={setActiveYear}
-        activeDataId={activePlanConfId}
-        setActiveDataId={setActivePlanConfId}
+        activeDataOption={activePlanConfOption}
+        setActiveDataOption={setActivePlanConfOption}
+        setUseCurrent={setUseCurrent}
         activeCalcType={calcType}
         activeAreaType={areaType}
       />
@@ -292,6 +278,26 @@ const updateDataWithColor = (
 
       const color = getCarbonChangeColor(valueHa)
 
+      const valueHaNochange =
+        getCarbonValueForProperties(
+          feature.properties,
+          year,
+          calcType,
+          true,
+          false
+        ) || 0
+
+      const valueTotalNochange =
+        getCarbonValueForProperties(
+          feature.properties,
+          year,
+          calcType,
+          false,
+          false
+        ) || 0
+
+      const colorNochange = getCarbonChangeColor(valueHaNochange)
+
       let isHidden = false
       if (areaType !== 'all') {
         const zoningCode = feature.properties[ZONING_CODE_COL]
@@ -301,6 +307,7 @@ const updateDataWithColor = (
         )
           isHidden = true
       }
+
       return {
         ...feature,
         properties: {
@@ -308,6 +315,9 @@ const updateDataWithColor = (
           color,
           valueTotal,
           valueHa,
+          colorNochange,
+          valueTotalNochange,
+          valueHaNochange,
           isHidden,
         },
       }
