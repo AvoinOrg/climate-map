@@ -277,18 +277,21 @@ const getValueForBioOrGroundCarbon = (
 
   let carbon = properties[propName].nochange?.[firstYear]
 
+  let col: 'nochange' | 'planned' = 'nochange'
   if (usePlanned) {
-    if (
-      properties[propName].planned?.[year] == undefined ||
-      properties[propName].planned?.[year] < 0
-    ) {
-      return undefined
-    }
-
-    const carbonPlanned = properties[propName].planned?.[year]
-
-    carbon = carbonPlanned - carbon
+    col = 'planned'
   }
+
+  if (
+    properties[propName][col]?.[year] == undefined ||
+    properties[propName][col]?.[year] < 0
+  ) {
+    return undefined
+  }
+
+  const carbonPlanned = properties[propName][col]?.[year]
+
+  carbon = carbonPlanned - carbon
 
   return carbon
 }
@@ -320,22 +323,25 @@ const getValueForTotalCarbon = (
   let bioCarbon = properties[bioPropName].nochange?.[firstYear]
   let groundCarbon = properties[groundPropName].nochange?.[firstYear]
 
+  let col: 'nochange' | 'planned' = 'nochange'
   if (usePlanned) {
-    if (
-      properties[bioPropName].planned?.[year] == undefined ||
-      properties[groundPropName].planned?.[year] == undefined ||
-      properties[bioPropName].planned?.[year] < 0 ||
-      properties[groundPropName].planned?.[year] < 0
-    ) {
-      return undefined
-    }
-
-    const bioCarbonPlanned = properties[bioPropName].planned?.[year]
-    const groundCarbonPlanned = properties[groundPropName].planned?.[year]
-
-    bioCarbon = bioCarbonPlanned - bioCarbon
-    groundCarbon = groundCarbonPlanned - groundCarbon
+    col = 'planned'
   }
+
+  if (
+    properties[bioPropName][col]?.[year] == undefined ||
+    properties[groundPropName][col]?.[year] == undefined ||
+    properties[bioPropName][col]?.[year] < 0 ||
+    properties[groundPropName][col]?.[year] < 0
+  ) {
+    return undefined
+  }
+
+  const bioCarbonPlanned = properties[bioPropName][col]?.[year]
+  const groundCarbonPlanned = properties[groundPropName][col]?.[year]
+
+  bioCarbon = bioCarbonPlanned - bioCarbon
+  groundCarbon = groundCarbonPlanned - groundCarbon
 
   const totalCarbon = bioCarbon + groundCarbon
 
