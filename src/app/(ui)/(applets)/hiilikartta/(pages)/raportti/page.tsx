@@ -426,28 +426,27 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
               </Col>
             </Row>
           </Section>
-          <Section sx={{ mt: 8 }}>
-            <Row>
-              <Typography
-                sx={(theme) => ({
-                  typography: theme.typography.h1,
-                  display: 'inline',
-                })}
-              >
-                <T
-                  keyName="report.carbon_line_chart.title"
-                  ns={'hiilikartta'}
-                ></T>{' '}
-              </Typography>
-            </Row>
+          <Section
+            sx={{
+              mt: { xs: 4, md: 8 },
+              border: { xs: 'none', md: '1px solid' },
+              borderColor: { md: 'primary.dark' },
+              boxShadow: {
+                xs: 'none',
+                md: '1px 1px 4px 1px rgba(217, 217, 217, 0.50);',
+              },
+              p: {
+                xs: 0,
+                md: 3,
+              },
+              borderRadius: '0.3125rem',
+            }}
+          >
             <Row>
               <CarbonLineChart
                 data={planConfs.map((planConf) => planConf.reportData.totals)}
                 featureYears={featureYears}
                 planNames={planConfs.map((planConf) => planConf.name)}
-                width={useNarrowLayout ? 400 : 800}
-                height={500}
-                useHaVals={true}
               />
             </Row>
           </Section>
