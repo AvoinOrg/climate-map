@@ -149,3 +149,5 @@ export type MapGraphDataSelectOption = {
   id: string
   isCurrent: boolean
 }
+
+export type UnitType = 'ha' | 'total'
