@@ -1,8 +1,9 @@
 import * as React from 'react'
 import Box from '@mui/material/Box'
+import { SxProps, Theme } from '@mui/material'
 
 type Props = {
-  sx?: object
+  sx?: SxProps<Theme>
 }
 
 const SvgCross = (props: Props) => (
