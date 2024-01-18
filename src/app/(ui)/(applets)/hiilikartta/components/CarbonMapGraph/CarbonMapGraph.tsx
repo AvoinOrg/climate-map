@@ -91,11 +91,22 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
 
   return (
     <Box>
+      <Box sx={{ mt: { xs: 0, md: 2.5 }, ml: { xs: 0, md: 2.5 } }}>
+        <Typography
+          sx={(theme) => ({
+            typography: theme.typography.h1,
+            display: 'inline',
+          })}
+        >
+          <T keyName="report.map_graph.title" ns={'hiilikartta'}></T>
+        </Typography>
+      </Box>
       <Box
         sx={{
           display: 'flex',
           flexDirection: { xs: 'column', md: 'row' },
           flexWrap: { xs: 'wrap', md: 'nowrap' },
+          mt: 5,
         }}
       >
         <StyledToggleButton

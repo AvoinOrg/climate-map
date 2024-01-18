@@ -418,16 +418,6 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             }}
           >
             <Row sx={{ mb: 4 }}>
-              <Typography
-                sx={(theme) => ({
-                  typography: theme.typography.h1,
-                  display: 'inline',
-                })}
-              >
-                <T keyName="report.map_graph.title" ns={'hiilikartta'}></T>
-              </Typography>
-            </Row>
-            <Row>
               <Col>
                 <CarbonMapGraph
                   planConfs={planConfs}
