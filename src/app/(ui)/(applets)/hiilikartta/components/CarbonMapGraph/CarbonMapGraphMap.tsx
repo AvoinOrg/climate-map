@@ -10,7 +10,6 @@ import {
   Typography,
 } from '@mui/material'
 import { T, useTranslate } from '@tolgee/react'
-import { useFloating, offset, flip, shift } from '@floating-ui/react-dom'
 
 import DropDownSelectMinimal from '#/components/common/DropDownSelectMinimal'
 import {
