@@ -304,6 +304,7 @@ const CarbonLineChartInner = ({
                         width={15}
                         height={15}
                         stroke={color}
+                        strokeWidth={3}
                       />
                     </svg>
                     <span style={{ marginLeft: 5, ...textStyle }}>
