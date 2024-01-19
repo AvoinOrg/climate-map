@@ -9,6 +9,7 @@ import DialogTitle from '@mui/material/DialogTitle'
 import { useUIStore } from '#/common/store'
 import { useTranslate } from '@tolgee/react'
 import { ConfirmationDialogOptions } from '#/common/types/state'
+import { Typography } from '@mui/material'
 
 const ConfirmationDialog = () => {
   const confirmationDialogOptions = useUIStore(
@@ -66,15 +67,24 @@ const ConfirmationDialog = () => {
       )}
       {localOptions.content != null && (
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
+          <DialogContentText
+            sx={{ color: 'neutral.darker' }}
+            id="alert-dialog-description"
+          >
             {localOptions.content}
           </DialogContentText>
         </DialogContent>
       )}
       <DialogActions>
-        <Button onClick={handleCancel}>{localOptions.cancelText}</Button>
-        <Button onClick={handleAccept} autoFocus>
-          {localOptions.confirmText}
+        <Button onClick={handleCancel} disableFocusRipple>
+          <Typography sx={{ color: 'neutral.darker' }}>
+            {localOptions.cancelText}
+          </Typography>
+        </Button>
+        <Button onClick={handleAccept} autoFocus disableFocusRipple>
+          <Typography sx={{ color: 'neutral.darker' }}>
+            {localOptions.confirmText}
+          </Typography>
         </Button>
       </DialogActions>
     </Dialog>
