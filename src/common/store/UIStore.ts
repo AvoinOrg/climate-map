@@ -3,6 +3,8 @@ import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
 import {
+  ConfirmationDialogOptions,
+  InternalConfirmationDialogOptions,
   InternalNotificationMessage,
   NotificationMessage,
 } from '#/common/types/state'
@@ -17,6 +19,7 @@ interface Vars {
   isNavbarOpen: boolean
   isLoginModalOpen: boolean
   sidebarWidth: number | undefined
+  confirmationDialogOptions: InternalConfirmationDialogOptions
 }
 
 interface Actions {
@@ -36,6 +39,9 @@ interface Actions {
   ) => void
   setIsLoginModalOpen: (isOpen: boolean) => void
   setSidebarWidth: (pixels: number) => void
+  triggerConfirmationDialog: (
+    options: ConfirmationDialogOptions
+  ) => Promise<void>
 }
 
 type State = Vars & Actions
@@ -51,6 +57,7 @@ export const useUIStore = create<State>()(
       isNavbarOpen: true,
       notifications: {},
       sidebarWidth: undefined,
+      confirmationDialogOptions: { id: null },
     }
     const actions: Actions = {
       setIsSidebarOpen: (value) => set({ isSidebarOpen: value }),
@@ -104,6 +111,12 @@ export const useUIStore = create<State>()(
         const updatedNotification = { ...oldNotification, ...notification }
         await set((state) => {
           state.notifications[notificationId] = updatedNotification
+        })
+      },
+      triggerConfirmationDialog: async (options: ConfirmationDialogOptions) => {
+        const newOptions = { ...options, id: generateUUID() }
+        await set((state) => {
+          state.confirmationDialogOptions = newOptions
         })
       },
     }
