@@ -10,6 +10,7 @@ import { styled } from '@mui/material/styles'
 import { T, useTranslate } from '@tolgee/react'
 import { useMutation } from '@tanstack/react-query'
 import FolderCopy from '@mui/icons-material/FolderCopyOutlined'
+import Tooltip from '@mui/material/Tooltip'
 
 import { getRoute } from '#/common/utils/routing'
 import useStore from '#/common/hooks/useStore'
@@ -25,7 +26,10 @@ import { ArrowNextBig, Delete } from '#/components/icons'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import { getPlanLayerGroupId } from 'applets/hiilikartta/common/utils'
+import {
+  checkIsValidZoningCode,
+  getPlanLayerGroupId,
+} from 'applets/hiilikartta/common/utils'
 import ZoneAccordion from './_components/ZoneAccordion'
 import { calcPostMutation } from 'applets/hiilikartta/common/queries/calcPostMutation'
 import PlanFolder from 'applets/hiilikartta/components/PlanFolder'
@@ -45,10 +49,24 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const copyPlanConf = useAppletStore((state) => state.copyPlanConf)
   const calcPost = useMutation(calcPostMutation())
   const [currentYear, setCurrentYear] = useState<string>()
-
+  const [areSettingsValid, setAreSettingsValid] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const router = useRouter()
   const { t } = useTranslate('hiilikartta')
+
+  useEffect(() => {
+    if (planConf?.data.features) {
+      for (const feature of planConf.data.features) {
+        if (!checkIsValidZoningCode(feature.properties.zoning_code)) {
+          if (areSettingsValid) {
+            setAreSettingsValid(false)
+          }
+          return
+        }
+      }
+      setAreSettingsValid(true)
+    }
+  }, [planConf?.data.features])
 
   const handleSubmit = async () => {
     if (planConf) {
@@ -389,35 +407,49 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                     justifyContent: 'flex-end',
                   }}
                 >
-                  <Box
-                    sx={{
-                      display: 'inline-flex',
-                      flexDirection: 'row',
-                      '&:hover': { cursor: 'pointer' },
-                      mt: 4,
-                      flex: '0',
-                    }}
-                    onClick={handleSubmit}
+                  <Tooltip
+                    title={t(
+                      'sidebar.plan_settings.calculate_carbon_effect.tooltip_invalid'
+                    )}
+                    disableHoverListener={areSettingsValid}
+                    disableFocusListener={areSettingsValid}
+                    disableTouchListener={areSettingsValid}
                   >
                     <Box
                       sx={{
-                        typography: 'h1',
-                        textAlign: 'end',
-                        mr: 3,
-                        minWidth: '270px',
+                        display: 'inline-flex',
+                        flexDirection: 'row',
+                        '&:hover': {
+                          cursor: areSettingsValid ? 'pointer' : 'default',
+                        },
+                        mt: 4,
+                        flex: '0',
+                        color: areSettingsValid
+                          ? 'neutral.darker'
+                          : 'neutral.main',
                       }}
+                      onClick={areSettingsValid ? handleSubmit : undefined}
                     >
-                      <T
-                        keyName={
-                          'sidebar.plan_settings.calculate_carbon_effect'
-                        }
-                        ns={'hiilikartta'}
-                      />
+                      <Box
+                        sx={{
+                          typography: 'h1',
+                          textAlign: 'end',
+                          mr: 3,
+                          minWidth: '270px',
+                        }}
+                      >
+                        <T
+                          keyName={
+                            'sidebar.plan_settings.calculate_carbon_effect'
+                          }
+                          ns={'hiilikartta'}
+                        />
+                      </Box>
+                      <Box sx={{ mt: 0.2 }}>
+                        <ArrowNextBig></ArrowNextBig>
+                      </Box>
                     </Box>
-                    <Box sx={{ mt: 0.2 }}>
-                      <ArrowNextBig></ArrowNextBig>
-                    </Box>
-                  </Box>
+                  </Tooltip>
                 </Box>
               </Box>
             )}
