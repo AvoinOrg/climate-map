@@ -77,6 +77,7 @@ const nextConfig = {
                 relativePath.slice(publicIndex)
               )
             },
+            noErrorOnMissing: true,
           },
           {
             // copy any app public folder to the root public folder
@@ -96,6 +97,7 @@ const nextConfig = {
                 newRelativePath
               )
             },
+            noErrorOnMissing: true,
           },
           {
             // copy any applet api folder to the root api folder
@@ -130,6 +132,7 @@ const nextConfig = {
 
               return finalPath
             },
+            noErrorOnMissing: true,
           },
           {
             // copy sql-wasm for the GPKG library used in carbon app
