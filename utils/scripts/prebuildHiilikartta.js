@@ -1,3 +1,6 @@
+// TODO: Fix this spaghetti solution. This is a temporary fix to make
+// the /hiilikartta subpath root path
+
 const fs = require('fs')
 const path = require('path')
 
@@ -5,6 +8,19 @@ const projectRoot = path.join(__dirname, '..', '..')
 const appletsPath = path.join(projectRoot, 'src', 'app', '(ui)', '(applets)')
 const hiilikarttaPath = path.join(appletsPath, 'hiilikartta')
 const pagePath = path.join(projectRoot, 'src', 'app', '(ui)', 'page.tsx')
+const tsConfigPath = path.join(projectRoot, 'tsconfig.json')
+
+function updateTsConfig() {
+  if (fs.existsSync(tsConfigPath)) {
+    const tsConfig = JSON.parse(fs.readFileSync(tsConfigPath, 'utf8'))
+
+    tsConfig.compilerOptions.paths['applets/hiilikartta/*'] = [
+      'src/app/(ui)/(applets)/(hiilikartta)*',
+    ]
+
+    fs.writeFileSync(tsConfigPath, JSON.stringify(tsConfig, null, 2))
+  }
+}
 
 function renameAndCleanup() {
   // Rename hiilikartta folder
@@ -20,7 +36,7 @@ function renameAndCleanup() {
       fs.statSync(filePath).isDirectory() &&
       !filePath.endsWith('(hiilikartta)')
     ) {
-      fs.rmdirSync(filePath, { recursive: true })
+      fs.rmSync(filePath, { recursive: true })
     }
   })
 
@@ -28,6 +44,8 @@ function renameAndCleanup() {
   if (fs.existsSync(pagePath)) {
     fs.unlinkSync(pagePath)
   }
+
+  updateTsConfig()
 }
 
 renameAndCleanup()
