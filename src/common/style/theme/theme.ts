@@ -1,6 +1,6 @@
 import { createTheme, Shadows, ThemeOptions } from '@mui/material/styles'
 import { TypographyOptions } from '@mui/material/styles/createTypography'
-import { Arimo } from '@next/font/google'
+import { Arimo } from 'next/font/google'
 import '@mui/material/styles/createPalette'
 import { SCROLLBAR_WIDTH_REM } from './constants'
 
