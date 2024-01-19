@@ -41,6 +41,7 @@
     "@mui/icons-material": "^5.11.0",
     "@mui/material": "^5.11.7",
     "@next/bundle-analyzer": "^13.2.4",
+    "@next/font": "canary",
     "@ngageoint/geopackage": "^4.2.3",
     "@tanstack/react-query": "rc",
     "@tolgee/react": "^5.15.0",

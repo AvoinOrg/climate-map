@@ -2871,6 +2871,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@next/font@npm:canary":
+  version: 14.1.1-canary.1
+  resolution: "@next/font@npm:14.1.1-canary.1"
+  peerDependencies:
+    next: "*"
+  checksum: de7de412d2452ca6f0212ce8005722527f7640c5a85d39bcdca836f5e1539b6424471f5b3250c98df14777dea6c38f9116dc97791c70acd330946e34a07e8f0b
+  languageName: node
+  linkType: hard
+
 "@next/swc-darwin-arm64@npm:14.1.0":
   version: 14.1.0
   resolution: "@next/swc-darwin-arm64@npm:14.1.0"
@@ -7413,6 +7422,7 @@ __metadata:
     "@mui/material": ^5.11.7
     "@netlify/plugin-nextjs": ^4.29.5-appdir.0
     "@next/bundle-analyzer": ^13.2.4
+    "@next/font": canary
     "@ngageoint/geopackage": ^4.2.3
     "@pmmmwh/react-refresh-webpack-plugin": ^0.5.10
     "@tanstack/eslint-plugin-query": rc
