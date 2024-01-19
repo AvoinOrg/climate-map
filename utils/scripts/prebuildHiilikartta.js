@@ -15,7 +15,7 @@ function updateTsConfig() {
     const tsConfig = JSON.parse(fs.readFileSync(tsConfigPath, 'utf8'))
 
     tsConfig.compilerOptions.paths['applets/hiilikartta/*'] = [
-      'src/app/(ui)/(applets)/(hiilikartta)*',
+      'src/app/(ui)/(applets)/(hiilikartta)/*',
     ]
 
     fs.writeFileSync(tsConfigPath, JSON.stringify(tsConfig, null, 2))
