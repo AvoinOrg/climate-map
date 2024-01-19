@@ -42,6 +42,22 @@ const nextConfig = {
   //   localeDetection: true,
   //   defaultLocale: 'en',
   // },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/:path*',
+          has: [
+            {
+              type: 'host',
+              value: 'hiilikartta.avoin.org',
+            },
+          ],
+          destination: '/hiilikartta/:path*',
+        },
+      ],
+    }
+  },
   webpack: (
     config,
     { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }
