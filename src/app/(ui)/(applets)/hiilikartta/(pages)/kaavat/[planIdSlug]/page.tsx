@@ -14,7 +14,7 @@ import Tooltip from '@mui/material/Tooltip'
 
 import { getRoute } from '#/common/utils/routing'
 import useStore from '#/common/hooks/useStore'
-import { useMapStore } from '#/common/store'
+import { useMapStore, useUIStore } from '#/common/store'
 import DropDownSelectMinimal from '#/components/common/DropDownSelectMinimal'
 import { pp } from '#/common/utils/general'
 import {
@@ -39,6 +39,9 @@ import { CalculationState } from 'applets/hiilikartta/common/types'
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const removeSerializableLayerGroup = useMapStore(
     (state) => state.removeSerializableLayerGroup
+  )
+  const triggerConfirmationDialog = useUIStore(
+    (state) => state.triggerConfirmationDialog
   )
   const planConf = useStore(
     useAppletStore,
@@ -114,9 +117,16 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
 
   const handleDeleteClick = async () => {
     if (planConf) {
-      await removeSerializableLayerGroup(getPlanLayerGroupId(planConf.id))
-      await deletePlanConf(planConf.id)
-      router.push(getRoute(routeTree, routeTree))
+      const handleDeleteConfirm = async () => {
+        await removeSerializableLayerGroup(getPlanLayerGroupId(planConf.id))
+        await deletePlanConf(planConf.id)
+        router.push(getRoute(routeTree, routeTree))
+      }
+
+      triggerConfirmationDialog({
+        content: t('sidebar.plan_settings.delete_confirmation_message'),
+        onConfirm: handleDeleteConfirm,
+      })
     }
   }
 
