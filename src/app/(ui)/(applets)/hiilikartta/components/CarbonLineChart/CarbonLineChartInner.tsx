@@ -13,11 +13,13 @@ import { useTranslate } from '@tolgee/react'
 import { scaleOrdinal } from 'd3-scale'
 import { schemeCategory10 } from 'd3-scale-chromatic'
 import { useTheme } from '@mui/material/styles'
-
-import { CalcFeatureCollection, UnitType } from '../../common/types'
-import { pp } from '#/common/utils/general'
 import { LegendOrdinal } from '@visx/legend'
 import { Box, Typography } from '@mui/material'
+
+import { getTextWidth } from '#/common/utils/styling'
+import { pp } from '#/common/utils/general'
+
+import { CalcFeatureCollection, UnitType } from '../../common/types'
 
 type DataItem = {
   valHa: number
@@ -213,6 +215,27 @@ const CarbonLineChartInner = ({
     color: 'black',
   }
 
+  const yAxisFont = `${textStyle.fontSize} ${textStyle.fontFamily}`
+
+  const yAxisUnitText =
+    unitType === 'ha'
+      ? t('report.carbon_line_chart.y_unit_ha')
+      : t('report.carbon_line_chart.y_unit_total')
+
+  let longestLabelWidth = localData.flat().reduce((maxWidth, d) => {
+    const labelWidth = getTextWidth(yAxisFormatter(getValue(d)), yAxisFont)
+    return Math.max(maxWidth, labelWidth)
+  }, 0)
+
+  longestLabelWidth = Math.max(
+    getTextWidth(yAxisUnitText, yAxisFont),
+    longestLabelWidth
+  )
+
+  // Update the left margin
+  const leftMarginPadding = 30 // Adjust padding as needed
+  margin.left = Math.max(40, longestLabelWidth + leftMarginPadding)
+
   const handleTooltip = useCallback(
     (
       event: React.TouchEvent<SVGRectElement> | React.MouseEvent<SVGRectElement>
@@ -262,7 +285,7 @@ const CarbonLineChartInner = ({
 
   const ChartLegend = () => {
     return (
-      <Box sx={{ mt: 1, ml: 9.5 }}>
+      <Box sx={{ mt: 1, ml: 2 }}>
         <LegendOrdinal
           scale={colorScale}
           labelFormat={(label) => localPlanNames[parseInt(label, 10)]}
@@ -369,7 +392,7 @@ const CarbonLineChartInner = ({
             y={height - margin.bottom - 18} // Adjust for vertical positioning
             style={{ textAnchor: 'end', ...textStyle }}
           >
-            tCO2e
+            {yAxisUnitText}
           </text>
           <AxisBottom
             scale={xScale}
