@@ -5,7 +5,6 @@ import { Button } from '@mui/material'
 import { useRouter } from 'next/navigation'
 
 import { getRoute } from '#/common/utils/routing'
-import { useMapStore } from '#/common/store'
 import {
   FeatureProperties,
   FileType,
@@ -18,24 +17,16 @@ import { routeTree } from 'applets/hiilikartta/common/routes'
 import PlanImportGpkg from './_components/PlanImportGpkg'
 import PlanImportShp from './_components/PlanImportShp'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
-import { createLayerConf } from '../../../common/utils'
 import { Feature, FeatureCollection } from 'geojson'
 import { generateUUID } from '#/common/utils/general'
 import { ZONING_CLASSES } from 'applets/hiilikartta/common/constants'
-import { type } from 'os'
 
 const Page = () => {
-  const addSerializableLayerGroup = useMapStore(
-    (state) => state.addSerializableLayerGroup
-  )
-  const removeSerializableLayerGroup = useMapStore(
-    (state) => state.removeSerializableLayerGroup
-  )
   const addPlanConf = useAppletStore((state) => state.addPlanConf)
-  const deletePlanConf = useAppletStore((state) => state.deletePlanConf)
   const [fileType, setFileType] = useState<FileType>()
   const [fileName, setFileName] = useState<string>()
   const [arrayBuffer, setArrayBuffer] = useState<ArrayBuffer>()
+  const isInitializing = useRef(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
@@ -198,16 +189,26 @@ const Page = () => {
     zoningColName: string,
     nameColName?: string
   ) => {
-    const id = await initializePlan(json, zoningColName, nameColName)
-    // TODO: throw error if id is null, i.e. if file is invalid
-    if (id) {
-      const route = getRoute(routeTree.plans.plan, routeTree, {
-        routeParams: {
-          planId: id,
-        },
-      })
-      router.push(route)
+    if (isInitializing.current) {
+      return
     }
+    isInitializing.current = true
+    try {
+      const id = await initializePlan(json, zoningColName, nameColName)
+      if (id) {
+        const route = getRoute(routeTree.plans.plan, routeTree, {
+          routeParams: {
+            planId: id,
+          },
+        })
+        router.push(route)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+    // TODO: throw error if id is null, i.e. if file is invalid
+
+    isInitializing.current = false
   }
 
   return (
