@@ -42,42 +42,6 @@ const nextConfig = {
   //   localeDetection: true,
   //   defaultLocale: 'en',
   // },
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: '/:kaavat*',
-          has: [
-            {
-              type: 'host',
-              value: 'hiilikartta.avoin.org',
-            },
-          ],
-          destination: '/hiilikartta/:kaavat*',
-        },
-        {
-          source: '/:luo*',
-          has: [
-            {
-              type: 'host',
-              value: 'hiilikartta.avoin.org',
-            },
-          ],
-          destination: '/hiilikartta/:luo*',
-        },
-        {
-          source: '/:raportti*',
-          has: [
-            {
-              type: 'host',
-              value: 'hiilikartta.avoin.org',
-            },
-          ],
-          destination: '/hiilikartta/:raportti*',
-        },
-      ],
-    }
-  },
   webpack: (
     config,
     { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }
