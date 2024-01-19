@@ -2,7 +2,9 @@ import { RouteTree } from '#/common/types/routing'
 
 export const routeTree: RouteTree = {
   _conf: {
-    path: 'hiilikartta',
+    path: process.env.NEXT_PUBLIC_USE_BASE_ROUTE_FOR_APPLETS
+      ? ''
+      : 'hiilikartta',
     name: 'Etusivu',
   },
   create: {
