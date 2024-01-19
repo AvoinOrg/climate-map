@@ -1846,58 +1846,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/core@npm:^1.5.3":
-  version: 1.5.3
-  resolution: "@floating-ui/core@npm:1.5.3"
-  dependencies:
-    "@floating-ui/utils": ^0.2.0
-  checksum: 72af8563e1742791acee82e86f82a0fbca7445809988d31eea3fd5771909463aa7655a6cb001cc244f8fe3a9de600420257e4dfb887ca33e2a31ac47b52e39a2
-  languageName: node
-  linkType: hard
-
-"@floating-ui/dom@npm:^1.5.4":
-  version: 1.5.4
-  resolution: "@floating-ui/dom@npm:1.5.4"
-  dependencies:
-    "@floating-ui/core": ^1.5.3
-    "@floating-ui/utils": ^0.2.0
-  checksum: 5e6f05532ff4e6daf9f2d91534184d8f942ddb8fd260c2543a49bdf0c0ff69fd0867937ce1d023126008724ac238f8fc89b5e48f82cdf9f8355a1d04edd085bd
-  languageName: node
-  linkType: hard
-
-"@floating-ui/react-dom@npm:^2.0.6":
-  version: 2.0.6
-  resolution: "@floating-ui/react-dom@npm:2.0.6"
-  dependencies:
-    "@floating-ui/dom": ^1.5.4
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-  checksum: 3608537be6cae5f0442d3f826379b8e4a9ce5c4bdecf1d2b34e6709842d80444be1a00eca3641d680e2e6405d833092f58005d1b120a9d39ffd341c60b0c017c
-  languageName: node
-  linkType: hard
-
-"@floating-ui/react@npm:^0.26.6":
-  version: 0.26.6
-  resolution: "@floating-ui/react@npm:0.26.6"
-  dependencies:
-    "@floating-ui/react-dom": ^2.0.6
-    "@floating-ui/utils": ^0.2.1
-    tabbable: ^6.0.1
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-  checksum: 27ca5338cee29f02dc3e98de199d6007dc627dc4e10258e2576c5501e2e5681d655bf63a605bdb1f53b0035657b74ad542209de00c4bbb10f41027110c1f81d7
-  languageName: node
-  linkType: hard
-
-"@floating-ui/utils@npm:^0.2.0, @floating-ui/utils@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "@floating-ui/utils@npm:0.2.1"
-  checksum: 9ed4380653c7c217cd6f66ae51f20fdce433730dbc77f95b5abfb5a808f5fdb029c6ae249b4e0490a816f2453aa6e586d9a873cd157fdba4690f65628efc6e06
-  languageName: node
-  linkType: hard
-
 "@humanwhocodes/config-array@npm:^0.11.10":
   version: 0.11.10
   resolution: "@humanwhocodes/config-array@npm:0.11.10"
@@ -7467,7 +7415,6 @@ __metadata:
     "@emotion/react": ^11.10.5
     "@emotion/styled": ^11.10.5
     "@esri/arcgis-to-geojson-utils": ^1.3.0
-    "@floating-ui/react": ^0.26.6
     "@mapbox/mapbox-gl-draw": ^1.4.0
     "@mui/icons-material": ^5.11.0
     "@mui/material": ^5.11.7
@@ -16665,13 +16612,6 @@ __metadata:
     "@pkgr/utils": ^2.3.1
     tslib: ^2.5.0
   checksum: 8a9560e5d8f3d94dc3cf5f7b9c83490ffa30d320093560a37b88f59483040771fd1750e76b9939abfbb1b5a23fd6dfbae77f6b338abffe7cae7329cd9b9bb86b
-  languageName: node
-  linkType: hard
-
-"tabbable@npm:^6.0.1":
-  version: 6.2.0
-  resolution: "tabbable@npm:6.2.0"
-  checksum: f8440277d223949272c74bb627a3371be21735ca9ad34c2570f7e1752bd646ccfc23a9d8b1ee65d6561243f4134f5fbbf1ad6b39ac3c4b586554accaff4a1300
   languageName: node
   linkType: hard
 
