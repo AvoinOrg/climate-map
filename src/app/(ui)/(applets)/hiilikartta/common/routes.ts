@@ -1,10 +1,13 @@
 import { RouteTree } from '#/common/types/routing'
 
+const basePath =
+  process.env.NEXT_PUBLIC_USE_BASE_ROUTE_FOR_APPLETS === 'true'
+    ? ''
+    : 'hiilikartta'
+
 export const routeTree: RouteTree = {
   _conf: {
-    path: process.env.NEXT_PUBLIC_USE_BASE_ROUTE_FOR_APPLETS
-      ? ''
-      : 'hiilikartta',
+    path: basePath,
     name: 'Etusivu',
   },
   create: {
