@@ -25,11 +25,11 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  i18n: {
-    locales: ['en', 'fi'],
-    // localeDetection: false,
-    defaultLocale: 'en',
-  },
+  // i18n: {
+  //   locales: ['en', 'fi'],
+  //   // localeDetection: false,
+  //   defaultLocale: 'en',
+  // },
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if
