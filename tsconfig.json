@@ -22,7 +22,6 @@
       "applets/*": ["src/app/(ui)/(applets)/*"],
       "#/*": ["src/*"]
     },
-    //    "strict": true,
     "plugins": [
       {
         "name": "next"
