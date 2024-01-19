@@ -437,3 +437,18 @@ export const processCalcQueryToReportData = (data: any): ReportData => {
 
   return reportData
 }
+
+export const checkIsValidZoningCode = (zoningCode: string | null) => {
+  if (zoningCode == null) {
+    return false
+  }
+
+  for (let zoning of ZONING_CLASSES) {
+    // Split the code by comma and trim spaces, then check if zoningCode is one of them
+    const codes = zoning.code.split(',').map((code) => code.trim())
+    if (codes.includes(zoningCode.trim())) {
+      return true
+    }
+  }
+  return false
+}

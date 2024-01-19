@@ -14,26 +14,12 @@ import { ArrowDown } from '#/components/icons'
 import { ZONING_CLASSES } from '../../../../common/constants'
 import { PlanDataFeature } from '../../../../common/types'
 import ZoneAccordionItemTitle from './ZoneAccordionItemTitle'
+import { checkIsValidZoningCode } from 'applets/hiilikartta/common/utils'
 
 const zoningCodeOptions = ZONING_CLASSES.map((zoning) => ({
   value: zoning.code,
   label: `${zoning.name} (${zoning.code})`,
 }))
-
-const checkIsValidZoningCode = (zoningCode: string | null) => {
-  if (zoningCode == null) {
-    return false
-  }
-
-  for (let zoning of ZONING_CLASSES) {
-    // Split the code by comma and trim spaces, then check if zoningCode is one of them
-    const codes = zoning.code.split(',').map((code) => code.trim())
-    if (codes.includes(zoningCode.trim())) {
-      return true
-    }
-  }
-  return false
-}
 
 interface CustomAccordionProps {
   feature: PlanDataFeature
@@ -60,7 +46,8 @@ const ZoneAccordionItem = memo(
     const [isValid, setIsValid] = useState(true)
 
     useEffect(() => {
-      setIsValid(checkIsValidZoningCode(feature.properties.zoning_code))
+      const valid = checkIsValidZoningCode(feature.properties.zoning_code)
+      setIsValid(valid)
     }, [feature.properties.zoning_code])
 
     const handleZoningCodeChange = (event: any) => {
