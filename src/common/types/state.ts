@@ -34,3 +34,17 @@ export interface InternalNotificationMessage extends NotificationMessage {
   triggeredTs: number
   shown: boolean
 }
+
+export type ConfirmationDialogOptions = {
+  title?: string
+  content?: string
+  confirmText?: string
+  cancelText?: string
+  onConfirm?: () => void
+  onCancel?: () => void
+}
+
+export interface InternalConfirmationDialogOptions
+  extends ConfirmationDialogOptions {
+  id: string | null
+}
