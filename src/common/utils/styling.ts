@@ -15,3 +15,19 @@ export const resolveColor = (color: string, theme: Theme) => {
 
   return color
 }
+
+let textMeasurementCanvas: HTMLCanvasElement | null = null
+
+export const getTextWidth = (text: string, font: string): number => {
+  if (!textMeasurementCanvas) {
+    textMeasurementCanvas = document.createElement('canvas')
+  }
+  const context = textMeasurementCanvas.getContext('2d')
+  if (!context) {
+    return 0 // Fallback in case the context is not available
+  }
+
+  context.font = font
+  const metrics = context.measureText(text)
+  return metrics.width
+}
