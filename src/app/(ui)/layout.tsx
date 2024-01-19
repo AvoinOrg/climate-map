@@ -21,7 +21,10 @@ import { Sidebar } from '#/components/Sidebar'
 import { NavBar } from '#/components/NavBar'
 import { Map } from '#/components/Map'
 import { LoginModal } from '#/components/Modal'
-import { NotificationProvider } from '#/components/Notification'
+import {
+  ConfirmationDialog,
+  NotificationProvider,
+} from '#/components/Notification'
 // import { UserModal } from '#/components/Profile'
 // import { UiStateProvider, UserStateProvider } from '#/components/State'
 // import RootStyleRegistry from './emotion'
@@ -93,6 +96,7 @@ const Layout = ({
                   <NavBar />
                 </Box>
                 <LoginModal></LoginModal>
+                <ConfirmationDialog></ConfirmationDialog>
               </Map>
             </NotificationProvider>
           </TolgeeProvider>
