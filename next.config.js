@@ -44,16 +44,36 @@ const nextConfig = {
   // },
   async rewrites() {
     return {
-      afterFiles: [
+      beforeFiles: [
         {
-          source: '/:path*',
+          source: '/:kaavat*',
           has: [
             {
               type: 'host',
               value: 'hiilikartta.avoin.org',
             },
           ],
-          destination: '/hiilikartta/:path*',
+          destination: '/hiilikartta/:kaavat*',
+        },
+        {
+          source: '/:luo*',
+          has: [
+            {
+              type: 'host',
+              value: 'hiilikartta.avoin.org',
+            },
+          ],
+          destination: '/hiilikartta/:luo*',
+        },
+        {
+          source: '/:raportti*',
+          has: [
+            {
+              type: 'host',
+              value: 'hiilikartta.avoin.org',
+            },
+          ],
+          destination: '/hiilikartta/:raportti*',
         },
       ],
     }
