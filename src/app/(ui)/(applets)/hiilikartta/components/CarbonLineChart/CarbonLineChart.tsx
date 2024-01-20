@@ -95,7 +95,7 @@ const CarbonLineChart = ({ data, featureYears, planNames }: Props) => {
           ></T>
         </StyledToggleButton>
       </Box>
-      <Box ref={boxRef} sx={{ width: '100%', overflowX: 'auto' }}>
+      <Box ref={boxRef} sx={{ width: '100%', overflowX: 'auto', pb: 2.5 }}>
         <CarbonLineChartInner
           data={data}
           featureYears={featureYears}
