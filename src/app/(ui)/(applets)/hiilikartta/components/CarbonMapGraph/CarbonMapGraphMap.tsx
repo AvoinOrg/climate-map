@@ -8,6 +8,7 @@ import {
   TableCell,
   TableRow,
   Typography,
+  Table,
 } from '@mui/material'
 import { T, useTranslate } from '@tolgee/react'
 
@@ -427,62 +428,64 @@ const CarbonMapGraphMap = ({
                 flexDirection: 'column',
               }}
             >
-              <TableBody>
-                <TableRow key={'zoning_code'}>
-                  <FirstColumnCell component="th" scope="row">
-                    <T
-                      ns="hiilikartta"
-                      keyName="report.map_graph.tooltip_zoning_code"
-                    ></T>
-                  </FirstColumnCell>
-                  <DataCell key={'zoning_code_val'} align="left">
-                    {tooltip.feature.properties[ZONING_CODE_COL]}
-                  </DataCell>
-                </TableRow>
-                <TableRow key={'zoning_code'}>
-                  <FirstColumnCell component="th" scope="row">
-                    <T
-                      ns="hiilikartta"
-                      keyName="report.map_graph.tooltip_area"
-                    ></T>
-                  </FirstColumnCell>
-                  <DataCell key={'zoning_code_val'} align="left">
-                    {pp(tooltip.feature.properties.area / 10000, 2)}
-                  </DataCell>
-                </TableRow>
-                <TableRow key={'co2_ha'}>
-                  <FirstColumnCell component="th" scope="row">
-                    <T
-                      ns="hiilikartta"
-                      keyName="report.map_graph.unit_co2_ha_compared"
-                    ></T>
-                  </FirstColumnCell>
-                  <DataCell key={'co2_ha_val'} align="left">
-                    {pp(
-                      activeDataOption.isCurrent
-                        ? tooltip.feature.properties.valueHaNochange
-                        : tooltip.feature.properties.valueHa,
-                      0
-                    )}
-                  </DataCell>
-                </TableRow>
-                <TableRow key={'co2_total'}>
-                  <FirstColumnCell component="th" scope="row">
-                    <T
-                      ns="hiilikartta"
-                      keyName="report.map_graph.unit_co2_total_compared"
-                    ></T>
-                  </FirstColumnCell>
-                  <DataCell key={'co2_total_val'} align="left">
-                    {pp(
-                      activeDataOption.isCurrent
-                        ? tooltip.feature.properties.valueTotalNochange
-                        : tooltip.feature.properties.valueTotal,
-                      0
-                    )}
-                  </DataCell>
-                </TableRow>
-              </TableBody>
+              <Table>
+                <TableBody>
+                  <TableRow key={'zoning_code'}>
+                    <FirstColumnCell component="th" scope="row">
+                      <T
+                        ns="hiilikartta"
+                        keyName="report.map_graph.tooltip_zoning_code"
+                      ></T>
+                    </FirstColumnCell>
+                    <DataCell key={'zoning_code_val'} align="left">
+                      {tooltip.feature.properties[ZONING_CODE_COL]}
+                    </DataCell>
+                  </TableRow>
+                  <TableRow key={'area'}>
+                    <FirstColumnCell component="th" scope="row">
+                      <T
+                        ns="hiilikartta"
+                        keyName="report.map_graph.tooltip_area"
+                      ></T>
+                    </FirstColumnCell>
+                    <DataCell key={'zoning_code_val'} align="left">
+                      {pp(tooltip.feature.properties.area / 10000, 2)}
+                    </DataCell>
+                  </TableRow>
+                  <TableRow key={'co2_ha'}>
+                    <FirstColumnCell component="th" scope="row">
+                      <T
+                        ns="hiilikartta"
+                        keyName="report.map_graph.unit_co2_ha_compared"
+                      ></T>
+                    </FirstColumnCell>
+                    <DataCell key={'co2_ha_val'} align="left">
+                      {pp(
+                        activeDataOption.isCurrent
+                          ? tooltip.feature.properties.valueHaNochange
+                          : tooltip.feature.properties.valueHa,
+                        0
+                      )}
+                    </DataCell>
+                  </TableRow>
+                  <TableRow key={'co2_total'}>
+                    <FirstColumnCell component="th" scope="row">
+                      <T
+                        ns="hiilikartta"
+                        keyName="report.map_graph.unit_co2_total_compared"
+                      ></T>
+                    </FirstColumnCell>
+                    <DataCell key={'co2_total_val'} align="left">
+                      {pp(
+                        activeDataOption.isCurrent
+                          ? tooltip.feature.properties.valueTotalNochange
+                          : tooltip.feature.properties.valueTotal,
+                        0
+                      )}
+                    </DataCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </Box>
           </>
         )}
