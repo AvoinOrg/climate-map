@@ -507,7 +507,14 @@ const CarbonLineChartInner = ({
                         }}
                       ></Box>
                       <Typography
-                        sx={{ display: 'inline', typography: 'body2' }}
+                        sx={{
+                          display: 'inline-block',
+                          typography: 'body2',
+                          textOverflow: 'ellipsis',
+                          overflow: 'hidden',
+                          whiteSpace: 'nowrap',
+                          maxWidth: '250px',
+                        }}
                       >{`${localPlanNames[d.lineIndex]}:`}</Typography>
                     </Box>
                     <Typography
