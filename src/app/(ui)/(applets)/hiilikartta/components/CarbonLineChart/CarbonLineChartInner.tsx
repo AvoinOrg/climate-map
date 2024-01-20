@@ -318,7 +318,9 @@ const CarbonLineChartInner = ({
                       marginRight: '2rem',
                       marginTop: '1rem',
                       display: 'flex',
-                      alignItems: 'center',
+                      alignItems: 'top',
+                      width: '100%',
+                      minWidth: '500px',
                     }}
                   >
                     <svg width={15} height={15}>
