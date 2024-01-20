@@ -96,7 +96,8 @@ const CarbonOverviewGraph = ({ planConfs, featureYears, sx }: Props) => {
           return (
             <Row
               sx={{
-                flex: 0,
+                flex: { xs: 1, md: 0.5 },
+                maxWidth: '500px',
                 border: '1px solid',
                 borderRadius: '0.3125rem',
                 borderColor: 'primary.dark',
@@ -112,7 +113,15 @@ const CarbonOverviewGraph = ({ planConfs, featureYears, sx }: Props) => {
                 <Typography typography={'h8'}>
                   <T keyName="report.overview_graph.plan" ns="hiilikartta"></T>
                 </Typography>
-                <Typography typography={'h7'} sx={{ whiteSpace: 'nowrap' }}>
+                <Typography
+                  typography={'h7'}
+                  sx={{
+                    display: 'inline',
+                    textOverflow: 'ellipsis',
+                    overflow: 'hidden',
+                    maxWidth: '250px',
+                  }}
+                >
                   {planConf?.name}
                 </Typography>
                 <Typography typography={'h5'} sx={{ mt: 2 }}>
