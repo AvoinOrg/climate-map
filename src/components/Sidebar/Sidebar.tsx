@@ -59,6 +59,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
         backgroundColor: 'white',
         minHeight: 0,
         width: 'max-content',
+        maxWidth: '100%',
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
@@ -72,7 +73,11 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
             {sidebarHeader}
             <Box
               ref={sidebarRef}
-              sx={{ overflow: 'auto', display: 'flex', flexGrow: 1 }}
+              sx={{
+                overflow: 'auto',
+                display: 'flex',
+                flexGrow: 1,
+              }}
             >
               {children}
             </Box>
