@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Box, Button, Typography } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import { styled } from '@mui/material/styles'
@@ -56,6 +56,13 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const router = useRouter()
   const { t } = useTranslate('hiilikartta')
+
+  const hasNoFeatures = useMemo(() => {
+    if (planConf?.data?.features != null) {
+      return planConf.data.features.length === 0
+    }
+    return true
+  }, [planConf?.data?.features])
 
   useEffect(() => {
     if (planConf?.data.features) {
@@ -418,27 +425,41 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
                   }}
                 >
                   <Tooltip
-                    title={t(
-                      'sidebar.plan_settings.calculate_carbon_effect.tooltip_invalid'
-                    )}
-                    disableHoverListener={areSettingsValid}
-                    disableFocusListener={areSettingsValid}
-                    disableTouchListener={areSettingsValid}
+                    title={
+                      hasNoFeatures
+                        ? t(
+                            'sidebar.plan_settings.calculate_carbon_effect.tooltip_no_features'
+                          )
+                        : t(
+                            'sidebar.plan_settings.calculate_carbon_effect.tooltip_invalid'
+                          )
+                    }
+                    disableHoverListener={areSettingsValid && !hasNoFeatures}
+                    disableFocusListener={areSettingsValid && !hasNoFeatures}
+                    disableTouchListener={areSettingsValid && !hasNoFeatures}
                   >
                     <Box
                       sx={{
                         display: 'inline-flex',
                         flexDirection: 'row',
                         '&:hover': {
-                          cursor: areSettingsValid ? 'pointer' : 'default',
+                          cursor:
+                            areSettingsValid && !hasNoFeatures
+                              ? 'pointer'
+                              : 'default',
                         },
                         mt: 4,
                         flex: '0',
-                        color: areSettingsValid
-                          ? 'neutral.darker'
-                          : 'neutral.main',
+                        color:
+                          areSettingsValid && !hasNoFeatures
+                            ? 'neutral.darker'
+                            : 'neutral.main',
                       }}
-                      onClick={areSettingsValid ? handleSubmit : undefined}
+                      onClick={
+                        areSettingsValid && !hasNoFeatures
+                          ? handleSubmit
+                          : undefined
+                      }
                     >
                       <Box
                         sx={{
