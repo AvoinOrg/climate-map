@@ -5,7 +5,7 @@ import { styled } from '@mui/material/styles'
 import ButtonGroup from '@mui/material/ButtonGroup'
 import ExploreIcon from '@mui/icons-material/ExploreOutlined'
 import DoneIcon from '@mui/icons-material/Done'
-import { Box, Button } from '@mui/material'
+import { Box, Button, Tooltip } from '@mui/material'
 
 import { useMapStore } from '#/common/store'
 import { useDrawMode } from '#/common/hooks/map/useDrawMode'
@@ -22,6 +22,7 @@ import { useIsDrawEnabled } from '#/common/hooks/map/useIsDrawEnabled'
 import { useAllowedDrawModes } from '#/common/hooks/map/useAllowedDrawModes'
 import { useSelectedDrawFeatures } from '#/common/hooks/map/useSelectedDrawFeature'
 import { useIsDrawDeleteAllowed } from '#/common/hooks/map/useIsDrawDeleteAllowed'
+import { useTranslate } from '@tolgee/react'
 
 export const MapButtons = () => {
   const mapToggleTerrain = useMapStore((state) => state.mapToggleTerrain)
@@ -37,6 +38,7 @@ export const MapButtons = () => {
   const allowedDrawModes = useAllowedDrawModes()
   const selectedDrawFeatures = useSelectedDrawFeatures()
   const isDrawDeleteAllowed = useIsDrawDeleteAllowed()
+  const { t } = useTranslate('avoin-map')
   // const setIsDrawPolygon = useMapStore((state) => state.setIsDrawPolygon)
 
   // useEffect(() => {
@@ -82,13 +84,18 @@ export const MapButtons = () => {
           sx={{ height: '100%', mr: 1 }}
         >
           {drawMode != null && (
-            <StyledButton
-              onClick={handleDrawDeleteClick}
-              size="small"
-              disabled={selectedDrawFeatures.length === 0}
-            >
-              <Delete />
-            </StyledButton>
+            <Tooltip title={t('map.buttons.draw_delete')}>
+              {/* The box acts as a wrapper for tooltip to function when the button is disabled */}
+              <Box>
+                <StyledButton
+                  onClick={handleDrawDeleteClick}
+                  size="small"
+                  disabled={selectedDrawFeatures.length === 0}
+                >
+                  <Delete />
+                </StyledButton>
+              </Box>
+            </Tooltip>
           )}
         </StyledButtonGroup>
       )}
@@ -98,42 +105,61 @@ export const MapButtons = () => {
           sx={{ height: '100%', mr: 1 }}
         >
           {drawMode != null && (
-            <StyledButton onClick={() => disableDraw()} size="small">
-              <DoneIcon />
-            </StyledButton>
+            <Tooltip title={t('map.buttons.disable_draw')}>
+              <StyledButton onClick={() => disableDraw()} size="small">
+                <DoneIcon />
+              </StyledButton>
+            </Tooltip>
           )}
           {allowedDrawModes.includes('edit') && (
-            <StyledButton
-              onClick={() => setDrawMode('edit')}
-              size="small"
-              disabled={drawMode === 'edit'}
-            >
-              <EditDocument />
-            </StyledButton>
+            <Tooltip title={t('map.buttons.draw_edit')}>
+              {/* The box acts as a wrapper for tooltip to function when the button is disabled */}
+              <Box>
+                <StyledButton
+                  onClick={() => setDrawMode('edit')}
+                  size="small"
+                  disabled={drawMode === 'edit'}
+                >
+                  <EditDocument />
+                </StyledButton>
+              </Box>
+            </Tooltip>
           )}
           {allowedDrawModes.includes('polygon') && (
-            <StyledButton onClick={() => setDrawMode('polygon')} size="small">
-              <Polygon />
-            </StyledButton>
+            <Tooltip title={t('map.buttons.draw_polygon')}>
+              <StyledButton onClick={() => setDrawMode('polygon')} size="small">
+                <Polygon />
+              </StyledButton>
+            </Tooltip>
           )}
         </StyledButtonGroup>
       )}
       <StyledButtonGroup orientation="horizontal" sx={{ height: '100%' }}>
-        <StyledButton onClick={mapToggleTerrain} size="small">
-          <Terrain />
-        </StyledButton>
-        <StyledButton onClick={mapResetNorth} size="small">
-          <ExploreIcon sx={{ fontSize: '27px' }} />
-        </StyledButton>
-        <StyledButton onClick={mapRelocate} size="small">
-          <Bullseye />
-        </StyledButton>
-        <StyledButton onClick={mapZoomIn} size="small">
-          <Plus />
-        </StyledButton>
-        <StyledButton onClick={mapZoomOut} size="small">
-          <Minus />
-        </StyledButton>
+        <Tooltip title={t('map.buttons.background_map')}>
+          <StyledButton onClick={mapToggleTerrain} size="small">
+            <Terrain />
+          </StyledButton>
+        </Tooltip>
+        <Tooltip title={t('map.buttons.reset_north')}>
+          <StyledButton onClick={mapResetNorth} size="small">
+            <ExploreIcon sx={{ fontSize: '27px' }} />
+          </StyledButton>
+        </Tooltip>
+        <Tooltip title={t('map.buttons.relocate')}>
+          <StyledButton onClick={mapRelocate} size="small">
+            <Bullseye />
+          </StyledButton>
+        </Tooltip>
+        <Tooltip title={t('map.buttons.zoom_in')}>
+          <StyledButton onClick={mapZoomIn} size="small">
+            <Plus />
+          </StyledButton>
+        </Tooltip>
+        <Tooltip title={t('map.buttons.zoom_out')}>
+          <StyledButton onClick={mapZoomOut} size="small">
+            <Minus />
+          </StyledButton>
+        </Tooltip>
       </StyledButtonGroup>
     </Box>
   )
