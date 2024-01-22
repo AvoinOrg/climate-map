@@ -225,10 +225,6 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
         }}
       >
         <Typography sx={{ display: 'inline', typography: 'body2' }}>
-          <T ns="hiilikartta" keyName="report.overview_graph.calc_accuracy"></T>
-          {` ${''}+- XX%`}
-        </Typography>
-        <Typography sx={{ display: 'inline', typography: 'body2' }}>
           <u>
             <T
               ns="hiilikartta"
