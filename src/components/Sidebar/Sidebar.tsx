@@ -30,8 +30,12 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const sidebarRef = useRef()
 
   useLayoutEffect(() => {
-    setSidebarHeader(<SidebarHeader title={'avoin map'}></SidebarHeader>)
     setSidebarHeaderElementSetter(setSidebarHeader)
+  }, [])
+
+  useLayoutEffect(() => {
+    // TODO: Figure out a way to fix this horror. This runs after appletWrapper, for some reason
+    // setSidebarHeader(<SidebarHeader title={'avoin map'}></SidebarHeader>)
   }, [])
 
   useEffect(() => {
