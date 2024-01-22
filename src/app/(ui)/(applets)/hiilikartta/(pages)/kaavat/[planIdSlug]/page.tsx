@@ -22,7 +22,7 @@ import {
   SIDEBAR_PADDING_REM,
   SIDEBAR_PADDING_WITH_SCROLLBAR_REM,
 } from '#/common/style/theme/constants'
-import { ArrowNextBig, Delete } from '#/components/icons'
+import { ArrowNextBig, Delete, Star } from '#/components/icons'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
@@ -206,6 +206,24 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             Kaavatiedoston asetukset <SettingsIcon />
             </MenuButton>
           </MuiLink> */}
+              {!planConf.reportData && (
+                <Box sx={{ display: 'flex', flexDirection: 'row', mt: 10 }}>
+                  <Star sx={{ height: 40, width: 'auto' }}></Star>
+                  <Typography
+                    sx={{
+                      display: 'inline-flex',
+                      typography: 'body2',
+                      ml: 1.5,
+                      mt: 0.5,
+                    }}
+                  >
+                    <T
+                      keyName={'sidebar.plan_settings.draw_hint'}
+                      ns="hiilikartta"
+                    ></T>
+                  </Typography>
+                </Box>
+              )}
 
               {planConf.reportData && currentYear != null && (
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
