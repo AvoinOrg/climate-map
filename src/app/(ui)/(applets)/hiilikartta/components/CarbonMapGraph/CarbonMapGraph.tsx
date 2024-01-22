@@ -5,6 +5,7 @@ import { T, useTranslate } from '@tolgee/react'
 import { styled } from '@mui/material/styles'
 
 import DropDownSelect from '#/components/common/DropDownSelect'
+import { ClickableModal } from '#/components/Modal'
 
 import {
   CalcFeatureCollection,
@@ -224,14 +225,84 @@ const CarbonMapGraph = ({ planConfs, featureYears }: Props) => {
           mt: 2,
         }}
       >
-        <Typography sx={{ display: 'inline', typography: 'body2' }}>
-          <u>
-            <T
-              ns="hiilikartta"
-              keyName="report.general.read_more_about_calc"
-            ></T>
-          </u>
-        </Typography>
+        {/* TODO: Create a singular component, or figure out */}
+        <ClickableModal
+          modalBody={
+            <Typography typography="body2">
+              Työkalu laskee kasvillisuuden ja maaperän hiilivaraston nykyisen
+              hiilivaraston paikkatietoaineistojen perusteella. Arvot on
+              esitetty hiilidioksiditonneina (t CO2). Kaavan vaikutus
+              hiilivarastoon perustuu kasvillisuuden ja maaperän nykyiseen
+              hiilivarastoon, kasvupaikkatyyppin perustuvaan arvioon
+              kasvillisuuden hiilen sidonnasta tai päästöistä, käyttäjän
+              syöttämiin kaavan aluevaraustietoihin ja niihin liittyviin
+              oletuksiin hiilivaraston säilymisestä eri käyttötarkoitusluokissa.
+              Arvio puuston hiilivaraston kehityksestä tiettyyn vuoteen mennessä
+              perustuu kasvupaikan luokituksiin. <br />
+              <br /> Työkalun avulla voidaan vertailla useamman kaavavaihtoehdon
+              vaikutuksia hiilivarastoon. Jos vaihtoehdoilla on erilainen
+              alueellinen kattavuus, vaihtoehdot eroavat sekä ilman kaavaa
+              olevan tilanteen että kaavan toteutumisen myötä syntyneen
+              tilanteen osalta. Jos vaihtoehtojen alueellinen kattavuus on sama,
+              mutta vaihtoehdot eroavat aluevarusten luokituksen osalta,
+              hiilivaraston suuruus ja kehitys ilman kaavaa on molemmissa
+              vaihtoehdoissa sama ja kaavat eroavat vain kaavan vaikutusten
+              osalta. <br />
+              <br /> Tiedot kasvillisuuden hiilivarastosta on koostettu eri
+              lähteistä. Metsämaan osalta tiedot perustuvat monilähteisen
+              valtakunnan metsien inventoinnin (MVMI) puuston
+              biomassateemakarttoihin vuodelta 2021. Maatalousmaan osalta tiedot
+              perustuvat YASSO laskentoihin, ELY-keskuskohtaisiin satotietoihin
+              2012 – 2021 ja kuntakohtaiseen viljelypinta-alaan vuonna 2021.
+              Maatalousmaan rajaus perustuu Maanmittauslaitoksen, Ruokaviraston
+              ja Syken tuottamaan aineistoon. Rakennetun ympäristön
+              kasvillisuuden osalta hiilivaraston määrä on karkeampi arvio, joka
+              perustuu kirjallisuuden, paikkatietoaineistojen ja
+              asiantuntija-arvioiden perusteella määriteltyihin oletusarvoihin
+              eri korkeusluokkien kasvillisuuden keskimääräisestä
+              hiilivarastosta. <br />
+              <br /> Tiedot maaperän hiilivarastosta koostettiin useasta eri
+              aineistosta. Turvemaiden osalta hyödynnettiin suoallaskohtaista
+              turpeen hiilivarastoaineistoa GTK:n tutkimille soille (n. 2,3
+              milj. ha), sekä GTK:n valtakunnallisen ravintiesuustaso -aineiston
+              ja siihen liitettyjen oletusarvojen (Korhonen 2013) perusteella.
+              Turvemaiden ulkopuolelle jäävän metsämaan osalta maaperän
+              hiilivarasto määriteltiin Luonnonvarakeskuksen MVMI
+              Kasvupaikkatyyppiaineiston, sekä siihen liitettyjen oletusarvojen
+              perusteella. Turvemaiden ulkopuolelle jäävän maatalousmaan osalta
+              hiilivarasto määriteltiin Suomen ympäristökeskuksen,
+              Maanmittauslaitoksen ja Ruokaviraston aineistoihin perustuvaan
+              maatalousmaa-aineistoon ja siihen liitettyihin oletusarvoihin.
+              Rakennetun alueen osalta maaperän hiilivarasto määriteltiin Syken
+              ja Scalgon tuottaman 2m maankäyttöaineiston korkean ja matalan
+              kasvillisuuden luokille tutkimuskirjallisuuden perusteella ja
+              yleistettiin 16 m x 16 m hilaan. <br />
+              <br /> Puuston hiilivaraston kehityksen laskennan perustana on
+              metsien inventoinnin (MVMI) aineistoihin pohjautuva
+              metsäíkköalueaineisto, jossa on luokiteltu kasvupaikan ja puuston
+              ominaisuuksien perusteella mahdollisimman yhtenäisiä
+              metsikköalueita. Alueita määrittäviä luokkamuuttajia ovat
+              sijaintimaakunta, maaluokka (metsä-, kitu- ja joutomaa), päätyyppi
+              (kivennäismaa, räme, korpi ja avosuo), ojitustilanne (ojitettu ja
+              ojittamaton), ravinteisuustaso (lehdoista karukkokankaisiin),
+              pääpuulaji (mänty, kuusi, koivu ja muu lehtipuu) ja puuston
+              keski-ikä. Luokkamuuttujien perusteella metsikköalue yhdistetään
+              Luonnonvarakeskuksen tuottamiin biomassakäyriin, jotka kuvaavat
+              biomassan ja sen sisältämän hiilen kehitystä kyseisen tyyppisellä
+              kasvupaikalla ajan funktiona. Biomassakäyrien pohjana toimii
+              Luonnonvarakeskuksen Motti-ohjelmistolla tuotettu aineisto.
+            </Typography>
+          }
+        >
+          <Typography sx={{ display: 'inline', typography: 'body2' }}>
+            <u>
+              <T
+                ns="hiilikartta"
+                keyName="report.general.read_more_about_calc"
+              ></T>
+            </u>
+          </Typography>
+        </ClickableModal>
       </Box>
     </Box>
   )
