@@ -31,3 +31,16 @@ export const getTextWidth = (text: string, font: string): number => {
   const metrics = context.measureText(text)
   return metrics.width
 }
+
+export const cssMeasureToNumber = (measure: string) => {
+  if (measure.endsWith('px')) {
+    return parseFloat(measure.slice(0, -2))
+  }
+  if (measure.endsWith('rem')) {
+    return (
+      parseFloat(measure.slice(0, -3)) *
+      parseFloat(getComputedStyle(document.documentElement).fontSize)
+    )
+  }
+  return parseFloat(measure)
+}
