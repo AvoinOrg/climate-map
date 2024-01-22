@@ -11,7 +11,9 @@ const refreshAccessToken = async (token: JWT): Promise<JWT> => {
       token_endpoint_auth_method: 'none',
     })
 
-    const { refresh_token, access_token, expires_at } = await client.refresh(token.refreshToken as string)
+    const { refresh_token, access_token, expires_at } = await client.refresh(
+      token.refreshToken as string
+    )
 
     return {
       ...token,
@@ -30,9 +32,12 @@ const refreshAccessToken = async (token: JWT): Promise<JWT> => {
 }
 
 const options = () => {
-  if (!process.env.NEXT_PUBLIC_ZITADEL_ISSUER) throw new Error('ZITADEL_ISSUER is not set')
-  if (!process.env.ZITADEL_CLIENT_ID) throw new Error('ZITADEL_CLIENT_ID is not set')
-  if (!process.env.ZITADEL_CLIENT_SECRET) throw new Error('ZITADEL_CLIENT_SECRET is not set')
+  if (!process.env.NEXT_PUBLIC_ZITADEL_ISSUER)
+    throw new Error('ZITADEL_ISSUER is not set')
+  if (!process.env.ZITADEL_CLIENT_ID)
+    throw new Error('ZITADEL_CLIENT_ID is not set')
+  if (!process.env.ZITADEL_CLIENT_SECRET)
+    throw new Error('ZITADEL_CLIENT_SECRET is not set')
 
   return {
     providers: [
@@ -61,7 +66,15 @@ const options = () => {
       }),
     ],
     callbacks: {
-      async jwt({ token, user, account }: { token: JWT; user: any; account: any }) {
+      async jwt({
+        token,
+        user,
+        account,
+      }: {
+        token: JWT
+        user: any
+        account: any
+      }) {
         token.user ??= user
         token.accessToken ??= account?.access_token
         token.refreshToken ??= account?.refresh_token
