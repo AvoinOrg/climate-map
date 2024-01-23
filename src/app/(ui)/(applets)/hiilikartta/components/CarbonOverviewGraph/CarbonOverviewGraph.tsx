@@ -47,14 +47,14 @@ const CarbonOverviewGraph = ({ planConfs, featureYears, sx }: Props) => {
                 ns={'hiilikartta'}
               ></T>{' '}
             </Typography>
-            <Info
+            {/* <Info
               sx={{
                 height: '1.1rem',
                 mt: 'auto',
                 mb: '0.28rem',
                 ml: '0.85rem',
               }}
-            ></Info>
+            ></Info> */}
           </Row>
           <Row sx={{ justifyContent: 'flex-start', mt: 0.5 }}>
             <Typography
