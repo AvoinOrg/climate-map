@@ -376,7 +376,7 @@ const LegendItem = ({ color, label }: { color: string; label: string }) => {
           fontSize: '0.625rem',
           fontStyle: 'normal',
           lineHeight: 'normal',
-          letterSpacing: '0.0625rem',
+          letterSpacing: '0.00625rem',
         }}
       >
         {label}
