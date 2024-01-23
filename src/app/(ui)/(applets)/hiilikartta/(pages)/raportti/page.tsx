@@ -354,10 +354,14 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         </Row>
       </Section>
       <Section
-        sx={{
+        sx={(theme) => ({
           width: '100%',
           backgroundColor: 'primary.light',
-        }}
+          px: 4,
+          [theme.breakpoints.down('md')]: {
+            px: 3,
+          },
+        })}
       >
         <Row
           sx={{
