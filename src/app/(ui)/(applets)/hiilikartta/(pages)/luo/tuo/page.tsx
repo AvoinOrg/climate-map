@@ -78,6 +78,7 @@ const Page = () => {
 
         if (zoningCode != null) {
           const trimmedZoningCode = zoningCode
+            .toUpperCase()
             .trim()
             .split(' ')[0]
             .split('-')[0]
@@ -88,7 +89,7 @@ const Page = () => {
             if (code.includes(',')) {
               return zoningClass.code.split(',').includes(trimmedZoningCode)
             } else {
-              return code === trimmedZoningCode
+              return code.toUpperCase() === trimmedZoningCode
             }
           })
 

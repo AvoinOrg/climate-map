@@ -445,8 +445,10 @@ export const checkIsValidZoningCode = (zoningCode: string | null) => {
 
   for (let zoning of ZONING_CLASSES) {
     // Split the code by comma and trim spaces, then check if zoningCode is one of them
-    const codes = zoning.code.split(',').map((code) => code.trim())
-    if (codes.includes(zoningCode.trim())) {
+    const codes = zoning.code
+      .split(',')
+      .map((code) => code.trim().toUpperCase())
+    if (codes.includes(zoningCode.trim().toUpperCase())) {
       return true
     }
   }
