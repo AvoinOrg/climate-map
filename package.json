@@ -44,6 +44,7 @@
     "@ngageoint/geopackage": "^4.2.3",
     "@tanstack/react-query": "rc",
     "@tolgee/react": "^5.15.0",
+    "@turf/boolean-valid": "^6.5.0",
     "@turf/boolean-within": "^6.5.0",
     "@turf/helpers": "^6.5.0",
     "@turf/meta": "^6.5.0",

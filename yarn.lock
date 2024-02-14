@@ -3687,6 +3687,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@turf/boolean-valid@npm:^6.5.0":
+  version: 6.5.0
+  resolution: "@turf/boolean-valid@npm:6.5.0"
+  dependencies:
+    "@turf/bbox": ^6.5.0
+    "@turf/boolean-crosses": ^6.5.0
+    "@turf/boolean-disjoint": ^6.5.0
+    "@turf/boolean-overlap": ^6.5.0
+    "@turf/boolean-point-in-polygon": ^6.5.0
+    "@turf/boolean-point-on-line": ^6.5.0
+    "@turf/helpers": ^6.5.0
+    "@turf/invariant": ^6.5.0
+    "@turf/line-intersect": ^6.5.0
+    geojson-polygon-self-intersections: 1.2.x
+  checksum: d60a478518f273c8b2f6061cf70c96d96c3bce4f409677aaf14dd37d005c9cb05c59bd9e68cfe59fadc09e4370d054966d3133fea002394151706009e6a55d89
+  languageName: node
+  linkType: hard
+
 "@turf/boolean-within@npm:6.5.0, @turf/boolean-within@npm:^6.5.0":
   version: 6.5.0
   resolution: "@turf/boolean-within@npm:6.5.0"
@@ -7467,6 +7485,7 @@ __metadata:
     "@testing-library/jest-dom": ^5.16.5
     "@testing-library/react": ^14.0.0
     "@tolgee/react": ^5.15.0
+    "@turf/boolean-valid": ^6.5.0
     "@turf/boolean-within": ^6.5.0
     "@turf/helpers": ^6.5.0
     "@turf/meta": ^6.5.0
@@ -10233,6 +10252,15 @@ __metadata:
   version: 1.1.1
   resolution: "geojson-flatten@npm:1.1.1"
   checksum: cd1ce6d664bb71f815923f87473d415c5ae6a9d007a6a99fc7237a54beef139379c2a63491757a790ee7506babee0364d1d290a73b5ce0cd84a59ed3e223e406
+  languageName: node
+  linkType: hard
+
+"geojson-polygon-self-intersections@npm:1.2.x":
+  version: 1.2.1
+  resolution: "geojson-polygon-self-intersections@npm:1.2.1"
+  dependencies:
+    rbush: ^2.0.1
+  checksum: 4675e53df0b3d6dcdf803f625bc2d45263f55cd5c91232cbea771360f38930a54a5f1972106edd7a5b87ee3dabbde2de63965f7223b84717334c0e268304345a
   languageName: node
   linkType: hard
 
