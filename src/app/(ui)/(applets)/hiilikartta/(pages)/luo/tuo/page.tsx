@@ -3,6 +3,8 @@
 import React, { useRef, useEffect, useState, ChangeEvent } from 'react'
 import { Button } from '@mui/material'
 import { useRouter } from 'next/navigation'
+import { buffer } from '@turf/turf'
+import booleanValid from '@turf/boolean-valid'
 
 import { getRoute } from '#/common/utils/routing'
 import {
@@ -41,9 +43,29 @@ const Page = () => {
     zoningColName: string,
     nameColName?: string
   ): FeatureCollection => {
-    return {
-      type: 'FeatureCollection',
-      features: json.features.map((feature: Feature, index) => {
+    const features = json.features
+      .map((feature: Feature, index) => {
+        if (!feature.geometry) {
+          return null // Remove features without geometry
+        }
+
+        if (!booleanValid(feature)) {
+          try {
+            // Attempt to fix invalid geometry by applying a buffer
+            const fixedGeometry = buffer(feature, 0).geometry
+            if (booleanValid(fixedGeometry)) {
+              // If the fixed geometry is valid, update the feature's geometry
+              feature.geometry = fixedGeometry
+            } else {
+              // If the geometry is still invalid, discard the feature
+              return null
+            }
+          } catch (error) {
+            console.error('Error fixing geometry:', error)
+            return null // Discard features with geometry that cannot be fixed
+          }
+        }
+
         // Get the value of the property using colName and remove other properties
         let zoningCode = feature.properties?.[zoningColName]
 
@@ -104,7 +126,12 @@ const Page = () => {
           ...feature,
           properties: properties,
         }
-      }),
+      })
+      .filter((feature) => feature !== null)
+
+    return {
+      type: 'FeatureCollection',
+      features: features as Feature[],
     }
   }
 
