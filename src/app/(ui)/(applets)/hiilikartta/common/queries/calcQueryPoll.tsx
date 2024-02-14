@@ -28,7 +28,7 @@ export const calcQueryPoll = (
         })
 
         return reportData
-      } else if (response.status === 422) {
+      } else if (response.status === 206) {
         updatePlanConf(planConf.id, {
           calculationState: CalculationState.ERRORED,
         })
