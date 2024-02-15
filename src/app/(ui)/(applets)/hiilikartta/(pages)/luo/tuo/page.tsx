@@ -5,6 +5,7 @@ import { Button } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import { buffer } from '@turf/turf'
 import booleanValid from '@turf/boolean-valid'
+import { flattenDeep } from 'lodash-es'
 
 import { getRoute } from '#/common/utils/routing'
 import {
@@ -45,8 +46,24 @@ const Page = () => {
   ): FeatureCollection => {
     const features = json.features
       .map((feature: Feature, index) => {
-        if (!feature.geometry) {
+        if (
+          !feature.geometry ||
+          // @ts-ignore
+          feature.geometry.coordinates ||
+          !['MultiPolygon', 'Polygon'].includes(feature.geometry.type)
+        ) {
           return null // Remove features without geometry
+        }
+
+        if (
+          // @ts-ignore
+          feature.geometry.coordinates &&
+          // @ts-ignore
+          (feature.geometry.coordinates.length === 0 ||
+            // @ts-ignore
+            flattenDeep(feature.geometry.coordinates).length === 0)
+        ) {
+          return null
         }
 
         if (!booleanValid(feature)) {
