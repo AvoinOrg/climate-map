@@ -49,7 +49,7 @@ const Page = () => {
         if (
           !feature.geometry ||
           // @ts-ignore
-          feature.geometry.coordinates ||
+          !feature.geometry.coordinates ||
           !['MultiPolygon', 'Polygon'].includes(feature.geometry.type)
         ) {
           return null // Remove features without geometry
