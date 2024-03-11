@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react'
-import { useSnackbar } from 'notistack'
+import { closeSnackbar, useSnackbar } from 'notistack'
 
 import { useUIStore } from '#/common/store'
+import { Box } from '@mui/material'
+import { Cross } from '../icons'
 
 const NotificationManager = () => {
   const { enqueueSnackbar } = useSnackbar()
@@ -16,6 +18,22 @@ const NotificationManager = () => {
           enqueueSnackbar(notification.message, {
             variant: notification.variant || 'default',
             autoHideDuration: notification.duration || 5000,
+            hideIconVariant: true,
+            action: (key) => (
+              <Box
+                onClick={() => {
+                  closeSnackbar(key)
+                }}
+                sx={{
+                  height: '100%',
+                  '&:hover': { cursor: 'pointer' },
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Cross sx={{ display: 'flex', height: '16px' }}></Cross>
+              </Box>
+            ),
           })
         }
       })
