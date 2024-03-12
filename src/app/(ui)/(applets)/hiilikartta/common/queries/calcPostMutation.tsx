@@ -3,6 +3,8 @@ import axios from 'axios'
 import JSZip from 'jszip'
 import { CalculationState, PlanConf } from '../types'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
+import { useUIStore } from '#/common/store'
+import { useTranslate } from '@tolgee/react'
 
 const API_URL = process.env.NEXT_PUBLIC_HIILIKARTTA_API_URL
 
@@ -17,6 +19,8 @@ export const calcPostMutation = (): UseMutationOptions<
   PlanConf
 > => {
   const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
+  const notify = useUIStore((state) => state.notify)
+  const { t } = useTranslate('hiilikartta')
 
   return {
     mutationFn: async (planConf: PlanConf) => {
@@ -48,6 +52,10 @@ export const calcPostMutation = (): UseMutationOptions<
       return postRes.data
     },
     onError: (error, planConf, context) => {
+      notify({
+        message: t('notifications.starting_calc_failed'),
+        variant: 'error',
+      })
       console.error(error)
       updatePlanConf(planConf.id, {
         calculationState: CalculationState.ERRORED,
