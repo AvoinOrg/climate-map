@@ -63,6 +63,12 @@ const LoggedInButton = () => {
     }
   }
 
+  useEffect(() => {
+    if (error) {
+      signOut()
+    }
+  }, [error])
+
   // return focus to the button when we transitioned from !open -> open
   const prevOpen = React.useRef(open)
   React.useEffect(() => {
