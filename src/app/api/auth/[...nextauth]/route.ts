@@ -88,7 +88,10 @@ const options = () => {
         // Access token has expired, try to update it
         return refreshAccessToken(token)
       },
-      async session({ session, token: { user, error: tokenError } }: any) {
+      async session({
+        session,
+        token: { user, error: tokenError, accessToken },
+      }: any) {
         session.user = {
           id: user?.id,
           email: user?.email,
@@ -97,6 +100,7 @@ const options = () => {
           loginName: user?.loginName,
         }
         session.clientId = process.env.ZITADEL_CLIENT_ID
+        session.accessToken = accessToken
         session.error = tokenError
         return session
       },
