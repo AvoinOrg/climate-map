@@ -5,18 +5,15 @@ import Button from '@mui/material/Button'
 import { styled } from '@mui/material/styles'
 import { T } from '@tolgee/react'
 import { openWindow } from '#/common/utils/modal'
-import { Tooltip } from '@mui/material'
 
 const LoginButton = () => {
   return (
-    <Tooltip title={'Kirjautuminen on toistaiseksi poissa käytöstä.'}>
-      <Button
-        sx={{ color: 'neutral.lighter', typography: 'h3' }}
-        // onClick={() => openWindow('/login')}
-      >
-        <T keyName="navbar.profile.sign_in" />
-      </Button>
-    </Tooltip>
+    <Button
+      sx={{ color: 'neutral.lighter', typography: 'h3' }}
+      onClick={() => openWindow('/login')}
+    >
+      <T keyName="navbar.profile.sign_in" />
+    </Button>
   )
 }
 
