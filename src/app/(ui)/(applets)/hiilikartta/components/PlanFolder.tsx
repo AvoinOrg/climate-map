@@ -1,13 +1,19 @@
+'use client'
+
 import React from 'react'
-import { Box, Typography, CircularProgress } from '@mui/material'
-import { T } from '@tolgee/react'
+import { Box, Typography, CircularProgress, Tooltip } from '@mui/material'
+import { T, useTranslate } from '@tolgee/react'
+import { SaveOutlined as SaveIcon } from '@mui/icons-material'
+import { useMutation } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
 
 import Folder from '#/components/common/Folder'
-import { Error as ErrorIcon, Info } from '#/components/icons'
+import { Error as ErrorIcon, Exclamation, Info } from '#/components/icons'
 import EditableText from '#/components/common/EditableText'
 
 import { CalculationState, PlanConf } from '../common/types'
 import { useAppletStore } from '../state/appletStore'
+import { planPostMutation } from '../common/queries/planPostMutation'
 
 const PlanFolder = ({
   planConf,
@@ -19,119 +25,226 @@ const PlanFolder = ({
   isNameEditable?: boolean
 }) => {
   const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
+  const planPost = useMutation(planPostMutation())
+  const { status } = useSession()
+  const { t } = useTranslate('hiilikartta')
 
   const handleNameChange = (event: any) => {
     updatePlanConf(planConf.id, { name: event.target.value })
   }
 
-  return (
-    <Folder height={height}>
-      <Box
-        sx={(theme) => ({
-          pt: 2,
-          pl: 3,
-          pb: 3,
-          pr: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          flex: '1',
-          height: '100%',
-        })}
-      >
-        {isNameEditable ? (
-          <EditableText
-            textSx={{ typography: 'h2', color: 'neutral.darker' }}
-            value={planConf.name}
-            onChange={handleNameChange}
-          />
-        ) : (
-          <Typography sx={{ typography: 'h2', color: 'neutral.darker' }}>
-            {planConf.name}
-          </Typography>
-        )}
+  const handleSyncClick = (event: any) => {
+    event.preventDefault()
+    event.stopPropagation()
+    event.nativeEvent.stopImmediatePropagation()
 
-        {![CalculationState.NOT_STARTED].includes(
-          planConf.calculationState
-        ) && (
+    if (planConf) {
+      planPost.mutate(planConf)
+    }
+  }
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          position: 'relative',
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+          mb: '-0.8rem',
+          zIndex: 1000,
+          color:
+            planPost.isError && !planPost.isPending
+              ? 'warning.dark'
+              : 'neutral.darker',
+        }}
+      >
+        <Tooltip
+          title={t('sidebar.my_plans.sign_in_to_save')}
+          disableHoverListener={status === 'authenticated'}
+        >
           <Box
+            onClick={status === 'authenticated' ? handleSyncClick : undefined}
             sx={{
-              display: 'flex',
+              display: 'inline-flex',
               flexDirection: 'row',
-              alignItems: 'flex-end',
-              justifyContent: 'space-between',
+              alignItems: 'end',
+              '&:hover': {
+                cursor: planPost.isPending
+                  ? 'wait'
+                  : status === 'authenticated'
+                  ? 'pointer'
+                  : 'not-allowed',
+              },
+              mr: '1px',
+              height: '16px',
+              opacity: status === 'authenticated' ? 1 : 0.6,
             }}
           >
-            {[
-              CalculationState.INITIALIZING,
-              CalculationState.CALCULATING,
-            ].includes(planConf.calculationState) && (
+            {planConf.lastSaved && !planPost.isPending && (
               <>
-                <Box
-                  sx={{
-                    typography: 'h7',
-                    color: 'secondary.dark',
-                    lineHeight: '1',
-                  }}
+                <Typography
+                  sx={{ display: 'inline', typography: 'body7', mr: 0.5 }}
                 >
                   <T
-                    keyName={
-                      planConf.calculationState ===
-                      CalculationState.INITIALIZING
-                        ? 'sidebar.my_plans.calculations_starting'
-                        : 'sidebar.my_plans.calculations_in_progress'
-                    }
-                    ns={'hiilikartta'}
+                    ns="hiilikartta"
+                    keyName="sidebar.plan_settings.last_saved"
                   ></T>
-                </Box>
-
-                <CircularProgress
-                  color="secondary"
-                  size={25}
-                  sx={{ height: '10px' }}
-                />
+                </Typography>
+                <Typography sx={{ display: 'inline', typography: 'body7' }}>
+                  {new Date(planConf.lastSaved).toLocaleString()}
+                </Typography>
               </>
             )}
-            {planConf.calculationState === CalculationState.ERRORED && (
+            {!planConf.lastSaved && !planPost.isPending && (
               <>
-                <Box
-                  sx={{
-                    typography: 'h7',
-                    color: 'warning.dark',
-                    lineHeight: '1',
-                  }}
-                >
+                <Typography sx={{ display: 'inline', typography: 'body7' }}>
                   <T
-                    keyName={'sidebar.my_plans.calculations_errored'}
-                    ns={'hiilikartta'}
+                    ns="hiilikartta"
+                    keyName="sidebar.plan_settings.save_plan"
                   ></T>
-                </Box>
-                <ErrorIcon
-                  sx={{ color: 'warning.dark', height: '24px' }}
-                ></ErrorIcon>
+                </Typography>
               </>
             )}
-            {planConf.calculationState === CalculationState.FINISHED && (
+            {planPost.isPending && (
               <>
-                <Box
-                  sx={{
-                    typography: 'h7',
-                    color: 'secondary.dark',
-                    lineHeight: '1',
-                  }}
-                >
+                <Typography sx={{ display: 'inline', typography: 'body7' }}>
                   <T
-                    keyName={'sidebar.my_plans.calculations_finished'}
-                    ns={'hiilikartta'}
+                    ns="hiilikartta"
+                    keyName="sidebar.plan_settings.saving_plan"
                   ></T>
-                </Box>
-                <Info sx={{ color: 'secondary.dark', height: '24px' }}></Info>
+                </Typography>
+              </>
+            )}
+            {planPost.isPending && (
+              <CircularProgress
+                color="secondary"
+                size={15}
+                sx={{ height: '12px', ml: '4px', mr: '3px', mb: '1px' }}
+              />
+            )}
+            {!planPost.isPending && (
+              <SaveIcon sx={{ ml: '4px', mb: '-3px', color: '#636363' }}></SaveIcon>
+            )}
+            {planPost.isError && !planPost.isPending && (
+              <>
+                <Exclamation
+                  sx={{ height: '1.1rem', mb: '0.5px', color: 'warning.dark' }}
+                ></Exclamation>
               </>
             )}
           </Box>
-        )}
+        </Tooltip>
       </Box>
-    </Folder>
+
+      <Folder height={height}>
+        <Box
+          sx={(theme) => ({
+            pt: 2,
+            pl: 3,
+            pb: 3,
+            pr: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            flex: '1',
+            height: '100%',
+          })}
+        >
+          {isNameEditable ? (
+            <EditableText
+              textSx={{ typography: 'h2', color: 'neutral.darker' }}
+              value={planConf.name}
+              onChange={handleNameChange}
+            />
+          ) : (
+            <Typography sx={{ typography: 'h2', color: 'neutral.darker' }}>
+              {planConf.name}
+            </Typography>
+          )}
+
+          {![CalculationState.NOT_STARTED].includes(
+            planConf.calculationState
+          ) && (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'flex-end',
+                justifyContent: 'space-between',
+              }}
+            >
+              {[
+                CalculationState.INITIALIZING,
+                CalculationState.CALCULATING,
+              ].includes(planConf.calculationState) && (
+                <>
+                  <Box
+                    sx={{
+                      typography: 'h7',
+                      color: 'secondary.dark',
+                      lineHeight: '1',
+                    }}
+                  >
+                    <T
+                      keyName={
+                        planConf.calculationState ===
+                        CalculationState.INITIALIZING
+                          ? 'sidebar.my_plans.calculations_starting'
+                          : 'sidebar.my_plans.calculations_in_progress'
+                      }
+                      ns={'hiilikartta'}
+                    ></T>
+                  </Box>
+
+                  <CircularProgress
+                    color="secondary"
+                    size={25}
+                    sx={{ height: '10px' }}
+                  />
+                </>
+              )}
+              {planConf.calculationState === CalculationState.ERRORED && (
+                <>
+                  <Box
+                    sx={{
+                      typography: 'h7',
+                      color: 'warning.dark',
+                      lineHeight: '1',
+                    }}
+                  >
+                    <T
+                      keyName={'sidebar.my_plans.calculations_errored'}
+                      ns={'hiilikartta'}
+                    ></T>
+                  </Box>
+                  <ErrorIcon
+                    sx={{ color: 'warning.dark', height: '24px' }}
+                  ></ErrorIcon>
+                </>
+              )}
+              {planConf.calculationState === CalculationState.FINISHED && (
+                <>
+                  <Box
+                    sx={{
+                      typography: 'h7',
+                      color: 'secondary.dark',
+                      lineHeight: '1',
+                    }}
+                  >
+                    <T
+                      keyName={'sidebar.my_plans.calculations_finished'}
+                      ns={'hiilikartta'}
+                    ></T>
+                  </Box>
+                  <Info sx={{ color: 'secondary.dark', height: '24px' }}></Info>
+                </>
+              )}
+            </Box>
+          )}
+        </Box>
+      </Folder>
+    </Box>
   )
 }
 
