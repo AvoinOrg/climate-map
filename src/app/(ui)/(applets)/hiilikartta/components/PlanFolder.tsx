@@ -64,7 +64,11 @@ const PlanFolder = ({
           disableHoverListener={status === 'authenticated'}
         >
           <Box
-            onClick={status === 'authenticated' ? handleSyncClick : undefined}
+            onClick={
+              status === 'authenticated' && !planPost.isPending
+                ? handleSyncClick
+                : undefined
+            }
             sx={{
               display: 'inline-flex',
               flexDirection: 'row',
