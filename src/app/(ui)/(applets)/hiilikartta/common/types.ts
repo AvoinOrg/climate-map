@@ -17,7 +17,10 @@ export interface PlanConf extends NewPlanConf {
   created: number
   calculationState: CalculationState
   reportData: undefined | ReportData
-  lastSaved?: number
+  savingState?: 'idle' | 'saving'
+  lastSavedOnCloud?: number
+  localLastSaved?: number
+  localLastSavedOnCloud?: number
 }
 
 export interface ExternalPlanConf {
