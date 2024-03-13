@@ -122,11 +122,6 @@ export const useAppletStore = create<Vars & Actions>()(
               return null
             }
 
-            const featureProperties = {
-              ...features[featureIndex].properties,
-              ...feature.properties,
-            }
-
             await set((state) => {
               if (feature.geometry != null) {
                 state.planConfs[planId].data.features[featureIndex].geometry =
