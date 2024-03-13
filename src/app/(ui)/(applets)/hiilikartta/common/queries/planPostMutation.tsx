@@ -22,7 +22,7 @@ export const planPostMutation = (): UseMutationOptions<
 
   return {
     mutationFn: async (planConf: PlanConf) => {
-      const localLastSaved = planConf.localLastSaved
+      const localLastEdited = planConf.localLastEdited
       const zip = new JSZip()
       zip.file('file', JSON.stringify(planConf.data))
       const zipBlob = await zip.generateAsync({ type: 'blob' })
@@ -44,8 +44,8 @@ export const planPostMutation = (): UseMutationOptions<
       }
 
       updatePlanConf(planConf.id, {
-        lastSavedOnCloud: postRes.data.saved_ts * 1000,
-        localLastSavedOnCloud: localLastSaved,
+        cloudLastSaved: postRes.data.saved_ts * 1000,
+        localLastSaved: localLastEdited,
       })
 
       return postRes.data

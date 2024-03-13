@@ -94,7 +94,7 @@ export const useAppletStore = create<Vars & Actions>()(
             }
 
             const updatedPlanConf = { ...oldPlanConf, ...planConf }
-            updatedPlanConf.localLastSaved = new Date().getTime()
+            updatedPlanConf.localLastEdited = new Date().getTime()
 
             await set((state) => {
               state.planConfs[planId] = updatedPlanConf
@@ -138,7 +138,7 @@ export const useAppletStore = create<Vars & Actions>()(
                 state.planConfs[planId].data.features[featureIndex].properties =
                   featureProperties
               }
-              state.planConfs[planId].localLastSaved = new Date().getTime()
+              state.planConfs[planId].localLastEdited = new Date().getTime()
             })
 
             return features[featureIndex]

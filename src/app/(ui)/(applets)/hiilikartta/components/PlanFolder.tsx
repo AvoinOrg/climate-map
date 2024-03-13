@@ -81,7 +81,7 @@ const PlanFolder = ({
               opacity: status === 'authenticated' ? 1 : 0.6,
             }}
           >
-            {planConf.lastSavedOnCloud && !planPost.isPending && (
+            {planConf.cloudLastSaved && !planPost.isPending && (
               <>
                 <Typography
                   sx={{ display: 'inline', typography: 'body7', mr: 0.5 }}
@@ -92,11 +92,11 @@ const PlanFolder = ({
                   ></T>
                 </Typography>
                 <Typography sx={{ display: 'inline', typography: 'body7' }}>
-                  {new Date(planConf.lastSavedOnCloud).toLocaleString()}
+                  {new Date(planConf.cloudLastSaved).toLocaleString()}
                 </Typography>
               </>
             )}
-            {!planConf.lastSavedOnCloud && !planPost.isPending && (
+            {!planConf.cloudLastSaved && !planPost.isPending && (
               <>
                 <Typography sx={{ display: 'inline', typography: 'body7' }}>
                   <T
@@ -124,7 +124,9 @@ const PlanFolder = ({
               />
             )}
             {!planPost.isPending && (
-              <SaveIcon sx={{ ml: '4px', mb: '-3px', color: '#636363' }}></SaveIcon>
+              <SaveIcon
+                sx={{ ml: '4px', mb: '-3px', color: '#636363' }}
+              ></SaveIcon>
             )}
             {planPost.isError && !planPost.isPending && (
               <>
