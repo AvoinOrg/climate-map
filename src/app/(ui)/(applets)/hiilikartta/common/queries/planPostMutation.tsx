@@ -43,7 +43,7 @@ export const planPostMutation = (): UseMutationOptions<
       }
 
       updatePlanConf(planConf.id, {
-        lastSaved: postRes.data.last_saved * 1000,
+        lastSaved: postRes.data.saved_ts * 1000,
       })
 
       return postRes.data
