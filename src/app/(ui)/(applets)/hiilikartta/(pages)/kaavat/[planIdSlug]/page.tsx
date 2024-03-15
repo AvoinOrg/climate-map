@@ -26,31 +26,27 @@ import { ArrowNextBig, Delete, Star } from '#/components/icons'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import {
-  checkIsValidZoningCode,
-  getPlanLayerGroupId,
-} from 'applets/hiilikartta/common/utils'
+import { checkIsValidZoningCode } from 'applets/hiilikartta/common/utils'
 import ZoneAccordion from './_components/ZoneAccordion'
 import { calcPostMutation } from 'applets/hiilikartta/common/queries/calcPostMutation'
 import PlanFolder from 'applets/hiilikartta/components/PlanFolder'
 import { SIDEBAR_WIDTH_REM } from 'applets/hiilikartta/common/constants'
 import { CalculationState } from 'applets/hiilikartta/common/types'
+import { planDeleteMutation } from 'applets/hiilikartta/common/queries/planDeleteMutation'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
-  const removeSerializableLayerGroup = useMapStore(
-    (state) => state.removeSerializableLayerGroup
-  )
   const triggerConfirmationDialog = useUIStore(
     (state) => state.triggerConfirmationDialog
   )
+  const notify = useUIStore((state) => state.notify)
   const planConf = useStore(
     useAppletStore,
     (state) => state.planConfs[params.planIdSlug]
   )
   const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
-  const deletePlanConf = useAppletStore((state) => state.deletePlanConf)
   const copyPlanConf = useAppletStore((state) => state.copyPlanConf)
   const calcPost = useMutation(calcPostMutation())
+  const planDelete = useMutation(planDeleteMutation())
   const [currentYear, setCurrentYear] = useState<string>()
   const [areSettingsValid, setAreSettingsValid] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -125,9 +121,7 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const handleDeleteClick = async () => {
     if (planConf) {
       const handleDeleteConfirm = async () => {
-        await removeSerializableLayerGroup(getPlanLayerGroupId(planConf.id))
-        await deletePlanConf(planConf.id)
-        router.push(getRoute(routeTree, routeTree))
+        await planDelete.mutate(planConf)
       }
 
       triggerConfirmationDialog({
@@ -136,6 +130,18 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
       })
     }
   }
+
+  useEffect(() => {
+    if (planDelete.isSuccess) {
+      router.push(getRoute(routeTree, routeTree))
+    }
+    if (planDelete.isError) {
+      notify({
+        message: t('sidebar.plan_settings.delete_error'),
+        variant: 'error',
+      })
+    }
+  }, [planDelete.isError, planDelete.isSuccess])
 
   const handleCopyClick = async () => {
     if (planConf) {
