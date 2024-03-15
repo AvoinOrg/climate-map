@@ -17,7 +17,7 @@ export interface PlanConf extends NewPlanConf {
   created: number
   calculationState: CalculationState
   reportData: undefined | ReportData
-  savingState?: SavingState
+  mutationState?: MutationState
   cloudLastSaved?: number
   localLastEdited?: number
   localLastSaved?: number
@@ -51,9 +51,10 @@ export enum CalculationState {
   FINISHED = 'finished',
 }
 
-export enum SavingState {
+export enum MutationState {
   SAVING = 'saving',
   IDLE = 'idle',
+  DELETING = 'deleting',
 }
 
 export type NewPlanConf = {
