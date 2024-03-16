@@ -1,7 +1,7 @@
 import { UseMutationOptions } from '@tanstack/react-query'
 import axios from 'axios'
 import JSZip from 'jszip'
-import { CalculationState, PlanConf } from '../types'
+import { CalculationState, MutationState, PlanConf } from '../types'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { useUIStore } from '#/common/store'
 import { useTranslate } from '@tolgee/react'
@@ -24,8 +24,10 @@ export const calcPostMutation = (): UseMutationOptions<
 
   return {
     mutationFn: async (planConf: PlanConf) => {
+      const localLastEdited = planConf.localLastEdited
       updatePlanConf(planConf.id, {
         calculationState: CalculationState.INITIALIZING,
+        mutationState: MutationState.SAVING,
       })
       const zip = new JSZip()
       zip.file('file', JSON.stringify(planConf.data))
@@ -48,6 +50,10 @@ export const calcPostMutation = (): UseMutationOptions<
 
       updatePlanConf(planConf.id, {
         calculationState: CalculationState.CALCULATING,
+        cloudLastSaved: postRes.data.saved_ts * 1000,
+        localLastSaved: localLastEdited,
+        mutationState: MutationState.IDLE,
+        userId: postRes.data.user_id,
       })
       return postRes.data
     },
@@ -59,6 +65,7 @@ export const calcPostMutation = (): UseMutationOptions<
       console.error(error)
       updatePlanConf(planConf.id, {
         calculationState: CalculationState.ERRORED,
+        mutationState: MutationState.IDLE,
         reportData: undefined,
       })
     },
