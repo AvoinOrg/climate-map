@@ -48,6 +48,7 @@ export const planPostMutation = (): UseMutationOptions<
         cloudLastSaved: postRes.data.saved_ts * 1000,
         localLastSaved: localLastEdited,
         mutationState: MutationState.IDLE,
+        userId: postRes.data.user_id,
       })
 
       return postRes.data
