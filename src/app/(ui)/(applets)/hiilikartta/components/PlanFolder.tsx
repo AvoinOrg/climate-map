@@ -128,9 +128,7 @@ const PlanFolder = ({
               />
             )}
             {!planPost.isPending && (
-              <SaveIcon
-                sx={{ ml: '4px', mb: '-3px', color: '#636363' }}
-              ></SaveIcon>
+              <SaveIcon sx={{ ml: '4px', mb: '-3px' }}></SaveIcon>
             )}
             {planPost.isError && !planPost.isPending && (
               <>
