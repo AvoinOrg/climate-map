@@ -21,6 +21,7 @@ export interface PlanConf extends NewPlanConf {
   cloudLastSaved?: number
   localLastEdited?: number
   localLastSaved?: number
+  userId?: string
 }
 
 export interface ExternalPlanConf {
