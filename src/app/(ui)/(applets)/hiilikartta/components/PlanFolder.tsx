@@ -60,12 +60,32 @@ const PlanFolder = ({
         }}
       >
         <Tooltip
-          title={t('sidebar.my_plans.sign_in_to_save')}
-          disableHoverListener={status === 'authenticated'}
+          title={
+            [
+              CalculationState.INITIALIZING,
+              CalculationState.CALCULATING,
+            ].includes(planConf.calculationState)
+              ? t(
+                  'sidebar.my_plans.unable_to_save_with_calculations_in_progress'
+                )
+              : t('sidebar.my_plans.sign_in_to_save')
+          }
+          disableHoverListener={
+            status === 'authenticated' &&
+            ![
+              CalculationState.INITIALIZING,
+              CalculationState.CALCULATING,
+            ].includes(planConf.calculationState)
+          }
         >
           <Box
             onClick={
-              status === 'authenticated' && !planPost.isPending
+              status === 'authenticated' &&
+              !planPost.isPending &&
+              ![
+                CalculationState.INITIALIZING,
+                CalculationState.CALCULATING,
+              ].includes(planConf.calculationState)
                 ? handleSyncClick
                 : undefined
             }
@@ -76,7 +96,11 @@ const PlanFolder = ({
               '&:hover': {
                 cursor: planPost.isPending
                   ? 'wait'
-                  : status === 'authenticated'
+                  : status === 'authenticated' &&
+                    ![
+                      CalculationState.INITIALIZING,
+                      CalculationState.CALCULATING,
+                    ].includes(planConf.calculationState)
                   ? 'pointer'
                   : 'not-allowed',
               },
