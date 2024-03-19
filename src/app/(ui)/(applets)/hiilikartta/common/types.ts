@@ -64,12 +64,6 @@ export type NewPlanConf = {
   data: PlanData
   calculationState?: CalculationState
   reportData?: ReportData
-  fileSettings: {
-    fileType: FileType
-    zoningColumn: string
-    tableName?: string
-    crs?: string
-  }
 }
 
 export type FileType = 'shp' | 'geojson' | 'gpkg'

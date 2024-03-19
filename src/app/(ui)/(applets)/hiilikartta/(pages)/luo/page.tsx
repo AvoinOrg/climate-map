@@ -37,7 +37,6 @@ const Page = () => {
       data: data,
       name: jsonName,
       areaHa: 0,
-      fileSettings: { fileType: 'geojson', zoningColumn: colName },
     }
 
     const planConf = await addPlanConf(newPlanConf)

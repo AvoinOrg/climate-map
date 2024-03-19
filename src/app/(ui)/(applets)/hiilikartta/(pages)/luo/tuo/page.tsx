@@ -110,7 +110,7 @@ const Page = () => {
         const properties: FeatureProperties = {
           id: generateUUID(),
           name: name,
-          zoning_code: zoningCode,
+          [ZONING_CODE_COL]: zoningCode,
           area_ha: featureAreaHa,
           old_id: feature.id != null ? feature.id : undefined,
         }
@@ -133,7 +133,7 @@ const Page = () => {
           })
 
           if (zoningClass) {
-            properties.zoning_code = zoningClass.code
+            properties[ZONING_CODE_COL] = zoningClass.code
             properties.old_zoning_code = zoningCode
           }
         }
@@ -168,7 +168,6 @@ const Page = () => {
       data: formatedJson,
       name: fileName,
       areaHa: areaHa,
-      fileSettings: { fileType: 'geojson', zoningColumn: ZONING_CODE_COL },
     }
 
     const planConf = await addPlanConf(newPlanConf)

@@ -152,7 +152,6 @@ export const useAppletStore = create<Vars & Actions>()(
               name: `${planConf.name}${nameSuffix != null && ' ' + nameSuffix}`,
               areaHa: planConf.areaHa,
               data: cloneDeep(planConf.data),
-              fileSettings: cloneDeep(planConf.fileSettings),
             }
             const copiedPlanConf = await addPlanConf(newPlanConf)
             return copiedPlanConf
