@@ -7,5 +7,11 @@ declare module 'next-auth' {
   interface Session {
     // Add the accessToken property to the Session type
     accessToken?: string
+    user?: {
+      id: string
+      name: string
+      email: string
+      image: string
+    }
   }
 }
