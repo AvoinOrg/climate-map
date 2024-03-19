@@ -31,6 +31,11 @@ export interface ExternalPlanConf {
   reportData?: ReportData
 }
 
+export interface PlaceholderPlanConf {
+  serverId: string
+  status?: FetchStatus
+}
+
 export type PlanData<G extends Geometry | null = Geometry> = FeatureCollection<
   G,
   FeatureProperties
