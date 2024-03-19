@@ -16,6 +16,7 @@ import {
   PlanConf,
   PlanDataFeature,
   ExternalPlanConf,
+  PlaceholderPlanConf,
 } from '../common/types'
 import { calcQueryPoll } from '../common/queries/calcQueryPoll'
 import { FetchStatus } from '#/common/types/general'
@@ -24,6 +25,7 @@ import { externalPlanQuery } from '../common/queries/externalPlanQuery'
 type Vars = {
   planConfs: { [key: string]: PlanConf }
   externalPlanConfs: { [key: string]: ExternalPlanConf }
+  placeholderPlanConfs: { [key: string]: PlaceholderPlanConf }
 }
 
 type Actions = {
@@ -47,6 +49,15 @@ type Actions = {
     planId: string,
     externalPlanConf: Partial<ExternalPlanConf>
   ) => Promise<ExternalPlanConf | null>
+  addPlaceholderPlanConf: (
+    planId: string,
+    placeholderPlanConf?: PlaceholderPlanConf
+  ) => Promise<PlaceholderPlanConf>
+  updatePlaceholderPlanConf: (
+    planId: string,
+    placeholderPlanConf: Partial<PlaceholderPlanConf>
+  ) => Promise<PlaceholderPlanConf | null>
+  deletePlaceholderPlanConf: (planId: string) => Promise<void>
 }
 
 export const useAppletStore = create<Vars & Actions>()(
@@ -56,6 +67,7 @@ export const useAppletStore = create<Vars & Actions>()(
         const vars: Vars = {
           planConfs: {},
           externalPlanConfs: {},
+          placeholderPlanConfs: {},
         }
 
         const actions: Actions = {
@@ -189,6 +201,49 @@ export const useAppletStore = create<Vars & Actions>()(
               state.externalPlanConfs[planId] = updatedPlanConf
             })
             return updatedPlanConf
+          },
+
+          addPlaceholderPlanConf: async (
+            serverId: string,
+            placeholderPlanConf?: PlaceholderPlanConf
+          ) => {
+            let newPlaceholderPlanConf = {
+              serverId: serverId,
+              status: FetchStatus.NOT_STARTED,
+            }
+            if (placeholderPlanConf != null) {
+              placeholderPlanConf = {
+                ...newPlaceholderPlanConf,
+                ...placeholderPlanConf,
+              }
+            }
+            await set((state) => {
+              state.placeholderPlanConfs[serverId] = newPlaceholderPlanConf
+            })
+            return newPlaceholderPlanConf
+          },
+
+          updatePlaceholderPlanConf: async (
+            planId: string,
+            planConf: Partial<PlaceholderPlanConf>
+          ) => {
+            const oldPlanConf = get().placeholderPlanConfs[planId]
+            if (oldPlanConf == null) {
+              console.error("Can't update a planConf that does not exist")
+              return null
+            }
+
+            const updatedPlanConf = { ...oldPlanConf, ...planConf }
+            await set((state) => {
+              state.placeholderPlanConfs[planId] = updatedPlanConf
+            })
+            return updatedPlanConf
+          },
+
+          deletePlaceholderPlanConf: async (planId: string) => {
+            set((state) => {
+              delete state.planConfs[planId]
+            })
           },
         }
         return { ...vars, ...actions }
