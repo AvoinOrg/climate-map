@@ -30,7 +30,6 @@ export const planPostMutation = (): UseMutationOptions<
 
       const formData = new FormData()
       formData.append('file', zipBlob, 'file.zip')
-      formData.append('zoning_col', planConf.fileSettings.zoningColumn)
 
       const postRes = await axios.put(`${API_URL}/plan`, formData, {
         headers: {
