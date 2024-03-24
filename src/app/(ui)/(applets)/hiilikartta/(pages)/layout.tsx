@@ -13,12 +13,15 @@ import AppletWrapper from '#/components/common/AppletWrapper'
 import { SIDEBAR_WIDTH_REM } from '../common/constants'
 import { planIdsQuery } from '../common/queries/planIdsQuery'
 import { planQueries } from '../common/queries/planQueries'
+import { useAppletStore } from '../state/appletStore'
 
 const localizationNamespace = 'hiilikartta'
 const defaultLanguage = 'fi'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const { data: session } = useSession()
+  const planConfs = useAppletStore((state) => state.planConfs)
+  const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
 
   const SidebarHeaderElement = (
     <SidebarHeader title={'Hiilikartta'}>
@@ -36,6 +39,12 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (session?.user?.id) {
       planIds.refetch()
+
+      for (const id in planConfs) {
+        if (!planConfs[id].userId) {
+          updatePlanConf(id, { userId: session.user.id })
+        }
+      }
     }
   }, [session?.user?.id])
 
