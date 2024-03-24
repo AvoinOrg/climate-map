@@ -17,6 +17,7 @@ export interface PlanConf extends NewPlanConf {
   created: number
   calculationState: CalculationState
   reportData: undefined | ReportData
+  // A lot of the following are conditional only to support older versions of the app without these variables
   mutationState?: MutationState
   cloudLastSaved?: number
   localLastEdited?: number
