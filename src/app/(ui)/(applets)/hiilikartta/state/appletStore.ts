@@ -83,6 +83,7 @@ export const useAppletStore = create<Vars & Actions>()(
               created,
               reportData: undefined,
               calculationState: CalculationState.NOT_STARTED,
+              localLastEdited: created,
               ...newPlanConf,
             }
             await set((state) => {
