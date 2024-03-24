@@ -25,6 +25,8 @@ import {
   ConfirmationDialog,
   NotificationProvider,
 } from '#/components/Notification'
+import { useSession } from 'next-auth/react'
+import { useUserStore } from '#/common/store/userStore'
 // import { UserModal } from '#/components/Profile'
 // import { UiStateProvider, UserStateProvider } from '#/components/State'
 // import RootStyleRegistry from './emotion'
@@ -70,6 +72,17 @@ const Layout = ({
 }: {
   children: React.ReactNode
 }) => {
+  const { data: session } = useSession()
+  const setUser = useUserStore((state) => state.setUser)
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      setUser({ ...session.user, accessToken: session.accessToken })
+    } else {
+      setUser(null)
+    }
+  }, [session])
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
