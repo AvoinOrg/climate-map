@@ -36,7 +36,11 @@ export const planPostMutation = (): UseMutationOptions<
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${session?.accessToken}`,
         },
-        params: { id: planConf.serverId, name: planConf.name },
+        params: {
+          id: planConf.serverId,
+          name: planConf.name,
+          visible_id: planConf.id,
+        },
       })
 
       if (postRes.status !== 200 && postRes.status !== 201) {
