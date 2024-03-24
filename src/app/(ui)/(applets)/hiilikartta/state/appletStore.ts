@@ -42,22 +42,18 @@ type Actions = {
   ) => Promise<PlanDataFeature | null>
   copyPlanConf: (planId: string, nameSuffix?: string) => Promise<PlanConf>
   addExternalPlanConf: (
-    planId: string,
+    serverId: string,
     externalPlanConf?: ExternalPlanConf
   ) => Promise<ExternalPlanConf>
   updateExternalPlanConf: (
-    planId: string,
+    serverId: string,
     externalPlanConf: Partial<ExternalPlanConf>
   ) => Promise<ExternalPlanConf | null>
-  addPlaceholderPlanConf: (
-    planId: string,
-    placeholderPlanConf?: PlaceholderPlanConf
-  ) => Promise<PlaceholderPlanConf>
   updatePlaceholderPlanConf: (
-    planId: string,
+    serverId: string,
     placeholderPlanConf: Partial<PlaceholderPlanConf>
   ) => Promise<PlaceholderPlanConf | null>
-  deletePlaceholderPlanConf: (planId: string) => Promise<void>
+  deletePlaceholderPlanConf: (serverId: string) => Promise<void>
 }
 
 export const useAppletStore = create<Vars & Actions>()(
@@ -187,10 +183,10 @@ export const useAppletStore = create<Vars & Actions>()(
           },
 
           updateExternalPlanConf: async (
-            planId: string,
+            serverId: string,
             planConf: Partial<ExternalPlanConf>
           ) => {
-            const oldPlanConf = get().externalPlanConfs[planId]
+            const oldPlanConf = get().externalPlanConfs[serverId]
             if (oldPlanConf == null) {
               console.error("Can't update a planConf that does not exist")
               return null
@@ -198,51 +194,36 @@ export const useAppletStore = create<Vars & Actions>()(
 
             const updatedPlanConf = { ...oldPlanConf, ...planConf }
             await set((state) => {
-              state.externalPlanConfs[planId] = updatedPlanConf
+              state.externalPlanConfs[serverId] = updatedPlanConf
             })
             return updatedPlanConf
-          },
-
-          addPlaceholderPlanConf: async (
-            serverId: string,
-            placeholderPlanConf?: PlaceholderPlanConf
-          ) => {
-            let newPlaceholderPlanConf = {
-              serverId: serverId,
-              status: FetchStatus.NOT_STARTED,
-            }
-            if (placeholderPlanConf != null) {
-              placeholderPlanConf = {
-                ...newPlaceholderPlanConf,
-                ...placeholderPlanConf,
-              }
-            }
-            await set((state) => {
-              state.placeholderPlanConfs[serverId] = newPlaceholderPlanConf
-            })
-            return newPlaceholderPlanConf
           },
 
           updatePlaceholderPlanConf: async (
-            planId: string,
-            planConf: Partial<PlaceholderPlanConf>
+            serverId: string,
+            planConf: Partial<PlaceholderPlanConf> | undefined
           ) => {
-            const oldPlanConf = get().placeholderPlanConfs[planId]
+            let oldPlanConf = get().placeholderPlanConfs[serverId]
             if (oldPlanConf == null) {
-              console.error("Can't update a planConf that does not exist")
-              return null
+              oldPlanConf = {
+                serverId: serverId,
+                status: FetchStatus.NOT_STARTED,
+              }
             }
 
-            const updatedPlanConf = { ...oldPlanConf, ...planConf }
+            let updatedPlanConf = oldPlanConf
+            if (planConf != null) {
+              updatedPlanConf = { ...oldPlanConf, ...planConf }
+            }
             await set((state) => {
-              state.placeholderPlanConfs[planId] = updatedPlanConf
+              state.placeholderPlanConfs[serverId] = updatedPlanConf
             })
             return updatedPlanConf
           },
 
-          deletePlaceholderPlanConf: async (planId: string) => {
+          deletePlaceholderPlanConf: async (serverId: string) => {
             set((state) => {
-              delete state.planConfs[planId]
+              delete state.planConfs[serverId]
             })
           },
         }
