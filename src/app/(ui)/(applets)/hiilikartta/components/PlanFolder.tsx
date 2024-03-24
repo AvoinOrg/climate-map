@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Box, Typography, CircularProgress, Tooltip } from '@mui/material'
 import { T, useTranslate } from '@tolgee/react'
 import { SaveOutlined as SaveIcon } from '@mui/icons-material'
@@ -29,9 +29,26 @@ const PlanFolder = ({
   const { status } = useSession()
   const { t } = useTranslate('hiilikartta')
 
+  const [isSaveEnabled, setIsSaveEnabled] = React.useState(false)
+
   const handleNameChange = (event: any) => {
     updatePlanConf(planConf.id, { name: event.target.value })
   }
+
+  useEffect(() => {
+    if (
+      status === 'authenticated' &&
+      !planPost.isPending &&
+      ![CalculationState.INITIALIZING, CalculationState.CALCULATING].includes(
+        planConf.calculationState
+      ) &&
+      planConf.data.features.length > 0
+    ) {
+      setIsSaveEnabled(true)
+    } else {
+      setIsSaveEnabled(false)
+    }
+  }, [status, planConf])
 
   const handleSyncClick = (event: any) => {
     event.preventDefault()
@@ -68,27 +85,14 @@ const PlanFolder = ({
               ? t(
                   'sidebar.my_plans.unable_to_save_with_calculations_in_progress'
                 )
+              : planConf.data.features.length === 0
+              ? t('sidebar.my_plans.unable_to_save_empty_plan')
               : t('sidebar.my_plans.sign_in_to_save')
           }
-          disableHoverListener={
-            status === 'authenticated' &&
-            ![
-              CalculationState.INITIALIZING,
-              CalculationState.CALCULATING,
-            ].includes(planConf.calculationState)
-          }
+          disableHoverListener={isSaveEnabled}
         >
           <Box
-            onClick={
-              status === 'authenticated' &&
-              !planPost.isPending &&
-              ![
-                CalculationState.INITIALIZING,
-                CalculationState.CALCULATING,
-              ].includes(planConf.calculationState)
-                ? handleSyncClick
-                : undefined
-            }
+            onClick={isSaveEnabled ? handleSyncClick : undefined}
             sx={{
               display: 'inline-flex',
               flexDirection: 'row',
@@ -96,17 +100,13 @@ const PlanFolder = ({
               '&:hover': {
                 cursor: planPost.isPending
                   ? 'wait'
-                  : status === 'authenticated' &&
-                    ![
-                      CalculationState.INITIALIZING,
-                      CalculationState.CALCULATING,
-                    ].includes(planConf.calculationState)
+                  : isSaveEnabled
                   ? 'pointer'
                   : 'not-allowed',
               },
               mr: '1px',
               height: '16px',
-              opacity: status === 'authenticated' ? 1 : 0.6,
+              opacity: isSaveEnabled ? 1 : 0.6,
             }}
           >
             {planConf.cloudLastSaved && !planPost.isPending && (
