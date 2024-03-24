@@ -40,7 +40,11 @@ export const calcPostMutation = (): UseMutationOptions<
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        params: { id: planConf.serverId, name: planConf.name },
+        params: {
+          id: planConf.serverId,
+          name: planConf.name,
+          visible_id: planConf.id,
+        },
       })
 
       if (postRes.status !== 200) {
