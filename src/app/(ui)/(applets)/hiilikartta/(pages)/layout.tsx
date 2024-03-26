@@ -59,7 +59,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
     if (session?.user?.id != null) {
       clearPlaceholderPlanConfs()
-      updateGlobalState(GlobalState.FETCHING)
+      updateGlobalState(GlobalState.INITIALIZING)
       planConfStatsQuery.refetch()
 
       for (const id in planConfs) {
@@ -107,7 +107,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
       setPlanConfsToFetch(filteredPlanConfs)
 
-      updateGlobalState(GlobalState.IDLE)
+      updateGlobalState(GlobalState.FETCHING)
     }
 
     if (session?.user?.id && planConfStatsQuery.data) {
@@ -116,12 +116,28 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   }, [session?.user?.id, planConfStatsQuery.data])
 
   useEffect(() => {
-    if (session?.user?.id && planConfStatsQuery.data) {
-      planQs.forEach((planQ) => {
-        planQ.refetch()
-      })
+    if (session?.user?.id && planConfsToFetch) {
+      if (planConfsToFetch.length === 0) {
+        updateGlobalState(GlobalState.IDLE)
+      } else {
+        planQs.forEach((planQ) => {
+          planQ.refetch()
+        })
+      }
     }
   }, [session?.user?.id, planConfsToFetch])
+
+  useEffect(() => {
+    if (planQs.length > 0) {
+      const allCompleted = planQs.every(
+        (planQ) => planQ.isSuccess || planQ.isError
+      )
+
+      if (allCompleted) {
+        updateGlobalState(GlobalState.IDLE)
+      }
+    }
+  }, [planQs])
 
   return (
     <AppletWrapper
