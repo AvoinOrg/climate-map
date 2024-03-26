@@ -22,6 +22,7 @@ import {
 } from '../common/types'
 import { calcQueryPoll } from '../common/queries/calcQueryPoll'
 import { externalPlanQuery } from '../common/queries/externalPlanQuery'
+// import { checkIsValidZoningCode } from '../common/utils'
 
 type Vars = {
   planConfs: { [key: string]: PlanConf }
@@ -91,8 +92,28 @@ export const useAppletStore = create<Vars & Actions>()(
               reportData: undefined,
               calculationState: CalculationState.NOT_STARTED,
               localLastEdited: created,
+              // areSettingsValid: true,
               ...newPlanConf,
             }
+
+            // if (
+            //   planConf.userId == null &&
+            //   useUserStore.getState().user?.id != null
+            // ) {
+            //   planConf.userId = useUserStore.getState().user?.id
+            // }
+
+            // if (planConf?.data.features && planConf.data.features.length > 0) {
+            //   for (const feature of planConf.data.features) {
+            //     if (!checkIsValidZoningCode(feature.properties.zoning_code)) {
+            //       planConf.areSettingsValid = false
+            //       break
+            //     }
+            //   }
+            // } else {
+            //   planConf.areSettingsValid = false
+            // }
+
             await set((state) => {
               state.planConfs[planConf.id] = planConf
             })
@@ -123,6 +144,20 @@ export const useAppletStore = create<Vars & Actions>()(
             ) {
               planConf.localLastEdited = new Date().getTime()
             }
+
+            // if (
+            //   updatedPlanConf?.data.features &&
+            //   updatedPlanConf.data.features.length > 0
+            // ) {
+            //   for (const feature of updatedPlanConf.data.features) {
+            //     if (!checkIsValidZoningCode(feature.properties.zoning_code)) {
+            //       updatedPlanConf.areSettingsValid = false
+            //       break
+            //     }
+            //   }
+            // } else {
+            //   updatedPlanConf.areSettingsValid = false
+            // }
 
             await set((state) => {
               state.planConfs[planId] = updatedPlanConf
@@ -165,6 +200,28 @@ export const useAppletStore = create<Vars & Actions>()(
                 }
                 state.planConfs[planId].data.features[featureIndex].properties =
                   featureProperties
+
+                // if (!checkIsValidZoningCode(featureProperties.zoning_code)) {
+                //   if (state.planConfs[planId].areSettingsValid) {
+                //     state.planConfs[planId].areSettingsValid = false
+                //   }
+                // } else {
+                //   if (!state.planConfs[planId].areSettingsValid) {
+                //     let foundInvalid = false
+                //     for (const feature of planConf.data.features) {
+                //       if (
+                //         !checkIsValidZoningCode(feature.properties.zoning_code)
+                //       ) {
+                //         foundInvalid = true
+                //         break
+                //       }
+                //     }
+
+                //     if (!foundInvalid) {
+                //       state.planConfs[planId].areSettingsValid = true
+                //     }
+                //   }
+                // }
               }
               state.planConfs[planId].localLastEdited = new Date().getTime()
             })

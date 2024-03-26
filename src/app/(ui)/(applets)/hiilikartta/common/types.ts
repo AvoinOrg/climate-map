@@ -23,6 +23,7 @@ export interface PlanConf extends NewPlanConf {
   localLastEdited?: number
   localLastSaved?: number
   userId?: string
+  areSettingsValid?: boolean
   isHidden?: boolean
 }
 
