@@ -109,6 +109,8 @@ export const planQueries = (
                   planConf
                 )
                 return updatedPlanConf
+              } else {
+                updatePlanConf(planConf.id, { state: PlanConfState.IDLE })
               }
             } else {
               const newPlanConf = await addPlanConf(planConf)
