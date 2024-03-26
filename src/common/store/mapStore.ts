@@ -2094,7 +2094,7 @@ export const useMapStore = create<State>()(
       onRehydrateStorage: (state) => {
         return (state, error) => {
           if (error) {
-            console.log('an error happened during hydration', error)
+            console.log('map store: an error happened during hydration', error)
           }
           state?._runHydrationActions()
         }
