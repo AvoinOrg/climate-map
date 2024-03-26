@@ -1,7 +1,7 @@
 import { UseMutationOptions } from '@tanstack/react-query'
 import axios from 'axios'
 import JSZip from 'jszip'
-import { PlanConf, MutationState } from '../types'
+import { PlanConf, PlanConfState } from '../types'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { useSession } from 'next-auth/react'
 
@@ -22,7 +22,7 @@ export const planPostMutation = (): UseMutationOptions<
 
   return {
     mutationFn: async (planConf: PlanConf) => {
-      updatePlanConf(planConf.id, { mutationState: MutationState.SAVING })
+      updatePlanConf(planConf.id, { state: PlanConfState.SAVING })
       const localLastEdited = planConf.localLastEdited
       const zip = new JSZip()
       zip.file('file', JSON.stringify(planConf.data))
@@ -50,7 +50,7 @@ export const planPostMutation = (): UseMutationOptions<
       updatePlanConf(planConf.id, {
         cloudLastSaved: postRes.data.saved_ts * 1000,
         localLastSaved: localLastEdited,
-        mutationState: MutationState.IDLE,
+        state: PlanConfState.IDLE,
         userId: postRes.data.user_id,
       })
 
@@ -58,7 +58,7 @@ export const planPostMutation = (): UseMutationOptions<
     },
     onError: (error, planConf) => {
       console.error(error)
-      updatePlanConf(planConf.id, { mutationState: MutationState.IDLE })
+      updatePlanConf(planConf.id, { state: PlanConfState.IDLE })
     },
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(attemptIndex * 1000, 3000),

@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useMapStore } from '#/common/store/mapStore'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
-import { MutationState, PlanConf } from '../types'
+import { PlanConfState, PlanConf } from '../types'
 import { getPlanLayerGroupId } from '../utils'
 
 const API_URL = process.env.NEXT_PUBLIC_HIILIKARTTA_API_URL
@@ -25,7 +25,7 @@ export const planDeleteMutation = (): UseMutationOptions<
   return {
     mutationFn: async (planConf: PlanConf) => {
       await updatePlanConf(planConf.id, {
-        mutationState: MutationState.DELETING,
+        state: PlanConfState.DELETING,
       })
 
       if (session) {
@@ -37,7 +37,7 @@ export const planDeleteMutation = (): UseMutationOptions<
           params: { id: planConf.serverId },
         })
 
-        if (delRes.status !== 200) {
+        if (delRes.status !== 200 && delRes.status !== 404) {
           throw new Error('Failed to delete the plan')
         }
       }
@@ -48,7 +48,7 @@ export const planDeleteMutation = (): UseMutationOptions<
     onError: (error, planConf) => {
       console.error(error)
       updatePlanConf(planConf.id, {
-        mutationState: MutationState.IDLE,
+        state: PlanConfState.IDLE,
       })
     },
     retry: 3,
