@@ -48,7 +48,7 @@ const PlanFolder = ({
     } else {
       setIsSaveEnabled(false)
     }
-  }, [status, planConf])
+  }, [status, planConf, planPost.isPending])
 
   const handleSyncClick = (event: any) => {
     event.preventDefault()
