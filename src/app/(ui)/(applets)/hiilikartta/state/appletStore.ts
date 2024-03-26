@@ -272,7 +272,10 @@ export const useAppletStore = create<Vars & Actions>()(
       onRehydrateStorage: (state) => {
         return (state, error) => {
           if (error) {
-            console.log('an error happened during hydration', error)
+            console.log(
+              'hiilikartta store: an error happened during hydration',
+              error
+            )
           }
           if (state) {
             for (const planId of Object.keys(state.planConfs)) {
