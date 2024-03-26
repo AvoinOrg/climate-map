@@ -14,13 +14,18 @@ import { SIDEBAR_WIDTH_REM } from '../common/constants'
 import { planStatsQuery } from '../common/queries/planStatsQuery'
 import { planQueries } from '../common/queries/planQueries'
 import { useAppletStore } from '../state/appletStore'
-import { PlanConfState, PlaceholderPlanConf } from '../common/types'
+import {
+  PlanConfState,
+  PlaceholderPlanConf,
+  GlobalState,
+} from '../common/types'
 
 const localizationNamespace = 'hiilikartta'
 const defaultLanguage = 'fi'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const { data: session } = useSession()
+  const updateGlobalState = useAppletStore((state) => state.updateGlobalState)
   const planConfs = useAppletStore((state) => state.planConfs)
   const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
   const addPlaceholderPlanConf = useAppletStore(
@@ -54,6 +59,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
     if (session?.user?.id != null) {
       clearPlaceholderPlanConfs()
+      updateGlobalState(GlobalState.FETCHING)
       planConfStatsQuery.refetch()
 
       for (const id in planConfs) {
@@ -71,6 +77,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           updatePlanConf(id, { isHidden: true })
         }
       }
+      updateGlobalState(GlobalState.IDLE)
     }
   }, [session?.user?.id])
 
@@ -99,6 +106,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       }
 
       setPlanConfsToFetch(filteredPlanConfs)
+
+      updateGlobalState(GlobalState.IDLE)
     }
 
     if (session?.user?.id && planConfStatsQuery.data) {

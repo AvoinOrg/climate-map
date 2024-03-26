@@ -345,6 +345,7 @@ export const useAppletStore = create<Vars & Actions>()(
             )
           }
           if (state) {
+            state.globalState = GlobalState.INITIALIZING
             for (const planId of Object.keys(state.planConfs)) {
               if (
                 state.planConfs[planId].calculationState ===
