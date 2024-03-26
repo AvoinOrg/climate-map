@@ -55,7 +55,7 @@ export const planQueries = (
 
         if (response.status === 200) {
           try {
-            let reportData = undefined
+            let reportData: ReportData | undefined = undefined
             if (response.data.report_data != null) {
               reportData = processCalcQueryToReportData(
                 response.data.report_data
@@ -79,7 +79,7 @@ export const planQueries = (
               }
             }
 
-            const planConf = {
+            const planConf: PlanConf = {
               id: response.data.visible_id,
               name: response.data.name,
               serverId: response.data.id,
@@ -102,7 +102,7 @@ export const planQueries = (
               if (
                 planConfs[planConf.id].localLastEdited != null &&
                 (planConfs[planConf.id].localLastEdited ?? 0) <
-                  planConf.cloudLastSaved
+                  (planConf.cloudLastSaved ?? 0)
               ) {
                 const updatedPlanConf = await updatePlanConf(
                   planConf.id,
