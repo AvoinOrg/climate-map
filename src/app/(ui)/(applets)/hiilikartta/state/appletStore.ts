@@ -278,6 +278,7 @@ export const useAppletStore = create<Vars & Actions>()(
                   FetchStatus.NOT_STARTED
               }
             }
+            state.placeholderPlanConfs = {}
           }
         }
       },
