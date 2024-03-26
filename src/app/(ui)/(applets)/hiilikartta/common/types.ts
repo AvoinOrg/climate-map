@@ -34,7 +34,11 @@ export interface ExternalPlanConf {
 }
 
 export interface PlaceholderPlanConf {
+  id: string
   serverId: string
+  name: string
+  cloudLastSaved: number
+  userId: string
   status?: FetchStatus
 }
 
