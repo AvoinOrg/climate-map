@@ -236,6 +236,12 @@ export const useAppletStore = create<Vars & Actions>()(
             return updatedPlanConf
           },
 
+          deletePlaceholderPlanConf: async (id: string) => {
+            set((state) => {
+              delete state.placeholderPlanConfs[id]
+            })
+          },
+
           clearPlaceholderPlanConfs: async () => {
             set((state) => {
               state.placeholderPlanConfs = {}
