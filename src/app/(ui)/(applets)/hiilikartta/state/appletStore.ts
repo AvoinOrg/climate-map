@@ -87,7 +87,7 @@ export const useAppletStore = create<Vars & Actions>()(
               ...newPlanConf,
             }
             await set((state) => {
-              state.planConfs[id] = planConf
+              state.planConfs[planConf.id] = planConf
             })
             return planConf
           },
