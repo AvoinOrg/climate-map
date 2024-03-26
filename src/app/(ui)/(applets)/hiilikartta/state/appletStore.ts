@@ -5,8 +5,9 @@ import {
   subscribeWithSelector,
 } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
-import { cloneDeep, pickBy } from 'lodash-es'
+import { cloneDeep, isEqual, pickBy } from 'lodash-es'
 
+import { FetchStatus } from '#/common/types/general'
 import { generateShortId, generateUUID } from '#/common/utils/general'
 import { queryClient } from '#/common/queries/queryClient'
 
@@ -17,9 +18,9 @@ import {
   PlanDataFeature,
   ExternalPlanConf,
   PlaceholderPlanConf,
+  PlanConfState,
 } from '../common/types'
 import { calcQueryPoll } from '../common/queries/calcQueryPoll'
-import { FetchStatus } from '#/common/types/general'
 import { externalPlanQuery } from '../common/queries/externalPlanQuery'
 
 type Vars = {
