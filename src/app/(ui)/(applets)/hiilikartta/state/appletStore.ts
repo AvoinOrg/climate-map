@@ -19,6 +19,7 @@ import {
   ExternalPlanConf,
   PlaceholderPlanConf,
   PlanConfState,
+  GlobalState,
 } from '../common/types'
 import { calcQueryPoll } from '../common/queries/calcQueryPoll'
 import { externalPlanQuery } from '../common/queries/externalPlanQuery'
@@ -28,6 +29,7 @@ type Vars = {
   planConfs: { [key: string]: PlanConf }
   externalPlanConfs: { [key: string]: ExternalPlanConf }
   placeholderPlanConfs: { [key: string]: PlaceholderPlanConf }
+  globalState: GlobalState
 }
 
 type Actions = {
@@ -61,6 +63,7 @@ type Actions = {
   ) => Promise<PlaceholderPlanConf | null>
   deletePlaceholderPlanConf: (serverId: string) => Promise<void>
   clearPlaceholderPlanConfs: () => Promise<void>
+  updateGlobalState: (globalState: GlobalState) => void
 }
 
 export const useAppletStore = create<Vars & Actions>()(
@@ -71,6 +74,7 @@ export const useAppletStore = create<Vars & Actions>()(
           planConfs: {},
           externalPlanConfs: {},
           placeholderPlanConfs: {},
+          globalState: GlobalState.INITIALIZING,
         }
 
         const actions: Actions = {
@@ -318,6 +322,11 @@ export const useAppletStore = create<Vars & Actions>()(
           clearPlaceholderPlanConfs: async () => {
             set((state) => {
               state.placeholderPlanConfs = {}
+            })
+          },
+          updateGlobalState: (globalState: GlobalState) => {
+            set((state) => {
+              state.globalState = globalState
             })
           },
         }

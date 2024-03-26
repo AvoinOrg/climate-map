@@ -169,3 +169,9 @@ export type MapGraphDataSelectOption = {
 }
 
 export type UnitType = 'ha' | 'total'
+
+export enum GlobalState {
+  INITIALIZING = 'initializing',
+  IDLE = 'idle',
+  FETCHING = 'fetching',
+}
