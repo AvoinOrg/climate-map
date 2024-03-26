@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Box, Typography } from '@mui/material'
 // import SettingsIcon from '@mui/icons-material/Settings'
 import { T } from '@tolgee/react'
@@ -14,25 +14,48 @@ import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { SIDEBAR_WIDTH_REM } from 'applets/hiilikartta/common/constants'
 import PlanFolder from 'applets/hiilikartta/components/PlanFolder'
+import { PlanConf, PlanConfState } from 'applets/hiilikartta/common/types'
+import PlanFolderLoading from 'applets/hiilikartta/components/PlanFolderLoading'
 
 const Page = () => {
   const planConfs = useStore(useAppletStore, (state) => state.planConfs)
+  const placeholderPlanConfs = useStore(
+    useAppletStore,
+    (state) => state.placeholderPlanConfs
+  )
+
+  const filteredPlanConfs: PlanConf[] = useMemo(() => {
+    if (planConfs == null) {
+      return []
+    }
+
+    return Object.keys(planConfs).reduce<PlanConf[]>((acc, id) => {
+      if (
+        !planConfs[id].isHidden &&
+        planConfs[id].state !== PlanConfState.FETCHING
+      ) {
+        acc.push(planConfs[id])
+      }
+
+      return acc
+    }, [])
+  }, [planConfs])
 
   return (
     <SidebarContentBox sx={{ width: SIDEBAR_WIDTH_REM + 'rem' }}>
       <Typography variant="h2">
         <T keyName={'sidebar.my_plans.title'} ns="hiilikartta"></T>
       </Typography>
-      {planConfs != null && Object.keys(planConfs).length > 0 && (
-        <>
-          <Box sx={{ display: 'flex', flexDirection: 'column', mt: 6 }}>
-            {Object.keys(planConfs).map((id) => {
+      <>
+        <Box sx={{ display: 'flex', flexDirection: 'column', mt: 6 }}>
+          <>
+            {filteredPlanConfs.map((planConf) => {
               return (
-                <Box sx={{ mb: 2 }} key={id}>
+                <Box sx={{ mb: 2 }} key={planConf.id}>
                   <Link
                     href={getRoute(routeTree.plans.plan, routeTree, {
                       routeParams: {
-                        planId: id,
+                        planId: planConf.id,
                       },
                     })}
                     sx={{
@@ -41,14 +64,25 @@ const Page = () => {
                       textDecoration: 'none',
                     }}
                   >
-                    <PlanFolder planConf={planConfs[id]} height={120} />
+                    <PlanFolder planConf={planConf} height={120} />
                   </Link>
                 </Box>
               )
             })}
-          </Box>
-        </>
-      )}
+            {placeholderPlanConfs &&
+              Object.keys(placeholderPlanConfs).map((planConf) => {
+                return (
+                  <Box sx={{ mb: 2 }} key={planConf}>
+                    <PlanFolderLoading
+                      planConf={placeholderPlanConfs[planConf]}
+                      height={120}
+                    />
+                  </Box>
+                )
+              })}
+          </>
+        </Box>
+      </>
     </SidebarContentBox>
   )
 }
