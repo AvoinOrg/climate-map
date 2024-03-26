@@ -54,6 +54,7 @@ type Actions = {
     placeholderPlanConf: Partial<PlaceholderPlanConf>
   ) => Promise<PlaceholderPlanConf | null>
   deletePlaceholderPlanConf: (serverId: string) => Promise<void>
+  clearPlaceholderPlanConfs: () => Promise<void>
 }
 
 export const useAppletStore = create<Vars & Actions>()(
@@ -235,9 +236,9 @@ export const useAppletStore = create<Vars & Actions>()(
             return updatedPlanConf
           },
 
-          deletePlaceholderPlanConf: async (serverId: string) => {
+          clearPlaceholderPlanConfs: async () => {
             set((state) => {
-              delete state.planConfs[serverId]
+              state.placeholderPlanConfs = {}
             })
           },
         }
