@@ -50,7 +50,7 @@ type Actions = {
     externalPlanConf: Partial<ExternalPlanConf>
   ) => Promise<ExternalPlanConf | null>
   updatePlaceholderPlanConf: (
-    serverId: string,
+    id: string,
     placeholderPlanConf: Partial<PlaceholderPlanConf>
   ) => Promise<PlaceholderPlanConf | null>
   deletePlaceholderPlanConf: (serverId: string) => Promise<void>
