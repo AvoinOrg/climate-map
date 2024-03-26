@@ -286,6 +286,12 @@ export const useAppletStore = create<Vars & Actions>()(
                 state.planConfs[planId].calculationState =
                   CalculationState.NOT_STARTED
               }
+              if (
+                state.planConfs[planId].state == null ||
+                state.planConfs[planId].state !== PlanConfState.IDLE
+              ) {
+                state.planConfs[planId].state = PlanConfState.IDLE
+              }
             }
             for (const extPlanId of Object.keys(state.externalPlanConfs)) {
               if (
