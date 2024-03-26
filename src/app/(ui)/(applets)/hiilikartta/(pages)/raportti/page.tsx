@@ -16,7 +16,10 @@ import { Link as LinkIcon } from '#/components/icons'
 
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
-import { PlanConfWithReportData } from 'applets/hiilikartta/common/types'
+import {
+  GlobalState,
+  PlanConfWithReportData,
+} from 'applets/hiilikartta/common/types'
 import CarbonMapGraph from 'applets/hiilikartta/components/CarbonMapGraph'
 import CarbonLineChart from 'applets/hiilikartta/components/CarbonLineChart'
 import CarbonOverviewGraph from 'applets/hiilikartta/components/CarbonOverviewGraph'
@@ -32,6 +35,7 @@ enum ErrorState {
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const searchParams = useSearchParams()
+  const globalState = useStore(useAppletStore, (state) => state.globalState)
   const router = useRouter()
   const pathName = usePathname()
   const { t } = useTranslate('hiilikartta')
@@ -75,7 +79,11 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
   }, [allPlanConfs, externalPlanConfs])
 
   useEffect(() => {
-    if (allPlanConfs != null && externalPlanConfs != null) {
+    if (
+      allPlanConfs != null &&
+      externalPlanConfs != null &&
+      globalState === GlobalState.IDLE
+    ) {
       const paramPlanIds = searchParams.get('planIds')
       if (paramPlanIds != null) {
         const ids = paramPlanIds.split(',')
@@ -83,7 +91,15 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
         const paramPlanConfs: PlanConfWithReportData[] = []
         for (const id of ids) {
           const foundPlanConfId = Object.keys(allPlanConfs).find(
-            (planConfId) => allPlanConfs[planConfId].serverId === id
+            (planConfId) => {
+              if (
+                allPlanConfs[planConfId].serverId === id &&
+                !allPlanConfs[planConfId].isHidden
+              ) {
+                return true
+              }
+              return false
+            }
           )
           const foundExtPlanConfId = Object.keys(externalPlanConfs).find(
             (planConfId) => externalPlanConfs[planConfId].serverId === id
