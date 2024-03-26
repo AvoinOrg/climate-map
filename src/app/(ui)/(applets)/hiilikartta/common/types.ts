@@ -18,7 +18,7 @@ export interface PlanConf extends NewPlanConf {
   calculationState: CalculationState
   reportData: undefined | ReportData
   // A lot of the following are conditional only to support older versions of the app without these variables
-  mutationState?: MutationState
+  state?: PlanConfState
   cloudLastSaved?: number
   localLastEdited?: number
   localLastSaved?: number
@@ -63,10 +63,11 @@ export enum CalculationState {
   FINISHED = 'finished',
 }
 
-export enum MutationState {
+export enum PlanConfState {
   SAVING = 'saving',
   IDLE = 'idle',
   DELETING = 'deleting',
+  FETCHING = 'fetching',
 }
 
 export type NewPlanConf = {
