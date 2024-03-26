@@ -13,10 +13,12 @@ import useStore from '#/common/hooks/useStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { SIDEBAR_WIDTH_REM } from '../common/constants'
 import { useAppletStore } from '../state/appletStore'
-import { PlanConf, PlanConfState } from '../common/types'
+import { GlobalState, PlanConf, PlanConfState } from '../common/types'
+import { LoadingSpinner } from '#/components/Loading'
 
 const Page = () => {
   const planConfs = useStore(useAppletStore, (state) => state.planConfs)
+  const globalState = useStore(useAppletStore, (state) => state.globalState)
 
   const filteredPlanConfs: PlanConf[] = useMemo(() => {
     if (planConfs == null) {
@@ -43,7 +45,22 @@ const Page = () => {
         </Box>
       </Link>
 
-      {filteredPlanConfs.length > 0 && (
+      {globalState !== GlobalState.IDLE && (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            mt: 19,
+          }}
+        >
+          <LoadingSpinner
+            sx={{ height: '40px', color: 'secondary.main' }}
+          ></LoadingSpinner>
+        </Box>
+      )}
+
+      {filteredPlanConfs.length > 0 && globalState === GlobalState.IDLE && (
         <Link href={getRoute(routeTree.plans, routeTree)} sx={{ mt: 18 }}>
           <Folder
             sx={{
