@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Box, Typography } from '@mui/material'
 import Link from '#/components/common/Link'
 import { T } from '@tolgee/react'
@@ -13,9 +13,27 @@ import useStore from '#/common/hooks/useStore'
 import { routeTree } from 'applets/hiilikartta/common/routes'
 import { SIDEBAR_WIDTH_REM } from '../common/constants'
 import { useAppletStore } from '../state/appletStore'
+import { PlanConf, PlanConfState } from '../common/types'
 
 const Page = () => {
   const planConfs = useStore(useAppletStore, (state) => state.planConfs)
+
+  const filteredPlanConfs: PlanConf[] = useMemo(() => {
+    if (planConfs == null) {
+      return []
+    }
+
+    return Object.keys(planConfs).reduce<PlanConf[]>((acc, id) => {
+      if (
+        !planConfs[id].isHidden &&
+        planConfs[id].state !== PlanConfState.FETCHING
+      ) {
+        acc.push(planConfs[id])
+      }
+
+      return acc
+    }, [])
+  }, [planConfs])
 
   return (
     <SidebarContentBox sx={{ width: SIDEBAR_WIDTH_REM + 'rem' }}>
@@ -25,7 +43,7 @@ const Page = () => {
         </Box>
       </Link>
 
-      {planConfs && Object.keys(planConfs).length > 0 && (
+      {filteredPlanConfs.length > 0 && (
         <Link href={getRoute(routeTree.plans, routeTree)} sx={{ mt: 18 }}>
           <Folder
             sx={{
