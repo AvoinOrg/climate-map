@@ -77,7 +77,8 @@ export const useAppletStore = create<Vars & Actions>()(
             const id = generateShortId()
             const serverId = generateUUID()
             const created = new Date().getTime()
-            const planConf = {
+
+            const planConf: PlanConf = {
               id,
               serverId,
               created,
@@ -102,8 +103,20 @@ export const useAppletStore = create<Vars & Actions>()(
               return null
             }
 
-            const updatedPlanConf = { ...oldPlanConf, ...planConf }
-            updatedPlanConf.localLastEdited = new Date().getTime()
+            const updatedPlanConf = {
+              ...oldPlanConf,
+              ...planConf,
+              areSettingsValid: true,
+            }
+
+            if (
+              planConf.localLastEdited == null &&
+              (oldPlanConf.name !== planConf.name ||
+                (planConf.data != null &&
+                  !isEqual(planConf.data, oldPlanConf.data)))
+            ) {
+              planConf.localLastEdited = new Date().getTime()
+            }
 
             await set((state) => {
               state.planConfs[planId] = updatedPlanConf
