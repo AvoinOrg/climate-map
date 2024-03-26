@@ -49,6 +49,10 @@ type Actions = {
     serverId: string,
     externalPlanConf: Partial<ExternalPlanConf>
   ) => Promise<ExternalPlanConf | null>
+  addPlaceholderPlanConf: (
+    id: string,
+    planConf: PlaceholderPlanConf
+  ) => Promise<PlaceholderPlanConf>
   updatePlaceholderPlanConf: (
     id: string,
     placeholderPlanConf: Partial<PlaceholderPlanConf>
@@ -212,6 +216,19 @@ export const useAppletStore = create<Vars & Actions>()(
               state.externalPlanConfs[serverId] = updatedPlanConf
             })
             return updatedPlanConf
+          },
+
+          addPlaceholderPlanConf: async (
+            id: string,
+            planConf: PlaceholderPlanConf
+          ) => {
+            await set((state) => {
+              state.placeholderPlanConfs[id] = {
+                ...planConf,
+                status: FetchStatus.NOT_STARTED,
+              }
+            })
+            return planConf
           },
 
           updatePlaceholderPlanConf: async (
