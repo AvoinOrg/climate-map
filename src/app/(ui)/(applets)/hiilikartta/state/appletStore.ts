@@ -232,15 +232,13 @@ export const useAppletStore = create<Vars & Actions>()(
           },
 
           updatePlaceholderPlanConf: async (
-            serverId: string,
+            id: string,
             planConf: Partial<PlaceholderPlanConf> | undefined
           ) => {
-            let oldPlanConf = get().placeholderPlanConfs[serverId]
+            let oldPlanConf = get().placeholderPlanConfs[id]
             if (oldPlanConf == null) {
-              oldPlanConf = {
-                serverId: serverId,
-                status: FetchStatus.NOT_STARTED,
-              }
+              console.error('Unable to update non-existing placeholderPlanConf')
+              return null
             }
 
             let updatedPlanConf = oldPlanConf
@@ -248,7 +246,7 @@ export const useAppletStore = create<Vars & Actions>()(
               updatedPlanConf = { ...oldPlanConf, ...planConf }
             }
             await set((state) => {
-              state.placeholderPlanConfs[serverId] = updatedPlanConf
+              state.placeholderPlanConfs[id] = updatedPlanConf
             })
             return updatedPlanConf
           },
