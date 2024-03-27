@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import { styled } from '@mui/material/styles'
 // import SettingsIcon from '@mui/icons-material/Settings'
@@ -14,7 +14,7 @@ import Tooltip from '@mui/material/Tooltip'
 
 import { getRoute } from '#/common/utils/routing'
 import useStore from '#/common/hooks/useStore'
-import { useMapStore, useUIStore } from '#/common/store'
+import { useUIStore } from '#/common/store'
 import DropDownSelectMinimal from '#/components/common/DropDownSelectMinimal'
 import { pp } from '#/common/utils/general'
 import {
@@ -31,8 +31,13 @@ import ZoneAccordion from './_components/ZoneAccordion'
 import { calcPostMutation } from 'applets/hiilikartta/common/queries/calcPostMutation'
 import PlanFolder from 'applets/hiilikartta/components/PlanFolder'
 import { SIDEBAR_WIDTH_REM } from 'applets/hiilikartta/common/constants'
-import { CalculationState } from 'applets/hiilikartta/common/types'
+import {
+  CalculationState,
+  GlobalState,
+  PlanConfState,
+} from 'applets/hiilikartta/common/types'
 import { planDeleteMutation } from 'applets/hiilikartta/common/queries/planDeleteMutation'
+import { LoadingSpinner } from '#/components/Loading'
 
 const Page = ({ params }: { params: { planIdSlug: string } }) => {
   const triggerConfirmationDialog = useUIStore(
@@ -43,7 +48,11 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
     useAppletStore,
     (state) => state.planConfs[params.planIdSlug]
   )
+  const globalState = useAppletStore((state) => state.globalState)
   const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
+  const placeholderPlanConfs = useAppletStore(
+    (state) => state.placeholderPlanConfs
+  )
   const copyPlanConf = useAppletStore((state) => state.copyPlanConf)
   const calcPost = useMutation(calcPostMutation())
   const planDelete = useMutation(planDeleteMutation())
@@ -159,14 +168,32 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
 
   useEffect(() => {
     if (planConf === undefined) {
-      router.push(getRoute(routeTree, routeTree))
-    } else {
-      if (planConf?.reportData) {
-        setCurrentYear(planConf.reportData.metadata.featureYears[1])
+      if (
+        globalState === GlobalState.FETCHING &&
+        !Object.keys(placeholderPlanConfs).includes(params.planIdSlug)
+      ) {
+        router.push(getRoute(routeTree, routeTree))
+      } else if (globalState === GlobalState.IDLE) {
+        router.push(getRoute(routeTree, routeTree))
       }
-      setIsLoaded(true)
+    } else {
+      if (GlobalState.IDLE && planConf?.isHidden) {
+        router.push(getRoute(routeTree, routeTree))
+      } else {
+        if (planConf?.reportData) {
+          setCurrentYear(planConf.reportData.metadata.featureYears[1])
+        }
+        if (
+          planConf?.state == null ||
+          [PlanConfState.IDLE, PlanConfState.SAVING].includes(planConf?.state)
+        ) {
+          setIsLoaded(true)
+          return
+        }
+      }
     }
-  }, [planConf])
+    setIsLoaded(false)
+  }, [planConf, globalState])
 
   return (
     <Box
@@ -510,6 +537,18 @@ const Page = ({ params }: { params: { planIdSlug: string } }) => {
             )}
           </Box>
         </>
+      )}
+      {!isLoaded && (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            mt: 18,
+          }}
+        >
+          <LoadingSpinner></LoadingSpinner>
+        </Box>
       )}
     </Box>
   )
