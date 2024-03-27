@@ -325,9 +325,11 @@ export const useAppletStore = create<Vars & Actions>()(
             })
           },
           updateGlobalState: (globalState: GlobalState) => {
-            set((state) => {
-              state.globalState = globalState
-            })
+            if (globalState !== get().globalState) {
+              set((state) => {
+                state.globalState = globalState
+              })
+            }
           },
         }
         return { ...vars, ...actions }
