@@ -23,6 +23,7 @@ import {
 } from '../common/types'
 import { calcQueryPoll } from '../common/queries/calcQueryPoll'
 import { externalPlanQuery } from '../common/queries/externalPlanQuery'
+import { useUserStore } from '#/common/store/userStore'
 // import { checkIsValidZoningCode } from '../common/utils'
 
 type Vars = {
@@ -88,6 +89,7 @@ export const useAppletStore = create<Vars & Actions>()(
             const id = generateShortId()
             const serverId = generateUUID()
             const created = new Date().getTime()
+            const userId = useUserStore.getState().user?.id
 
             const planConf: PlanConf = {
               id,
@@ -96,6 +98,9 @@ export const useAppletStore = create<Vars & Actions>()(
               reportData: undefined,
               calculationState: CalculationState.NOT_STARTED,
               localLastEdited: created,
+              userId: userId,
+              state: PlanConfState.IDLE,
+              isHidden: false,
               // areSettingsValid: true,
               ...newPlanConf,
             }
