@@ -80,6 +80,7 @@ const DropDownSelect = ({
             backgroundColor: 'background.main',
             '.MuiSvgIcon-root': { fontSize: '16px', margin: '0 10px 0 0' },
             '.MuiSelect-icon': {
+              mt: -0.3,
               ...(iconSx as Record<string, any>),
             },
           },
