@@ -19,6 +19,7 @@ import { signOut } from 'next-auth/react'
 import useSWR from 'swr'
 
 import { openWindow } from '#/common/utils/modal'
+import { useUserStore } from '#/common/store/userStore'
 
 const profileUrl =
   process.env.NEXT_PUBLIC_ZITADEL_ISSUER + '/ui/console/users/me'
@@ -26,6 +27,8 @@ const profileUrl =
 const LoggedInButton = () => {
   const { data: session, status } = useSession()
   const { data: user, error, isLoading } = useSWR('/api/userinfo')
+  const signOutActions = useUserStore((state) => state.signOutActions)
+
   const [open, setOpen] = React.useState(false)
   const anchorRef = React.useRef<HTMLButtonElement>(null)
 
@@ -50,6 +53,9 @@ const LoggedInButton = () => {
   }
 
   const handleSignoutClick = () => {
+    for (const key in signOutActions) {
+      signOutActions[key]()
+    }
     signOut()
     setOpen(false)
   }
