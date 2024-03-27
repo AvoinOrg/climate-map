@@ -13,6 +13,8 @@ import { getGeoJsonArea } from '#/common/utils/gis'
 import { generateUUID } from '#/common/utils/general'
 import {
   FeatureProperties,
+  GlobalState,
+  PlanConfState,
   PlanData,
   ZONING_CODE_COL,
 } from 'applets/hiilikartta/common/types'
@@ -42,6 +44,7 @@ const Layout = ({
 
   const updateSourceData = useMapStore((state) => state.updateSourceData)
 
+  const globalState = useStore(useAppletStore, (state) => state.globalState)
   const planConf = useStore(
     useAppletStore,
     (state) => state.planConfs[params.planIdSlug]
@@ -52,6 +55,8 @@ const Layout = ({
     getPlanLayerGroupId(params.planIdSlug)
   )
   const isLoaded = useRef(false)
+
+  console.log(planConf)
 
   // const setIsDrawEnabled = useMapStore((state) => state.setIsDrawEnabled)
 
@@ -117,7 +122,17 @@ const Layout = ({
         isLoaded.current = true
       }
     }
-    if (planConf && !isLoaded.current && doesLayerGroupExist != null) {
+
+    if (
+      planConf &&
+      !planConf.isHidden &&
+      ![PlanConfState.FETCHING, PlanConfState.DELETING].includes(
+        planConf.state || PlanConfState.IDLE
+      ) &&
+      !isLoaded.current &&
+      globalState !== GlobalState.INITIALIZING &&
+      doesLayerGroupExist != null
+    ) {
       init()
       // return () => {
       //   try {
@@ -126,8 +141,14 @@ const Layout = ({
       //     // if it fails, the layer is (most likely) already disabled/removed
       //   }
       // }
+    } else if (!planConf && doesLayerGroupExist) {
+      disableSerializableLayerGroup(getPlanLayerGroupId(params.planIdSlug))
+    } else if (planConf && planConf.isHidden && doesLayerGroupExist) {
+      disableSerializableLayerGroup(getPlanLayerGroupId(params.planIdSlug))
+    } else if (planConf && planConf.state != null && planConf.state === PlanConfState.FETCHING) {
+      disableSerializableLayerGroup(getPlanLayerGroupId(params.planIdSlug))
     }
-  }, [planConf, isLoaded, doesLayerGroupExist])
+  }, [planConf, isLoaded, doesLayerGroupExist, globalState])
 
   useEffect(() => {
     if (planConf?.data != null && isLoaded.current) {
