@@ -87,7 +87,9 @@ const PlanFolder = ({
                 )
               : planConf.data.features.length === 0
               ? t('sidebar.my_plans.unable_to_save_empty_plan')
-              : t('sidebar.my_plans.sign_in_to_save')
+              : status !== 'authenticated'
+              ? t('sidebar.my_plans.sign_in_to_save')
+              : t('sidebar.my_plans.unable_to_save')
           }
           disableHoverListener={isSaveEnabled}
         >
