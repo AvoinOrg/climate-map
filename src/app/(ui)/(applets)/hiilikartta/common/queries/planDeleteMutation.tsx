@@ -17,9 +17,6 @@ export const planDeleteMutation = (): UseMutationOptions<
 > => {
   const deletePlanConf = useAppletStore((state) => state.deletePlanConf)
   const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
-  const removeSerializableLayerGroup = useMapStore(
-    (state) => state.removeSerializableLayerGroup
-  )
   const { data: session } = useSession()
 
   return {
@@ -42,7 +39,6 @@ export const planDeleteMutation = (): UseMutationOptions<
         }
       }
 
-      await removeSerializableLayerGroup(getPlanLayerGroupId(planConf.id))
       await deletePlanConf(planConf.id)
     },
     onError: (error, planConf) => {
