@@ -680,7 +680,7 @@ export const useMapStore = create<State>()(
           const { _layerGroups, _mbMap, _drawOptions, _removeDraw } = get() // Assuming you have a map reference in your store.
 
           if (!Object.keys(_layerGroups).includes(layerGroupId)) {
-            console.error(
+            console.warn(
               'Unable to remove layer group that does not have layer group options: ' +
                 layerGroupId
             )
