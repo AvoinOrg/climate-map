@@ -24,7 +24,7 @@ const localizationNamespace = 'hiilikartta'
 const defaultLanguage = 'fi'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const updateGlobalState = useAppletStore((state) => state.updateGlobalState)
   const planConfs = useAppletStore((state) => state.planConfs)
   const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
@@ -57,29 +57,33 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     clearPlaceholderPlanConfs()
 
-    if (session?.user?.id != null) {
-      clearPlaceholderPlanConfs()
-      updateGlobalState(GlobalState.INITIALIZING)
-      planConfStatsQuery.refetch()
+    if (status !== 'loading') {
+      if (session?.user?.id != null) {
+        clearPlaceholderPlanConfs()
+        updateGlobalState(GlobalState.INITIALIZING)
+        planConfStatsQuery.refetch()
 
-      for (const id in planConfs) {
-        if (!planConfs[id].userId) {
-          updatePlanConf(id, { userId: session.user.id })
-        } else if (planConfs[id].userId !== session.user.id) {
-          updatePlanConf(id, { isHidden: true })
-        } else if (planConfs[id].userId === session.user.id) {
-          updatePlanConf(id, { isHidden: false })
+        for (const id in planConfs) {
+          if (!planConfs[id].userId) {
+            updatePlanConf(id, { userId: session.user.id })
+          } else if (planConfs[id].userId !== session.user.id) {
+            updatePlanConf(id, { isHidden: true })
+          } else if (planConfs[id].userId === session.user.id) {
+            updatePlanConf(id, { isHidden: false })
+          }
         }
+      } else {
+        for (const id in planConfs) {
+          if (planConfs[id].userId != null) {
+            updatePlanConf(id, { isHidden: true })
+          }
+        }
+        updateGlobalState(GlobalState.IDLE)
       }
     } else {
-      for (const id in planConfs) {
-        if (planConfs[id].userId != null) {
-          updatePlanConf(id, { isHidden: true })
-        }
-      }
-      updateGlobalState(GlobalState.IDLE)
+      updateGlobalState(GlobalState.INITIALIZING)
     }
-  }, [session?.user?.id])
+  }, [session?.user?.id, status])
 
   useEffect(() => {
     const processPlanConfs = async (data: PlaceholderPlanConf[]) => {
