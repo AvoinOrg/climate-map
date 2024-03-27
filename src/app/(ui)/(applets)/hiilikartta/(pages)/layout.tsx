@@ -9,6 +9,7 @@ import { routeTree } from '../common/routes'
 import { SidebarHeader } from '#/components/Sidebar'
 import { BreadcrumbNav } from '#/components/Sidebar'
 import AppletWrapper from '#/components/common/AppletWrapper'
+import { useUserStore } from '#/common/store/userStore'
 
 import { SIDEBAR_WIDTH_REM } from '../common/constants'
 import { planStatsQuery } from '../common/queries/planStatsQuery'
@@ -25,6 +26,10 @@ const defaultLanguage = 'fi'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const { data: session, status } = useSession()
+  const addSignOutAction = useUserStore((state) => state.addSignOutAction)
+  const removeSignOutAction = useUserStore((state) => state.removeSignOutAction)
+
+  const deletePlanConf = useAppletStore((state) => state.deletePlanConf)
   const updateGlobalState = useAppletStore((state) => state.updateGlobalState)
   const planConfs = useAppletStore((state) => state.planConfs)
   const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
@@ -142,6 +147,34 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       }
     }
   }, [planQs])
+
+  useEffect(() => {
+    if (session?.user?.id != null) {
+      addSignOutAction('hiilikartta', () => {
+        for (const id in planConfs) {
+          if (planConfs[id].userId === session?.user?.id) {
+            deletePlanConf(id)
+          }
+        }
+      })
+    }
+  }, [planConfs, session?.user?.id])
+
+  useEffect(() => {
+    if (planQs.length > 0) {
+      const allCompleted = planQs.every(
+        (planQ) => planQ.isSuccess || planQ.isError
+      )
+
+      if (allCompleted) {
+        updateGlobalState(GlobalState.IDLE)
+      }
+    }
+
+    return () => {
+      removeSignOutAction('hiilikartta')
+    }
+  }, [])
 
   return (
     <AppletWrapper
