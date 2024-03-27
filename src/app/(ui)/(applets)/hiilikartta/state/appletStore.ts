@@ -10,6 +10,9 @@ import { cloneDeep, isEqual, pickBy } from 'lodash-es'
 import { FetchStatus } from '#/common/types/general'
 import { generateShortId, generateUUID } from '#/common/utils/general'
 import { queryClient } from '#/common/queries/queryClient'
+import { useUserStore } from '#/common/store/userStore'
+import { useMapStore } from '#/common/store'
+import { getPlanLayerGroupId } from '../common/utils'
 
 import {
   CalculationState,
@@ -23,7 +26,6 @@ import {
 } from '../common/types'
 import { calcQueryPoll } from '../common/queries/calcQueryPoll'
 import { externalPlanQuery } from '../common/queries/externalPlanQuery'
-import { useUserStore } from '#/common/store/userStore'
 // import { checkIsValidZoningCode } from '../common/utils'
 
 type Vars = {
@@ -83,6 +85,11 @@ export const useAppletStore = create<Vars & Actions>()(
             set((state) => {
               delete state.planConfs[planId]
             })
+            try {
+              await useMapStore
+                .getState()
+                .removeSerializableLayerGroup(getPlanLayerGroupId(planId))
+            } catch (e) {}
           },
 
           addPlanConf: async (newPlanConf: NewPlanConf) => {
