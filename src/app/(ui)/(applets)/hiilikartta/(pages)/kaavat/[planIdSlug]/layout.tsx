@@ -56,8 +56,6 @@ const Layout = ({
   )
   const isLoaded = useRef(false)
 
-  console.log(planConf)
-
   // const setIsDrawEnabled = useMapStore((state) => state.setIsDrawEnabled)
 
   useEffect(() => {
@@ -145,7 +143,11 @@ const Layout = ({
       disableSerializableLayerGroup(getPlanLayerGroupId(params.planIdSlug))
     } else if (planConf && planConf.isHidden && doesLayerGroupExist) {
       disableSerializableLayerGroup(getPlanLayerGroupId(params.planIdSlug))
-    } else if (planConf && planConf.state != null && planConf.state === PlanConfState.FETCHING) {
+    } else if (
+      planConf &&
+      planConf.state != null &&
+      planConf.state === PlanConfState.FETCHING
+    ) {
       disableSerializableLayerGroup(getPlanLayerGroupId(params.planIdSlug))
     }
   }, [planConf, isLoaded, doesLayerGroupExist, globalState])
