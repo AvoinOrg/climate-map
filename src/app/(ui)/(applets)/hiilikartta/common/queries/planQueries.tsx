@@ -44,6 +44,7 @@ export const planQueries = (
           ...placeholderPlanConf,
           status: FetchStatus.FETCHING,
         })
+
         const response = await axios.get(`${API_URL}/plan`, {
           params: { id: placeholderPlanConf.serverId },
 
@@ -85,7 +86,7 @@ export const planQueries = (
               serverId: response.data.id,
               created: response.data.created_ts * 1000,
               state: PlanConfState.IDLE,
-              calculationState: response.data.calculation_status,
+              calculationState: calculationState,
               cloudLastSaved: response.data.saved_ts * 1000,
               localLastSaved: response.data.saved_ts * 1000,
               localLastEdited: response.data.saved_ts * 1000,
