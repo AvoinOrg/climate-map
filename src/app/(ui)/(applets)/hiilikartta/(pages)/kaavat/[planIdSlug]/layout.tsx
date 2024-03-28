@@ -140,15 +140,22 @@ const Layout = ({
       //   }
       // }
     } else if (!planConf && doesLayerGroupExist) {
-      disableSerializableLayerGroup(getPlanLayerGroupId(params.planIdSlug))
+      disableSerializableLayerGroup(
+        getPlanLayerGroupId(params.planIdSlug)
+      ).catch(() => {})
     } else if (planConf && planConf.isHidden && doesLayerGroupExist) {
-      disableSerializableLayerGroup(getPlanLayerGroupId(params.planIdSlug))
+      disableSerializableLayerGroup(
+        getPlanLayerGroupId(params.planIdSlug)
+      ).catch(() => {})
     } else if (
       planConf &&
       planConf.state != null &&
       planConf.state === PlanConfState.FETCHING
     ) {
-      disableSerializableLayerGroup(getPlanLayerGroupId(params.planIdSlug))
+      disableSerializableLayerGroup(
+        getPlanLayerGroupId(params.planIdSlug)
+      ).catch(() => {})
+      isLoaded.current = false
     }
   }, [planConf, isLoaded, doesLayerGroupExist, globalState])
 
