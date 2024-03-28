@@ -23,7 +23,6 @@ export const planPostMutation = (): UseMutationOptions<
   return {
     mutationFn: async (planConf: PlanConf) => {
       updatePlanConf(planConf.id, { state: PlanConfState.SAVING })
-      const localLastEdited = planConf.localLastEdited
       const zip = new JSZip()
       zip.file('file', JSON.stringify(planConf.data))
       const zipBlob = await zip.generateAsync({ type: 'blob' })
