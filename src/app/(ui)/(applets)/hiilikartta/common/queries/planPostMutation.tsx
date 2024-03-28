@@ -49,7 +49,7 @@ export const planPostMutation = (): UseMutationOptions<
 
       updatePlanConf(planConf.id, {
         cloudLastSaved: postRes.data.saved_ts * 1000,
-        localLastSaved: localLastEdited,
+        localLastSaved: postRes.data.saved_ts * 1000,
         state: PlanConfState.IDLE,
         userId: postRes.data.user_id,
       })
