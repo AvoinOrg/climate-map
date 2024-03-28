@@ -120,15 +120,17 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     }
 
     if (session?.user?.id && planConfStatsQuery.data) {
-      processPlanConfs(planConfStatsQuery.data)
+      if (planConfStatsQuery.data.length > 0) {
+        processPlanConfs(planConfStatsQuery.data)
+      } else {
+        updateGlobalState(GlobalState.IDLE)
+      }
     }
   }, [session?.user?.id, planConfStatsQuery.data])
 
   useEffect(() => {
     if (session?.user?.id && planConfsToFetch) {
-      if (planConfsToFetch.length === 0) {
-        updateGlobalState(GlobalState.IDLE)
-      } else {
+      if (planConfsToFetch.length > 0) {
         planQs.forEach((planQ) => {
           planQ.refetch()
         })
@@ -161,16 +163,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   }, [planConfs, session?.user?.id])
 
   useEffect(() => {
-    if (planQs.length > 0) {
-      const allCompleted = planQs.every(
-        (planQ) => planQ.isSuccess || planQ.isError
-      )
-
-      if (allCompleted) {
-        updateGlobalState(GlobalState.IDLE)
-      }
-    }
-
     return () => {
       removeSignOutAction('hiilikartta')
     }
