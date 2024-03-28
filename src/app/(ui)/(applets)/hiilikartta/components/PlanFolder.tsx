@@ -91,7 +91,7 @@ const PlanFolder = ({
               ? t('sidebar.my_plans.sign_in_to_save')
               : t('sidebar.my_plans.unable_to_save')
           }
-          disableHoverListener={isSaveEnabled && !planPost.isPending}
+          disableHoverListener={isSaveEnabled || planPost.isPending}
         >
           <Box
             onClick={isSaveEnabled ? handleSyncClick : undefined}
