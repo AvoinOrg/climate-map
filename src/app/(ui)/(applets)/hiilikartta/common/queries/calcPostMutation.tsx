@@ -5,6 +5,7 @@ import { CalculationState, PlanConfState, PlanConf } from '../types'
 import { useAppletStore } from 'applets/hiilikartta/state/appletStore'
 import { useUIStore } from '#/common/store'
 import { useTranslate } from '@tolgee/react'
+import { useSession } from 'next-auth/react'
 
 const API_URL = process.env.NEXT_PUBLIC_HIILIKARTTA_API_URL
 
@@ -21,6 +22,7 @@ export const calcPostMutation = (): UseMutationOptions<
   const updatePlanConf = useAppletStore((state) => state.updatePlanConf)
   const notify = useUIStore((state) => state.notify)
   const { t } = useTranslate('hiilikartta')
+  const { data: session } = useSession()
 
   return {
     mutationFn: async (planConf: PlanConf) => {
@@ -39,6 +41,9 @@ export const calcPostMutation = (): UseMutationOptions<
       const postRes = await axios.post(`${API_URL}/calculation`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          ...(session?.accessToken
+            ? { Authorization: `Bearer ${session.accessToken}` }
+            : {}),
         },
         params: {
           id: planConf.serverId,
