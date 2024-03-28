@@ -128,7 +128,7 @@ const Layout = ({
         planConf.state || PlanConfState.IDLE
       ) &&
       !isLoaded.current &&
-      globalState !== GlobalState.INITIALIZING &&
+      globalState === GlobalState.IDLE &&
       doesLayerGroupExist != null
     ) {
       init()
