@@ -26,7 +26,6 @@ export const calcPostMutation = (): UseMutationOptions<
 
   return {
     mutationFn: async (planConf: PlanConf) => {
-      const localLastEdited = planConf.localLastEdited
       updatePlanConf(planConf.id, {
         calculationState: CalculationState.INITIALIZING,
         state: PlanConfState.SAVING,
@@ -59,7 +58,7 @@ export const calcPostMutation = (): UseMutationOptions<
       updatePlanConf(planConf.id, {
         calculationState: CalculationState.CALCULATING,
         cloudLastSaved: postRes.data.saved_ts * 1000,
-        localLastSaved: localLastEdited,
+        localLastSaved: postRes.data.saved_ts * 1000,
         state: PlanConfState.IDLE,
         userId: postRes.data.user_id,
       })
