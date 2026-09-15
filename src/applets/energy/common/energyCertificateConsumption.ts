@@ -52,7 +52,8 @@ export type EnergyCertificateConsumptionRecord =
   | EnergyCertificateConsumptionCompleteRecord
   | EnergyCertificateConsumptionPartialRecord
 
-const CONSUMPTION_PROPERTY = 'energy_certificate_consumption'
+export const ENERGY_CERTIFICATE_CONSUMPTION_PROPERTY =
+  'energy_certificate_consumption'
 const BUILDING_IDENTIFIER_PROPERTY = 'permanent_building_identifier'
 
 const STANDARD_CARRIERS = [
@@ -169,7 +170,7 @@ const totalsAreConsistent = ({
 const parseRecord = (
   properties: EnergymapSelectedBuildingProperties
 ): EnergyCertificateConsumptionRecord | null => {
-  const rawConsumption = properties[CONSUMPTION_PROPERTY]
+  const rawConsumption = properties[ENERGY_CERTIFICATE_CONSUMPTION_PROPERTY]
   if (rawConsumption === undefined || rawConsumption === null) return null
   if (typeof rawConsumption !== 'string') return null
 

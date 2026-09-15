@@ -2,11 +2,13 @@ import type {
   EnergymapBuildingInfoPanel,
   EnergymapBuildingInfoSection,
 } from './buildingInfo'
+import { createEnergymapBuildingInfoPanels } from './buildingInfo'
 import {
   deriveEnergymapBuildingInfoPanelTopology,
   resolveEnergymapBuildingInfoMode,
   resolveEnergymapBuildingInfoTab,
 } from './buildingInfoPanelTopology'
+import type { EnergymapSelectedBuilding } from './types'
 
 const text = (value: string) => ({ type: 'plain' as const, text: value })
 
@@ -51,6 +53,54 @@ const panel = ({
   title: text(`${id} title`),
   sections,
 })
+
+const certificateBuilding = ({
+  extraProperties = {},
+  reference = false,
+}: {
+  extraProperties?: EnergymapSelectedBuilding['properties']
+  reference?: boolean
+} = {}): EnergymapSelectedBuilding => {
+  const identifier = 'TOPOLOGY-CERTIFICATE'
+  return {
+    id: 'topology-certificate',
+    buildingKey: 'topology-certificate',
+    source: 'energymap_building_polygons',
+    sourceLayer: 'energymap_building_polygons',
+    layerId: 'energymap_building_polygons-fill',
+    properties: {
+      permanent_building_identifier: identifier,
+      ...(reference
+        ? {
+            heating_method: '01',
+            heating_energy_source: '01',
+            floor_area: 100,
+            distr_default_total: 100,
+            distr_default_heat: 75,
+            distr_default_elec: 25,
+          }
+        : {}),
+      ...extraProperties,
+      energy_certificate_consumption: JSON.stringify({
+        schema_version: 1,
+        basis: 'standardized_calculation',
+        unit: 'kWh/year',
+        certificate_version: 2018,
+        certificate_id: 'TOPOLOGY-CERT',
+        building_identifier: identifier,
+        completeness: 'complete',
+        components: [
+          { carrier: 'electricity', annual_kwh: 1 },
+          { carrier: 'district_heat', annual_kwh: 2 },
+          { carrier: 'district_cooling', annual_kwh: 3 },
+          { carrier: 'fossil_fuel', annual_kwh: 4 },
+          { carrier: 'renewable_fuel', annual_kwh: 5 },
+        ],
+        total_kwh_year: 15,
+      }),
+    },
+  }
+}
 
 describe('deriveEnergymapBuildingInfoPanelTopology', () => {
   it('returns no tabs for absent, empty, or structurally empty panels', () => {
@@ -340,5 +390,52 @@ describe('deriveEnergymapBuildingInfoPanelTopology', () => {
         requestedTabId: 'basic',
       })
     ).toBeUndefined()
+  })
+
+  it('passes normalized certificate-only and Water-plus-certificate sections through unchanged', () => {
+    for (const building of [
+      certificateBuilding(),
+      certificateBuilding({ extraProperties: { floor_area: 100 } }),
+    ]) {
+      const panels = createEnergymapBuildingInfoPanels({
+        selectedBuilding: building,
+        locale: 'en-US',
+      }) as EnergymapBuildingInfoPanel[]
+      const certificateSection = panels
+        .find(({ id }) => id === 'energyConsumption')
+        ?.sections.find(({ id }) => id === 'certificateConsumption')
+      const topology = deriveEnergymapBuildingInfoPanelTopology(panels)
+      const topologyEnergyPanel = topology.availableTabs
+        .find(({ id }) => id === 'basic')
+        ?.panels.find(({ id }) => id === 'energyConsumption')
+
+      expect(certificateSection).toBeDefined()
+      expect(topologyEnergyPanel?.sections).toContain(certificateSection)
+    }
+  })
+
+  it('suppresses certificates for complete reference Energy and does not fabricate a panel with neither source', () => {
+    const completePanels = createEnergymapBuildingInfoPanels({
+      selectedBuilding: certificateBuilding({ reference: true }),
+      locale: 'en-US',
+    }) as EnergymapBuildingInfoPanel[]
+    expect(
+      completePanels
+        .find(({ id }) => id === 'energyConsumption')
+        ?.sections.some(({ id }) => id === 'certificateConsumption')
+    ).toBe(false)
+
+    const neither = createEnergymapBuildingInfoPanels({
+      selectedBuilding: {
+        ...certificateBuilding(),
+        properties: { building_key: 'neither-topology' },
+      },
+      locale: 'en-US',
+    }) as EnergymapBuildingInfoPanel[]
+    expect(
+      deriveEnergymapBuildingInfoPanelTopology(neither).availableTabs.some(
+        ({ panels }) => panels.some(({ id }) => id === 'energyConsumption')
+      )
+    ).toBe(false)
   })
 })

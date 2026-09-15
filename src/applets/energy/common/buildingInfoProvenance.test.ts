@@ -10,6 +10,8 @@ import {
   ENERGYMAP_DERIVED_WATER_PROVENANCE_INPUT_IDS,
   ENERGYMAP_DERIVED_WATER_RESIDENT_CONTROL_PROVENANCE_INPUT_IDS,
   ENERGYMAP_BUILDING_INFO_PROVENANCE_CALCULATIONS,
+  ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS,
+  ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS,
   ENERGYMAP_BUILDING_INFO_PROVENANCE_CATALOG,
   ENERGYMAP_BUILDING_INFO_PROVENANCE_CATEGORIES,
   ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS,
@@ -74,6 +76,42 @@ const completeDistrictHeatingProperties = {
   distr_windows_total: 332.6442308,
 } satisfies EnergymapSelectedBuilding['properties']
 
+const certificateConsumptionProperties = ({
+  completeness = 'complete',
+}: {
+  completeness?: 'complete' | 'partial'
+} = {}) => {
+  const components = [
+    { carrier: 'electricity', annual_kwh: 0 },
+    { carrier: 'district_heat', annual_kwh: 10 },
+    { carrier: 'district_cooling', annual_kwh: 20 },
+    { carrier: 'fossil_fuel', annual_kwh: 30 },
+    { carrier: 'renewable_fuel', annual_kwh: 40 },
+    { carrier: 'other', source_slot: 0, name: 'Biokaasu', annual_kwh: 5 },
+    { carrier: 'other', source_slot: 1, name: null, annual_kwh: 6 },
+    { carrier: 'other', source_slot: 2, name: '', annual_kwh: 7 },
+  ]
+
+  return {
+    building_key: `certificate-${completeness}`,
+    permanent_building_identifier: `CERTIFICATE-${completeness}`,
+    energy_certificate_consumption: JSON.stringify({
+      schema_version: 1,
+      basis: 'standardized_calculation',
+      unit: 'kWh/year',
+      certificate_version: 2018,
+      certificate_id: `CERT-${completeness}`,
+      building_identifier: `CERTIFICATE-${completeness}`,
+      completeness,
+      components,
+      total_kwh_year: completeness === 'complete' ? 118 : null,
+      signed_at: '2015-01-02T00:00:00Z',
+      valid_until: '2025-01-02T00:00:00Z',
+      heated_net_area_m2: 10,
+    }),
+  } satisfies EnergymapSelectedBuilding['properties']
+}
+
 const activeCurrentReferenceEnergyInput = {
   floorAreaSquareMeters: 1,
   defaultElectricityIntensityKwhPerSquareMeterYear: 1,
@@ -96,6 +134,7 @@ type ProvenanceCandidate = {
   provenance?: {
     id: string
     inputIds?: readonly string[]
+    runtimeValues?: Readonly<Record<string, string | number>>
   }
   sourceProperties?: readonly string[]
   sourceLanguage?: string
@@ -122,6 +161,13 @@ const collectProvenanceCandidates = (
     for (const section of panel.sections) {
       const sectionPath = `${panel.id}.${section.id}`
 
+      if (section.variant === 'energyCertificateConsumption') {
+        add(`${sectionPath}.title`, {
+          provenance: section.titleProvenance,
+          sourceProperties: section.titleSourceProperties,
+        })
+      }
+
       for (const row of section.rows ?? []) {
         addValue(`${sectionPath}.row.${row.id}`, row)
         if (row.modeledIndicator != null) {
@@ -133,6 +179,12 @@ const collectProvenanceCandidates = (
       }
 
       for (const metric of section.metrics ?? []) {
+        if (section.variant === 'energyCertificateConsumption') {
+          add(`${sectionPath}.metric.${metric.id}.label`, {
+            provenance: metric.labelProvenance,
+            sourceProperties: metric.labelSourceProperties,
+          })
+        }
         for (const value of metric.values) {
           addValue(`${sectionPath}.metric.${metric.id}.${value.id}`, value)
         }
@@ -271,15 +323,37 @@ describe('Energiakartta building-info provenance catalog', () => {
         expect(new Set([...requiredInputIds, ...optionalInputIds]).size).toBe(
           requiredInputIds.length + optionalInputIds.length
         )
-        const sourceProperties = requiredInputIds.flatMap((inputId) => {
-          const sourceProperty =
-            ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_DEFINITIONS[inputId]
-              .sourceProperty
-          return sourceProperty == null ? [] : [sourceProperty]
-        })
+        const sourceProperties = [
+          ...new Set(
+            requiredInputIds.flatMap((inputId) => {
+              const sourceProperty =
+                ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_DEFINITIONS[inputId]
+                  .sourceProperty
+              return sourceProperty == null ? [] : [sourceProperty]
+            })
+          ),
+        ]
+        const runtimeValues = Object.fromEntries(
+          requiredInputIds.flatMap((inputId) => {
+            const input =
+              ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_DEFINITIONS[inputId]
+            const runtimeValueType = input.runtimeValueType
+            if (runtimeValueType == null) return []
+
+            const value =
+              inputId ===
+                ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.completeness &&
+              definition.requiredCertificateCompleteness != null
+                ? definition.requiredCertificateCompleteness
+                : runtimeValueType === 'string'
+                  ? 'runtime-value'
+                  : 1
+            return [[inputId, value]]
+          })
+        )
         expect(
           resolveEnergymapBuildingInfoProvenance({
-            provenance: { id, inputIds: requiredInputIds },
+            provenance: { id, inputIds: requiredInputIds, runtimeValues },
             sourceProperties,
           })
         ).toMatchObject({ status: 'resolved' })
@@ -490,6 +564,8 @@ describe('Energiakartta building-info provenance catalog', () => {
         is_energy_class_modeled: true,
       }),
       createPanels(withoutOrigin),
+      createPanels(certificateConsumptionProperties()),
+      createPanels(certificateConsumptionProperties({ completeness: 'partial' })),
     ]
     const attachedIds = new Set(
       graphMatrix.flatMap((panels) =>
@@ -1880,5 +1956,215 @@ describe('Energiakartta building-info provenance catalog', () => {
         expect(sourceProperties.has(value as string)).toBe(false)
       }
     }
+  })
+})
+
+describe('energy certificate consumption provenance', () => {
+  const certificatePanels = (completeness: 'complete' | 'partial' = 'complete') =>
+    createPanels(certificateConsumptionProperties({ completeness }))
+
+  it('resolves every retained group, label, value, context row, and note through the public register', () => {
+    for (const completeness of ['complete', 'partial'] as const) {
+      const candidates = collectProvenanceCandidates(
+        certificatePanels(completeness)
+      ).filter(({ path }) => path.includes('.certificateConsumption.'))
+
+      expect(candidates.length).toBeGreaterThan(30)
+      for (const candidate of candidates) {
+        const resolution = resolveCandidate(candidate)
+        expect(resolution).toMatchObject({ status: 'resolved' })
+        if (resolution.status !== 'resolved') continue
+        expect(resolution.sources.map(({ id }) => id)).toContain(
+          'energyCertificateRegister'
+        )
+        expect(resolution.providers.map(({ id }) => id)).toContain(
+          'energyCertificateRegister'
+        )
+      }
+    }
+
+    expect(
+      collectProvenanceCandidates(certificatePanels('partial')).some(
+        ({ provenance }) =>
+          provenance?.id ===
+          ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_TOTAL_ANNUAL
+      )
+    ).toBe(false)
+  })
+
+  it('separates official annual facts from same-certificate area divisions', () => {
+    const panels = certificatePanels()
+    const annual = resolveCandidate(
+      getCandidate({
+        panels,
+        id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_ELECTRICITY_ANNUAL,
+      })
+    )
+    const intensity = resolveCandidate(
+      getCandidate({
+        panels,
+        id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_ELECTRICITY_PER_SQUARE_METER,
+      })
+    )
+
+    expect(annual).toMatchObject({
+      status: 'resolved',
+      category: { id: 'officialCertificate' },
+      valueCalculations: [],
+    })
+    expect(intensity).toMatchObject({
+      status: 'resolved',
+      category: { id: 'compositeCalculation' },
+      valueCalculations: [
+        { id: 'certificateAnnualDividedByHeatedArea' },
+      ],
+    })
+    if (intensity.status !== 'resolved') return
+    expect(
+      intensity.selectedEvidence.find(
+        ({ id }) =>
+          id ===
+          ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.components.electricity
+      )?.value
+    ).toBe(0)
+    expect(
+      intensity.selectedEvidence.find(
+        ({ id }) =>
+          id === ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.heatedNetArea
+      )?.value
+    ).toBe(10)
+    expect(intensity.selectedEvidence.map(({ id }) => id)).not.toContain(
+      ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.RYHTI_FLOOR_AREA
+    )
+  })
+
+  it('fails closed for missing, mistyped, mismatched, mixed, and cross-slot runtime evidence', () => {
+    const annualCandidate = getCandidate({
+      panels: certificatePanels(),
+      id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_ELECTRICITY_ANNUAL,
+    })
+    const provenance = annualCandidate.provenance
+    if (provenance == null) throw new Error('Expected certificate provenance')
+    const annualInputId =
+      ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.components.electricity
+    const runtimeValues = { ...provenance.runtimeValues }
+
+    delete runtimeValues[annualInputId]
+    expect(
+      resolveEnergymapBuildingInfoProvenance({
+        provenance: { ...provenance, runtimeValues },
+        sourceProperties: annualCandidate.sourceProperties,
+      })
+    ).toMatchObject({
+      status: 'unsupported',
+      reason: 'missing-runtime-value',
+      inputId: annualInputId,
+    })
+
+    expect(
+      resolveEnergymapBuildingInfoProvenance({
+        provenance: {
+          ...provenance,
+          runtimeValues: {
+            ...provenance.runtimeValues,
+            [annualInputId]: 'not-a-number',
+          },
+        },
+        sourceProperties: annualCandidate.sourceProperties,
+      })
+    ).toMatchObject({ status: 'unsupported', reason: 'invalid-runtime-value' })
+
+    expect(
+      resolveEnergymapBuildingInfoProvenance({
+        provenance: {
+          ...provenance,
+          runtimeValues: {
+            ...provenance.runtimeValues,
+            [ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.certificateId]: 1,
+          },
+        },
+        sourceProperties: annualCandidate.sourceProperties,
+      })
+    ).toMatchObject({ status: 'unsupported', reason: 'invalid-runtime-value' })
+
+    const districtInputId =
+      ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.components.district_heat
+    const wrongCarrierRuntime = { ...provenance.runtimeValues }
+    delete wrongCarrierRuntime[annualInputId]
+    wrongCarrierRuntime[districtInputId] = 0
+    expect(
+      resolveEnergymapBuildingInfoProvenance({
+        provenance: {
+          ...provenance,
+          inputIds: provenance.inputIds?.map((id) =>
+            id === annualInputId ? districtInputId : id
+          ),
+          runtimeValues: wrongCarrierRuntime,
+        },
+        sourceProperties: annualCandidate.sourceProperties,
+      })
+    ).toMatchObject({ status: 'unsupported', reason: 'invalid-input-set' })
+
+    expect(
+      resolveEnergymapBuildingInfoProvenance({
+        provenance,
+        sourceProperties: ['floor_area'],
+      })
+    ).toMatchObject({
+      status: 'unsupported',
+      reason: 'source-property-mismatch',
+    })
+
+    expect(
+      resolveEnergymapBuildingInfoProvenance({
+        provenance: {
+          ...provenance,
+          inputIds: [
+            ...(provenance.inputIds ?? []),
+            ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.RYHTI_FLOOR_AREA,
+          ],
+        },
+        sourceProperties: annualCandidate.sourceProperties,
+      })
+    ).toMatchObject({ status: 'unsupported', reason: 'invalid-input-set' })
+
+    expect(
+      resolveEnergymapBuildingInfoProvenance({
+        provenance: {
+          id: ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.BUILDING_IDENTIFIER,
+          inputIds: [
+            ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.RYHTI_BUILDING_IDENTIFIER,
+          ],
+          runtimeValues: {
+            [ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.certificateId]:
+              'CERT-OTHER',
+          },
+        },
+        sourceProperties: ['permanent_building_identifier'],
+      })
+    ).toMatchObject({
+      status: 'unsupported',
+      reason: 'unexpected-runtime-value',
+    })
+  })
+
+  it('keeps named other-source evidence literal and slot-specific', () => {
+    const candidate = getCandidate({
+      panels: certificatePanels(),
+      id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_OTHER_0_LABEL,
+    })
+    const resolution = resolveCandidate(candidate)
+    expect(resolution.status).toBe('resolved')
+    if (resolution.status !== 'resolved') return
+
+    expect(
+      resolution.selectedEvidence.find(
+        ({ id }) =>
+          id === ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.otherNames.other0
+      )?.value
+    ).toBe('Biokaasu')
+    expect(resolution.selectedEvidence.map(({ id }) => id)).not.toContain(
+      ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.otherNames.other1
+    )
   })
 })

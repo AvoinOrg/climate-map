@@ -1,5 +1,7 @@
 import {
+  formatCalendarDate,
   isEnergymapBuildingInfoValueAvailable,
+  normalizeEnergymapBuildingInfoText,
   type EnergymapBuildingInfoPanel,
   type EnergymapBuildingInfoPanelId,
   type EnergymapBuildingInfoValue,
@@ -20,6 +22,8 @@ import {
 } from './buildingInfoProvenance'
 
 export type EnergymapBuildingInfoProvenanceSummaryItemKind =
+  | 'sectionTitle'
+  | 'metricLabel'
   | 'row'
   | 'rowValueNote'
   | 'modeledIndicator'
@@ -135,6 +139,13 @@ export type EnergymapBuildingInfoProvenanceSummaryFailure =
       location: EnergymapBuildingInfoProvenanceSummaryLocation
       itemKind: EnergymapBuildingInfoProvenanceSummaryItemKind
       reason: 'duplicate-item-path'
+    }
+  | {
+      failureType: 'dynamicEvidenceConflict'
+      location: EnergymapBuildingInfoProvenanceSummaryLocation
+      itemKind: EnergymapBuildingInfoProvenanceSummaryItemKind
+      reason: 'conflicting-dynamic-input-value'
+      inputId: EnergymapBuildingInfoProvenanceInputId
     }
   | {
       failureType: 'effectiveWaterTarget'
@@ -347,6 +358,20 @@ const collectCandidates = ({
       const location = (segments: readonly string[]) =>
         createLocation({ panelId: panel.id, sectionId: section.id, segments })
 
+      if (
+        section.variant === 'energyCertificateConsumption' &&
+        normalizeEnergymapBuildingInfoText(section.title) != null
+      ) {
+        add({
+          location: location(['title']),
+          kind: 'sectionTitle',
+          evidence: {
+            provenance: section.titleProvenance,
+            sourceProperties: section.titleSourceProperties,
+          },
+        })
+      }
+
       for (const row of section.rows ?? []) {
         const rowLocation = location(['row', row.id])
         addValue({
@@ -368,6 +393,16 @@ const collectCandidates = ({
       }
 
       for (const metric of section.metrics ?? []) {
+        if (section.variant === 'energyCertificateConsumption') {
+          add({
+            location: location(['metric', metric.id, 'label']),
+            kind: 'metricLabel',
+            evidence: {
+              provenance: metric.labelProvenance,
+              sourceProperties: metric.labelSourceProperties,
+            },
+          })
+        }
         for (const value of metric.values) {
           addValue({
             location: location(['metric', metric.id, 'value', value.id]),
@@ -540,15 +575,45 @@ const cloneInputDefinition = (
 const getMetadataValue = ({
   metadataId,
   metadata,
+  locale,
 }: {
   metadataId: EnergymapBuildingInfoProvenanceMetadataId
+  locale: string
   metadata: {
     sourceLanguage?: 'fi' | 'sv'
     referenceVersion?: string
     referenceLastReviewed?: string
     modelYear?: 2018
+    dynamicValues?: Readonly<
+      Partial<
+        Record<
+          EnergymapBuildingInfoProvenanceMetadataId,
+          EnergymapBuildingInfoProvenanceSummaryMetadataValue
+        >
+      >
+    >
   }
 }): EnergymapBuildingInfoProvenanceSummaryMetadataValue | undefined => {
+  if (
+    metadata.dynamicValues != null &&
+    Object.hasOwn(metadata.dynamicValues, metadataId)
+  ) {
+    const value = metadata.dynamicValues[metadataId]
+    if (
+      (metadataId === 'certificateSignedAt' ||
+        metadataId === 'certificateValidUntil') &&
+      typeof value === 'string'
+    ) {
+      return formatCalendarDate({ value, locale }) ?? value
+    }
+    if (metadataId === 'certificateHeatedArea' && typeof value === 'number') {
+      return new Intl.NumberFormat(locale, {
+        maximumFractionDigits: 1,
+      }).format(value)
+    }
+    return value
+  }
+
   switch (metadataId) {
     case 'sourceLanguage':
       return metadata.sourceLanguage
@@ -638,6 +703,35 @@ export const deriveEnergymapBuildingInfoProvenanceSummary = ({
     }
 
     resolvedCandidates.push({ candidate, resolution })
+  }
+
+  if (failures.length > 0) {
+    return { status: 'contractFailure', locale, failures }
+  }
+
+  const dynamicInputValues = new Map<
+    EnergymapBuildingInfoProvenanceInputId,
+    string | number
+  >()
+  for (const { candidate, resolution } of resolvedCandidates) {
+    for (const input of resolution.selectedEvidence) {
+      if (input.runtimeValueType == null || input.value == null) continue
+
+      if (!dynamicInputValues.has(input.id)) {
+        dynamicInputValues.set(input.id, input.value)
+        continue
+      }
+
+      if (!Object.is(dynamicInputValues.get(input.id), input.value)) {
+        failures.push({
+          failureType: 'dynamicEvidenceConflict',
+          location: candidate.location,
+          itemKind: candidate.kind,
+          reason: 'conflicting-dynamic-input-value',
+          inputId: input.id,
+        })
+      }
+    }
   }
 
   if (failures.length > 0) {
@@ -749,6 +843,7 @@ export const deriveEnergymapBuildingInfoProvenanceSummary = ({
       const value = getMetadataValue({
         metadataId: descriptor.id,
         metadata: resolution.metadata,
+        locale,
       })
       const identity = metadataIdentity({ id: descriptor.id, value })
       let summaryMetadata = metadata.get(identity)

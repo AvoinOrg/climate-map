@@ -23,6 +23,9 @@ import { CURRENT_REFERENCE_DATA } from './currentReferenceData'
 import {
   ENERGYMAP_DERIVED_WATER_RESIDENT_CONTROL_PROVENANCE_INPUT_IDS,
   ENERGYMAP_DERIVED_WATER_PROVENANCE_INPUT_IDS,
+  ENERGYMAP_BUILDING_INFO_CERTIFICATE_COMPONENT_PROVENANCE,
+  ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS,
+  ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS,
   ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS,
   ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS,
   getEnergymapCurrentReferenceProvenanceInputIds,
@@ -30,9 +33,20 @@ import {
   getEnergymapModelOutputProvenanceInputId,
 } from './buildingInfoProvenance'
 import type {
+  EnergymapBuildingInfoProvenanceInputId,
   EnergymapBuildingInfoProvenanceId,
   EnergymapBuildingInfoProvenanceRef,
+  EnergymapBuildingInfoProvenanceRuntimeValue,
 } from './buildingInfoProvenance'
+import {
+  ENERGY_CERTIFICATE_CONSUMPTION_PROPERTY,
+  parseEnergyCertificateConsumption,
+} from './energyCertificateConsumption'
+import type {
+  EnergyCertificateConsumptionComponent,
+  EnergyCertificateConsumptionRecord,
+  EnergyCertificateConsumptionStandardCarrier,
+} from './energyCertificateConsumption'
 import type { EnergymapSelectedBuilding } from './types'
 
 export type EnergymapBuildingInfoPanelId =
@@ -97,9 +111,29 @@ export type EnergymapBuildingInfoMetricValue = EnergymapBuildingInfoValue & {
   label: EnergymapBuildingInfoText
 }
 
+export type EnergymapBuildingInfoCertificateMetricId =
+  | 'certificateTotal'
+  | 'certificateElectricity'
+  | 'certificateDistrictHeat'
+  | 'certificateDistrictCooling'
+  | 'certificateFossilFuel'
+  | 'certificateRenewableFuel'
+  | 'certificateOther0'
+  | 'certificateOther1'
+  | 'certificateOther2'
+
+export type EnergymapBuildingInfoMetricId =
+  | 'total'
+  | 'heating'
+  | 'electricity'
+  | 'waterHeating'
+  | EnergymapBuildingInfoCertificateMetricId
+
 export type EnergymapBuildingInfoMetric = {
-  id: 'total' | 'heating' | 'electricity' | 'waterHeating'
+  id: EnergymapBuildingInfoMetricId
   label: EnergymapBuildingInfoText
+  labelSourceProperties?: string[]
+  labelProvenance?: EnergymapBuildingInfoProvenanceRef
   values: EnergymapBuildingInfoMetricValue[]
 }
 
@@ -179,6 +213,7 @@ export type EnergymapBuildingInfoSectionVariant =
   | 'default'
   | 'buildingSubheader'
   | 'energyCertificate'
+  | 'energyCertificateConsumption'
   | 'previousEnergyClass'
   | 'measureList'
 
@@ -186,6 +221,8 @@ export type EnergymapBuildingInfoSection = {
   id: string
   variant?: EnergymapBuildingInfoSectionVariant
   title?: EnergymapBuildingInfoText
+  titleSourceProperties?: string[]
+  titleProvenance?: EnergymapBuildingInfoProvenanceRef
   description?: EnergymapBuildingInfoText
   rows?: EnergymapBuildingInfoRow[]
   metrics?: EnergymapBuildingInfoMetric[]
@@ -2285,14 +2322,675 @@ const getCurrentEnergyClassSourceProperties = (
     : [ENERGY_CLASS_PROPERTY]
 }
 
+type ReferenceEnergyAvailability = 'complete' | 'partial' | 'absent'
+
+type CertificateComponentKey =
+  keyof typeof ENERGYMAP_BUILDING_INFO_CERTIFICATE_COMPONENT_PROVENANCE
+
+type CertificateEvidenceContext = {
+  inputIds: readonly EnergymapBuildingInfoProvenanceInputId[]
+  runtimeValues: Readonly<
+    Partial<
+      Record<
+        EnergymapBuildingInfoProvenanceInputId,
+        EnergymapBuildingInfoProvenanceRuntimeValue
+      >
+    >
+  >
+}
+
+const CERTIFICATE_SOURCE_PROPERTIES = [
+  ENERGY_CERTIFICATE_CONSUMPTION_PROPERTY,
+] as const
+
+const CERTIFICATE_STANDARD_COMPONENT_CONFIG = {
+  electricity: {
+    metricId: 'certificateElectricity',
+    labelKey: 'electricity',
+  },
+  district_heat: {
+    metricId: 'certificateDistrictHeat',
+    labelKey: 'district_heat',
+  },
+  district_cooling: {
+    metricId: 'certificateDistrictCooling',
+    labelKey: 'district_cooling',
+  },
+  fossil_fuel: {
+    metricId: 'certificateFossilFuel',
+    labelKey: 'fossil_fuel',
+  },
+  renewable_fuel: {
+    metricId: 'certificateRenewableFuel',
+    labelKey: 'renewable_fuel',
+  },
+} as const satisfies Record<
+  EnergyCertificateConsumptionStandardCarrier,
+  {
+    metricId: EnergymapBuildingInfoCertificateMetricId
+    labelKey: string
+  }
+>
+
+const CERTIFICATE_OTHER_COMPONENT_CONFIG = {
+  0: { componentKey: 'other0', metricId: 'certificateOther0' },
+  1: { componentKey: 'other1', metricId: 'certificateOther1' },
+  2: { componentKey: 'other2', metricId: 'certificateOther2' },
+} as const satisfies Record<
+  0 | 1 | 2,
+  {
+    componentKey: CertificateComponentKey
+    metricId: EnergymapBuildingInfoCertificateMetricId
+  }
+>
+
+const getReferenceEnergyAvailability = ({
+  totalMetric,
+  heatingMetric,
+  electricityMetric,
+}: {
+  totalMetric: EnergymapBuildingInfoMetric
+  heatingMetric: EnergymapBuildingInfoMetric
+  electricityMetric: EnergymapBuildingInfoMetric
+}): ReferenceEnergyAvailability => {
+  const values = [totalMetric, heatingMetric, electricityMetric].flatMap(
+    (metric) =>
+      (['annualTotal', 'perSquareMeter'] as const).map((valueId) =>
+        metric.values.find(({ id }) => id === valueId)
+      )
+  )
+  const availableCount = values.filter(
+    isEnergymapBuildingInfoValueAvailable
+  ).length
+
+  if (availableCount === values.length) return 'complete'
+  return availableCount === 0 ? 'absent' : 'partial'
+}
+
+const createCertificateEvidenceContext = (
+  record: EnergyCertificateConsumptionRecord
+): CertificateEvidenceContext => {
+  const inputIds: EnergymapBuildingInfoProvenanceInputId[] = [
+    ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.basis,
+    ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.unit,
+    ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.certificateVersion,
+    ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.certificateId,
+    ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.completeness,
+  ]
+  const runtimeValues: Partial<
+    Record<
+      EnergymapBuildingInfoProvenanceInputId,
+      EnergymapBuildingInfoProvenanceRuntimeValue
+    >
+  > = {
+    [ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.basis]: record.basis,
+    [ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.unit]: record.unit,
+    [ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.certificateVersion]:
+      record.certificateVersion,
+    [ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.certificateId]:
+      record.certificateId,
+    [ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.completeness]:
+      record.completeness,
+  }
+
+  if (record.signedAt != null) {
+    inputIds.push(ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.signedAt)
+    runtimeValues[ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.signedAt] =
+      record.signedAt
+  }
+  if (record.validUntil != null) {
+    inputIds.push(ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.validUntil)
+    runtimeValues[ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.validUntil] =
+      record.validUntil
+  }
+
+  return { inputIds, runtimeValues }
+}
+
+const createCertificateProvenance = ({
+  id,
+  context,
+  additionalInputs = [],
+}: {
+  id: EnergymapBuildingInfoProvenanceId
+  context: CertificateEvidenceContext
+  additionalInputs?: readonly {
+    id: EnergymapBuildingInfoProvenanceInputId
+    value?: EnergymapBuildingInfoProvenanceRuntimeValue
+  }[]
+}): EnergymapBuildingInfoProvenanceRef => ({
+  id,
+  inputIds: [
+    ...context.inputIds,
+    ...additionalInputs.map((input) => input.id),
+  ],
+  runtimeValues: {
+    ...context.runtimeValues,
+    ...Object.fromEntries(
+      additionalInputs.flatMap((input) =>
+        input.value == null ? [] : [[input.id, input.value]]
+      )
+    ),
+  },
+})
+
+const getCertificateComponentDetails = (
+  component: EnergyCertificateConsumptionComponent
+): {
+  componentKey: CertificateComponentKey
+  metricId: EnergymapBuildingInfoCertificateMetricId
+  label: EnergymapBuildingInfoText
+  inputId: EnergymapBuildingInfoProvenanceInputId
+  nameInput?: {
+    id: EnergymapBuildingInfoProvenanceInputId
+    value: string
+  }
+} => {
+  if (component.carrier !== 'other') {
+    const config = CERTIFICATE_STANDARD_COMPONENT_CONFIG[component.carrier]
+    return {
+      componentKey: component.carrier,
+      metricId: config.metricId,
+      label: translationText(
+        key(`panels.energy.certificate.carriers.${config.labelKey}`)
+      ),
+      inputId:
+        ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.components[
+          component.carrier
+        ],
+    }
+  }
+
+  const config = CERTIFICATE_OTHER_COMPONENT_CONFIG[component.sourceSlot]
+  const sourceNameIsAvailable =
+    component.sourceName != null && component.sourceName.trim() !== ''
+  return {
+    componentKey: config.componentKey,
+    metricId: config.metricId,
+    label: sourceNameIsAvailable
+      ? plainText(component.sourceName as string)
+      : translationText(
+          key(
+            `panels.energy.certificate.carriers.other_${component.sourceSlot + 1}`
+          )
+        ),
+    inputId:
+      ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.components[
+        config.componentKey
+      ],
+    ...(sourceNameIsAvailable
+      ? {
+          nameInput: {
+            id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.otherNames[
+              config.componentKey
+            ],
+            value: component.sourceName as string,
+          },
+        }
+      : {}),
+  }
+}
+
+const createCertificateMetric = ({
+  component,
+  context,
+  heatedNetAreaM2,
+  locale,
+}: {
+  component: EnergyCertificateConsumptionComponent
+  context: CertificateEvidenceContext
+  heatedNetAreaM2?: number
+  locale: string
+}): EnergymapBuildingInfoMetric => {
+  const details = getCertificateComponentDetails(component)
+  const provenanceIds =
+    ENERGYMAP_BUILDING_INFO_CERTIFICATE_COMPONENT_PROVENANCE[
+      details.componentKey
+    ]
+  const componentInput = {
+    id: details.inputId,
+    value: component.annualKwh,
+  } as const
+  const commonComponentInputs = [
+    componentInput,
+    ...(details.nameInput == null ? [] : [details.nameInput]),
+  ]
+
+  return {
+    id: details.metricId,
+    label: details.label,
+    labelSourceProperties: [...CERTIFICATE_SOURCE_PROPERTIES],
+    labelProvenance: createCertificateProvenance({
+      id: provenanceIds.label,
+      context,
+      additionalInputs: commonComponentInputs,
+    }),
+    values: [
+      metricValue({
+        id: 'annualTotal',
+        labelKey: key('panels.energy.certificate.metric.annual_consumption'),
+        value: realValue({
+          text: plainText(
+            formatNumber({
+              value: component.annualKwh,
+              locale,
+              maximumFractionDigits: 1,
+            })
+          ),
+          sourceProperties: [...CERTIFICATE_SOURCE_PROPERTIES],
+          unitKey: key('units.kwh_per_year'),
+          provenance: createCertificateProvenance({
+            id: provenanceIds.annual,
+            context,
+            additionalInputs: commonComponentInputs,
+          }),
+        }),
+      }),
+      ...(heatedNetAreaM2 == null
+        ? []
+        : [
+            metricValue({
+              id: 'perSquareMeter',
+              labelKey: key(
+                'panels.energy.certificate.metric.per_square_meter'
+              ),
+              value: estimateValue({
+                text: plainText(
+                  formatNumber({
+                    value: component.annualKwh / heatedNetAreaM2,
+                    locale,
+                    maximumFractionDigits: 1,
+                  })
+                ),
+                sourceProperties: [...CERTIFICATE_SOURCE_PROPERTIES],
+                unitKey: key('units.kwh_per_square_meter_year'),
+                provenance: createCertificateProvenance({
+                  id: provenanceIds.perSquareMeter,
+                  context,
+                  additionalInputs: [
+                    ...commonComponentInputs,
+                    {
+                      id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.heatedNetArea,
+                      value: heatedNetAreaM2,
+                    },
+                    {
+                      id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.annualDividedByHeatedArea,
+                    },
+                  ],
+                }),
+                note: {
+                  ...translationText(
+                    key('panels.energy.certificate.note.derived_intensity')
+                  ),
+                  sourceProperties: [...CERTIFICATE_SOURCE_PROPERTIES],
+                  provenance: createCertificateProvenance({
+                    id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_INTENSITY_NOTE,
+                    context,
+                    additionalInputs: [
+                      {
+                        id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.heatedNetArea,
+                        value: heatedNetAreaM2,
+                      },
+                      {
+                        id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.annualDividedByHeatedArea,
+                      },
+                    ],
+                  }),
+                },
+              }),
+            }),
+          ]),
+    ],
+  }
+}
+
+const createCertificateTotalMetric = ({
+  record,
+  context,
+  locale,
+}: {
+  record: Extract<EnergyCertificateConsumptionRecord, { completeness: 'complete' }>
+  context: CertificateEvidenceContext
+  locale: string
+}): EnergymapBuildingInfoMetric => {
+  const totalInput = {
+    id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.total,
+    value: record.totalKwhYear,
+  } as const
+
+  return {
+    id: 'certificateTotal',
+    label: translationText(
+      key('panels.energy.certificate.metric.complete_total')
+    ),
+    labelSourceProperties: [...CERTIFICATE_SOURCE_PROPERTIES],
+    labelProvenance: createCertificateProvenance({
+      id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_TOTAL_LABEL,
+      context,
+      additionalInputs: [totalInput],
+    }),
+    values: [
+      metricValue({
+        id: 'annualTotal',
+        labelKey: key('panels.energy.certificate.metric.annual_consumption'),
+        value: realValue({
+          text: plainText(
+            formatNumber({
+              value: record.totalKwhYear,
+              locale,
+              maximumFractionDigits: 1,
+            })
+          ),
+          sourceProperties: [...CERTIFICATE_SOURCE_PROPERTIES],
+          unitKey: key('units.kwh_per_year'),
+          provenance: createCertificateProvenance({
+            id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_TOTAL_ANNUAL,
+            context,
+            additionalInputs: [totalInput],
+          }),
+        }),
+      }),
+      ...(record.heatedNetAreaM2 == null
+        ? []
+        : [
+            metricValue({
+              id: 'perSquareMeter',
+              labelKey: key(
+                'panels.energy.certificate.metric.per_square_meter'
+              ),
+              value: estimateValue({
+                text: plainText(
+                  formatNumber({
+                    value: record.totalKwhYear / record.heatedNetAreaM2,
+                    locale,
+                    maximumFractionDigits: 1,
+                  })
+                ),
+                sourceProperties: [...CERTIFICATE_SOURCE_PROPERTIES],
+                unitKey: key('units.kwh_per_square_meter_year'),
+                provenance: createCertificateProvenance({
+                  id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_TOTAL_PER_SQUARE_METER,
+                  context,
+                  additionalInputs: [
+                    totalInput,
+                    {
+                      id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.heatedNetArea,
+                      value: record.heatedNetAreaM2,
+                    },
+                    {
+                      id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.annualDividedByHeatedArea,
+                    },
+                  ],
+                }),
+                note: {
+                  ...translationText(
+                    key('panels.energy.certificate.note.derived_intensity')
+                  ),
+                  sourceProperties: [...CERTIFICATE_SOURCE_PROPERTIES],
+                  provenance: createCertificateProvenance({
+                    id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_INTENSITY_NOTE,
+                    context,
+                    additionalInputs: [
+                      {
+                        id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.heatedNetArea,
+                        value: record.heatedNetAreaM2,
+                      },
+                      {
+                        id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.annualDividedByHeatedArea,
+                      },
+                    ],
+                  }),
+                },
+              }),
+            }),
+          ]),
+    ],
+  }
+}
+
+const createCertificateContextRow = ({
+  id,
+  label,
+  value,
+  provenanceId,
+  context,
+  additionalInputs,
+}: {
+  id: string
+  label: string
+  value: EnergymapBuildingInfoValue
+  provenanceId: EnergymapBuildingInfoProvenanceId
+  context: CertificateEvidenceContext
+  additionalInputs?: readonly {
+    id: EnergymapBuildingInfoProvenanceInputId
+    value?: EnergymapBuildingInfoProvenanceRuntimeValue
+  }[]
+}): EnergymapBuildingInfoRow =>
+  row({
+    id,
+    labelKey: key(`panels.energy.certificate.context.${label}`),
+    value: {
+      ...value,
+      sourceProperties: [...CERTIFICATE_SOURCE_PROPERTIES],
+      provenance: createCertificateProvenance({
+        id: provenanceId,
+        context,
+        additionalInputs,
+      }),
+    },
+  })
+
+const createCertificateConsumptionSection = ({
+  record,
+  locale,
+}: {
+  record: EnergyCertificateConsumptionRecord
+  locale: string
+}): EnergymapBuildingInfoSection => {
+  const context = createCertificateEvidenceContext(record)
+  const signedAt =
+    record.signedAt == null
+      ? null
+      : formatCalendarDate({ value: record.signedAt, locale })
+  const validUntil =
+    record.validUntil == null
+      ? null
+      : formatCalendarDate({ value: record.validUntil, locale })
+  const metrics = record.components.map((component) =>
+    createCertificateMetric({
+      component,
+      context,
+      heatedNetAreaM2: record.heatedNetAreaM2,
+      locale,
+    })
+  )
+  if (record.completeness === 'complete') {
+    metrics.push(createCertificateTotalMetric({ record, context, locale }))
+  }
+
+  const contextValue = (text: EnergymapBuildingInfoText, unitKey?: string) =>
+    realValue({
+      text,
+      sourceProperties: [...CERTIFICATE_SOURCE_PROPERTIES],
+      ...(unitKey == null ? {} : { unitKey }),
+    })
+
+  return {
+    id: 'certificateConsumption',
+    variant: 'energyCertificateConsumption',
+    title: translationText(key('panels.energy.certificate.title')),
+    titleSourceProperties: [...CERTIFICATE_SOURCE_PROPERTIES],
+    titleProvenance: createCertificateProvenance({
+      id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_SECTION_TITLE,
+      context,
+    }),
+    metrics,
+    rows: [
+      createCertificateContextRow({
+        id: 'sourceRegister',
+        label: 'source_register',
+        value: contextValue(
+          translationText(
+            key('panels.energy.certificate.context.source_register_value')
+          )
+        ),
+        provenanceId:
+          ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_SOURCE_CONTEXT,
+        context,
+      }),
+      createCertificateContextRow({
+        id: 'basis',
+        label: 'basis',
+        value: contextValue(
+          translationText(
+            key('panels.energy.certificate.context.standardized_calculation')
+          )
+        ),
+        provenanceId:
+          ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_BASIS_CONTEXT,
+        context,
+      }),
+      createCertificateContextRow({
+        id: 'certificateId',
+        label: 'certificate_id',
+        value: contextValue(plainText(record.certificateId)),
+        provenanceId:
+          ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_ID_CONTEXT,
+        context,
+      }),
+      createCertificateContextRow({
+        id: 'certificateVersion',
+        label: 'certificate_version',
+        value: contextValue(plainText(String(record.certificateVersion))),
+        provenanceId:
+          ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_VERSION_CONTEXT,
+        context,
+      }),
+      ...(signedAt == null
+        ? []
+        : [
+            createCertificateContextRow({
+              id: 'signedAt',
+              label: 'signed_at',
+              value: contextValue(plainText(signedAt)),
+              provenanceId:
+                ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_SIGNED_AT_CONTEXT,
+              context,
+            }),
+          ]),
+      ...(validUntil == null
+        ? []
+        : [
+            createCertificateContextRow({
+              id: 'validUntil',
+              label: 'valid_until',
+              value: contextValue(plainText(validUntil)),
+              provenanceId:
+                ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_VALID_UNTIL_CONTEXT,
+              context,
+            }),
+          ]),
+      createCertificateContextRow({
+        id: 'annualUnit',
+        label: 'annual_unit',
+        value: contextValue(translationText(key('units.kwh_per_year'))),
+        provenanceId:
+          ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_UNIT_CONTEXT,
+        context,
+      }),
+      createCertificateContextRow({
+        id: 'completeness',
+        label: 'completeness',
+        value: contextValue(
+          translationText(
+            key(
+              `panels.energy.certificate.context.completeness_${record.completeness}`
+            )
+          )
+        ),
+        provenanceId:
+          ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_COMPLETENESS_CONTEXT,
+        context,
+      }),
+      ...(record.heatedNetAreaM2 == null
+        ? []
+        : [
+            createCertificateContextRow({
+              id: 'heatedNetArea',
+              label: 'heated_net_area',
+              value: contextValue(
+                plainText(
+                  formatNumber({
+                    value: record.heatedNetAreaM2,
+                    locale,
+                    maximumFractionDigits: 1,
+                  })
+                ),
+                key('units.square_meters')
+              ),
+              provenanceId:
+                ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_HEATED_AREA_CONTEXT,
+              context,
+              additionalInputs: [
+                {
+                  id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.heatedNetArea,
+                  value: record.heatedNetAreaM2,
+                },
+              ],
+            }),
+          ]),
+    ],
+    notes: [
+      note({
+        id: 'standardizedCalculation',
+        keyName: key(
+          'panels.energy.certificate.note.standardized_calculation'
+        ),
+        status: 'real',
+        sourceProperties: [...CERTIFICATE_SOURCE_PROPERTIES],
+        provenance: createCertificateProvenance({
+          id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_STANDARDIZED_NOTE,
+          context,
+        }),
+      }),
+      note({
+        id: 'historicalNotMeasured',
+        keyName: key('panels.energy.certificate.note.historical_not_measured'),
+        status: 'real',
+        sourceProperties: [...CERTIFICATE_SOURCE_PROPERTIES],
+        provenance: createCertificateProvenance({
+          id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_HISTORICAL_NOTE,
+          context,
+        }),
+      }),
+      ...(record.completeness === 'partial'
+        ? [
+            note({
+              id: 'partialRecord',
+              keyName: key('panels.energy.certificate.note.partial_record'),
+              status: 'real',
+              sourceProperties: [...CERTIFICATE_SOURCE_PROPERTIES],
+              provenance: createCertificateProvenance({
+                id: ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_PARTIAL_NOTE,
+                context,
+              }),
+            }),
+          ]
+        : []),
+    ],
+  }
+}
+
 const createEnergyConsumptionPanel = ({
   properties,
   prefix,
   locale,
+  certificateConsumption,
 }: {
   properties: EnergymapSelectedBuilding['properties']
   prefix: EnergymapEnergyScenarioPrefix | null
   locale: string
+  certificateConsumption: EnergyCertificateConsumptionRecord | null
 }): EnergymapBuildingInfoPanel => {
   const totalMetric = createEnergyMetric({
     id: 'total',
@@ -2317,6 +3015,11 @@ const createEnergyConsumptionPanel = ({
     properties,
     prefix,
     locale,
+  })
+  const referenceEnergyAvailability = getReferenceEnergyAvailability({
+    totalMetric,
+    heatingMetric,
+    electricityMetric,
   })
   const electricityProperty =
     prefix == null
@@ -2465,6 +3168,15 @@ const createEnergyConsumptionPanel = ({
             : []),
         ],
       },
+      ...(certificateConsumption == null ||
+      referenceEnergyAvailability === 'complete'
+        ? []
+        : [
+            createCertificateConsumptionSection({
+              record: certificateConsumption,
+              locale,
+            }),
+          ]),
     ],
   }
 }
@@ -2893,6 +3605,8 @@ const normalizeSection = (
   const description = normalizeEnergymapBuildingInfoText(candidate.description)
   const {
     title: _title,
+    titleSourceProperties,
+    titleProvenance,
     description: _description,
     rows: _rows,
     metrics: _metrics,
@@ -2904,7 +3618,15 @@ const normalizeSection = (
 
   return {
     ...sectionWithoutContent,
-    ...(title == null ? {} : { title }),
+    ...(title == null
+      ? {}
+      : {
+          title,
+          ...(titleSourceProperties == null
+            ? {}
+            : { titleSourceProperties }),
+          ...(titleProvenance == null ? {} : { titleProvenance }),
+        }),
     ...(description == null ? {} : { description }),
     ...(rows.length === 0 ? {} : { rows }),
     ...(metrics.length === 0 ? {} : { metrics }),
@@ -2950,6 +3672,7 @@ export const createEnergymapBuildingInfoPanels = ({
   }
 
   const { properties } = selectedBuilding
+  const certificateConsumption = parseEnergyCertificateConsumption(properties)
   const heatingMethod = getCodeProperty(properties, HEATING_METHOD_PROPERTY)
   const heatingEnergySource = getCodeProperty(
     properties,
@@ -2961,7 +3684,12 @@ export const createEnergymapBuildingInfoPanels = ({
   })
 
   return [
-    createEnergyConsumptionPanel({ properties, prefix, locale }),
+    createEnergyConsumptionPanel({
+      properties,
+      prefix,
+      locale,
+      certificateConsumption,
+    }),
     createRenovationRecommendationsPanel({ properties, prefix, locale }),
     createBuildingDetailsPanel({ properties, locale }),
   ]

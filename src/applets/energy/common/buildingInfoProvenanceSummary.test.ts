@@ -5,6 +5,8 @@ import {
   type EnergymapBuildingInfoPanel,
 } from './buildingInfo'
 import {
+  ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS,
+  ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS,
   ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS,
   ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS,
   ENERGYMAP_DERIVED_WATER_PROVENANCE_INPUT_IDS,
@@ -65,6 +67,41 @@ const completeDistrictHeatingProperties = {
   distr_solar_total: 334.2980769,
   distr_windows_total: 332.6442308,
 } satisfies EnergymapSelectedBuilding['properties']
+
+const createCertificateProperties = ({
+  certificateId = 'SUMMARY-CERT-A',
+  buildingIdentifier = 'SUMMARY-BUILDING-A',
+  completeness = 'complete',
+  heatedArea = 10,
+}: {
+  certificateId?: string
+  buildingIdentifier?: string
+  completeness?: 'complete' | 'partial'
+  heatedArea?: number | null
+} = {}): EnergymapSelectedBuilding['properties'] => ({
+  building_key: buildingIdentifier,
+  permanent_building_identifier: buildingIdentifier,
+  energy_certificate_consumption: JSON.stringify({
+    schema_version: 1,
+    basis: 'standardized_calculation',
+    unit: 'kWh/year',
+    certificate_version: 2018,
+    certificate_id: certificateId,
+    building_identifier: buildingIdentifier,
+    completeness,
+    components: [
+      { carrier: 'electricity', annual_kwh: 0 },
+      { carrier: 'district_heat', annual_kwh: 10 },
+      { carrier: 'district_cooling', annual_kwh: 20 },
+      { carrier: 'fossil_fuel', annual_kwh: 30 },
+      { carrier: 'renewable_fuel', annual_kwh: 40 },
+    ],
+    total_kwh_year: completeness === 'complete' ? 100 : null,
+    signed_at: '2015-01-02T00:00:00Z',
+    valid_until: '2025-01-02T00:00:00Z',
+    ...(heatedArea == null ? {} : { heated_net_area_m2: heatedArea }),
+  }),
+})
 
 const createPanels = ({
   properties = completeDistrictHeatingProperties,
@@ -1125,5 +1162,308 @@ describe('Energiakartta building-info provenance summary', () => {
         expect((value as string).trim()).not.toBe('')
       }
     }
+  })
+})
+
+describe('energy certificate consumption provenance summary', () => {
+  const certificateSummary = ({
+    properties = createCertificateProperties(),
+    locale = 'en-US',
+  }: {
+    properties?: EnergymapSelectedBuilding['properties']
+    locale?: string
+  } = {}) => deriveSummary({ properties, locale })
+
+  it('traverses certificate group, context, carrier labels and values, total, and notes in deterministic graph order', () => {
+    const summary = certificateSummary()
+    const itemIds = summary.items
+      .filter(({ location }) => location.sectionId === 'certificateConsumption')
+      .map(({ id }) => id)
+
+    expect(itemIds).toEqual([
+      'energyConsumption/certificateConsumption/title',
+      'energyConsumption/certificateConsumption/row/sourceRegister',
+      'energyConsumption/certificateConsumption/row/basis',
+      'energyConsumption/certificateConsumption/row/certificateId',
+      'energyConsumption/certificateConsumption/row/certificateVersion',
+      'energyConsumption/certificateConsumption/row/signedAt',
+      'energyConsumption/certificateConsumption/row/validUntil',
+      'energyConsumption/certificateConsumption/row/annualUnit',
+      'energyConsumption/certificateConsumption/row/completeness',
+      'energyConsumption/certificateConsumption/row/heatedNetArea',
+      'energyConsumption/certificateConsumption/metric/certificateElectricity/label',
+      'energyConsumption/certificateConsumption/metric/certificateElectricity/value/annualTotal',
+      'energyConsumption/certificateConsumption/metric/certificateElectricity/value/perSquareMeter',
+      'energyConsumption/certificateConsumption/metric/certificateElectricity/value/perSquareMeter/note',
+      'energyConsumption/certificateConsumption/metric/certificateDistrictHeat/label',
+      'energyConsumption/certificateConsumption/metric/certificateDistrictHeat/value/annualTotal',
+      'energyConsumption/certificateConsumption/metric/certificateDistrictHeat/value/perSquareMeter',
+      'energyConsumption/certificateConsumption/metric/certificateDistrictHeat/value/perSquareMeter/note',
+      'energyConsumption/certificateConsumption/metric/certificateDistrictCooling/label',
+      'energyConsumption/certificateConsumption/metric/certificateDistrictCooling/value/annualTotal',
+      'energyConsumption/certificateConsumption/metric/certificateDistrictCooling/value/perSquareMeter',
+      'energyConsumption/certificateConsumption/metric/certificateDistrictCooling/value/perSquareMeter/note',
+      'energyConsumption/certificateConsumption/metric/certificateFossilFuel/label',
+      'energyConsumption/certificateConsumption/metric/certificateFossilFuel/value/annualTotal',
+      'energyConsumption/certificateConsumption/metric/certificateFossilFuel/value/perSquareMeter',
+      'energyConsumption/certificateConsumption/metric/certificateFossilFuel/value/perSquareMeter/note',
+      'energyConsumption/certificateConsumption/metric/certificateRenewableFuel/label',
+      'energyConsumption/certificateConsumption/metric/certificateRenewableFuel/value/annualTotal',
+      'energyConsumption/certificateConsumption/metric/certificateRenewableFuel/value/perSquareMeter',
+      'energyConsumption/certificateConsumption/metric/certificateRenewableFuel/value/perSquareMeter/note',
+      'energyConsumption/certificateConsumption/metric/certificateTotal/label',
+      'energyConsumption/certificateConsumption/metric/certificateTotal/value/annualTotal',
+      'energyConsumption/certificateConsumption/metric/certificateTotal/value/perSquareMeter',
+      'energyConsumption/certificateConsumption/metric/certificateTotal/value/perSquareMeter/note',
+      'energyConsumption/certificateConsumption/note/standardizedCalculation',
+      'energyConsumption/certificateConsumption/note/historicalNotMeasured',
+    ])
+  })
+
+  it('keeps complete/partial and area/no-area summary differences exact', () => {
+    const complete = certificateSummary()
+    const partial = certificateSummary({
+      properties: createCertificateProperties({ completeness: 'partial' }),
+    })
+    const noArea = certificateSummary({
+      properties: createCertificateProperties({ heatedArea: null }),
+    })
+
+    expect(
+      complete.items.filter(({ provenanceId }) =>
+        provenanceId.includes('.certificateTotal')
+      )
+    ).toHaveLength(3)
+    expect(
+      partial.items.filter(({ provenanceId }) =>
+        provenanceId.includes('.certificateTotal')
+      )
+    ).toHaveLength(0)
+    expect(partial.items.map(({ provenanceId }) => provenanceId)).toContain(
+      ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_PARTIAL_NOTE
+    )
+    expect(
+      noArea.items.some(({ calculationIds }) =>
+        calculationIds.includes('certificateAnnualDividedByHeatedArea')
+      )
+    ).toBe(false)
+    expect(
+      noArea.inputs.some(
+        ({ id }) =>
+          id === ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.heatedNetArea
+      )
+    ).toBe(false)
+  })
+
+  it('retains exact per-building evidence and public-register associations without cross-source area inputs', () => {
+    const summary = certificateSummary()
+    const intensity = getItem({
+      summary,
+      provenanceId:
+        ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_ELECTRICITY_PER_SQUARE_METER,
+    })
+    const selectedInputs = intensity.selectedEvidenceInputIds.map((id) =>
+      summary.inputs.find((input) => input.id === id)
+    )
+
+    expect(
+      selectedInputs.find(
+        (input) =>
+          input?.id ===
+          ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.components.electricity
+      )?.value
+    ).toBe(0)
+    expect(
+      selectedInputs.find(
+        (input) =>
+          input?.id ===
+          ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.heatedNetArea
+      )?.value
+    ).toBe(10)
+    expect(intensity.selectedEvidenceInputIds).not.toContain(
+      ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.RYHTI_FLOOR_AREA
+    )
+    expect(
+      summary.sources.find(({ id }) => id === 'energyCertificateRegister')
+        ?.directValueItemIds
+    ).toContain(
+      'energyConsumption/certificateConsumption/metric/certificateElectricity/value/annualTotal'
+    )
+    expect(
+      summary.metadata.find(({ id }) => id === 'certificateId')?.value
+    ).toBe('SUMMARY-CERT-A')
+    expect(
+      summary.metadata.find(({ id }) => id === 'certificateValidUntil')?.value
+    ).toBe('1/2/2025')
+    expect(
+      summary.inputs.find(
+        ({ id }) =>
+          id === ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.validUntil
+      )?.value
+    ).toBe('2025-01-02T00:00:00Z')
+  })
+
+  it('suppresses all certificate summary evidence for complete reference Energy', () => {
+    const summary = certificateSummary({
+      properties: {
+        ...completeDistrictHeatingProperties,
+        energy_certificate_consumption:
+          createCertificateProperties({
+            buildingIdentifier: '101614422K',
+          }).energy_certificate_consumption,
+      },
+    })
+
+    expect(
+      summary.items.some(
+        ({ location }) => location.sectionId === 'certificateConsumption'
+      )
+    ).toBe(false)
+    expect(
+      summary.inputs.some(({ id }) => id.includes('certificateConsumption'))
+    ).toBe(false)
+  })
+
+  it('skips absent or invalid certificate titles while resolving the remaining visible items', () => {
+    const panels = createPanels({ properties: createCertificateProperties() })
+
+    for (const title of [undefined, { type: 'plain', text: '   ' }] as const) {
+      const titlePanels = clonePanels(panels)
+      const certificateSection = titlePanels
+        .find(({ id }) => id === 'energyConsumption')
+        ?.sections.find(({ id }) => id === 'certificateConsumption')
+      if (certificateSection == null) {
+        throw new Error('Expected certificate section')
+      }
+
+      if (title == null) {
+        delete certificateSection.title
+      } else {
+        certificateSection.title = title
+      }
+
+      const result = deriveEnergymapBuildingInfoProvenanceSummary({
+        panels: titlePanels,
+        locale: 'en-US',
+      })
+      expect(result.status).toBe('resolved')
+      if (result.status !== 'resolved') continue
+
+      expect(
+        result.summary.items.some(
+          ({ id }) =>
+            id === 'energyConsumption/certificateConsumption/title'
+        )
+      ).toBe(false)
+      expect(
+        result.summary.items.some(
+          ({ location }) =>
+            location.sectionId === 'certificateConsumption'
+        )
+      ).toBe(true)
+    }
+  })
+
+  it('fails closed for missing semantic-label provenance and conflicting per-building evidence', () => {
+    const panels = createPanels({ properties: createCertificateProperties() })
+    const missingLabelPanels = clonePanels(panels)
+    const certificateSection = missingLabelPanels
+      .find(({ id }) => id === 'energyConsumption')
+      ?.sections.find(({ id }) => id === 'certificateConsumption')
+    if (certificateSection == null) throw new Error('Expected certificate section')
+    delete certificateSection.titleProvenance
+    expect(
+      deriveEnergymapBuildingInfoProvenanceSummary({
+        panels: missingLabelPanels,
+        locale: 'en-US',
+      })
+    ).toMatchObject({
+      status: 'contractFailure',
+      failures: [
+        expect.objectContaining({
+          itemKind: 'sectionTitle',
+          reason: 'missing-provenance',
+        }),
+      ],
+    })
+
+    const missingCarrierLabelPanels = clonePanels(panels)
+    const firstCertificateMetric = missingCarrierLabelPanels
+      .find(({ id }) => id === 'energyConsumption')
+      ?.sections.find(({ id }) => id === 'certificateConsumption')?.metrics?.[0]
+    if (firstCertificateMetric == null) {
+      throw new Error('Expected certificate metric')
+    }
+    delete firstCertificateMetric.labelProvenance
+    expect(
+      deriveEnergymapBuildingInfoProvenanceSummary({
+        panels: missingCarrierLabelPanels,
+        locale: 'en-US',
+      })
+    ).toMatchObject({
+      status: 'contractFailure',
+      failures: [
+        expect.objectContaining({
+          itemKind: 'metricLabel',
+          reason: 'missing-provenance',
+        }),
+      ],
+    })
+
+    const conflictingPanels = clonePanels(panels)
+    const conflictingSection = conflictingPanels
+      .find(({ id }) => id === 'energyConsumption')
+      ?.sections.find(({ id }) => id === 'certificateConsumption')
+    const conflictingValue = conflictingSection?.metrics?.[1]?.values[0]
+    if (conflictingValue?.provenance?.runtimeValues == null) {
+      throw new Error('Expected certificate runtime evidence')
+    }
+    conflictingValue.provenance = {
+      ...conflictingValue.provenance,
+      runtimeValues: {
+        ...conflictingValue.provenance.runtimeValues,
+        [ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.certificateId]:
+          'CONFLICTING-CERTIFICATE',
+      },
+    }
+    expect(
+      deriveEnergymapBuildingInfoProvenanceSummary({
+        panels: conflictingPanels,
+        locale: 'en-US',
+      })
+    ).toMatchObject({
+      status: 'contractFailure',
+      failures: [
+        expect.objectContaining({
+          failureType: 'dynamicEvidenceConflict',
+          reason: 'conflicting-dynamic-input-value',
+          inputId: ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.certificateId,
+        }),
+      ],
+    })
+  })
+
+  it('rebuilds immutable selection and locale summaries without leaking certificate context', () => {
+    const propertiesA = createCertificateProperties()
+    const propertiesB = createCertificateProperties({
+      certificateId: 'SUMMARY-CERT-B',
+      buildingIdentifier: 'SUMMARY-BUILDING-B',
+      heatedArea: 25,
+    })
+    const summaryA = certificateSummary({ properties: propertiesA })
+    const snapshotA = JSON.stringify(summaryA)
+    const summaryB = certificateSummary({ properties: propertiesB, locale: 'fi-FI' })
+    const summaryAAgain = certificateSummary({ properties: propertiesA })
+
+    expect(JSON.stringify(summaryA)).toBe(snapshotA)
+    expect(summaryAAgain).toEqual(summaryA)
+    expect(summaryA).not.toBe(summaryAAgain)
+    expect(
+      summaryB.inputs.find(
+        ({ id }) => id === ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.certificateId
+      )?.value
+    ).toBe('SUMMARY-CERT-B')
+    expect(JSON.stringify(summaryB)).not.toContain('SUMMARY-CERT-A')
+    expect(summaryB.locale).toBe('fi-FI')
   })
 })
