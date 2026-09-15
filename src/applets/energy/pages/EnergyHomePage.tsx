@@ -137,10 +137,6 @@ const LOWER_DISABLED_LAYER_ROWS = [
     keyName: 'sidebar.front_page.layers.ventilation',
     ariaKeyName: 'sidebar.front_page.aria.ventilation_upcoming',
   },
-  {
-    keyName: 'sidebar.front_page.layers.other_energy_sources',
-    ariaKeyName: 'sidebar.front_page.aria.other_energy_sources_upcoming',
-  },
 ] as const
 
 type EnergymapMainThematicMode = 'energyCertificates' | 'heating'

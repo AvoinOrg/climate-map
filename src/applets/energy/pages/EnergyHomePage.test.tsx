@@ -305,6 +305,52 @@ describe('EnergyHomePage', () => {
     useAppletStore.getState().clearSelectedBuilding()
   })
 
+  it.each([
+    ['desktop', false],
+    ['mobile', true],
+  ])(
+    'omits other energy sources while preserving adjacent controls on %s',
+    (_viewport, isMobile) => {
+      mockIsMobile = isMobile
+      renderPage()
+
+      expect(
+        screen.queryByText('sidebar.front_page.layers.other_energy_sources')
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', {
+          name: 'sidebar.front_page.aria.other_energy_sources_upcoming',
+        })
+      ).not.toBeInTheDocument()
+
+      expect(
+        screen.getByRole('button', {
+          name: 'sidebar.front_page.aria.toggle_energy_classes',
+        })
+      ).toBeInTheDocument()
+      const heatingButton = screen.getByRole('button', {
+        name: 'sidebar.front_page.aria.toggle_heating',
+      })
+      expect(heatingButton).toBeInTheDocument()
+      expect(
+        screen.getByText('sidebar.front_page.layers.ventilation')
+      ).toBeInTheDocument()
+
+      fireEvent.click(heatingButton)
+
+      expect(
+        screen.getByRole('switch', {
+          name: 'sidebar.front_page.heating.legend.solar',
+        })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('switch', {
+          name: 'sidebar.front_page.heating.legend.other',
+        })
+      ).toBeInTheDocument()
+    }
+  )
+
   it('widens both accordion rows and keeps the expanded highlight aligned', () => {
     renderPage()
 
