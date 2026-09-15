@@ -721,6 +721,61 @@
         "waitFor": "[data-testid=\"building-info-water-resident-control\"]"
       },
       {
+        "id": "certificate-reported-en",
+        "label": "Reported certificate building",
+        "description": "Exact 1036581819 / 318510 certificate fallback with C class, zero registry floor area, all five carriers, and the complete total.",
+        "waitFor": "[data-testid=\"building-info-certificate-consumption\"]"
+      },
+      {
+        "id": "certificate-reported-fi-mobile",
+        "label": "Reported certificate building mobile Finnish",
+        "locale": "fi",
+        "description": "Exact reported certificate fallback in Finnish forced-mobile layout.",
+        "waitFor": "[data-testid=\"building-info-certificate-consumption\"]"
+      },
+      {
+        "id": "certificate-water",
+        "label": "Water and certificate",
+        "description": "Water-only reference content remains separate from complete certificate Energy.",
+        "waitFor": "[data-testid=\"building-info-certificate-consumption\"]"
+      },
+      {
+        "id": "certificate-partial-reference",
+        "label": "Partial reference and certificate",
+        "description": "Partial residential reference Energy remains a sibling of complete certificate Energy.",
+        "waitFor": "[data-testid=\"building-info-certificate-consumption\"]"
+      },
+      {
+        "id": "certificate-partial-no-area-expired",
+        "label": "Partial expired certificate without area",
+        "description": "Partial historical certificate with named and unnamed other carriers, visible zeroes, and no area-derived values.",
+        "waitFor": "[data-testid=\"building-info-certificate-consumption\"]"
+      },
+      {
+        "id": "certificate-complete-reference-suppressed",
+        "label": "Complete reference suppresses certificate",
+        "description": "Complete residential reference Energy remains unchanged with no duplicate certificate group.",
+        "waitFor": "[data-testid=\"building-info-tab-page-basic\"]"
+      },
+      {
+        "id": "certificate-neither-source",
+        "label": "Neither Energy source",
+        "description": "Building details remain while the absent Energy panel and certificate group are omitted.",
+        "waitFor": "[data-testid=\"building-info-panel-buildingDetails\"]"
+      },
+      {
+        "id": "certificate-selection-change-reset",
+        "label": "Certificate selection replacement",
+        "description": "Open certificate provenance is replaced by a complete-reference building and resets closed without stale certificate content.",
+        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+      },
+      {
+        "id": "certificate-provenance-open",
+        "label": "Certificate provenance open",
+        "description": "Exact reported certificate provenance, including register metadata and same-certificate area calculations.",
+        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+      },
+      {
         "id": "provenance-official-open",
         "label": "Official provenance open",
         "description": "Complete desktop building with official-class provenance open.",

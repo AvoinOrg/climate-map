@@ -52,6 +52,42 @@ const completeProperties = {
   distr_windows_total: 332.6442308,
 } satisfies EnergymapSelectedBuilding['properties']
 
+const createCertificateViewProperties = ({
+  completeness = 'complete',
+  heatedArea = 22707.2,
+}: {
+  completeness?: 'complete' | 'partial'
+  heatedArea?: number | null
+} = {}): EnergymapSelectedBuilding['properties'] => ({
+  building_key: '1036581819',
+  permanent_building_identifier: '1036581819',
+  floor_area: 0,
+  energy_class: 'C',
+  is_energy_class_modeled: false,
+  energy_certificate_valid_until: '2033-04-14T00:00:00',
+  energy_certificate_heated_net_area: 22707.2,
+  energy_certificate_consumption: JSON.stringify({
+    basis: 'standardized_calculation',
+    building_identifier: '1036581819',
+    certificate_id: '318510',
+    certificate_version: 2018,
+    completeness,
+    components: [
+      { annual_kwh: 1196074, carrier: 'electricity' },
+      { annual_kwh: 2994881, carrier: 'district_heat' },
+      { annual_kwh: 197293, carrier: 'district_cooling' },
+      { annual_kwh: 0, carrier: 'fossil_fuel' },
+      { annual_kwh: 0, carrier: 'renewable_fuel' },
+    ],
+    ...(heatedArea == null ? {} : { heated_net_area_m2: heatedArea }),
+    schema_version: 1,
+    signed_at: '2023-04-13T11:37:42.080327',
+    total_kwh_year: completeness === 'complete' ? 4388248 : null,
+    unit: 'kWh/year',
+    valid_until: '2033-04-14T00:00:00',
+  }),
+})
+
 const createPanels = ({
   properties = completeProperties,
   locale = 'en',
@@ -183,6 +219,104 @@ describe('BuildingInfoProvenanceView', () => {
       screen.getByTestId('building-info-provenance-view')
     ).toHaveTextContent(
       'sidebar.building_info.provenance.metadata.reference_version:'
+    )
+  })
+
+  it('renders the exact certificate summary with public-register metadata and same-certificate area derivations', () => {
+    const result = deriveResult({
+      properties: createCertificateViewProperties(),
+      locale: 'en-US',
+    })
+    if (result.status !== 'resolved') {
+      throw new Error('Expected resolved certificate provenance')
+    }
+
+    renderView({ result })
+
+    const view = screen.getByTestId('building-info-provenance-view')
+    const renderedItemIds = screen
+      .getAllByTestId('building-info-provenance-item')
+      .map((item) => item.getAttribute('data-provenance-item-id'))
+    const certificateItemIds = result.summary.items
+      .filter(({ location }) => location.sectionId === 'certificateConsumption')
+      .map(({ id }) => id)
+
+    expect(renderedItemIds).toEqual(result.summary.items.map(({ id }) => id))
+    expect(certificateItemIds).toContain(
+      'energyConsumption/certificateConsumption/metric/certificateTotal/value/annualTotal'
+    )
+    expect(certificateItemIds).toContain(
+      'energyConsumption/certificateConsumption/metric/certificateTotal/value/perSquareMeter/note'
+    )
+    expect(view).toHaveTextContent(
+      'sidebar.building_info.provenance.sources.energy_certificate_register'
+    )
+    expect(view).toHaveTextContent(
+      'sidebar.building_info.provenance.providers.energy_certificate_register'
+    )
+    expect(view).toHaveTextContent(
+      'sidebar.building_info.provenance.calculations.certificate_annual_divided_by_heated_area'
+    )
+    expect(view).toHaveTextContent(
+      'sidebar.building_info.provenance.metadata.certificate_id: 318510'
+    )
+    expect(view).toHaveTextContent(
+      'sidebar.building_info.provenance.metadata.certificate_version: 2018'
+    )
+    expect(view).toHaveTextContent(
+      'sidebar.building_info.provenance.metadata.certificate_signed_at: 4/13/2023'
+    )
+    expect(view).toHaveTextContent(
+      'sidebar.building_info.provenance.metadata.certificate_valid_until: 4/14/2033'
+    )
+    expect(view).toHaveTextContent(
+      'sidebar.building_info.provenance.metadata.certificate_annual_unit: kWh/year'
+    )
+    expect(view).toHaveTextContent(
+      'sidebar.building_info.provenance.metadata.certificate_heated_area: 22,707.2'
+    )
+    expect(view).toHaveTextContent(
+      'sidebar.building_info.provenance.inputs.certificate_consumption_heated_area: 22707.2 m²'
+    )
+  })
+
+  it('omits total and area-derivation provenance for a partial certificate without approved area', () => {
+    const result = deriveResult({
+      properties: createCertificateViewProperties({
+        completeness: 'partial',
+        heatedArea: null,
+      }),
+    })
+    if (result.status !== 'resolved') {
+      throw new Error('Expected resolved partial certificate provenance')
+    }
+
+    renderView({ result })
+
+    const view = screen.getByTestId('building-info-provenance-view')
+    const itemIds = result.summary.items.map(({ id }) => id)
+
+    expect(
+      screen
+        .getAllByTestId('building-info-provenance-item')
+        .map((item) => item.getAttribute('data-provenance-item-id'))
+    ).toEqual(itemIds)
+    expect(itemIds.some((id) => id.includes('certificateTotal'))).toBe(false)
+    expect(itemIds.some((id) => id.includes('perSquareMeter'))).toBe(false)
+    expect(itemIds).toContain(
+      'energyConsumption/certificateConsumption/note/partialRecord'
+    )
+    expect(view).toHaveTextContent(
+      'sidebar.building_info.provenance.sources.energy_certificate_register'
+    )
+    expect(view).not.toHaveTextContent(
+      'sidebar.building_info.provenance.calculations.certificate_annual_divided_by_heated_area'
+    )
+    expect(view).not.toHaveTextContent(
+      'sidebar.building_info.provenance.metadata.certificate_heated_area'
+    )
+    expect(view).not.toHaveTextContent(
+      'sidebar.building_info.provenance.inputs.certificate_consumption_heated_area'
     )
   })
 

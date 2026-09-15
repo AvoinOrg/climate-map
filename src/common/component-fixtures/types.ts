@@ -7,6 +7,7 @@ export type ComponentFixtureStateId = string
 export type ComponentFixtureStateMetadata = {
   id: ComponentFixtureStateId
   label: string
+  locale?: string
   description?: string
   waitFor?: string
   maskSelectors?: string[]

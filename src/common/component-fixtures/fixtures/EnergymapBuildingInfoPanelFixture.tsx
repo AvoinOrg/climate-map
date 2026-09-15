@@ -79,6 +79,211 @@ type ProvenanceFixtureVariant =
   | 'originUnknown'
   | 'waterOnly'
 
+type CertificateFixtureVariant =
+  | 'reported'
+  | 'water'
+  | 'partialReference'
+  | 'partialNoAreaExpired'
+  | 'completeReference'
+  | 'neither'
+  | 'selectionSwap'
+
+const REPORTED_CERTIFICATE_COMPONENTS = [
+  { annual_kwh: 1196074, carrier: 'electricity' },
+  { annual_kwh: 2994881, carrier: 'district_heat' },
+  { annual_kwh: 197293, carrier: 'district_cooling' },
+  { annual_kwh: 0, carrier: 'fossil_fuel' },
+  { annual_kwh: 0, carrier: 'renewable_fuel' },
+]
+
+const createCertificateConsumptionPayload = ({
+  buildingIdentifier,
+  certificateId,
+  completeness = 'complete',
+  components = REPORTED_CERTIFICATE_COMPONENTS,
+  heatedNetAreaM2 = 22707.2,
+  signedAt = '2023-04-13T11:37:42.080327',
+  totalKwhYear = 4388248,
+  validUntil = '2033-04-14T00:00:00',
+}: {
+  buildingIdentifier: string
+  certificateId: string
+  completeness?: 'complete' | 'partial'
+  components?: Array<Record<string, unknown>>
+  heatedNetAreaM2?: number | null
+  signedAt?: string
+  totalKwhYear?: number | null
+  validUntil?: string
+}) =>
+  JSON.stringify({
+    basis: 'standardized_calculation',
+    building_identifier: buildingIdentifier,
+    certificate_id: certificateId,
+    certificate_version: 2018,
+    completeness,
+    components,
+    heated_net_area_m2: heatedNetAreaM2,
+    schema_version: 1,
+    signed_at: signedAt,
+    total_kwh_year: totalKwhYear,
+    unit: 'kWh/year',
+    valid_until: validUntil,
+  })
+
+const REPORTED_CERTIFICATE_PROPERTIES = {
+  building_key: '1036581819',
+  permanent_building_identifier: '1036581819',
+  main_purpose: '02',
+  floor_area: 0,
+  energy_class: 'C',
+  is_energy_class_modeled: false,
+  energy_certificate_valid_until: '2033-04-14T00:00:00',
+  energy_certificate_heated_net_area: 22707.2,
+  energy_certificate_consumption: createCertificateConsumptionPayload({
+    buildingIdentifier: '1036581819',
+    certificateId: '318510',
+  }),
+} satisfies EnergymapSelectedBuilding['properties']
+
+const COMPLETE_REFERENCE_PROPERTIES = {
+  heating_method: '01',
+  heating_energy_source: '01',
+  floor_area: 100,
+  distr_default_total: 100,
+  distr_default_heat: 75,
+  distr_default_elec: 25,
+} satisfies EnergymapSelectedBuilding['properties']
+
+const createCertificateFixturePanels = ({
+  variant,
+  locale,
+  buildingKey,
+}: {
+  variant: CertificateFixtureVariant
+  locale: string
+  buildingKey: string
+}) => {
+  const properties: EnergymapSelectedBuilding['properties'] = (() => {
+    if (variant === 'neither') {
+      return {
+        building_key: buildingKey,
+        permanent_building_identifier: 'NO-ENERGY-SOURCES',
+        energy_class: 'C',
+        is_energy_class_modeled: false,
+      }
+    }
+
+    if (variant === 'selectionSwap' && buildingKey === 'fixture-building-b') {
+      return {
+        ...COMPLETE_REFERENCE_PROPERTIES,
+        building_key: buildingKey,
+        permanent_building_identifier: 'COMPLETE-REFERENCE-SWAP',
+        energy_class: 'B',
+        is_energy_class_modeled: false,
+        energy_certificate_consumption: createCertificateConsumptionPayload({
+          buildingIdentifier: 'COMPLETE-REFERENCE-SWAP',
+          certificateId: 'SUPPRESSED-SWAP-CERTIFICATE',
+        }),
+      }
+    }
+
+    if (variant === 'reported' || variant === 'selectionSwap') {
+      return { ...REPORTED_CERTIFICATE_PROPERTIES, building_key: buildingKey }
+    }
+
+    if (variant === 'partialNoAreaExpired') {
+      const buildingIdentifier = 'PARTIAL-NO-AREA'
+
+      return {
+        building_key: buildingKey,
+        permanent_building_identifier: buildingIdentifier,
+        energy_class: 'D',
+        is_energy_class_modeled: false,
+        energy_certificate_consumption: createCertificateConsumptionPayload({
+          buildingIdentifier,
+          certificateId: 'PARTIAL-EXPIRED-001',
+          completeness: 'partial',
+          components: [
+            { annual_kwh: 0, carrier: 'electricity' },
+            { annual_kwh: 20, carrier: 'district_heat' },
+            { annual_kwh: 0, carrier: 'district_cooling' },
+            { annual_kwh: 0, carrier: 'fossil_fuel' },
+            { annual_kwh: 0, carrier: 'renewable_fuel' },
+            {
+              annual_kwh: 5,
+              carrier: 'other',
+              name: '<b data-injected="true">Named source</b>',
+              source_slot: 0,
+            },
+            {
+              annual_kwh: 0,
+              carrier: 'other',
+              name: '   ',
+              source_slot: 1,
+            },
+            {
+              annual_kwh: 15,
+              carrier: 'other',
+              name: null,
+              source_slot: 2,
+            },
+          ],
+          heatedNetAreaM2: null,
+          signedAt: '2010-01-02T00:00:00Z',
+          totalKwhYear: null,
+          validUntil: '2020-01-02T00:00:00Z',
+        }),
+      }
+    }
+
+    const buildingIdentifier =
+      variant === 'water'
+        ? 'WATER-CERTIFICATE'
+        : variant === 'partialReference'
+          ? 'PARTIAL-REFERENCE-CERTIFICATE'
+          : 'COMPLETE-REFERENCE-CERTIFICATE'
+    const referenceProperties =
+      variant === 'completeReference'
+        ? COMPLETE_REFERENCE_PROPERTIES
+        : variant === 'partialReference'
+          ? {
+              ...COMPLETE_REFERENCE_PROPERTIES,
+              floor_area: undefined,
+            }
+          : { floor_area: 100 }
+
+    return {
+      ...referenceProperties,
+      building_key: buildingKey,
+      permanent_building_identifier: buildingIdentifier,
+      energy_class: 'C',
+      is_energy_class_modeled: false,
+      energy_certificate_consumption: createCertificateConsumptionPayload({
+        buildingIdentifier,
+        certificateId: `${buildingIdentifier}-001`,
+      }),
+    }
+  })()
+  const normalizedBuildingKey = String(properties.building_key)
+  const panels = createEnergymapBuildingInfoPanels({
+    selectedBuilding: {
+      id: normalizedBuildingKey,
+      buildingKey: normalizedBuildingKey,
+      source: 'energymap_building_polygons',
+      sourceLayer: 'energymap_building_polygons',
+      layerId: 'energymap_building_polygons-fill',
+      properties,
+    },
+    locale,
+  })
+
+  if (panels == null) {
+    throw new Error('Expected certificate fixture panels')
+  }
+
+  return panels
+}
+
 const provenanceCompleteProperties = {
   building_key: 'fixture-provenance-complete',
   permanent_building_identifier: '101614422K',
@@ -161,10 +366,7 @@ const createProvenanceFixturePanels = ({
   return panels
 }
 
-const setFixtureInputValue = (
-  input: HTMLInputElement,
-  nextValue: string
-) => {
+const setFixtureInputValue = (input: HTMLInputElement, nextValue: string) => {
   const valueSetter = Object.getOwnPropertyDescriptor(
     HTMLInputElement.prototype,
     'value'
@@ -777,6 +979,7 @@ const BuildingInfoPanelFixtureChrome = ({
 
 const BuildingInfoPanelFixtureState = ({
   activeTabId = 'basic',
+  certificateVariant,
   currentClassOrigin = 'modeled',
   defaultPrimaryMetricId,
   forceMobileLayout = false,
@@ -787,6 +990,7 @@ const BuildingInfoPanelFixtureState = ({
   topologyVariant = 'complete',
 }: {
   activeTabId?: BuildingInfoTabId
+  certificateVariant?: CertificateFixtureVariant
   currentClassOrigin?: FixtureCurrentClassOrigin
   defaultPrimaryMetricId?: EnergymapBuildingInfoPrimaryMetricId
   forceMobileLayout?: boolean
@@ -831,20 +1035,27 @@ const BuildingInfoPanelFixtureState = ({
   const previousProvenanceRegionIdRef = React.useRef<string | null>(null)
   const panels = React.useMemo(
     () =>
-      provenanceVariant == null
-        ? createFixturePanels({
-            topology: renderedTopologyVariant,
-            currentClassOrigin,
-            defaultPrimaryMetricId,
-            recommendationSourceLanguage,
-          })
-        : createProvenanceFixturePanels({
-            variant: provenanceVariant,
+      certificateVariant != null
+        ? createCertificateFixturePanels({
+            variant: certificateVariant,
             locale: renderedLocale,
             buildingKey,
-          }),
+          })
+        : provenanceVariant == null
+          ? createFixturePanels({
+              topology: renderedTopologyVariant,
+              currentClassOrigin,
+              defaultPrimaryMetricId,
+              recommendationSourceLanguage,
+            })
+          : createProvenanceFixturePanels({
+              variant: provenanceVariant,
+              locale: renderedLocale,
+              buildingKey,
+            }),
     [
       buildingKey,
+      certificateVariant,
       currentClassOrigin,
       defaultPrimaryMetricId,
       provenanceVariant,
@@ -1092,13 +1303,21 @@ const BuildingInfoPanelFixtureState = ({
         }
 
         if (provenanceInteractionPhase === 'building-change-requested') {
+          const certificateSelectionReplaced =
+            certificateVariant === 'selectionSwap' &&
+            root.querySelector(
+              '[data-testid="building-info-certificate-consumption"]'
+            ) == null &&
+            root.querySelector('[data-primary-metric-id="energy"]') != null
+
           if (
             trigger?.getAttribute('aria-expanded') === 'false' &&
             trigger.getAttribute('aria-controls') !==
               previousProvenanceRegionIdRef.current &&
-            root
-              .querySelector('[data-testid="building-info-tab-page-basic"]')
-              ?.textContent?.includes('Mikkolantie 35')
+            (certificateSelectionReplaced ||
+              root
+                .querySelector('[data-testid="building-info-tab-page-basic"]')
+                ?.textContent?.includes('Mikkolantie 35'))
           ) {
             markReady()
           }
@@ -1321,7 +1540,12 @@ const BuildingInfoPanelFixtureState = ({
     prepareInteraction()
 
     return () => observer?.disconnect()
-  }, [buildingSwitchPhase, interaction, provenanceInteractionPhase])
+  }, [
+    buildingSwitchPhase,
+    certificateVariant,
+    interaction,
+    provenanceInteractionPhase,
+  ])
 
   return (
     <SlotsProvider>
@@ -1332,6 +1556,7 @@ const BuildingInfoPanelFixtureState = ({
           <Box
             ref={rootRef}
             data-fixture-building-key={buildingKey}
+            data-fixture-certificate-variant={certificateVariant}
             data-fixture-locale={renderedLocale}
             data-fixture-provenance-interaction-phase={
               provenanceInteractionPhase
@@ -1602,6 +1827,109 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       waitFor: '[data-testid="building-info-water-resident-control"]',
       render: () => (
         <BuildingInfoPanelFixtureState defaultPrimaryMetricId="water" />
+      ),
+    },
+    {
+      id: 'certificate-reported-en',
+      label: 'Reported certificate building',
+      description:
+        'Exact 1036581819 / 318510 certificate fallback with C class, zero registry floor area, all five carriers, and the complete total.',
+      waitFor: '[data-testid="building-info-certificate-consumption"]',
+      render: () => (
+        <BuildingInfoPanelFixtureState certificateVariant="reported" />
+      ),
+    },
+    {
+      id: 'certificate-reported-fi-mobile',
+      label: 'Reported certificate building mobile Finnish',
+      locale: 'fi',
+      description:
+        'Exact reported certificate fallback in Finnish forced-mobile layout.',
+      waitFor: '[data-testid="building-info-certificate-consumption"]',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          certificateVariant="reported"
+          forceMobileLayout
+          locale="fi"
+        />
+      ),
+    },
+    {
+      id: 'certificate-water',
+      label: 'Water and certificate',
+      description:
+        'Water-only reference content remains separate from complete certificate Energy.',
+      waitFor: '[data-testid="building-info-certificate-consumption"]',
+      render: () => (
+        <BuildingInfoPanelFixtureState certificateVariant="water" />
+      ),
+    },
+    {
+      id: 'certificate-partial-reference',
+      label: 'Partial reference and certificate',
+      description:
+        'Partial residential reference Energy remains a sibling of complete certificate Energy.',
+      waitFor: '[data-testid="building-info-certificate-consumption"]',
+      render: () => (
+        <BuildingInfoPanelFixtureState certificateVariant="partialReference" />
+      ),
+    },
+    {
+      id: 'certificate-partial-no-area-expired',
+      label: 'Partial expired certificate without area',
+      description:
+        'Partial historical certificate with named and unnamed other carriers, visible zeroes, and no area-derived values.',
+      waitFor: '[data-testid="building-info-certificate-consumption"]',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          certificateVariant="partialNoAreaExpired"
+        />
+      ),
+    },
+    {
+      id: 'certificate-complete-reference-suppressed',
+      label: 'Complete reference suppresses certificate',
+      description:
+        'Complete residential reference Energy remains unchanged with no duplicate certificate group.',
+      waitFor: '[data-testid="building-info-tab-page-basic"]',
+      render: () => (
+        <BuildingInfoPanelFixtureState certificateVariant="completeReference" />
+      ),
+    },
+    {
+      id: 'certificate-neither-source',
+      label: 'Neither Energy source',
+      description:
+        'Building details remain while the absent Energy panel and certificate group are omitted.',
+      waitFor: '[data-testid="building-info-panel-buildingDetails"]',
+      render: () => (
+        <BuildingInfoPanelFixtureState certificateVariant="neither" />
+      ),
+    },
+    {
+      id: 'certificate-selection-change-reset',
+      label: 'Certificate selection replacement',
+      description:
+        'Open certificate provenance is replaced by a complete-reference building and resets closed without stale certificate content.',
+      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          certificateVariant="selectionSwap"
+          interaction="provenance-building-change"
+        />
+      ),
+    },
+    {
+      id: 'certificate-provenance-open',
+      label: 'Certificate provenance open',
+      description:
+        'Exact reported certificate provenance, including register metadata and same-certificate area calculations.',
+      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          certificateVariant="reported"
+          interaction="provenance-open"
+        />
       ),
     },
     {

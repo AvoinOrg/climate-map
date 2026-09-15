@@ -211,6 +211,19 @@ describe('visual scenarios', () => {
     expect(scenarios.map((scenario) => scenario.id)).toContain(
       'component-fixture-loading-feedback-modal-overlay'
     )
+
+    expect(
+      getScenarioById({
+        scenarios,
+        id: 'component-fixture-energymap-building-info-panel-certificate-reported-fi-mobile',
+      })
+    ).toMatchObject({
+      locale: 'fi',
+      path:
+        '/fi/dev/component-fixtures/energymap-building-info-panel/certificate-reported-fi-mobile',
+      url:
+        'http://127.0.0.1:6900/fi/dev/component-fixtures/energymap-building-info-panel/certificate-reported-fi-mobile',
+    })
   })
 
   test('rejects component fixture scenarios for standalone applet builds', () => {

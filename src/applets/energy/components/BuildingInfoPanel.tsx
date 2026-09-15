@@ -892,7 +892,7 @@ const BuildingInfoNoteText = ({
 }: {
   note: Pick<
     EnergymapBuildingInfoNote,
-    'text' | 'status' | 'sourceProperties'
+    'text' | 'status' | 'sourceProperties' | 'provenance'
   > &
     Partial<Pick<EnergymapBuildingInfoNote, 'id'>>
 }) => {
@@ -902,6 +902,8 @@ const BuildingInfoNoteText = ({
     <Box
       data-note-id={note.id}
       data-status={note.status}
+      data-provenance-id={note.provenance?.id}
+      data-provenance-input-ids={note.provenance?.inputIds?.join(' ')}
       data-source-properties={getSourcePropertiesData(note.sourceProperties)}
       sx={{
         mt: '0.5rem',
@@ -1605,8 +1607,10 @@ const BuildingInfoMeasureListSection = ({
 
 const BuildingInfoMetricValueRow = ({
   value,
+  showNote = false,
 }: {
   value: EnergymapBuildingInfoMetricValue
+  showNote?: boolean
 }) => (
   <Box
     data-metric-value-id={value.id}
@@ -1628,6 +1632,22 @@ const BuildingInfoMetricValueRow = ({
     <Box component="div" sx={{ ...textSx, textAlign: 'right' }}>
       <BuildingInfoValueText value={value} />
     </Box>
+    {showNote && value.note != null && (
+      <Box
+        data-testid="building-info-certificate-value-note"
+        data-metric-value-note-for={value.id}
+        sx={{ gridColumn: '1 / -1', minWidth: 0 }}
+      >
+        <BuildingInfoNoteText
+          note={{
+            text: value.note,
+            status: value.status,
+            sourceProperties: value.note.sourceProperties,
+            provenance: value.note.provenance,
+          }}
+        />
+      </Box>
+    )}
   </Box>
 )
 
@@ -2493,6 +2513,199 @@ const BuildingInfoScenarioBlock = ({
   )
 }
 
+const BuildingInfoCertificateContextRow = ({
+  row,
+}: {
+  row: EnergymapBuildingInfoRow
+}) => (
+  <Box
+    component="div"
+    data-row-id={row.id}
+    data-provenance-id={row.provenance?.id}
+    data-provenance-input-ids={row.provenance?.inputIds?.join(' ')}
+    data-source-properties={getSourcePropertiesData(row.sourceProperties)}
+    sx={{
+      display: 'grid',
+      gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+      columnGap: '0.75rem',
+      alignItems: 'start',
+      borderTop: '0.3px solid #cfcfcf',
+      py: '0.625rem',
+    }}
+  >
+    <Box
+      component="dt"
+      sx={{
+        ...textSx,
+        m: 0,
+        minWidth: 0,
+        color: '#111111',
+        overflowWrap: 'anywhere',
+      }}
+    >
+      <BuildingInfoText text={row.label} />
+    </Box>
+    <Box
+      component="dd"
+      sx={{
+        ...textSx,
+        m: 0,
+        minWidth: 0,
+        textAlign: 'right',
+      }}
+    >
+      <BuildingInfoValueText value={row} />
+      {row.note != null && (
+        <BuildingInfoNoteText
+          note={{
+            text: row.note,
+            status: row.status,
+            sourceProperties: row.note.sourceProperties,
+            provenance: row.note.provenance,
+          }}
+        />
+      )}
+    </Box>
+  </Box>
+)
+
+const BuildingInfoCertificateConsumptionSection = ({
+  section,
+  accentColor,
+}: {
+  section: EnergymapBuildingInfoSection
+  accentColor: string
+}) => {
+  const headingId = React.useId()
+  const rows = section.rows ?? []
+  const metrics = section.metrics ?? []
+
+  if (rows.length === 0 && metrics.length === 0) {
+    return null
+  }
+
+  return (
+    <Box
+      component="section"
+      aria-labelledby={section.title == null ? undefined : headingId}
+      data-testid="building-info-certificate-consumption"
+      data-section-id={section.id}
+      sx={{
+        mt: '2.25rem',
+        px: { mobile: '1rem', desktop: '1.25rem' },
+        py: { mobile: '1.125rem', desktop: '1.25rem' },
+        minWidth: 0,
+        border: `0.75px solid ${accentColor}`,
+        borderRadius: '0.75rem',
+        backgroundColor: '#f8faff',
+      }}
+    >
+      {section.title != null && (
+        <Box
+          component="h3"
+          id={headingId}
+          data-provenance-id={section.titleProvenance?.id}
+          data-provenance-input-ids={section.titleProvenance?.inputIds?.join(
+            ' '
+          )}
+          data-source-properties={getSourcePropertiesData(
+            section.titleSourceProperties
+          )}
+          sx={{
+            ...textSx,
+            m: 0,
+            color: accentColor,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            overflowWrap: 'anywhere',
+          }}
+        >
+          <BuildingInfoText text={section.title} />
+        </Box>
+      )}
+      {rows.length > 0 && (
+        <Box component="dl" sx={{ m: 0, mt: '1rem' }}>
+          {rows.map((row) => (
+            <BuildingInfoCertificateContextRow key={row.id} row={row} />
+          ))}
+        </Box>
+      )}
+      {metrics.length > 0 && (
+        <Box
+          component="ul"
+          data-testid="building-info-certificate-metrics"
+          sx={{
+            m: 0,
+            mt: '1.25rem',
+            p: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem',
+            listStyle: 'none',
+          }}
+        >
+          {metrics.map((metric) => {
+            const isCompleteTotal = metric.id === 'certificateTotal'
+
+            return (
+              <Box
+                component="li"
+                key={metric.id}
+                data-testid="building-info-certificate-metric"
+                data-metric-id={metric.id}
+                data-certificate-complete-total={
+                  isCompleteTotal ? 'true' : undefined
+                }
+                sx={{
+                  minWidth: 0,
+                  p: isCompleteTotal ? '0.75rem' : 0,
+                  border: isCompleteTotal
+                    ? `1px solid ${accentColor}`
+                    : undefined,
+                  borderRadius: isCompleteTotal ? '0.625rem' : undefined,
+                  backgroundColor: isCompleteTotal ? '#eaf1ff' : undefined,
+                }}
+              >
+                <Box
+                  component="h4"
+                  data-provenance-id={metric.labelProvenance?.id}
+                  data-provenance-input-ids={metric.labelProvenance?.inputIds?.join(
+                    ' '
+                  )}
+                  data-source-properties={getSourcePropertiesData(
+                    metric.labelSourceProperties
+                  )}
+                  sx={{
+                    ...textSx,
+                    m: 0,
+                    mb: '0.5rem',
+                    minWidth: 0,
+                    color: '#111111',
+                    fontWeight: isCompleteTotal ? 700 : 400,
+                    overflowWrap: 'anywhere',
+                  }}
+                >
+                  <BuildingInfoText text={metric.label} />
+                </Box>
+                {metric.values.map((value) => (
+                  <BuildingInfoMetricValueRow
+                    key={value.id}
+                    value={value}
+                    showNote
+                  />
+                ))}
+              </Box>
+            )
+          })}
+        </Box>
+      )}
+      {section.notes?.map((note) => (
+        <BuildingInfoNoteText key={note.id} note={note} />
+      ))}
+    </Box>
+  )
+}
+
 const BuildingInfoSectionBlock = ({
   section,
   accentColor,
@@ -2536,6 +2749,15 @@ const BuildingInfoSectionBlock = ({
 
   if (section.variant === 'measureList' && hasOnlyRowContent) {
     return <BuildingInfoMeasureListSection section={section} />
+  }
+
+  if (section.variant === 'energyCertificateConsumption') {
+    return (
+      <BuildingInfoCertificateConsumptionSection
+        section={section}
+        accentColor={accentColor}
+      />
+    )
   }
 
   if (section.consumptionControls != null) {

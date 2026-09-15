@@ -129,6 +129,7 @@ describe('component fixture registry', () => {
       sourceGlobs: fixture.sourceGlobs,
       states: fixture.states.map((state) => ({
         id: state.id,
+        ...(state.locale ? { locale: state.locale } : {}),
         ...(state.waitFor ? { waitFor: state.waitFor } : {}),
         ...(state.maskSelectors ? { maskSelectors: state.maskSelectors } : {}),
       })),
@@ -142,6 +143,7 @@ describe('component fixture registry', () => {
       sourceGlobs: fixture.sourceGlobs,
       states: fixture.states.map((state) => ({
         id: state.id,
+        ...(state.locale ? { locale: state.locale } : {}),
         ...(state.waitFor ? { waitFor: state.waitFor } : {}),
         ...(state.maskSelectors ? { maskSelectors: state.maskSelectors } : {}),
       })),
