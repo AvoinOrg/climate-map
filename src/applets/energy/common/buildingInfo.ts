@@ -245,6 +245,23 @@ export type EnergymapBuildingInfoPanel = {
   sections: EnergymapBuildingInfoSection[]
 }
 
+export type EnergymapBuildingInfoMissingItem = {
+  id: string
+  panelId: EnergymapBuildingInfoPanelId
+  label: EnergymapBuildingInfoText
+  reason?: EnergymapBuildingInfoText
+}
+
+export type EnergymapBuildingInfoMissingData = {
+  locale: string
+  items: EnergymapBuildingInfoMissingItem[]
+}
+
+export type EnergymapBuildingInfoPresentation = {
+  panels: EnergymapBuildingInfoPanel[] | null
+  missingData: EnergymapBuildingInfoMissingData | null
+}
+
 export type EnergymapEnergyScenarioPrefix =
   | 'awhp'
   | 'delec'
@@ -3753,14 +3770,204 @@ const normalizePanel = (
   }
 }
 
-export const createEnergymapBuildingInfoPanels = ({
+// Collect from candidates, before normalization removes unavailable values.
+// This inventory deliberately excludes context/evidence rows and unused controls.
+const collectMissingBuildingInfo = ({
+  candidates,
+  properties,
+  prefix,
+  certificateConsumption,
+}: {
+  candidates: EnergymapBuildingInfoPanel[]
+  properties: EnergymapSelectedBuilding['properties']
+  prefix: EnergymapEnergyScenarioPrefix | null
+  certificateConsumption: EnergyCertificateConsumptionRecord | null
+}): EnergymapBuildingInfoMissingItem[] => {
+  const items: EnergymapBuildingInfoMissingItem[] = []
+  const missingText = (name: string) =>
+    translationText(key(`missing_data.${name}`))
+  const hasSourceValue = (property: string) => {
+    const value = properties[property]
+    return value != null && !(typeof value === 'string' && value.trim() === '')
+  }
+  const sourceReason = (
+    value: EnergymapBuildingInfoValue,
+    source: 'ryhti' | 'certificate'
+  ) =>
+    missingText(
+      `${source}_${value.sourceProperties?.some(hasSourceValue) ? 'invalid' : 'unavailable'}`
+    )
+  const add = (item: EnergymapBuildingInfoMissingItem) => items.push(item)
+  const details = candidates.find((panel) => panel.id === 'buildingDetails')
+  // Current class can also be modeled; its absence alone has no known cause.
+  const rowSources: Record<string, 'ryhti' | 'certificate' | undefined> = {
+    address: 'ryhti',
+    buildingIdentifier: 'ryhti',
+    propertyIdentifier: 'ryhti',
+    constructionYear: 'ryhti',
+    buildingType: 'ryhti',
+    heating: 'ryhti',
+    energyCertificateValidity: 'certificate',
+    previousEnergyClass: 'certificate',
+    heatedNetArea: 'certificate',
+    ventilationType: 'certificate',
+    ventilation: 'certificate',
+    ventilationCategory: 'certificate',
+  }
+
+  for (const section of details?.sections ?? []) {
+    for (const row of section.rows ?? []) {
+      if (isEnergymapBuildingInfoValueAvailable(row)) continue
+      const source = rowSources[row.id]
+      add({
+        id: `buildingDetails.${row.id}`,
+        panelId: 'buildingDetails',
+        // The ordinary address row is a subheader labelled "Building".
+        label: row.id === 'address' ? missingText('address') : row.label,
+        ...(source == null ? {} : { reason: sourceReason(row, source) }),
+      })
+    }
+  }
+
+  const estimateReason = (value: EnergymapBuildingInfoMetricValue) => {
+    if (prefix == null) {
+      return translationText(key('placeholders.unsupported_energy_estimate'))
+    }
+    if (
+      value.id === 'annualTotal' &&
+      getPositiveNumberProperty(properties, FLOOR_AREA_PROPERTY) == null
+    ) {
+      return missingText('annual_area')
+    }
+    return missingText(
+      value.id === 'savingsPercent' ? 'savings_inputs' : 'model_output'
+    )
+  }
+  const addEstimateValues = ({
+    id,
+    label,
+    values,
+    panelId,
+  }: {
+    id: string
+    label: EnergymapBuildingInfoText
+    values: EnergymapBuildingInfoMetricValue[]
+    panelId: EnergymapBuildingInfoPanelId
+  }) => {
+    for (const value of values) {
+      if (isEnergymapBuildingInfoValueAvailable(value)) continue
+      add({
+        id: `${panelId}.${id}.${value.id}`,
+        panelId,
+        label: sequenceText([label, value.label], ' — '),
+        reason: estimateReason(value),
+      })
+    }
+  }
+  const energy = candidates.find((panel) => panel.id === 'energyConsumption')
+  const estimated = energy?.sections.find(
+    (section) => section.id === 'estimatedConsumption'
+  )
+  for (const metric of estimated?.metrics ?? []) {
+    addEstimateValues({ ...metric, panelId: 'energyConsumption' })
+  }
+  for (const metric of estimated?.consumptionControls?.primaryMetrics ?? []) {
+    // Energy is represented by the three metrics above, not by this selector.
+    if (
+      metric.id === 'energy' ||
+      (metric.value != null &&
+        isEnergymapBuildingInfoValueAvailable(metric.value))
+    )
+      continue
+    add({
+      id: `energyConsumption.${metric.id}`,
+      panelId: 'energyConsumption',
+      label: metric.label,
+      reason: metric.unavailableNote?.text,
+    })
+  }
+
+  const certificate = energy?.sections.find(
+    (section) => section.id === 'certificateConsumption'
+  )
+  if (certificate != null && certificateConsumption != null) {
+    if (certificateConsumption.completeness === 'partial') {
+      add({
+        id: 'energyConsumption.certificateTotal.annualTotal',
+        panelId: 'energyConsumption',
+        label: translationText(
+          key('panels.energy.certificate.metric.complete_total')
+        ),
+        reason: translationText(
+          key('panels.energy.certificate.note.partial_record')
+        ),
+      })
+    }
+    if (certificateConsumption.heatedNetAreaM2 == null) {
+      for (const metric of certificate.metrics ?? []) {
+        add({
+          id: `energyConsumption.${metric.id}.perSquareMeter`,
+          panelId: 'energyConsumption',
+          label: sequenceText(
+            [
+              metric.label,
+              translationText(
+                key('panels.energy.certificate.metric.per_square_meter')
+              ),
+            ],
+            ' — '
+          ),
+          reason: missingText('certificate_area'),
+        })
+      }
+    }
+  } else if (
+    certificateConsumption == null &&
+    estimated?.metrics?.some((metric) =>
+      metric.values.some(
+        (value) => !isEnergymapBuildingInfoValueAvailable(value)
+      )
+    )
+  ) {
+    add({
+      id: 'energyConsumption.certificateConsumption',
+      panelId: 'energyConsumption',
+      label: translationText(key('panels.energy.certificate.title')),
+      reason: missingText('certificate_unavailable'),
+    })
+  }
+
+  const renovation = candidates.find(
+    (panel) => panel.id === 'renovationRecommendations'
+  )
+  for (const section of renovation?.sections ?? []) {
+    for (const row of section.rows ?? []) {
+      if (isEnergymapBuildingInfoValueAvailable(row)) continue
+      add({
+        id: `renovationRecommendations.${row.id}`,
+        panelId: 'renovationRecommendations',
+        label: row.label,
+        reason: missingText('certificate_unavailable'),
+      })
+    }
+    for (const scenario of section.scenarios ?? []) {
+      if (
+        prefix == null ||
+        !isScenarioMeasurePublished({ prefix, measure: scenario.id })
+      )
+        continue
+      addEstimateValues({ ...scenario, panelId: 'renovationRecommendations' })
+    }
+  }
+  return items
+}
+
+export const createEnergymapBuildingInfoPresentation = ({
   selectedBuilding,
   locale,
-}: CreateEnergymapBuildingInfoPanelsOptions):
-  | EnergymapBuildingInfoPanel[]
-  | null => {
+}: CreateEnergymapBuildingInfoPanelsOptions): EnergymapBuildingInfoPresentation => {
   if (selectedBuilding == null) {
-    return null
+    return { panels: null, missingData: null }
   }
 
   const { properties } = selectedBuilding
@@ -3775,7 +3982,7 @@ export const createEnergymapBuildingInfoPanels = ({
     heatingMethod,
   })
 
-  return [
+  const candidates = [
     createEnergyConsumptionPanel({
       properties,
       prefix,
@@ -3785,6 +3992,24 @@ export const createEnergymapBuildingInfoPanels = ({
     createRenovationRecommendationsPanel({ properties, prefix, locale }),
     createBuildingDetailsPanel({ properties, locale }),
   ]
-    .map(normalizePanel)
-    .filter((panel): panel is EnergymapBuildingInfoPanel => panel != null)
+  const missingData = {
+    locale,
+    items: collectMissingBuildingInfo({
+      candidates,
+      properties,
+      prefix,
+      certificateConsumption,
+    }),
+  }
+  return {
+    panels: candidates
+      .map(normalizePanel)
+      .filter((panel): panel is EnergymapBuildingInfoPanel => panel != null),
+    missingData,
+  }
 }
+
+export const createEnergymapBuildingInfoPanels = (
+  options: CreateEnergymapBuildingInfoPanelsOptions
+): EnergymapBuildingInfoPanel[] | null =>
+  createEnergymapBuildingInfoPresentation(options).panels

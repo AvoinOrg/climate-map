@@ -27,7 +27,7 @@ import type {
   EnergymapBuildingInfoText,
   EnergymapBuildingInfoValueStatus,
 } from 'applets/energy/common/buildingInfo'
-import { createEnergymapBuildingInfoPanels } from 'applets/energy/common/buildingInfo'
+import { createEnergymapBuildingInfoPresentation } from 'applets/energy/common/buildingInfo'
 import {
   ENERGYMAP_DERIVED_WATER_RESIDENT_CONTROL_PROVENANCE_INPUT_IDS,
   ENERGYMAP_USER_OVERRIDE_WATER_RESIDENT_CONTROL_PROVENANCE_INPUT_IDS,
@@ -156,7 +156,7 @@ const COMPLETE_REFERENCE_PROPERTIES = {
   distr_default_elec: 25,
 } satisfies EnergymapSelectedBuilding['properties']
 
-const createCertificateFixturePanels = ({
+const createCertificateFixturePresentation = ({
   variant,
   locale,
   buildingKey,
@@ -267,7 +267,7 @@ const createCertificateFixturePanels = ({
     }
   })()
   const normalizedBuildingKey = String(properties.building_key)
-  const panels = createEnergymapBuildingInfoPanels({
+  const presentation = createEnergymapBuildingInfoPresentation({
     selectedBuilding: {
       id: normalizedBuildingKey,
       buildingKey: normalizedBuildingKey,
@@ -279,15 +279,18 @@ const createCertificateFixturePanels = ({
     locale,
   })
 
-  if (panels == null) {
+  if (presentation.panels == null) {
     throw new Error('Expected certificate fixture panels')
   }
 
-  return panels
+  return { ...presentation, panels: presentation.panels }
 }
 
 const provenanceCompleteProperties = {
   building_key: 'fixture-provenance-complete',
+  property_identifier: '09102000040003',
+  energy_certificate_ventilation_type_label_fi: 'Painovoimainen ilmanvaihto',
+  ventilation_category: 'gravity',
   permanent_building_identifier: '101614422K',
   address_fin: 'Mikkolantie 34a',
   postal_code: '00640',
@@ -315,7 +318,7 @@ const provenanceCompleteProperties = {
   distr_windows_total: 332.6442308,
 } satisfies EnergymapSelectedBuilding['properties']
 
-const createProvenanceFixturePanels = ({
+const createProvenanceFixturePresentation = ({
   variant,
   locale,
   buildingKey,
@@ -336,8 +339,8 @@ const createProvenanceFixturePanels = ({
           }
         : {
             ...provenanceCompleteProperties,
-            ...(variant === 'property' && !isReplacementBuilding
-              ? { property_identifier: '09102000040003' }
+            ...(variant === 'property' && isReplacementBuilding
+              ? { property_identifier: null }
               : {}),
             building_key: buildingKey,
             ...(isReplacementBuilding
@@ -354,7 +357,7 @@ const createProvenanceFixturePanels = ({
                 : { is_energy_class_modeled: false }),
           }
   const normalizedBuildingKey = String(properties.building_key)
-  const panels = createEnergymapBuildingInfoPanels({
+  const presentation = createEnergymapBuildingInfoPresentation({
     selectedBuilding: {
       id: normalizedBuildingKey,
       buildingKey: normalizedBuildingKey,
@@ -366,11 +369,11 @@ const createProvenanceFixturePanels = ({
     locale,
   })
 
-  if (panels == null) {
+  if (presentation.panels == null) {
     throw new Error('Expected provenance fixture panels')
   }
 
-  return panels
+  return { ...presentation, panels: presentation.panels }
 }
 
 const setFixtureInputValue = (input: HTMLInputElement, nextValue: string) => {
@@ -1011,6 +1014,7 @@ const BuildingInfoPanelFixtureState = ({
     | 'provenance-building-change'
     | 'provenance-locale-change'
     | 'provenance-open'
+    | 'information-footer'
     | 'provenance-water-disable-reset'
     | 'provenance-water-invalid'
     | 'provenance-water-valid'
@@ -1040,22 +1044,25 @@ const BuildingInfoPanelFixtureState = ({
   const [renderedLocale, setRenderedLocale] = React.useState(locale)
   const [requestedTabId, setRequestedTabId] = React.useState(activeTabId)
   const previousProvenanceRegionIdRef = React.useRef<string | null>(null)
-  const panels = React.useMemo(
+  const { panels, missingData } = React.useMemo(
     () =>
       certificateVariant != null
-        ? createCertificateFixturePanels({
+        ? createCertificateFixturePresentation({
             variant: certificateVariant,
             locale: renderedLocale,
             buildingKey,
           })
         : provenanceVariant == null
-          ? createFixturePanels({
-              topology: renderedTopologyVariant,
-              currentClassOrigin,
-              defaultPrimaryMetricId,
-              recommendationSourceLanguage,
-            })
-          : createProvenanceFixturePanels({
+          ? {
+              panels: createFixturePanels({
+                topology: renderedTopologyVariant,
+                currentClassOrigin,
+                defaultPrimaryMetricId,
+                recommendationSourceLanguage,
+              }),
+              missingData: null,
+            }
+          : createProvenanceFixturePresentation({
               variant: provenanceVariant,
               locale: renderedLocale,
               buildingKey,
@@ -1109,6 +1116,16 @@ const BuildingInfoPanelFixtureState = ({
     }
 
     const prepareInteraction = () => {
+      if (interaction === 'information-footer') {
+        const trigger = root.querySelector<HTMLButtonElement>(
+          '[data-testid="building-info-provenance-trigger"]'
+        )
+        if (trigger == null) return
+        trigger.scrollIntoView({ block: 'center' })
+        markReady()
+        return
+      }
+
       if (
         interaction === 'provenance-open' ||
         interaction === 'provenance-building-change' ||
@@ -1131,10 +1148,10 @@ const BuildingInfoPanelFixtureState = ({
           '[data-testid="building-info-provenance-trigger"]'
         )
         const provenanceView = root.querySelector<HTMLElement>(
-          '[data-testid="building-info-provenance-view"][data-summary-status="resolved"]'
+          '[data-testid="building-info-provenance-view"][data-missing-data-status]'
         )
-        const provenanceItems = root.querySelectorAll(
-          '[data-testid="building-info-provenance-item"]'
+        const waterMissing = root.querySelector(
+          '[data-missing-item-id="energyConsumption.water"]'
         )
 
         if (
@@ -1231,20 +1248,12 @@ const BuildingInfoPanelFixtureState = ({
             return
           }
 
-          const expectedItemCount =
-            interaction === 'provenance-water-invalid'
-              ? 1
-              : interaction === 'provenance-water-valid' ||
-                  interaction === 'provenance-water-disable-reset'
-                ? 2
-                : undefined
-
           if (
-            expectedItemCount != null &&
-            provenanceItems.length !== expectedItemCount
-          ) {
+            isWaterInteraction &&
+            (waterMissing != null) !==
+              (interaction === 'provenance-water-invalid')
+          )
             return
-          }
 
           if (interaction === 'provenance-water-disable-reset') {
             const closeButton =
@@ -1298,7 +1307,7 @@ const BuildingInfoPanelFixtureState = ({
           if (
             trigger?.getAttribute('aria-expanded') === 'true' &&
             provenanceView != null &&
-            provenanceItems.length === 2 &&
+            waterMissing == null &&
             residentControl?.dataset.provenanceInputIds ===
               ENERGYMAP_DERIVED_WATER_RESIDENT_CONTROL_PROVENANCE_INPUT_IDS.join(
                 ' '
@@ -1334,7 +1343,7 @@ const BuildingInfoPanelFixtureState = ({
         if (provenanceInteractionPhase === 'locale-change-requested') {
           if (
             trigger?.getAttribute('aria-expanded') === 'true' &&
-            provenanceView?.dataset.summaryLocale === 'en'
+            provenanceView?.dataset.missingDataLocale === 'en'
           ) {
             markReady()
           }
@@ -1580,7 +1589,7 @@ const BuildingInfoPanelFixtureState = ({
             <IntoSidebarPanelExtensionPanelSlot panelId="main">
               <BuildingInfoTabPages
                 key={buildingKey}
-                panels={panels}
+                missingData={missingData}
                 locale={renderedLocale}
                 topology={panelTopology}
                 ariaLabels={ariaLabels}
@@ -1656,6 +1665,64 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
   },
   states: [
     {
+      id: 'information-footer-basic',
+      label: 'Building details footer',
+      description:
+        'Basic tab information button below the last building-details row.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="official"
+          interaction="information-footer"
+        />
+      ),
+    },
+
+    {
+      id: 'information-footer-renovation',
+      label: 'Renovation details footer',
+      description:
+        'Renovation tab information button below the last building-details row.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="official"
+          activeTabId="renovation"
+          interaction="information-footer"
+        />
+      ),
+    },
+
+    {
+      id: 'information-footer-sparse',
+      label: 'Sparse information footer',
+      description:
+        'Information footer after the surviving Water panel when building details is absent.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="waterOnly"
+          interaction="information-footer"
+        />
+      ),
+    },
+
+    {
+      id: 'information-unavailable-open',
+      label: 'Diagnostics unavailable',
+      description:
+        'Explicit unavailable-diagnostics status for authored panels without source candidates.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState interaction="provenance-open" />
+      ),
+    },
+
+    {
       id: 'property-ordinary-fi',
       label: 'Property ordinary FI',
       locale: 'fi',
@@ -1674,7 +1741,7 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'property-provenance-fi',
       label: 'Property provenance FI',
       locale: 'fi',
-      description: 'Registry location property in the FI provenance view.',
+      description: 'Missing fields for a property-only building, in Finnish.',
       waitFor:
         '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
@@ -1704,7 +1771,7 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'property-provenance-en',
       label: 'Property provenance EN',
       locale: 'en',
-      description: 'Registry location property in the EN provenance view.',
+      description: 'Missing fields for a property-only building, in English.',
       waitFor:
         '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
@@ -1728,7 +1795,7 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'property-selection-reset',
       label: 'Property selection reset',
       description:
-        'Open property provenance resets when replaced by a building without property data.',
+        'Open missing-information view resets when replaced by a building without property data.',
       waitFor:
         '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
@@ -1755,7 +1822,8 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
     {
       id: 'property-provenance-mobile',
       label: 'Property provenance mobile',
-      description: 'Property provenance in the forced mobile information view.',
+      description:
+        'Missing fields for a property-only building in the mobile information view.',
       waitFor:
         '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
@@ -1885,7 +1953,8 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       label: 'Desktop certificate recommendation expanded',
       description:
         'Expanded long Finnish certificate recommendation with paragraph breaks.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           activeTabId="renovation"
@@ -1898,7 +1967,8 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       label: 'Building details with modeled class',
       description:
         'Modeled energy-class label and help control plus certificate details.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState interaction="building-details" />
       ),
@@ -1908,7 +1978,8 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       label: 'Building details with official class',
       description:
         'Official energy class with no modeled qualifier or help control.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           currentClassOrigin="official"
@@ -1921,7 +1992,8 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       label: 'Building details with unknown class origin',
       description:
         'Energy class with unavailable origin and no modeled qualifier or help control.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           currentClassOrigin="originUnknown"
@@ -1933,7 +2005,8 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'calculation-details-expanded',
       label: 'Calculation details expanded',
       description: 'Expanded calculation details with stacked basis text.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState interaction="calculation-details-expanded" />
       ),
@@ -2028,8 +2101,9 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'certificate-selection-change-reset',
       label: 'Certificate selection replacement',
       description:
-        'Open certificate provenance is replaced by a complete-reference building and resets closed without stale certificate content.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+        'Open missing information is replaced by a complete-reference building and resets closed without stale certificate gaps.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           certificateVariant="selectionSwap"
@@ -2041,8 +2115,9 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'certificate-provenance-open',
       label: 'Certificate provenance open',
       description:
-        'Exact reported certificate provenance, including register metadata and same-certificate area calculations.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+        'Missing fields for a building with reported certificate consumption; available certificate values are excluded.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           certificateVariant="reported"
@@ -2054,8 +2129,9 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'provenance-official-open',
       label: 'Official provenance open',
       description:
-        'Complete desktop building with official-class provenance open.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+        'Complete desktop building with an official class and no missing fields.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           provenanceVariant="official"
@@ -2067,8 +2143,9 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'provenance-modeled-open',
       label: 'Modeled provenance open',
       description:
-        'Complete desktop building with modeled-class provenance open.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+        'Complete desktop building with a modeled class and no missing fields.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           provenanceVariant="modeled"
@@ -2080,8 +2157,9 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'provenance-origin-unknown-open',
       label: 'Origin-unknown provenance open',
       description:
-        'Complete desktop building with origin-unavailable class provenance open.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+        'Complete desktop building with an unknown class origin and no missing fields.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           provenanceVariant="originUnknown"
@@ -2093,8 +2171,9 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'provenance-building-change-reset',
       label: 'Provenance building change reset',
       description:
-        'An open official provenance view is replaced by a different selected building and resets closed with fresh relationships.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+        'An open information view resets closed when the selected building changes.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           provenanceVariant="official"
@@ -2106,8 +2185,9 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'provenance-locale-change-open',
       label: 'Provenance locale change while open',
       description:
-        'An open complete provenance view updates from Finnish to English without remounting.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+        'An open complete-information status updates from Finnish to English without remounting.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           locale="fi"
@@ -2120,8 +2200,9 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'provenance-water-default-open',
       label: 'Water-only default provenance open',
       description:
-        'Sparse Water-only desktop building with floor-area-derived provenance open.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+        'Sparse Water-only building with missing fields listed and available Water excluded.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           provenanceVariant="waterOnly"
@@ -2133,8 +2214,9 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'provenance-water-valid-open',
       label: 'Water override provenance open',
       description:
-        'Sparse Water-only desktop building with a valid resident override and user-input provenance.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+        'Sparse Water-only building with a valid resident override and no missing Water item.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           provenanceVariant="waterOnly"
@@ -2146,8 +2228,9 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'provenance-water-disable-reset-open',
       label: 'Water override disabled to default provenance',
       description:
-        'A distinct resident override is opened, closed, disabled, and reopened with default floor-area-derived provenance.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+        'A resident override is opened, closed, disabled, and reopened without a missing Water item.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           provenanceVariant="waterOnly"
@@ -2159,8 +2242,9 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'provenance-water-invalid-open',
       label: 'Invalid Water provenance open',
       description:
-        'Sparse Water-only desktop building with invalid active input and no Water output provenance.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+        'Sparse Water-only building with an explicit invalid-resident explanation below the missing Water label.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           provenanceVariant="waterOnly"
@@ -2172,8 +2256,9 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'provenance-modeled-open-mobile',
       label: 'Modeled provenance open mobile',
       description:
-        'Complete modeled building provenance in the forced mobile layout.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+        'Complete modeled building with no missing fields in the mobile information view.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           provenanceVariant="modeled"
@@ -2186,7 +2271,8 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       id: 'water-override',
       label: 'Water override',
       description: 'Supported Water estimate with resident override enabled.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           defaultPrimaryMetricId="water"
@@ -2199,7 +2285,8 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       label: 'Mobile Water override',
       description:
         'Forced stacked Water layout with resident override enabled.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           defaultPrimaryMetricId="water"
@@ -2225,7 +2312,8 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       label: 'Mobile certificate recommendation expanded',
       description:
         'Expanded long Swedish certificate recommendation in forced mobile layout.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           activeTabId="renovation"
@@ -2259,7 +2347,8 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       label: 'Complete to sparse building switch',
       description:
         'Interacts with a complete building before switching to a keyed sparse topology.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState interaction="building-switch-complete-to-sparse" />
       ),
@@ -2269,7 +2358,8 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       label: 'Sparse to complete building switch',
       description:
         'Changes sparse Water and tab state before switching to a keyed complete topology with defaults restored.',
-      waitFor: '[data-testid="building-info-fixture-interaction-ready"]',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
       render: () => (
         <BuildingInfoPanelFixtureState
           interaction="building-switch-sparse-to-complete"

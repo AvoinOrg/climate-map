@@ -37,7 +37,10 @@ import {
   ENERGYMAP_USER_OVERRIDE_WATER_PROVENANCE_INPUT_IDS,
   ENERGYMAP_USER_OVERRIDE_WATER_RESIDENT_CONTROL_PROVENANCE_INPUT_IDS,
 } from '../common/buildingInfoProvenance'
-import { createEnergymapBuildingInfoPanels } from '../common/buildingInfo'
+import {
+  createEnergymapBuildingInfoPresentation,
+  type EnergymapBuildingInfoMissingData,
+} from '../common/buildingInfo'
 import { deriveEnergymapBuildingInfoProvenanceSummary } from '../common/buildingInfoProvenanceSummary'
 import type {
   EnergymapBuildingInfoConsumptionControls,
@@ -667,7 +670,13 @@ type RenderBuildingInfoTabsOptions = {
   onClose?: () => void
   onCollapse?: (tabId: BuildingInfoTabId) => void
   panels?: EnergymapBuildingInfoPanel[]
+  missingData?: EnergymapBuildingInfoMissingData | null
 }
+
+const diagnosticsByPanels = new WeakMap<
+  EnergymapBuildingInfoPanel[],
+  EnergymapBuildingInfoMissingData | null
+>()
 
 const createCatalogValidPanels = ({
   properties,
@@ -677,22 +686,24 @@ const createCatalogValidPanels = ({
   locale?: string
 }) => {
   const buildingKey = String(properties.building_key)
-  const normalizedPanels = createEnergymapBuildingInfoPanels({
-    selectedBuilding: {
-      id: buildingKey,
-      buildingKey,
-      source: 'energymap_building_polygons',
-      sourceLayer: 'energymap_building_polygons',
-      layerId: 'energymap_building_polygons-fill',
-      properties,
-    },
-    locale,
-  })
+  const { panels: normalizedPanels, missingData } =
+    createEnergymapBuildingInfoPresentation({
+      selectedBuilding: {
+        id: buildingKey,
+        buildingKey,
+        source: 'energymap_building_polygons',
+        sourceLayer: 'energymap_building_polygons',
+        layerId: 'energymap_building_polygons-fill',
+        properties,
+      },
+      locale,
+    })
 
   if (normalizedPanels == null) {
     throw new Error('Expected normalized building-info panels')
   }
 
+  diagnosticsByPanels.set(normalizedPanels, missingData)
   return normalizedPanels
 }
 
@@ -706,6 +717,7 @@ const createBuildingInfoTabsElement = ({
   onClose = jest.fn(),
   onCollapse = jest.fn(),
   panels: buildingInfoPanels = panels,
+  missingData = diagnosticsByPanels.get(buildingInfoPanels) ?? null,
 }: RenderBuildingInfoTabsOptions = {}) => {
   const topology = deriveEnergymapBuildingInfoPanelTopology(buildingInfoPanels)
 
@@ -722,7 +734,7 @@ const createBuildingInfoTabsElement = ({
           <IntoSidebarPanelExtensionPanelSlot panelId="main">
             <BuildingInfoTabPages
               key={panelKey}
-              panels={buildingInfoPanels}
+              missingData={missingData}
               locale={locale}
               topology={topology}
               ariaLabels={ariaLabels}
@@ -819,8 +831,8 @@ describe('BuildingInfoPanel', () => {
         ).toHaveFocus()
       )
       const provenance = screen.getByTestId('building-info-provenance-view')
-      expect(provenance).toHaveTextContent(
-        'sidebar.building_info.provenance.fields.ventilation_type'
+      expect(provenance).not.toHaveTextContent(
+        'sidebar.building_info.panels.building.rows.ventilation_type'
       )
 
       view.rerenderBuildingInfoTabs({
@@ -832,8 +844,8 @@ describe('BuildingInfoPanel', () => {
       expect(provenance).not.toHaveTextContent(
         'sidebar.building_info.provenance.inputs.certificate_ventilation_code'
       )
-      expect(provenance).not.toHaveTextContent(
-        'sidebar.building_info.provenance.fields.ventilation_category'
+      expect(provenance).toHaveTextContent(
+        'sidebar.building_info.panels.building.rows.ventilation_category'
       )
       fireEvent.keyDown(document, { key: 'Escape' })
       await waitFor(() => expect(trigger).toHaveFocus())
@@ -904,7 +916,7 @@ describe('BuildingInfoPanel', () => {
       ).toBeNull()
       const openName = 'sidebar.building_info.provenance.view.open'
       const fieldKey =
-        'sidebar.building_info.provenance.fields.property_identifier'
+        'sidebar.building_info.panels.building.rows.property_identifier'
       const open = async () => {
         const trigger = screen.getByRole('button', { name: openName })
         act(() => trigger.focus())
@@ -920,7 +932,7 @@ describe('BuildingInfoPanel', () => {
       let trigger = await open()
       expect(
         screen.getByTestId('building-info-provenance-view')
-      ).toHaveTextContent(fieldKey)
+      ).not.toHaveTextContent(fieldKey)
       view.rerenderBuildingInfoTabs({
         panels: createPropertyPanels('09102000040003', 'fi'),
         panelKey: 'a',
@@ -928,7 +940,7 @@ describe('BuildingInfoPanel', () => {
       })
       expect(
         screen.getByTestId('building-info-provenance-view')
-      ).toHaveAttribute('data-summary-locale', 'fi')
+      ).toHaveAttribute('data-missing-data-locale', 'fi')
       expect(trigger).toHaveAttribute('aria-expanded', 'true')
       fireEvent.keyDown(document, { key: 'Escape' })
       await waitFor(() => expect(trigger).toHaveFocus())
@@ -960,7 +972,7 @@ describe('BuildingInfoPanel', () => {
         await open()
         const region = screen.getByTestId('building-info-provenance-view')
         expect(within(region).queryAllByText(fieldKey)).toHaveLength(
-          available ? 1 : 0
+          available ? 0 : 1
         )
         expect(region).not.toHaveTextContent('00000000000000')
       }
@@ -1024,12 +1036,17 @@ describe('BuildingInfoPanel', () => {
       ).not.toBeInTheDocument()
       expect(ordinaryPage).toBeVisible()
 
-      fireEvent.mouseEnter(trigger)
-      expect(await screen.findByRole('tooltip')).toHaveTextContent(triggerName)
-      fireEvent.mouseLeave(trigger)
-      await waitFor(() => {
-        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-      })
+      const details = screen.getByTestId('building-info-panel-buildingDetails')
+      expect(details).toContainElement(trigger)
+      expect(trigger).toHaveTextContent(
+        'sidebar.building_info.provenance.view.action'
+      )
+      const lastRow = details.querySelector('tr:last-child')
+      if (lastRow != null)
+        expect(
+          lastRow.compareDocumentPosition(trigger) &
+            Node.DOCUMENT_POSITION_FOLLOWING
+        ).toBeTruthy()
 
       fireEvent.click(trigger)
       await waitFor(() => {
@@ -1411,11 +1428,11 @@ describe('BuildingInfoPanel', () => {
     })
     expect(
       screen
-        .getAllByTestId('building-info-provenance-item')
-        .map((item) => item.dataset.provenanceItemId)
-    ).toEqual(fiResult.summary.items.map(({ id }) => id))
+        .getAllByTestId('building-info-missing-item')
+        .map((item) => item.dataset.missingItemId)
+    ).toEqual(diagnosticsByPanels.get(fiPanels)!.items.map(({ id }) => id))
     expect(screen.getByTestId('building-info-provenance-view')).toHaveAttribute(
-      'data-summary-locale',
+      'data-missing-data-locale',
       'fi-FI'
     )
 
@@ -1459,9 +1476,9 @@ describe('BuildingInfoPanel', () => {
     })
     expect(
       screen
-        .getAllByTestId('building-info-provenance-item')
+        .getAllByTestId('building-info-missing-item')
         .some((item) =>
-          item.dataset.provenanceItemId?.includes('certificateConsumption')
+          item.dataset.missingItemId?.includes('certificateConsumption')
         )
     ).toBe(false)
 
@@ -1544,14 +1561,20 @@ describe('BuildingInfoPanel', () => {
     expect(waterPanel).toHaveTextContent('87,6')
     fireEvent.click(trigger)
     await waitFor(() => {
+      expect(screen.getByTestId('building-info-provenance-view')).toBeVisible()
       expect(
-        screen.getAllByTestId('building-info-provenance-item')
-      ).toHaveLength(2)
+        screen
+          .getByTestId('building-info-provenance-view')
+          .querySelector('[data-missing-item-id="energyConsumption.water"]')
+      ).toBeNull()
+      expect(screen.getAllByTestId('building-info-missing-item')).toHaveLength(
+        diagnosticsByPanels.get(waterPanels)!.items.length
+      )
     })
     expect(
       screen.getByTestId('building-info-provenance-view')
-    ).toHaveTextContent(
-      'sidebar.building_info.provenance.inputs.occupancy_reference'
+    ).not.toHaveTextContent(
+      'sidebar.building_info.missing_data.water_residents'
     )
     fireEvent.click(
       screen.getByRole('button', {
@@ -1570,21 +1593,27 @@ describe('BuildingInfoPanel', () => {
 
     fireEvent.click(trigger)
     await waitFor(() => {
+      expect(screen.getByTestId('building-info-provenance-view')).toBeVisible()
+      expect(
+        screen
+          .getByTestId('building-info-provenance-view')
+          .querySelector('[data-missing-item-id="energyConsumption.water"]')
+      ).toBeNull()
       expect(
         screen.getByTestId('building-info-provenance-view')
-      ).toHaveTextContent(
-        'sidebar.building_info.provenance.inputs.user_resident_count'
+      ).not.toHaveTextContent(
+        'sidebar.building_info.missing_data.water_residents'
       )
       expect(
         screen.getByTestId('building-info-provenance-view')
-      ).toHaveTextContent(
+      ).not.toHaveTextContent(
         'sidebar.building_info.provenance.sources.user_resident_count'
       )
     })
     expect(
       screen.getByTestId('building-info-provenance-view')
     ).not.toHaveTextContent(
-      'sidebar.building_info.provenance.inputs.occupancy_reference'
+      'sidebar.building_info.missing_data.water_residents'
     )
 
     fireEvent.click(
@@ -1610,10 +1639,16 @@ describe('BuildingInfoPanel', () => {
     })
     fireEvent.click(trigger)
     await waitFor(() => {
+      expect(screen.getByTestId('building-info-provenance-view')).toBeVisible()
+      expect(
+        screen
+          .getByTestId('building-info-provenance-view')
+          .querySelector('[data-missing-item-id="energyConsumption.water"]')
+      ).toBeNull()
       expect(
         screen.getByTestId('building-info-provenance-view')
-      ).toHaveTextContent(
-        'sidebar.building_info.provenance.inputs.user_resident_count'
+      ).not.toHaveTextContent(
+        'sidebar.building_info.missing_data.water_residents'
       )
     })
     const previousRegionId = trigger.getAttribute('aria-controls')
@@ -1652,12 +1687,14 @@ describe('BuildingInfoPanel', () => {
       const replacementView = screen.getByTestId(
         'building-info-provenance-view'
       )
-      expect(replacementView).toHaveTextContent(
-        'sidebar.building_info.provenance.inputs.occupancy_reference'
-      )
       expect(replacementView).not.toHaveTextContent(
-        'sidebar.building_info.provenance.inputs.user_resident_count'
+        'sidebar.building_info.missing_data.water_residents'
       )
+      expect(
+        replacementView.querySelector(
+          '[data-missing-item-id="energyConsumption.water"]'
+        )
+      ).toBeNull()
     })
   })
 
@@ -1694,18 +1731,22 @@ describe('BuildingInfoPanel', () => {
     fireEvent.click(trigger)
 
     await waitFor(() => {
-      const items = screen.getAllByTestId('building-info-provenance-item')
+      const items = screen
+        .getAllByTestId('building-info-missing-item')
+        .filter(
+          (item) => item.dataset.missingItemId === 'energyConsumption.water'
+        )
       expect(items).toHaveLength(1)
       expect(items[0]).toHaveAttribute(
-        'data-provenance-item-id',
-        'energyConsumption/estimatedConsumption/primaryMetric/water/residentCountControl'
+        'data-missing-item-id',
+        'energyConsumption.water'
       )
     })
     expect(residentInput).toHaveValue('')
     expect(
       screen.getByTestId('building-info-provenance-view')
     ).toHaveTextContent(
-      'sidebar.building_info.provenance.inputs.user_resident_count'
+      'sidebar.building_info.missing_data.water_residents'
     )
 
     fireEvent.click(
@@ -1733,18 +1774,13 @@ describe('BuildingInfoPanel', () => {
 
     fireEvent.click(trigger)
     await waitFor(() => {
-      expect(
-        screen.getAllByTestId('building-info-provenance-item')
-      ).toHaveLength(2)
-      expect(
-        screen.getByTestId('building-info-provenance-view')
-      ).toHaveTextContent(
-        'sidebar.building_info.provenance.inputs.occupancy_reference'
+      expect(screen.getAllByTestId('building-info-missing-item')).toHaveLength(
+        diagnosticsByPanels.get(waterPanels)!.items.length
       )
       expect(
         screen.getByTestId('building-info-provenance-view')
       ).not.toHaveTextContent(
-        'sidebar.building_info.provenance.inputs.user_resident_count'
+        'sidebar.building_info.missing_data.water_residents'
       )
     })
   })
@@ -1790,21 +1826,20 @@ describe('BuildingInfoPanel', () => {
     expect(
       within(waterPanel).getByTestId('building-info-unavailable-value-icon')
     ).toBeInTheDocument()
-    const items = screen.getAllByTestId('building-info-provenance-item')
+    const items = screen
+      .getAllByTestId('building-info-missing-item')
+      .filter(
+        (item) => item.dataset.missingItemId === 'energyConsumption.water'
+      )
     expect(items).toHaveLength(1)
     expect(items[0]).toHaveAttribute(
-      'data-provenance-item-id',
-      'energyConsumption/estimatedConsumption/primaryMetric/water/residentCountControl'
+      'data-missing-item-id',
+      'energyConsumption.water'
     )
     expect(
       screen.getByTestId('building-info-provenance-view')
     ).toHaveTextContent(
-      'sidebar.building_info.provenance.inputs.user_resident_count'
-    )
-    expect(
-      screen.getByTestId('building-info-provenance-view')
-    ).not.toHaveTextContent(
-      'sidebar.building_info.provenance.inputs.occupancy_reference'
+      'sidebar.building_info.missing_data.water_residents'
     )
   })
 
@@ -4268,5 +4303,111 @@ describe('BuildingInfoPanel', () => {
     expect(getEnergymapBuildingInfoDesktopMinWidthPx(1440, true)).toBe(
       ENERGYMAP_BUILDING_INFO_RENOVATION_DESKTOP_MIN_WIDTH_PX
     )
+  })
+})
+
+describe('missing-information footer placement', () => {
+  beforeEach(() => {
+    mockIsMobile = false
+    resetUIStore()
+  })
+  it.each([
+    ['basic', false, false],
+    ['renovation', false, false],
+    ['basic', true, false],
+    ['renovation', true, false],
+    ['basic', false, true],
+    ['renovation', false, true],
+  ] as const)(
+    'places one footer after all building rows (%s, mobile=%s, fullscreen=%s)',
+    async (activeTabId, forceMobileLayout, isDesktopFullscreenLayout) => {
+      renderBuildingInfoTabs({
+        activeTabId,
+        forceMobileLayout,
+        isDesktopFullscreenLayout,
+      })
+      const page = await screen.findByTestId(
+        `building-info-tab-page-${activeTabId}`
+      )
+      const trigger = within(page).getByTestId(
+        'building-info-provenance-trigger'
+      )
+      const details = within(page).getByTestId(
+        'building-info-panel-buildingDetails'
+      )
+      expect(details).toContainElement(trigger)
+      expect(
+        screen.getAllByTestId('building-info-provenance-trigger')
+      ).toHaveLength(1)
+      for (const row of details.querySelectorAll('tr')) {
+        expect(
+          row.compareDocumentPosition(trigger) &
+            Node.DOCUMENT_POSITION_FOLLOWING
+        ).toBeTruthy()
+      }
+      expect(
+        trigger.closest('[data-testid="sidebar-panel-extension-page-controls"]')
+      ).toBeNull()
+      expect(trigger.closest('tr')).toBeNull()
+    }
+  )
+
+  it.each([false, true])(
+    'uses the page footer for a sparse page without building details (mobile=%s)',
+    async (forceMobileLayout) => {
+      const waterPanels = createCatalogValidPanels({
+        properties: { floor_area: 100 },
+      })
+      renderBuildingInfoTabs({ panels: waterPanels, forceMobileLayout })
+      const page = await screen.findByTestId('building-info-tab-page-basic')
+      const trigger = within(page).getByTestId(
+        'building-info-provenance-trigger'
+      )
+      expect(
+        screen.queryByTestId('building-info-panel-buildingDetails')
+      ).not.toBeInTheDocument()
+      expect(
+        within(page).getByTestId('building-info-page-footer')
+      ).toContainElement(trigger)
+      expect(
+        screen.getAllByTestId('building-info-provenance-trigger')
+      ).toHaveLength(1)
+      const energy = within(page).getByTestId(
+        'building-info-panel-energyConsumption'
+      )
+      expect(
+        energy.compareDocumentPosition(trigger) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy()
+      fireEvent.click(trigger)
+      expect(
+        screen.getByTestId('building-info-provenance-view')
+      ).toHaveTextContent('sidebar.building_info.missing_data.address')
+    }
+  )
+
+  it('also supplies a footer when only renovation recommendations survive', async () => {
+    renderBuildingInfoTabs({
+      panels: createCatalogValidPanels({
+        properties: {
+          energy_certificate_recommendations_fi: 'Korjaa ikkunat.',
+        },
+      }),
+    })
+    const page = await screen.findByTestId('building-info-tab-page-renovation')
+    expect(
+      within(page).getByTestId('building-info-page-footer')
+    ).toContainElement(
+      within(page).getByTestId('building-info-provenance-trigger')
+    )
+  })
+
+  it('does not open a missing-only shell for an all-empty selection', () => {
+    renderBuildingInfoTabs({
+      panels: createCatalogValidPanels({ properties: {} }),
+    })
+    expect(
+      screen.queryByTestId('building-info-provenance-trigger')
+    ).not.toBeInTheDocument()
   })
 })

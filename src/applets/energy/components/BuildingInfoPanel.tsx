@@ -11,7 +11,7 @@ import {
   type AppTheme,
   toSxArray,
 } from '#/common/style/theme'
-import { ButtonBase, IconButton } from '#/components/common/Button'
+import { Button, ButtonBase, IconButton } from '#/components/common/Button'
 import AppTooltip from '#/components/common/AppTooltip'
 import CustomAccordion from '#/components/common/CustomAccordion'
 import CustomAccordionSummary from '#/components/common/CustomAccordionSummary'
@@ -20,10 +20,7 @@ import SquishedSwitchWithLabel from '#/components/common/SquishedSwitchWithLabel
 import TText from '#/components/common/TText'
 import InfoCircle from '#/components/icons/InfoCircle'
 import QuestionCircleOutline from '#/components/icons/QuestionCircleOutline'
-import {
-  sidebarPanelExtensionPageControlButtonSx,
-  SidebarPanelExtensionPageContainer,
-} from '#/components/Sidebar/SidebarPanelExtensionPageContainer'
+import { SidebarPanelExtensionPageContainer } from '#/components/Sidebar/SidebarPanelExtensionPageContainer'
 import { SidebarPanelExtensionTabContainer } from '#/components/Sidebar/SidebarPanelExtensionTabContainer'
 import {
   SidebarPanelExtensionTooltip as BuildingInfoTooltip,
@@ -32,6 +29,7 @@ import {
 } from '#/components/Sidebar/SidebarPanelExtensionTooltip'
 import { useNullableSidebarPanelExtensionTabsContext } from '#/components/Sidebar/SidebarPanelExtensionTabsContext'
 import type {
+  EnergymapBuildingInfoMissingData,
   EnergymapBuildingInfoConsumptionControls,
   EnergymapBuildingInfoEnergySubmetric,
   EnergymapBuildingInfoEnergySubmetricId,
@@ -58,7 +56,6 @@ import {
   getEnergymapEffectiveWaterProjection,
   type EnergymapEffectiveWaterProjection,
 } from '../common/buildingInfoProvenance'
-import { deriveEnergymapBuildingInfoProvenanceSummary } from '../common/buildingInfoProvenanceSummary'
 import {
   getBuildingInfoModeForTabId,
   getBuildingInfoPanelIds,
@@ -92,7 +89,7 @@ type BuildingInfoActionLabels = {
 }
 
 type BuildingInfoTabPagesProps = {
-  panels: readonly EnergymapBuildingInfoPanel[]
+  missingData: EnergymapBuildingInfoMissingData | null
   locale: string
   topology: EnergymapBuildingInfoPanelTopology
   ariaLabels: BuildingInfoActionLabels
@@ -2909,6 +2906,7 @@ const BuildingInfoPanelHeroGraphic = ({
 }
 
 const BuildingInfoPanelBody = ({
+  detailsFooter,
   panel,
   titleId,
   accentColor,
@@ -2917,6 +2915,7 @@ const BuildingInfoPanelBody = ({
   showHeroGraphic = true,
   sx,
 }: {
+  detailsFooter?: React.ReactNode
   panel: EnergymapBuildingInfoPanel
   titleId: string
   accentColor: string
@@ -2979,6 +2978,7 @@ const BuildingInfoPanelBody = ({
           accentColor={accentColor}
         />
       ))}
+      {panel.id === 'buildingDetails' && detailsFooter}
     </Box>
   )
 }
@@ -3034,6 +3034,7 @@ const getDesktopGridPanelContentSx = ({
 })
 
 const BuildingInfoPanelSection = ({
+  detailsFooter,
   panel,
   tabId,
   bodySx,
@@ -3042,6 +3043,7 @@ const BuildingInfoPanelSection = ({
   showHeroGraphic,
   sx,
 }: {
+  detailsFooter?: React.ReactNode
   panel: EnergymapBuildingInfoPanel
   tabId: BuildingInfoTabId
   bodySx?: AppSxProps
@@ -3079,6 +3081,7 @@ const BuildingInfoPanelSection = ({
       ]}
     >
       <BuildingInfoPanelBody
+        detailsFooter={detailsFooter}
         panel={panel}
         titleId={titleId}
         accentColor={accentColor}
@@ -3092,11 +3095,13 @@ const BuildingInfoPanelSection = ({
 }
 
 const BuildingInfoStackedTabPageSection = ({
+  detailsFooter,
   panel,
   tabId,
   index,
   panelCount,
 }: {
+  detailsFooter?: React.ReactNode
   panel: EnergymapBuildingInfoPanel
   tabId: BuildingInfoTabId
   index: number
@@ -3112,6 +3117,7 @@ const BuildingInfoStackedTabPageSection = ({
       }}
     >
       <BuildingInfoPanelSection
+        detailsFooter={detailsFooter}
         panel={panel}
         tabId={tabId}
         bodySx={getStackedTabPagePanelContentSx({
@@ -3173,9 +3179,11 @@ const getDesktopPanelRegionSlot = ({
 }
 
 const BuildingInfoDesktopPanelRow = ({
+  detailsFooter,
   tabId,
   row,
 }: {
+  detailsFooter?: React.ReactNode
   tabId: BuildingInfoTabId
   row: EnergymapBuildingInfoDesktopPanelRow
 }) => (
@@ -3214,6 +3222,7 @@ const BuildingInfoDesktopPanelRow = ({
           }}
         >
           <BuildingInfoPanelSection
+            detailsFooter={detailsFooter}
             panel={region.panel}
             tabId={tabId}
             sections={region.sections}
@@ -3416,14 +3425,21 @@ const BuildingInfoRenovationEffectivenessContent = () => (
 )
 
 const BuildingInfoDesktopTabPageContent = ({
+  detailsFooter,
   tab,
 }: {
+  detailsFooter?: React.ReactNode
   tab: EnergymapBuildingInfoTabTopology
 }) => (
   <BuildingInfoDesktopGrid tab={tab}>
     {tab.desktopRows.map((row) =>
       row.kind === 'panels' ? (
-        <BuildingInfoDesktopPanelRow key={row.id} tabId={tab.id} row={row} />
+        <BuildingInfoDesktopPanelRow
+          key={row.id}
+          tabId={tab.id}
+          row={row}
+          detailsFooter={detailsFooter}
+        />
       ) : (
         <Box
           key={row.id}
@@ -3473,15 +3489,18 @@ const BuildingInfoDesktopTabPageContent = ({
 )
 
 const BuildingInfoStackedTabPageContent = ({
+  detailsFooter,
   tabId,
   panels,
 }: {
+  detailsFooter?: React.ReactNode
   tabId: BuildingInfoTabId
   panels: EnergymapBuildingInfoPanel[]
 }) => (
   <>
     {panels.map((panel, index) => (
       <BuildingInfoStackedTabPageSection
+        detailsFooter={detailsFooter}
         key={panel.id}
         panel={panel}
         tabId={tabId}
@@ -3493,9 +3512,11 @@ const BuildingInfoStackedTabPageContent = ({
 )
 
 const BuildingInfoTabPageContent = ({
+  detailsFooter,
   tab,
   forceMobileLayout = false,
 }: {
+  detailsFooter?: React.ReactNode
   tab: EnergymapBuildingInfoTabTopology
   forceMobileLayout?: boolean
 }) => {
@@ -3516,9 +3537,24 @@ const BuildingInfoTabPageContent = ({
       }}
     >
       {useMobileLayout ? (
-        <BuildingInfoStackedTabPageContent tabId={tab.id} panels={tab.panels} />
+        <BuildingInfoStackedTabPageContent
+          tabId={tab.id}
+          panels={tab.panels}
+          detailsFooter={detailsFooter}
+        />
       ) : (
-        <BuildingInfoDesktopTabPageContent tab={tab} />
+        <BuildingInfoDesktopTabPageContent
+          tab={tab}
+          detailsFooter={detailsFooter}
+        />
+      )}
+      {!tab.panels.some((panel) => panel.id === 'buildingDetails') && (
+        <Box
+          data-testid="building-info-page-footer"
+          sx={{ px: '1.5rem', pb: { mobile: '8rem', desktop: '2rem' } }}
+        >
+          {detailsFooter}
+        </Box>
       )}
     </Box>
   )
@@ -3677,21 +3713,8 @@ const getBuildingInfoPageControlsSx = ({
   }
 }
 
-const assignBuildingInfoRef = <T,>(
-  ref: React.Ref<T> | undefined,
-  value: T | null
-) => {
-  if (typeof ref === 'function') {
-    ref(value)
-    return
-  }
-
-  if (ref != null) {
-    ;(ref as React.MutableRefObject<T | null>).current = value
-  }
-}
-
 const BuildingInfoProvenanceTrigger = ({
+  locale,
   label,
   expanded,
   regionId,
@@ -3701,6 +3724,7 @@ const BuildingInfoProvenanceTrigger = ({
   onPointerActivationCancel,
   onOpen,
 }: {
+  locale: string
   label: string
   expanded: boolean
   regionId: string
@@ -3710,55 +3734,36 @@ const BuildingInfoProvenanceTrigger = ({
   onPointerActivationCancel: () => void
   onOpen: () => void
 }) => (
-  <BuildingInfoTooltip title={label} side="top">
-    {(tooltipTriggerProps) => {
-      const {
-        onClick: onTooltipTriggerClick,
-        ref: tooltipTriggerRef,
-        ...buttonTooltipTriggerProps
-      } = tooltipTriggerProps
-
-      return (
-        <IconButton
-          {...buttonTooltipTriggerProps}
-          ref={(node) => {
-            triggerRef.current = node
-            assignBuildingInfoRef(tooltipTriggerRef, node)
-          }}
-          type="button"
-          aria-label={label}
-          aria-expanded={expanded}
-          aria-controls={regionId}
-          data-testid="building-info-provenance-trigger"
-          size="small"
-          onPointerDown={onPointerActivationStart}
-          onPointerUp={onPointerActivationRelease}
-          onPointerCancel={onPointerActivationCancel}
-          onPointerLeave={(event) => {
-            if (event.buttons !== 0) {
-              onPointerActivationCancel()
-            }
-          }}
-          onClick={(event) => {
-            onTooltipTriggerClick?.(
-              event as React.MouseEvent<HTMLButtonElement>
-            )
-
-            if (!event.defaultPrevented) {
-              onOpen()
-            }
-          }}
-          sx={sidebarPanelExtensionPageControlButtonSx}
-        >
-          <InfoCircle aria-hidden="true" sx={{ width: 18, height: 18 }} />
-        </IconButton>
-      )
+  <Button
+    ref={triggerRef}
+    type="button"
+    variant="text"
+    size="small"
+    color="inherit"
+    aria-label={label}
+    aria-expanded={expanded}
+    aria-controls={regionId}
+    data-testid="building-info-provenance-trigger"
+    onPointerDown={onPointerActivationStart}
+    onPointerUp={onPointerActivationRelease}
+    onPointerCancel={onPointerActivationCancel}
+    onPointerLeave={(event) => {
+      if (event.buttons !== 0) onPointerActivationCancel()
     }}
-  </BuildingInfoTooltip>
+    onClick={onOpen}
+    startIcon={<InfoCircle aria-hidden="true" sx={{ width: 18, height: 18 }} />}
+    sx={{ mt: '1.5rem' }}
+  >
+    <TText
+      keyName="sidebar.building_info.provenance.view.action"
+      ns="energiakartta"
+      language={locale}
+    />
+  </Button>
 )
 
 export const BuildingInfoTabPages = ({
-  panels,
+  missingData,
   locale,
   topology,
   ariaLabels,
@@ -3784,16 +3789,37 @@ export const BuildingInfoTabPages = ({
   const generatedProvenanceId = React.useId().replace(/:/g, '')
   const provenanceRegionId = `building-info-provenance-region-${generatedProvenanceId}`
   const provenanceHeadingId = `building-info-provenance-heading-${generatedProvenanceId}`
-  const provenanceOpenLabel = t('sidebar.building_info.provenance.view.open')
-  const provenanceSummaryResult = React.useMemo(
-    () =>
-      deriveEnergymapBuildingInfoProvenanceSummary({
-        panels,
-        locale,
-        effectiveWaterProjection,
-      }),
-    [effectiveWaterProjection, locale, panels]
-  )
+  const provenanceOpenLabel = t('sidebar.building_info.provenance.view.open', {
+    language: locale,
+  })
+  const effectiveMissingData = React.useMemo(() => {
+    if (missingData == null || effectiveWaterProjection == null)
+      return missingData
+    const items = missingData.items.filter(
+      (item) => item.id !== 'energyConsumption.water'
+    )
+    if (effectiveWaterProjection.calculationResult.status === 'unsupported') {
+      const nextOutputIndex = items.findIndex(
+        (item) =>
+          item.id === 'energyConsumption.cost' ||
+          item.id === 'energyConsumption.co2' ||
+          item.panelId === 'renovationRecommendations'
+      )
+      items.splice(nextOutputIndex < 0 ? items.length : nextOutputIndex, 0, {
+        id: 'energyConsumption.water',
+        panelId: 'energyConsumption',
+        label: {
+          type: 'translation',
+          keyName: 'sidebar.building_info.panels.energy.primary.water',
+        },
+        reason: {
+          type: 'translation',
+          keyName: 'sidebar.building_info.missing_data.water_residents',
+        },
+      })
+    }
+    return { ...missingData, items }
+  }, [effectiveWaterProjection, missingData])
   const handleEffectiveWaterProjectionChange = React.useCallback(
     (projection?: EnergymapEffectiveWaterProjection) => {
       setEffectiveWaterProjection(projection)
@@ -3957,24 +3983,6 @@ export const BuildingInfoTabPages = ({
             tabIcon={isBasicTab ? <TwoPanelIcon /> : <ThreePanelIcon />}
           >
             <SidebarPanelExtensionPageContainer
-              additionalControls={
-                <BuildingInfoProvenanceTrigger
-                  label={provenanceOpenLabel}
-                  expanded={isProvenanceOpen}
-                  regionId={provenanceRegionId}
-                  triggerRef={provenanceTriggerRef}
-                  onPointerActivationStart={
-                    handleProvenancePointerActivationStart
-                  }
-                  onPointerActivationRelease={
-                    handleProvenancePointerActivationRelease
-                  }
-                  onPointerActivationCancel={
-                    handleProvenancePointerActivationCancel
-                  }
-                  onOpen={handleOpenProvenance}
-                />
-              }
               closeAriaLabel={ariaLabels.close}
               collapseAriaLabel={ariaLabels.collapse}
               onClose={onClose}
@@ -3992,6 +4000,25 @@ export const BuildingInfoTabPages = ({
                 sx={{ display: isProvenanceOpen ? 'none' : 'contents' }}
               >
                 <BuildingInfoTabPageContent
+                  detailsFooter={
+                    <BuildingInfoProvenanceTrigger
+                      locale={locale}
+                      label={provenanceOpenLabel}
+                      expanded={isProvenanceOpen}
+                      regionId={provenanceRegionId}
+                      triggerRef={provenanceTriggerRef}
+                      onPointerActivationStart={
+                        handleProvenancePointerActivationStart
+                      }
+                      onPointerActivationRelease={
+                        handleProvenancePointerActivationRelease
+                      }
+                      onPointerActivationCancel={
+                        handleProvenancePointerActivationCancel
+                      }
+                      onOpen={handleOpenProvenance}
+                    />
+                  }
                   tab={tab}
                   forceMobileLayout={forceMobileLayout}
                 />
@@ -4001,7 +4028,8 @@ export const BuildingInfoTabPages = ({
                 sx={{ display: isProvenanceOpen ? 'contents' : 'none' }}
               >
                 <BuildingInfoProvenanceView
-                  result={provenanceSummaryResult}
+                  missingData={effectiveMissingData}
+                  locale={locale}
                   regionId={provenanceRegionId}
                   headingId={provenanceHeadingId}
                   headingRef={provenanceHeadingRef}

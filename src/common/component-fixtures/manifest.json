@@ -625,6 +625,30 @@
     ],
     "states": [
       {
+        "id": "information-footer-basic",
+        "label": "Building details footer",
+        "description": "Basic tab information button below the last building-details row.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "information-footer-renovation",
+        "label": "Renovation details footer",
+        "description": "Renovation tab information button below the last building-details row.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "information-footer-sparse",
+        "label": "Sparse information footer",
+        "description": "Information footer after the surviving Water panel when building details is absent.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "information-unavailable-open",
+        "label": "Diagnostics unavailable",
+        "description": "Explicit unavailable-diagnostics status for authored panels without source candidates.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
         "id": "property-ordinary-fi",
         "label": "Property ordinary FI",
         "locale": "fi",
@@ -635,7 +659,7 @@
         "id": "property-provenance-fi",
         "label": "Property provenance FI",
         "locale": "fi",
-        "description": "Registry location property in the FI provenance view.",
+        "description": "Missing fields for a property-only building, in Finnish.",
         "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
@@ -649,7 +673,7 @@
         "id": "property-provenance-en",
         "label": "Property provenance EN",
         "locale": "en",
-        "description": "Registry location property in the EN provenance view.",
+        "description": "Missing fields for a property-only building, in English.",
         "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
@@ -660,7 +684,7 @@
       {
         "id": "property-selection-reset",
         "label": "Property selection reset",
-        "description": "Open property provenance resets when replaced by a building without property data.",
+        "description": "Open missing-information view resets when replaced by a building without property data.",
         "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
@@ -672,7 +696,7 @@
       {
         "id": "property-provenance-mobile",
         "label": "Property provenance mobile",
-        "description": "Property provenance in the forced mobile information view.",
+        "description": "Missing fields for a property-only building in the mobile information view.",
         "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
@@ -739,31 +763,31 @@
         "id": "desktop-recommendation-expanded",
         "label": "Desktop certificate recommendation expanded",
         "description": "Expanded long Finnish certificate recommendation with paragraph breaks.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "building-details",
         "label": "Building details with modeled class",
         "description": "Modeled energy-class label and help control plus certificate details.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "building-details-official",
         "label": "Building details with official class",
         "description": "Official energy class with no modeled qualifier or help control.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "building-details-origin-unknown",
         "label": "Building details with unknown class origin",
         "description": "Energy class with unavailable origin and no modeled qualifier or help control.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "calculation-details-expanded",
         "label": "Calculation details expanded",
         "description": "Expanded calculation details with stacked basis text.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "water-default",
@@ -817,86 +841,86 @@
       {
         "id": "certificate-selection-change-reset",
         "label": "Certificate selection replacement",
-        "description": "Open certificate provenance is replaced by a complete-reference building and resets closed without stale certificate content.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "description": "Open missing information is replaced by a complete-reference building and resets closed without stale certificate gaps.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "certificate-provenance-open",
         "label": "Certificate provenance open",
-        "description": "Exact reported certificate provenance, including register metadata and same-certificate area calculations.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "description": "Missing fields for a building with reported certificate consumption; available certificate values are excluded.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "provenance-official-open",
         "label": "Official provenance open",
-        "description": "Complete desktop building with official-class provenance open.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "description": "Complete desktop building with an official class and no missing fields.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "provenance-modeled-open",
         "label": "Modeled provenance open",
-        "description": "Complete desktop building with modeled-class provenance open.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "description": "Complete desktop building with a modeled class and no missing fields.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "provenance-origin-unknown-open",
         "label": "Origin-unknown provenance open",
-        "description": "Complete desktop building with origin-unavailable class provenance open.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "description": "Complete desktop building with an unknown class origin and no missing fields.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "provenance-building-change-reset",
         "label": "Provenance building change reset",
-        "description": "An open official provenance view is replaced by a different selected building and resets closed with fresh relationships.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "description": "An open information view resets closed when the selected building changes.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "provenance-locale-change-open",
         "label": "Provenance locale change while open",
-        "description": "An open complete provenance view updates from Finnish to English without remounting.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "description": "An open complete-information status updates from Finnish to English without remounting.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "provenance-water-default-open",
         "label": "Water-only default provenance open",
-        "description": "Sparse Water-only desktop building with floor-area-derived provenance open.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "description": "Sparse Water-only building with missing fields listed and available Water excluded.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "provenance-water-valid-open",
         "label": "Water override provenance open",
-        "description": "Sparse Water-only desktop building with a valid resident override and user-input provenance.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "description": "Sparse Water-only building with a valid resident override and no missing Water item.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "provenance-water-disable-reset-open",
         "label": "Water override disabled to default provenance",
-        "description": "A distinct resident override is opened, closed, disabled, and reopened with default floor-area-derived provenance.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "description": "A resident override is opened, closed, disabled, and reopened without a missing Water item.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "provenance-water-invalid-open",
         "label": "Invalid Water provenance open",
-        "description": "Sparse Water-only desktop building with invalid active input and no Water output provenance.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "description": "Sparse Water-only building with an explicit invalid-resident explanation below the missing Water label.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "provenance-modeled-open-mobile",
         "label": "Modeled provenance open mobile",
-        "description": "Complete modeled building provenance in the forced mobile layout.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "description": "Complete modeled building with no missing fields in the mobile information view.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "water-override",
         "label": "Water override",
         "description": "Supported Water estimate with resident override enabled.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "mobile-water-override",
         "label": "Mobile Water override",
         "description": "Forced stacked Water layout with resident override enabled.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "mobile-renovation",
@@ -908,7 +932,7 @@
         "id": "mobile-recommendation-expanded",
         "label": "Mobile certificate recommendation expanded",
         "description": "Expanded long Swedish certificate recommendation in forced mobile layout.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "metric-supported",
@@ -926,13 +950,13 @@
         "id": "building-switch-complete-to-sparse",
         "label": "Complete to sparse building switch",
         "description": "Interacts with a complete building before switching to a keyed sparse topology.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "building-switch-sparse-to-complete",
         "label": "Sparse to complete building switch",
         "description": "Changes sparse Water and tab state before switching to a keyed complete topology with defaults restored.",
-        "waitFor": "[data-testid=\"building-info-fixture-interaction-ready\"]"
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "forced-mobile-sparse",
@@ -1094,13 +1118,17 @@
         "id": "report-initializing",
         "label": "Report initializing",
         "description": "Report calculation has been queued and shows starting copy.",
-        "maskSelectors": ["[data-visual-mask=\"plan-report-spinner\"]"]
+        "maskSelectors": [
+          "[data-visual-mask=\"plan-report-spinner\"]"
+        ]
       },
       {
         "id": "report-calculating",
         "label": "Report calculating",
         "description": "Report calculation in progress with spinner and helper text.",
-        "maskSelectors": ["[data-visual-mask=\"plan-report-spinner\"]"]
+        "maskSelectors": [
+          "[data-visual-mask=\"plan-report-spinner\"]"
+        ]
       },
       {
         "id": "report-errored",

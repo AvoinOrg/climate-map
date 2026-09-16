@@ -56,6 +56,7 @@ import {
 import { useAppletStore } from '../state/appletStore'
 import EnergyHomePage from './EnergyHomePage'
 
+const mockMissingLabelsByBuildingKey = new Map<string, string>()
 const mockBuildingInfoPanelsByBuildingKey = new Map<
   string,
   EnergymapBuildingInfoPanel[]
@@ -107,7 +108,7 @@ jest.mock('#/common/hooks/ui/useIsMobile', () => ({
 }))
 
 jest.mock('../common/buildingInfo', () => ({
-  createEnergymapBuildingInfoPanels: ({
+  createEnergymapBuildingInfoPresentation: ({
     selectedBuilding,
     locale,
   }: {
@@ -118,9 +119,30 @@ jest.mock('../common/buildingInfo', () => ({
 
     mockBuildingInfoPanelFactoryKeys.push(buildingKey)
     mockBuildingInfoPanelFactoryLocales.push(locale)
-    return buildingKey == null
-      ? null
-      : (mockBuildingInfoPanelsByBuildingKey.get(buildingKey) ?? [])
+    return {
+      panels:
+        buildingKey == null
+          ? null
+          : (mockBuildingInfoPanelsByBuildingKey.get(buildingKey) ?? []),
+      missingData:
+        buildingKey == null
+          ? null
+          : {
+              locale,
+              items: [
+                {
+                  id: 'buildingDetails.testMissingField',
+                  panelId: 'buildingDetails',
+                  label: {
+                    type: 'plain',
+                    text:
+                      mockMissingLabelsByBuildingKey.get(buildingKey) ??
+                      'Missing field',
+                  },
+                },
+              ],
+            },
+    }
   },
 }))
 
@@ -304,6 +326,10 @@ const selectBuilding = ({
   panels: EnergymapBuildingInfoPanel[]
 }) => {
   mockBuildingInfoPanelsByBuildingKey.set(buildingKey, panels)
+  mockMissingLabelsByBuildingKey.set(
+    buildingKey,
+    `${buildingKey} missing field`
+  )
   mockMapState.selectedFeatures = [createMapBuildingFeature(buildingKey)]
 }
 
@@ -337,6 +363,7 @@ describe('EnergyHomePage', () => {
     jest.clearAllMocks()
     resetUIStore()
     mockBuildingInfoPanelsByBuildingKey.clear()
+    mockMissingLabelsByBuildingKey.clear()
     mockBuildingInfoPanelFactoryKeys.length = 0
     mockBuildingInfoPanelFactoryLocales.length = 0
     mockMapState.selectedFeatures = []
@@ -1130,9 +1157,7 @@ describe('EnergyHomePage', () => {
     })
     expect(
       screen.getByTestId('building-info-provenance-view')
-    ).toHaveTextContent(
-      'sidebar.building_info.provenance.fields.energy_class_official'
-    )
+    ).toHaveTextContent('official-provenance missing field')
 
     selectBuilding({
       buildingKey: 'unknown-provenance',
@@ -1155,14 +1180,10 @@ describe('EnergyHomePage', () => {
     ).not.toBeVisible()
     expect(
       screen.getByTestId('building-info-provenance-view')
-    ).toHaveTextContent(
-      'sidebar.building_info.provenance.fields.energy_class_origin_unavailable'
-    )
+    ).toHaveTextContent('unknown-provenance missing field')
     expect(
       screen.getByTestId('building-info-provenance-view')
-    ).not.toHaveTextContent(
-      'sidebar.building_info.provenance.fields.energy_class_official'
-    )
+    ).not.toHaveTextContent('official-provenance missing field')
 
     fireEvent.click(nextTrigger)
     await waitFor(() => {
@@ -1198,7 +1219,7 @@ describe('EnergyHomePage', () => {
     await waitFor(() => {
       expect(
         screen.getByTestId('building-info-provenance-view')
-      ).toHaveAttribute('data-summary-locale', 'fi')
+      ).toHaveAttribute('data-missing-data-locale', 'fi')
     })
     expect(
       screen.getByTestId('building-info-provenance-heading')
@@ -1207,9 +1228,13 @@ describe('EnergyHomePage', () => {
     mockTranslationLocale = 'en'
     view.rerender(createPageElement('en'))
 
-    const englishTrigger = await screen.findByRole('button', {
-      name: 'en:sidebar.building_info.provenance.view.open',
-    })
+    const englishTrigger = screen.getByTestId(
+      'building-info-provenance-trigger'
+    )
+    expect(englishTrigger).toHaveAttribute(
+      'aria-label',
+      'en:sidebar.building_info.provenance.view.open'
+    )
     expect(englishTrigger).toHaveAttribute('aria-expanded', 'true')
     expect(englishTrigger).toHaveAttribute('aria-controls', regionId)
     expect(screen.getByTestId('building-info-provenance-view')).toHaveAttribute(
@@ -1217,7 +1242,7 @@ describe('EnergyHomePage', () => {
       regionId
     )
     expect(screen.getByTestId('building-info-provenance-view')).toHaveAttribute(
-      'data-summary-locale',
+      'data-missing-data-locale',
       'en'
     )
     expect(

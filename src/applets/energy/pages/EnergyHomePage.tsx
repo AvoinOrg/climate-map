@@ -30,7 +30,7 @@ import {
   BuildingInfoActionRail,
   BuildingInfoTabPages,
 } from '../components/BuildingInfoPanel'
-import { createEnergymapBuildingInfoPanels } from '../common/buildingInfo'
+import { createEnergymapBuildingInfoPresentation } from '../common/buildingInfo'
 import {
   deriveEnergymapBuildingInfoPanelTopology,
   resolveEnergymapBuildingInfoTab,
@@ -514,14 +514,15 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
         .find((building) => building != null) ?? null,
     [selectedFeatures]
   )
-  const buildingInfoPanels = React.useMemo(
-    () =>
-      createEnergymapBuildingInfoPanels({
-        selectedBuilding: selectedEnergymapBuilding,
-        locale,
-      }),
-    [locale, selectedEnergymapBuilding]
-  )
+  const { panels: buildingInfoPanels, missingData: buildingInfoMissingData } =
+    React.useMemo(
+      () =>
+        createEnergymapBuildingInfoPresentation({
+          selectedBuilding: selectedEnergymapBuilding,
+          locale,
+        }),
+      [locale, selectedEnergymapBuilding]
+    )
   const buildingInfoTopology = React.useMemo(
     () => deriveEnergymapBuildingInfoPanelTopology(buildingInfoPanels),
     [buildingInfoPanels]
@@ -975,7 +976,7 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
         <IntoSidebarPanelExtensionPanelSlot panelId="main">
           <BuildingInfoTabPages
             key={`${selectedBuildingKey}:${buildingInfoTopology.signature}`}
-            panels={buildingInfoPanels}
+            missingData={buildingInfoMissingData}
             locale={locale}
             topology={buildingInfoTopology}
             ariaLabels={buildingInfoAriaLabels}
