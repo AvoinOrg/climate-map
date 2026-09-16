@@ -2483,5 +2483,30 @@
         "waitFor": "role=dialog"
       }
     ]
+  },
+  {
+    "id": "energymap-ventilation-controls",
+    "label": "Energiakartta ventilation controls",
+    "description": "Four canonical ventilation categories in the shared accordion.",
+    "sourceGlobs": [
+      "src/applets/energy/components/VentilationAccordionContent.tsx",
+      "src/applets/energy/pages/EnergyHomePage.tsx",
+      "src/applets/energy/layers/ventilationLayerConf.ts",
+      "src/common/component-fixtures/fixtures/EnergymapVentilationControlsFixture.tsx"
+    ],
+    "states": [
+      {
+        "id": "all-on",
+        "label": "All on"
+      },
+      {
+        "id": "mixed",
+        "label": "Mixed"
+      },
+      {
+        "id": "all-off",
+        "label": "All off"
+      }
+    ]
   }
 ]

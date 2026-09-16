@@ -22,19 +22,18 @@ export const ENERGYMAP_VENTILATION_LAYER_IDS = [
 export const ENERGYMAP_VENTILATION_FILL_OPACITY = 0.62
 export const ENERGYMAP_VENTILATION_OUTLINE_OPACITY = 0.45
 
-const VENTILATION_CATEGORY_COLOR_VALUES = [
-  '#0072B2',
-  '#D55E00',
-  '#CC79A7',
-  '#8E8E8E',
-] as const
-
-export const VENTILATION_CATEGORY_COLORS = Object.fromEntries(
-  ENERGYMAP_VENTILATION_CATEGORY_VALUES.map((category, index) => [
-    category,
-    VENTILATION_CATEGORY_COLOR_VALUES[index],
-  ])
-) as Record<EnergymapVentilationCategory, string>
+export const VENTILATION_CATEGORY_COLORS: Record<
+  EnergymapVentilationCategory,
+  string
+> = {
+  // Figma Vjf62EF7vUP3cbtSb0D09R / 857:44687: exported ON fills
+  // at 2656:42862 (mechanical) and 2656:42898 (gravity).
+  mechanical: '#06A4C0',
+  gravity: '#326CB1',
+  // Deliberate F094 extensions; these categories are absent from the frame.
+  other: '#C77924',
+  no_info: '#7A7F87',
+}
 
 export const ENERGYMAP_VENTILATION_UNMATCHED_COLOR = 'rgba(0, 0, 0, 0)'
 

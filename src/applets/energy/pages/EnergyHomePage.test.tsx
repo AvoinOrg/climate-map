@@ -10,6 +10,7 @@ import {
 import type { MapGeoJSONFeature } from 'maplibre-gl'
 
 import { useUIStore } from '#/common/store/uiStore'
+import SquishedSwitchWithLabel from '#/components/common/SquishedSwitchWithLabel'
 import { AppThemeProvider } from '#/common/style/theme'
 import { SlotsProvider } from '#/components/context/slotsContext'
 import { SidebarBoundary, SidebarRoot } from '#/components/Sidebar'
@@ -50,6 +51,7 @@ import {
   ENERGYMAP_VENTILATION_LAYER_IDS,
   ENERGYMAP_VENTILATION_OUTLINE_LAYER_ID,
   ENERGYMAP_VENTILATION_OUTLINE_OPACITY,
+  VENTILATION_CATEGORY_COLORS,
 } from '../layers/ventilationLayerConf'
 import { useAppletStore } from '../state/appletStore'
 import EnergyHomePage from './EnergyHomePage'
@@ -82,6 +84,13 @@ const mockMapState = {
   selectedFeatures: [] as MapGeoJSONFeature[],
   _layerGroups: createRegisteredSharedBuildingLayerGroup(),
 }
+
+jest.mock('#/components/common/SquishedSwitchWithLabel', () => {
+  const actual = jest.requireActual(
+    '#/components/common/SquishedSwitchWithLabel'
+  )
+  return { __esModule: true, ...actual, default: jest.fn(actual.default) }
+})
 
 jest.mock('#/common/store', () => ({
   useMapStore: (selector: (state: typeof mockMapState) => unknown) =>
@@ -457,10 +466,48 @@ describe('EnergyHomePage', () => {
     )
 
     expect(switches).toHaveLength(4)
-    switches.forEach((ventilationSwitch) => {
+    switches.forEach((ventilationSwitch, index) => {
       expect(ventilationSwitch).toBeChecked()
+      expect(SquishedSwitchWithLabel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ariaLabel: `sidebar.front_page.ventilation.legend.${ENERGYMAP_VENTILATION_CATEGORY_VALUES[index]}`,
+          checked: true,
+          checkedTrackColor:
+            VENTILATION_CATEGORY_COLORS[
+              ENERGYMAP_VENTILATION_CATEGORY_VALUES[index]
+            ],
+        }),
+        undefined
+      )
     })
   })
+
+  it.each(ENERGYMAP_VENTILATION_CATEGORY_VALUES)(
+    'toggles only %s and restores its checked state',
+    (category) => {
+      renderPage()
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: 'sidebar.front_page.aria.toggle_ventilation',
+        })
+      )
+      const control = screen.getByRole('switch', {
+        name: `sidebar.front_page.ventilation.legend.${category}`,
+      })
+
+      fireEvent.click(control)
+      for (const id of ENERGYMAP_VENTILATION_CATEGORY_VALUES) {
+        expect(
+          screen.getByRole('switch', {
+            name: `sidebar.front_page.ventilation.legend.${id}`,
+          })
+        ).toHaveProperty('checked', id !== category)
+      }
+
+      fireEvent.click(control)
+      expect(control).toBeChecked()
+    }
+  )
 
   it('filters ventilation strictly for subsets and for no active options', async () => {
     renderPage()
@@ -526,6 +573,17 @@ describe('EnergyHomePage', () => {
         })
       ).not.toBeChecked()
     })
+    expect(
+      mockMapState.setFilter.mock.calls.some(
+        ([layerId, filter]) =>
+          String(layerId).startsWith(
+            `${ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID}-`
+          ) &&
+          JSON.stringify(filter).includes(
+            ENERGYMAP_VENTILATION_CATEGORY_PROPERTY
+          )
+      )
+    ).toBe(false)
   })
 
   it('composes ventilation categories with building type and decade filters', async () => {
@@ -657,6 +715,43 @@ describe('EnergyHomePage', () => {
         'visible'
       )
       for (const layerId of ENERGYMAP_HEATING_LAYER_IDS) {
+        expect(mockMapState.setLayoutProperty).toHaveBeenCalledWith(
+          layerId,
+          'visibility',
+          'none'
+        )
+      }
+    })
+
+    mockMapState.setLayoutProperty.mockClear()
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'sidebar.front_page.aria.toggle_energy_classes',
+      })
+    )
+    await waitFor(() => {
+      expect(mockMapState.setLayoutProperty).toHaveBeenCalledWith(
+        ENERGYMAP_ENERGY_CERTIFICATE_FILL_LAYER_ID,
+        'visibility',
+        'visible'
+      )
+      for (const layerId of ENERGYMAP_VENTILATION_LAYER_IDS) {
+        expect(mockMapState.setLayoutProperty).toHaveBeenCalledWith(
+          layerId,
+          'visibility',
+          'none'
+        )
+      }
+    })
+    mockMapState.setLayoutProperty.mockClear()
+    fireEvent.click(ventilationButton)
+    await waitFor(() => {
+      expect(mockMapState.setLayoutProperty).toHaveBeenCalledWith(
+        ENERGYMAP_VENTILATION_FILL_LAYER_ID,
+        'visibility',
+        'visible'
+      )
+      for (const layerId of ENERGYMAP_ENERGY_CERTIFICATE_LAYER_IDS) {
         expect(mockMapState.setLayoutProperty).toHaveBeenCalledWith(
           layerId,
           'visibility',

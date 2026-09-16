@@ -66,6 +66,16 @@ describe('Energiakartta ventilation category filter', () => {
 })
 
 describe('Energiakartta ventilation color expression', () => {
+  it('uses the two Figma fills and distinct other/no-info extensions', () => {
+    expect(VENTILATION_CATEGORY_COLORS).toEqual({
+      mechanical: '#06A4C0',
+      gravity: '#326CB1',
+      other: '#C77924',
+      no_info: '#7A7F87',
+    })
+    expect(new Set(Object.values(VENTILATION_CATEGORY_COLORS)).size).toBe(4)
+  })
+
   it.each(ENERGYMAP_VENTILATION_CATEGORY_VALUES)(
     'maps %s to its declared category color',
     (category) => {
@@ -83,6 +93,7 @@ describe('Energiakartta ventilation color expression', () => {
       expect(color).toBe(ENERGYMAP_VENTILATION_UNMATCHED_COLOR)
       expect(color).not.toBe(VENTILATION_CATEGORY_COLORS.mechanical)
       expect(color).not.toBe(VENTILATION_CATEGORY_COLORS.other)
+      expect(color).not.toBe(VENTILATION_CATEGORY_COLORS.no_info)
     }
   )
 })

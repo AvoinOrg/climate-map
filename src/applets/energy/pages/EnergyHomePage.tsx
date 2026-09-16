@@ -21,6 +21,9 @@ import {
   SidebarContentBox,
   SidebarHeader,
 } from '#/components/Sidebar'
+import VentilationAccordionContent, {
+  type VentilationSwitchState,
+} from 'applets/energy/components/VentilationAccordionContent'
 import EnergyCertificateClassControls from '../components/EnergyCertificateClassControls'
 import EnergyClassesAccordionContent from '../components/EnergyClassesAccordionContent'
 import {
@@ -79,7 +82,6 @@ import {
   ENERGYMAP_VENTILATION_LAYER_IDS,
   ENERGYMAP_VENTILATION_OUTLINE_LAYER_ID,
   ENERGYMAP_VENTILATION_OUTLINE_OPACITY,
-  VENTILATION_CATEGORY_COLORS,
   getVentilationCategoryFilter,
 } from '../layers/ventilationLayerConf'
 import { listedBackgroundBuildingFiltersAccordion } from '../common/constants'
@@ -142,23 +144,14 @@ const INITIAL_HEATING_SWITCH_STATE = HEATING_SWITCH_ITEMS.reduce(
   {} as HeatingSwitchState
 )
 
-const VENTILATION_SWITCH_ITEMS = ENERGYMAP_VENTILATION_CATEGORY_VALUES.map(
-  (category) => ({
-    id: category,
-    keyName: `sidebar.front_page.ventilation.legend.${category}`,
-    color: VENTILATION_CATEGORY_COLORS[category],
-  })
-)
-
-type VentilationSwitchState = Record<EnergymapVentilationCategory, boolean>
-
-const INITIAL_VENTILATION_SWITCH_STATE = VENTILATION_SWITCH_ITEMS.reduce(
-  (state, { id }) => ({
-    ...state,
-    [id]: true,
-  }),
-  {} as VentilationSwitchState
-)
+const INITIAL_VENTILATION_SWITCH_STATE =
+  ENERGYMAP_VENTILATION_CATEGORY_VALUES.reduce(
+    (state, id) => ({
+      ...state,
+      [id]: true,
+    }),
+    {} as VentilationSwitchState
+  )
 
 type EnergymapMainThematicMode =
   | 'energyCertificates'
@@ -393,81 +386,6 @@ const HeatingAccordionContent = ({
   )
 }
 
-const VentilationAccordionContent = ({
-  ventilationSwitchState,
-  onVentilationSwitchChange,
-}: {
-  ventilationSwitchState: VentilationSwitchState
-  onVentilationSwitchChange: (
-    id: EnergymapVentilationCategory
-  ) => React.ChangeEventHandler<HTMLInputElement>
-}) => {
-  const { t } = useTranslate('energiakartta')
-
-  return (
-    <Box
-      sx={{
-        pt: '2.125rem',
-        mx: '2rem',
-        maxWidth: '15.875rem',
-      }}
-    >
-      <Box
-        component="p"
-        sx={{
-          ...ACCORDION_TEXT_SX,
-          m: 0,
-          mb: '2.5rem',
-        }}
-      >
-        <TText
-          keyName="sidebar.front_page.ventilation.body"
-          ns="energiakartta"
-        />
-      </Box>
-      <Box
-        component="ul"
-        sx={{
-          m: 0,
-          p: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1.25rem',
-          listStyle: 'none',
-        }}
-      >
-        {VENTILATION_SWITCH_ITEMS.map(({ id, keyName, color }) => (
-          <Box
-            key={id}
-            component="li"
-            sx={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              minHeight: '0.875rem',
-            }}
-          >
-            <SquishedSwitchWithLabel
-              checked={ventilationSwitchState[id]}
-              checkedTrackColor={color}
-              ariaLabel={t(keyName)}
-              onChange={onVentilationSwitchChange(id)}
-              sx={{ width: '100%' }}
-              labelSx={{
-                ...ACCORDION_TEXT_SX,
-                fontSize: '0.6875rem',
-                lineHeight: '0.875rem',
-              }}
-            >
-              <TText keyName={keyName} ns="energiakartta" />
-            </SquishedSwitchWithLabel>
-          </Box>
-        ))}
-      </Box>
-    </Box>
-  )
-}
-
 type EnergyHomePageProps = {
   locale?: string
 }
@@ -557,9 +475,9 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
   const activeVentilationCategories =
     React.useMemo<EnergymapVentilationCategory[]>(
       () =>
-        VENTILATION_SWITCH_ITEMS.filter(
-          ({ id }) => ventilationSwitchState[id]
-        ).map(({ id }) => id),
+        ENERGYMAP_VENTILATION_CATEGORY_VALUES.filter(
+          (id) => ventilationSwitchState[id]
+        ),
       [ventilationSwitchState]
     )
   const ventilationFilter = React.useMemo(

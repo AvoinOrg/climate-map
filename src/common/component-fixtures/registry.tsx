@@ -29,6 +29,7 @@ import {
   energymapEnergyClassControlsFixture,
 } from './fixtures/EnergymapFrontPageControlsFixture'
 import { energymapBuildingInfoPanelFixture } from './fixtures/EnergymapBuildingInfoPanelFixture'
+import { energymapVentilationControlsFixture } from './fixtures/EnergymapVentilationControlsFixture'
 import { hiilikarttaDisplayPrimitivesFixture } from './fixtures/HiilikarttaDisplayPrimitivesFixture'
 import { hiilikarttaPlanImportControlsFixture } from './fixtures/HiilikarttaPlanImportControlsFixture'
 import { hiilikarttaPlanReportActionsFixture } from './fixtures/HiilikarttaPlanReportActionsFixture'
@@ -91,6 +92,7 @@ const componentFixtures: ComponentFixture[] = [
   loadingFeedbackFixture,
   sharedModalOverlaysFixture,
   notificationFeedbackFixture,
+  energymapVentilationControlsFixture,
 ]
 
 export const getComponentFixtures = () => componentFixtures
