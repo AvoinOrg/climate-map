@@ -1,6 +1,6 @@
 import React from 'react'
 import '@testing-library/jest-dom'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 
 import { AppThemeProvider } from '#/common/style/theme'
 import {
@@ -159,6 +159,57 @@ const renderView = ({
 }
 
 describe('BuildingInfoProvenanceView', () => {
+  it.each(['fi', 'en'])(
+    'renders property-specific Ryhti evidence only when available (%s)',
+    (locale) => {
+      const result = deriveResult({
+        properties: { property_identifier: '09102000040003' },
+        locale,
+      })
+      const view = renderView({ result })
+      const item = screen.getByTestId('building-info-provenance-item')
+      expect(item).toHaveAttribute(
+        'data-provenance-item-id',
+        'buildingDetails/identity/row/propertyIdentifier'
+      )
+      for (const key of [
+        'fields.property_identifier',
+        'inputs.property_identifier',
+        'categories.building_registry',
+        'sources.ryhti_building_data',
+        'providers.ryhti',
+      ]) {
+        expect(item).toHaveTextContent(
+          `sidebar.building_info.provenance.${key}`
+        )
+      }
+      view.unmount()
+      renderView({
+        result: deriveResult({
+          properties: {
+            permanent_building_identifier: '101614422K',
+            property_identifier: '00000000000000',
+          },
+          locale,
+        }),
+      })
+      const region = screen.getByTestId('building-info-provenance-view')
+      expect(
+        within(region).queryByText(
+          'sidebar.building_info.provenance.fields.property_identifier'
+        )
+      ).not.toBeInTheDocument()
+      expect(
+        within(region).queryByText(
+          'sidebar.building_info.provenance.inputs.property_identifier'
+        )
+      ).not.toBeInTheDocument()
+      expect(region).toHaveTextContent(
+        'sidebar.building_info.provenance.sources.ryhti_building_data'
+      )
+    }
+  )
+
   it('renders every resolved item in read-model order with returned relationships', () => {
     const result = deriveResult()
     if (result.status !== 'resolved') {

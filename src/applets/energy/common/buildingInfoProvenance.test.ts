@@ -50,6 +50,7 @@ const createSelectedBuilding = (
 const completeDistrictHeatingProperties = {
   building_key: 'complete-provenance-building',
   permanent_building_identifier: '101614422K',
+  property_identifier: '09102000040003',
   address_fin: 'Mikkolantie 34a',
   postal_code: '00640',
   postal_office_fin: 'HELSINKI',
@@ -270,6 +271,50 @@ const getTranslation = (translations: unknown, key: string): unknown =>
   }, translations)
 
 describe('Energiakartta building-info provenance catalog', () => {
+  it('resolves the location property as a direct Ryhti registry fact only', () => {
+    const candidate = getCandidate({
+      panels: createPanels({ property_identifier: '09102000040003' }),
+      id: ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.PROPERTY_IDENTIFIER,
+    })
+    expect(candidate.sourceProperties).toEqual(['property_identifier'])
+    const resolution = resolveCandidate(candidate)
+    expect(resolution.status).toBe('resolved')
+    if (resolution.status !== 'resolved')
+      throw new Error('Expected property provenance')
+    expect(resolution.definition.fieldKey).toBe(
+      'sidebar.building_info.provenance.fields.property_identifier'
+    )
+    expect(resolution.definition.categoryId).toBe('buildingRegistry')
+    expect(resolution.sources.map(({ id }) => id)).toEqual(['ryhtiBuildingData'])
+    expect(resolution.providers.map(({ id }) => id)).toEqual(['ryhti'])
+    expect(resolution.calculations).toEqual([])
+    expect(resolution.metadata).toEqual({ descriptors: [] })
+    expect(resolution.inputs).toEqual([
+      expect.objectContaining({
+        id: ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.RYHTI_PROPERTY_IDENTIFIER,
+        role: 'source-field',
+        sourceProperty: 'property_identifier',
+        sourceId: 'ryhtiBuildingData',
+        providerIds: ['ryhti'],
+        labelKey: 'sidebar.building_info.provenance.inputs.property_identifier',
+      }),
+    ])
+    for (const mismatch of [
+      { ...candidate, sourceProperties: ['permanent_building_identifier'] },
+      {
+        ...candidate,
+        provenance: {
+          id: ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.PROPERTY_IDENTIFIER,
+          inputIds: [
+            ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.RYHTI_BUILDING_IDENTIFIER,
+          ],
+        },
+      },
+    ]) {
+      expect(resolveCandidate(mismatch).status).toBe('unsupported')
+    }
+  })
+
   it('has unique stable identities and internally resolvable evidence variants', () => {
     const declaredIds = Object.values(ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS)
     const catalogEntries = Object.entries(

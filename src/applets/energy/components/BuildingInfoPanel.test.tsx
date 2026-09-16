@@ -1,6 +1,7 @@
 import React from 'react'
 import '@testing-library/jest-dom'
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -762,6 +763,122 @@ describe('BuildingInfoPanel', () => {
   beforeEach(() => {
     mockIsMobile = false
     resetUIStore()
+  })
+
+  it.each([false, true])(
+    'keeps property identity and provenance current (mobile=%s)',
+    async (forceMobileLayout) => {
+      const createPropertyPanels = (
+        propertyIdentifier: unknown,
+        locale = 'en'
+      ) =>
+        createCatalogValidPanels({
+          properties: {
+            building_key: 'property',
+            permanent_building_identifier: '101614422K',
+            property_identifier: propertyIdentifier,
+          },
+          locale,
+        })
+      const view = renderBuildingInfoTabs({
+        panels: createPropertyPanels('09102000040003'),
+        panelKey: 'a',
+        forceMobileLayout,
+      })
+      const ordinary = await screen.findByTestId('building-info-tab-page-basic')
+      expect(
+        within(ordinary).getAllByText(
+          'sidebar.building_info.panels.building.rows.property_identifier'
+        )
+      ).toHaveLength(1)
+      expect(within(ordinary).getByText('09102000040003')).toBeVisible()
+      expect(within(ordinary).getByText('101614422K')).toBeVisible()
+      expect(
+        within(ordinary)
+          .getByText('09102000040003')
+          .closest('button, a, [tabindex]')
+      ).toBeNull()
+      const openName = 'sidebar.building_info.provenance.view.open'
+      const fieldKey =
+        'sidebar.building_info.provenance.fields.property_identifier'
+      const open = async () => {
+        const trigger = screen.getByRole('button', { name: openName })
+        act(() => trigger.focus())
+        fireEvent.click(trigger, { detail: 0 })
+        await waitFor(() =>
+          expect(
+            screen.getByTestId('building-info-provenance-heading')
+          ).toHaveFocus()
+        )
+        expect(trigger).toHaveAttribute('aria-expanded', 'true')
+        return trigger
+      }
+      let trigger = await open()
+      expect(
+        screen.getByTestId('building-info-provenance-view')
+      ).toHaveTextContent(fieldKey)
+      view.rerenderBuildingInfoTabs({
+        panels: createPropertyPanels('09102000040003', 'fi'),
+        panelKey: 'a',
+        locale: 'fi',
+      })
+      expect(
+        screen.getByTestId('building-info-provenance-view')
+      ).toHaveAttribute('data-summary-locale', 'fi')
+      expect(trigger).toHaveAttribute('aria-expanded', 'true')
+      fireEvent.keyDown(document, { key: 'Escape' })
+      await waitFor(() => expect(trigger).toHaveFocus())
+      expect(trigger).toHaveAttribute('aria-expanded', 'false')
+      await open()
+      for (const [panelKey, value] of [
+        ['b', undefined],
+        ['c', '26044100030032'],
+        ['d', '00000000000000'],
+        ['a', '09102000040003'],
+      ]) {
+        view.rerenderBuildingInfoTabs({
+          panels: createPropertyPanels(value),
+          panelKey,
+          locale: 'en',
+        })
+        trigger = screen.getByRole('button', { name: openName })
+        expect(trigger).toHaveAttribute('aria-expanded', 'false')
+        const ordinaryPage = screen.getByTestId('building-info-tab-page-basic')
+        const available =
+          typeof value === 'string' && value !== '00000000000000'
+        expect(
+          within(ordinaryPage).queryAllByText(
+            'sidebar.building_info.panels.building.rows.property_identifier'
+          )
+        ).toHaveLength(available ? 1 : 0)
+        if (available)
+          expect(within(ordinaryPage).getByText(value!)).toBeVisible()
+        await open()
+        const region = screen.getByTestId('building-info-provenance-view')
+        expect(within(region).queryAllByText(fieldKey)).toHaveLength(
+          available ? 1 : 0
+        )
+        expect(region).not.toHaveTextContent('00000000000000')
+      }
+    }
+  )
+
+  it('renders property-only building details without an empty energy companion', async () => {
+    renderBuildingInfoTabs({
+      panels: createCatalogValidPanels({
+        properties: { property_identifier: '00000000000001' },
+      }),
+    })
+    const page = await screen.findByTestId('building-info-tab-page-basic')
+    expect(within(page).getByText('00000000000001')).toBeVisible()
+    expect(
+      within(page).queryByTestId('building-info-panel-energyConsumption')
+    ).not.toBeInTheDocument()
+    expect(
+      within(page).queryByText(
+        'sidebar.building_info.panels.building.rows.building_identifier'
+      )
+    ).not.toBeInTheDocument()
   })
 
   it.each([

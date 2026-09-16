@@ -2239,6 +2239,34 @@ const getStringValue = ({
   })
 }
 
+const getPropertyIdentifierValue = (
+  properties: EnergymapSelectedBuilding['properties']
+): EnergymapBuildingInfoValue => {
+  const value = properties.property_identifier
+  const sourceProperties = ['property_identifier']
+
+  // Registry identifiers are opaque: never trim, coerce, or lose leading zeroes.
+  if (
+    typeof value !== 'string' ||
+    value.length !== 14 ||
+    !/^[0-9]{14}$/.test(value) ||
+    value === '00000000000000'
+  ) {
+    return missingValue({ sourceProperties })
+  }
+
+  return realValue({
+    text: plainText(value),
+    sourceProperties,
+    provenance: {
+      id: ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.PROPERTY_IDENTIFIER,
+      inputIds: [
+        ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.RYHTI_PROPERTY_IDENTIFIER,
+      ],
+    },
+  })
+}
+
 const getMeasurementValue = ({
   properties,
   propertyName,
@@ -3411,6 +3439,11 @@ const createBuildingDetailsPanel = ({
               ],
             },
           }),
+        }),
+        row({
+          id: 'propertyIdentifier',
+          labelKey: key('panels.building.rows.property_identifier'),
+          value: getPropertyIdentifierValue(properties),
         }),
         row({
           id: 'constructionYear',

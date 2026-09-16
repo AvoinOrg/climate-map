@@ -103,6 +103,23 @@ const certificateBuilding = ({
 }
 
 describe('deriveEnergymapBuildingInfoPanelTopology', () => {
+  it('creates a single basic tab for property-only identity', () => {
+    const panels = createEnergymapBuildingInfoPanels({
+      selectedBuilding: {
+        ...certificateBuilding(),
+        properties: { property_identifier: '00000000000001' },
+      },
+      locale: 'fi',
+    })
+    const topology = deriveEnergymapBuildingInfoPanelTopology(panels)
+    expect(topology.hasTabRail).toBe(false)
+    expect(topology.availableTabs).toHaveLength(1)
+    expect(topology.availableTabs[0]).toMatchObject({
+      id: 'basic',
+      panels: [{ id: 'buildingDetails' }],
+    })
+  })
+
   it('returns no tabs for absent, empty, or structurally empty panels', () => {
     expect(
       deriveEnergymapBuildingInfoPanelTopology(null).availableTabs

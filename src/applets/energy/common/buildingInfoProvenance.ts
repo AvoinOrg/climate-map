@@ -155,6 +155,7 @@ const ENERGYMAP_BUILDING_INFO_CATALOG_PROVENANCE_IDS = {
     'renovationRecommendations.scenarioComparison.scenario.windows.savingsPercent',
   BUILDING_ADDRESS: 'buildingDetails.buildingSubheader.row.address',
   BUILDING_IDENTIFIER: 'buildingDetails.identity.row.buildingIdentifier',
+  PROPERTY_IDENTIFIER: 'buildingDetails.identity.row.propertyIdentifier',
   CONSTRUCTION_YEAR: 'buildingDetails.identity.row.constructionYear',
   BUILDING_TYPE: 'buildingDetails.identity.row.buildingType',
   ENERGY_CLASS_OFFICIAL:
@@ -465,6 +466,7 @@ const STATIC_INPUT_IDS = {
   RYHTI_POSTAL_CODE: 'sourceField.ryhti.postalCode',
   RYHTI_POSTAL_OFFICE: 'sourceField.ryhti.postalOffice',
   RYHTI_BUILDING_IDENTIFIER: 'sourceField.ryhti.buildingIdentifier',
+  RYHTI_PROPERTY_IDENTIFIER: 'sourceField.ryhti.propertyIdentifier',
   RYHTI_COMPLETION_DATE: 'sourceField.ryhti.completionDate',
   RYHTI_BUILDING_TYPE: 'sourceField.ryhti.buildingType',
   RYHTI_HEATING_SOURCE: 'sourceField.ryhti.heatingSource',
@@ -854,6 +856,14 @@ const staticInputDefinitions: readonly EnergymapBuildingInfoProvenanceInputDefin
       sourceId: 'ryhtiBuildingData',
       providerIds: ['ryhti'],
       sourceProperty: 'permanent_building_identifier',
+    }),
+    inputDefinition({
+      id: STATIC_INPUT_IDS.RYHTI_PROPERTY_IDENTIFIER,
+      role: 'source-field',
+      label: 'property_identifier',
+      sourceId: 'ryhtiBuildingData',
+      providerIds: ['ryhti'],
+      sourceProperty: 'property_identifier',
     }),
     inputDefinition({
       id: STATIC_INPUT_IDS.RYHTI_COMPLETION_DATE,
@@ -2707,6 +2717,19 @@ export const ENERGYMAP_BUILDING_INFO_PROVENANCE_CATALOG = {
       evidenceVariant({
         inputIds: [I.RYHTI_BUILDING_IDENTIFIER],
         sourceProperties: ['permanent_building_identifier'],
+      }),
+    ],
+  }),
+  [IDS.PROPERTY_IDENTIFIER]: defineCatalogEntry({
+    id: IDS.PROPERTY_IDENTIFIER,
+    fieldKey: provenanceKey('fields.property_identifier'),
+    categoryId: 'buildingRegistry',
+    sourceIds: ['ryhtiBuildingData'],
+    providerIds: ['ryhti'],
+    evidenceVariants: [
+      evidenceVariant({
+        inputIds: [I.RYHTI_PROPERTY_IDENTIFIER],
+        sourceProperties: ['property_identifier'],
       }),
     ],
   }),

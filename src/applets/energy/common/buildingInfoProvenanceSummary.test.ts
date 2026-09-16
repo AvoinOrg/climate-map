@@ -296,6 +296,81 @@ const COMPLETE_ITEM_SEQUENCE = [
 ] as const
 
 describe('Energiakartta building-info provenance summary', () => {
+  it.each(['fi', 'en'])(
+    'includes only the current available property evidence in %s',
+    (locale) => {
+      const id = ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.PROPERTY_IDENTIFIER
+      const inputId =
+        ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.RYHTI_PROPERTY_IDENTIFIER
+      for (const property_identifier of [
+        '09102000040003',
+        undefined,
+        '00000000000000',
+        '26044100030032',
+        '09102000040003',
+      ]) {
+        const available =
+          typeof property_identifier === 'string' &&
+          property_identifier !== '00000000000000'
+        const summary = deriveSummary({
+          properties: {
+            permanent_building_identifier: '101614422K',
+            property_identifier,
+          },
+          locale,
+        })
+        expect(summary.locale).toBe(locale)
+        const items = summary.items.filter(
+          ({ provenanceId }) => provenanceId === id
+        )
+        expect(items).toHaveLength(available ? 1 : 0)
+        expect(summary.inputs.filter(({ id }) => id === inputId)).toHaveLength(
+          available ? 1 : 0
+        )
+        const source = summary.sources.find(
+          ({ id }) => id === 'ryhtiBuildingData'
+        )!
+        const provider = summary.providers.find(({ id }) => id === 'ryhti')!
+        expect(source.itemIds).toHaveLength(available ? 2 : 1)
+        expect(provider.itemIds).toEqual(source.itemIds)
+        expect(source.directValueItemIds).toEqual(source.itemIds)
+        if (available) {
+          expect(items[0]).toMatchObject({
+            id: 'buildingDetails/identity/row/propertyIdentifier',
+            categoryId: 'buildingRegistry',
+            valueSourceIds: ['ryhtiBuildingData'],
+            valueProviderIds: ['ryhti'],
+            selectedEvidenceInputIds: [inputId],
+            calculationIds: [],
+            metadataIds: [],
+          })
+          expect(
+            summary.inputs.find(({ id }) => id === inputId)
+              ?.selectedEvidenceItemIds
+          ).toEqual([items[0].id])
+        }
+      }
+      const propertyOnly = deriveSummary({
+        properties: { property_identifier: '00000000000001' },
+        locale,
+      })
+      expect(propertyOnly.items).toHaveLength(1)
+      expect(propertyOnly.sources[0].directValueItemIds).toEqual([
+        propertyOnly.items[0].id,
+      ])
+      expect(deriveSummary({ properties: {}, locale })).toEqual({
+        locale,
+        items: [],
+        categories: [],
+        sources: [],
+        providers: [],
+        calculations: [],
+        inputs: [],
+        metadata: [],
+      })
+    }
+  )
+
   it('visits the complete normalized graph in fixed model order', () => {
     const summary = deriveSummary()
 

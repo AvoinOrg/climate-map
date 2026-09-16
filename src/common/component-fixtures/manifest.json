@@ -625,6 +625,57 @@
     ],
     "states": [
       {
+        "id": "property-ordinary-fi",
+        "label": "Property ordinary FI",
+        "locale": "fi",
+        "description": "Registry location property in the FI ordinary view.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "property-provenance-fi",
+        "label": "Property provenance FI",
+        "locale": "fi",
+        "description": "Registry location property in the FI provenance view.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "property-ordinary-en",
+        "label": "Property ordinary EN",
+        "locale": "en",
+        "description": "Registry location property in the EN ordinary view.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "property-provenance-en",
+        "label": "Property provenance EN",
+        "locale": "en",
+        "description": "Registry location property in the EN provenance view.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "property-only",
+        "label": "Property-only identity",
+        "description": "A property identifier alone makes building details available."
+      },
+      {
+        "id": "property-selection-reset",
+        "label": "Property selection reset",
+        "description": "Open property provenance resets when replaced by a building without property data.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "property-ordinary-mobile",
+        "label": "Property ordinary mobile",
+        "description": "Property identifier in the forced mobile building details.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "property-provenance-mobile",
+        "label": "Property provenance mobile",
+        "description": "Property provenance in the forced mobile information view.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
         "id": "desktop-basic",
         "label": "Desktop basic",
         "description": "Basic two-panel tab with metric controls.",

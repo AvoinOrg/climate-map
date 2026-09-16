@@ -467,7 +467,6 @@ describe('Energiakartta building info availability model', () => {
       )
     )
     for (const unsupportedRowId of [
-      'propertyIdentifier',
       'renovationRecommendations',
       'energyRecommendations',
       'energyClassMeasures',
@@ -1121,10 +1120,151 @@ describe('Energiakartta building info availability model', () => {
     expectAvailableGraph(panels)
   })
 
+  describe('registry location property identifier', () => {
+    it.each(['fi', 'en'])('preserves valid opaque strings in %s', (locale) => {
+      for (const value of [
+        '09102000040003',
+        '26044100030032',
+        '00000000000001',
+      ]) {
+        const properties = Object.freeze({
+          building_key: '213215b0-b333-4275-9400-9bcb087aba8d',
+          permanent_building_identifier: '101614422K',
+          address_fin: 'Testitie 1',
+          property_identifier: value,
+        })
+        const panels = createEnergymapBuildingInfoPanels({
+          selectedBuilding: createSelectedBuilding(properties),
+          locale,
+        }) as EnergymapBuildingInfoPanel[]
+        const building = getPanel(panels, 'buildingDetails')
+        expect(
+          getSection(building, 'identity').rows?.map(({ id }) => id)
+        ).toEqual(['buildingIdentifier', 'propertyIdentifier'])
+        expect(getRow(building, 'propertyIdentifier')).toEqual({
+          id: 'propertyIdentifier',
+          label: translation(
+            'sidebar.building_info.panels.building.rows.property_identifier'
+          ),
+          status: 'real',
+          text: plain(value),
+          sourceProperties: ['property_identifier'],
+          provenance: {
+            id: ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.PROPERTY_IDENTIFIER,
+            inputIds: [
+              ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.RYHTI_PROPERTY_IDENTIFIER,
+            ],
+          },
+        })
+        expectPlainText(getRow(building, 'buildingIdentifier').text, '101614422K')
+        expect(properties.property_identifier).toBe(value)
+        expectAvailableGraph(panels)
+      }
+    })
+
+    it.each(
+      [
+        undefined,
+        null,
+        '',
+        '   ',
+        '00000000000000',
+        9102000040003,
+        true,
+        ['09102000040003'],
+        { value: '09102000040003' },
+        '0910200004000',
+        '091020000400030',
+        '091-416-0011-0023',
+        '0910200004000a',
+        '091020000400.3',
+        '+9102000040003',
+        '9.102000040e12',
+        '０９１０２００００４０００３',
+        ' 09102000040003',
+        '09102000040003 ',
+        '09102000040003\n',
+      ].map((value) => [value])
+    )('omits invalid value %p without hiding other facts', (value) => {
+      const properties = {
+        building_key: 'invalid-property',
+        property_identifier: value,
+      }
+      expect(
+        createEnergymapBuildingInfoPanels({
+          selectedBuilding: createSelectedBuilding(properties),
+          locale: 'en',
+        })
+      ).toEqual([])
+      const panels = createEnergymapBuildingInfoPanels({
+        selectedBuilding: createSelectedBuilding({
+          ...properties,
+          permanent_building_identifier: '101614422K',
+          address_fin: 'Testitie 1',
+        }),
+        locale: 'fi',
+      }) as EnergymapBuildingInfoPanel[]
+      expect(
+        getRows(getPanel(panels, 'buildingDetails')).map(({ id }) => id)
+      ).toEqual(['address', 'buildingIdentifier'])
+      expectAvailableGraph(panels)
+    })
+
+    it('does not infer a property identifier from other identifiers', () => {
+      const panels = createEnergymapBuildingInfoPanels({
+        selectedBuilding: createSelectedBuilding({
+          building_key: '09102000040003',
+          permanent_building_identifier: '09102000040003',
+          address_fin: '09102000040003',
+          parcel_identifier: '09102000040003',
+        }),
+        locale: 'en',
+      }) as EnergymapBuildingInfoPanel[]
+      expect(
+        findRow(getPanel(panels, 'buildingDetails'), 'propertyIdentifier')
+      ).toBeUndefined()
+    })
+
+    it('supports property-only identity and rederives each selected building', () => {
+      for (const [building_key, property_identifier] of [
+        ['a', '09102000040003'],
+        ['b', undefined],
+        ['b', '00000000000000'],
+        ['c', '26044100030032'],
+        ['a', '09102000040003'],
+      ]) {
+        const panels = createEnergymapBuildingInfoPanels({
+          selectedBuilding: createSelectedBuilding({
+            building_key,
+            property_identifier,
+          }),
+          locale: 'fi',
+        }) as EnergymapBuildingInfoPanel[]
+        if (building_key === 'b') {
+          expect(panels).toEqual([])
+        } else {
+          expect(panels.map(({ id }) => id)).toEqual(['buildingDetails'])
+          expect(panels[0].sections.map(({ id }) => id)).toEqual(['identity'])
+          expect(panels[0].sections[0].rows?.map(({ id }) => id)).toEqual([
+            'propertyIdentifier',
+          ])
+          expect(getRow(panels[0], 'propertyIdentifier').text).toEqual(
+            plain(property_identifier!)
+          )
+        }
+      }
+      expect(
+        createEnergymapBuildingInfoPanels({
+          selectedBuilding: null,
+          locale: 'en',
+        })
+      ).toBeNull()
+    })
+  })
+
   it('ignores raw properties for deliberately unsupported fields', () => {
     const properties = {
       building_key: 'unsupported-raw-fields',
-      property_identifier: '091-416-0011-0023',
       renovation_recommendations: 'raw renovation recommendation',
       energy_recommendations: 'raw energy recommendation',
       energy_class_measures: 'raw class measures',
@@ -1140,7 +1280,6 @@ describe('Energiakartta building info availability model', () => {
     })
 
     expect(panels).toEqual([])
-    expect(JSON.stringify(panels)).not.toContain('091-416-0011-0023')
     expect(JSON.stringify(panels)).not.toContain('raw planned measures')
   })
 

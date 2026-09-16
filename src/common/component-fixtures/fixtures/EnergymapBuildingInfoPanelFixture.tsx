@@ -78,6 +78,8 @@ type ProvenanceFixtureVariant =
   | 'modeled'
   | 'originUnknown'
   | 'waterOnly'
+  | 'property'
+  | 'propertyOnly'
 
 type CertificateFixtureVariant =
   | 'reported'
@@ -324,28 +326,33 @@ const createProvenanceFixturePanels = ({
 }) => {
   const isReplacementBuilding = buildingKey === 'fixture-building-b'
   const properties: EnergymapSelectedBuilding['properties'] =
-    variant === 'waterOnly'
-      ? {
-          building_key: buildingKey,
-          floor_area: 100,
-          distr_default_total: null,
-        }
-      : {
-          ...provenanceCompleteProperties,
-          building_key: buildingKey,
-          ...(isReplacementBuilding
-            ? {
-                permanent_building_identifier: '101614423L',
-                address_fin: 'Mikkolantie 35',
-                energy_class: 'E',
-              }
-            : {}),
-          ...(variant === 'modeled'
-            ? { is_energy_class_modeled: true }
-            : variant === 'originUnknown'
-              ? { is_energy_class_modeled: 'true' }
-              : { is_energy_class_modeled: false }),
-        }
+    variant === 'propertyOnly'
+      ? { building_key: buildingKey, property_identifier: '00000000000001' }
+      : variant === 'waterOnly'
+        ? {
+            building_key: buildingKey,
+            floor_area: 100,
+            distr_default_total: null,
+          }
+        : {
+            ...provenanceCompleteProperties,
+            ...(variant === 'property' && !isReplacementBuilding
+              ? { property_identifier: '09102000040003' }
+              : {}),
+            building_key: buildingKey,
+            ...(isReplacementBuilding
+              ? {
+                  permanent_building_identifier: '101614423L',
+                  address_fin: 'Mikkolantie 35',
+                  energy_class: 'E',
+                }
+              : {}),
+            ...(variant === 'modeled'
+              ? { is_energy_class_modeled: true }
+              : variant === 'originUnknown'
+                ? { is_energy_class_modeled: 'true' }
+                : { is_energy_class_modeled: false }),
+          }
   const normalizedBuildingKey = String(properties.building_key)
   const panels = createEnergymapBuildingInfoPanels({
     selectedBuilding: {
@@ -1648,6 +1655,117 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
     justifyContent: 'flex-start',
   },
   states: [
+    {
+      id: 'property-ordinary-fi',
+      label: 'Property ordinary FI',
+      locale: 'fi',
+      description: 'Registry location property in the FI ordinary view.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          locale="fi"
+          provenanceVariant="property"
+          interaction="building-details"
+        />
+      ),
+    },
+    {
+      id: 'property-provenance-fi',
+      label: 'Property provenance FI',
+      locale: 'fi',
+      description: 'Registry location property in the FI provenance view.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          locale="fi"
+          provenanceVariant="propertyOnly"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'property-ordinary-en',
+      label: 'Property ordinary EN',
+      locale: 'en',
+      description: 'Registry location property in the EN ordinary view.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          locale="en"
+          provenanceVariant="property"
+          interaction="building-details"
+        />
+      ),
+    },
+    {
+      id: 'property-provenance-en',
+      label: 'Property provenance EN',
+      locale: 'en',
+      description: 'Registry location property in the EN provenance view.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          locale="en"
+          provenanceVariant="propertyOnly"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'property-only',
+      label: 'Property-only identity',
+      description:
+        'A property identifier alone makes building details available.',
+      render: () => (
+        <BuildingInfoPanelFixtureState provenanceVariant="propertyOnly" />
+      ),
+    },
+    {
+      id: 'property-selection-reset',
+      label: 'Property selection reset',
+      description:
+        'Open property provenance resets when replaced by a building without property data.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="property"
+          interaction="provenance-building-change"
+        />
+      ),
+    },
+    {
+      id: 'property-ordinary-mobile',
+      label: 'Property ordinary mobile',
+      description: 'Property identifier in the forced mobile building details.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="property"
+          forceMobileLayout
+          interaction="building-details"
+        />
+      ),
+    },
+    {
+      id: 'property-provenance-mobile',
+      label: 'Property provenance mobile',
+      description: 'Property provenance in the forced mobile information view.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="propertyOnly"
+          forceMobileLayout
+          interaction="provenance-open"
+        />
+      ),
+    },
     {
       id: 'desktop-basic',
       label: 'Desktop basic',
