@@ -17,6 +17,7 @@ import {
 import { ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID } from '../layers/buildingPolygonsLayerConf'
 import { ENERGYMAP_ENERGY_CERTIFICATE_LAYER_GROUP_ID } from '../layers/energyCertificateLayerConf'
 import { ENERGYMAP_HEATING_LAYER_GROUP_ID } from '../layers/heatingLayerConf'
+import { ENERGYMAP_VENTILATION_LAYER_GROUP_ID } from '../layers/ventilationLayerConf'
 
 const getListedLayerGroupIndex = (layerGroupId: string) =>
   listedLayerGroups.findIndex((layerGroup) => layerGroup.id === layerGroupId)
@@ -61,6 +62,7 @@ describe('Energiakartta listed layer groups', () => {
     expect(ENERGYMAP_MAIN_LAYER_GROUP_IDS).toEqual([
       ENERGYMAP_ENERGY_CERTIFICATE_LAYER_GROUP_ID,
       ENERGYMAP_HEATING_LAYER_GROUP_ID,
+      ENERGYMAP_VENTILATION_LAYER_GROUP_ID,
     ])
     expect(ENERGYMAP_MAIN_LAYER_GROUP_IDS).not.toContain(
       ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID
@@ -77,6 +79,7 @@ describe('Energiakartta listed layer groups', () => {
       ENERGYMAP_ENERGY_CERTIFICATE_LAYER_GROUP_ID
     )
     expect(layerBackedIds).not.toContain(ENERGYMAP_HEATING_LAYER_GROUP_ID)
+    expect(layerBackedIds).not.toContain(ENERGYMAP_VENTILATION_LAYER_GROUP_ID)
   })
 
   it('keeps cadastral rows below and outside the building filter accordion', () => {

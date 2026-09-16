@@ -7,10 +7,7 @@ import { useIsMobile } from '#/common/hooks/ui/useIsMobile'
 import { useAppParams } from '#/common/navigation/navigation'
 import { Box } from '#/common/style/theme'
 import { useMapStore, useUIStore } from '#/common/store'
-import {
-  LayerToggleRow,
-  LayerToggleRowAccordion,
-} from '#/components/common/LayerToggleRow'
+import { LayerToggleRowAccordion } from '#/components/common/LayerToggleRow'
 import AppTooltip, { type AppTooltipSide } from '#/components/common/AppTooltip'
 import SquishedSwitchWithLabel from '#/components/common/SquishedSwitchWithLabel'
 import TText from '#/components/common/TText'
@@ -48,6 +45,10 @@ import {
   toEnergymapSelectedBuilding,
 } from '../common/utils'
 import {
+  ENERGYMAP_VENTILATION_CATEGORY_VALUES,
+  type EnergymapVentilationCategory,
+} from '../common/ventilation'
+import {
   ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID,
   ENERGYMAP_BUILDING_POLYGONS_LAYER_IDS,
   ENERGYMAP_SHARED_BUILDING_LAYER_IDS,
@@ -72,6 +73,15 @@ import {
   HeatingEnergySourceFilterKey,
   getHeatingEnergySourceFilter,
 } from '../layers/heatingLayerConf'
+import {
+  ENERGYMAP_VENTILATION_FILL_LAYER_ID,
+  ENERGYMAP_VENTILATION_FILL_OPACITY,
+  ENERGYMAP_VENTILATION_LAYER_IDS,
+  ENERGYMAP_VENTILATION_OUTLINE_LAYER_ID,
+  ENERGYMAP_VENTILATION_OUTLINE_OPACITY,
+  VENTILATION_CATEGORY_COLORS,
+  getVentilationCategoryFilter,
+} from '../layers/ventilationLayerConf'
 import { listedBackgroundBuildingFiltersAccordion } from '../common/constants'
 import { useAppletStore } from '../state/appletStore'
 
@@ -132,18 +142,33 @@ const INITIAL_HEATING_SWITCH_STATE = HEATING_SWITCH_ITEMS.reduce(
   {} as HeatingSwitchState
 )
 
-const LOWER_DISABLED_LAYER_ROWS = [
-  {
-    keyName: 'sidebar.front_page.layers.ventilation',
-    ariaKeyName: 'sidebar.front_page.aria.ventilation_upcoming',
-  },
-] as const
+const VENTILATION_SWITCH_ITEMS = ENERGYMAP_VENTILATION_CATEGORY_VALUES.map(
+  (category) => ({
+    id: category,
+    keyName: `sidebar.front_page.ventilation.legend.${category}`,
+    color: VENTILATION_CATEGORY_COLORS[category],
+  })
+)
 
-type EnergymapMainThematicMode = 'energyCertificates' | 'heating'
+type VentilationSwitchState = Record<EnergymapVentilationCategory, boolean>
+
+const INITIAL_VENTILATION_SWITCH_STATE = VENTILATION_SWITCH_ITEMS.reduce(
+  (state, { id }) => ({
+    ...state,
+    [id]: true,
+  }),
+  {} as VentilationSwitchState
+)
+
+type EnergymapMainThematicMode =
+  | 'energyCertificates'
+  | 'heating'
+  | 'ventilation'
 
 const ENERGY_CERTIFICATE_THEMATIC_MODE: EnergymapMainThematicMode =
   'energyCertificates'
 const HEATING_THEMATIC_MODE: EnergymapMainThematicMode = 'heating'
+const VENTILATION_THEMATIC_MODE: EnergymapMainThematicMode = 'ventilation'
 const INACTIVE_THEMATIC_OPACITY = 0
 const PolymorphicBox = Box as React.ElementType
 
@@ -368,6 +393,81 @@ const HeatingAccordionContent = ({
   )
 }
 
+const VentilationAccordionContent = ({
+  ventilationSwitchState,
+  onVentilationSwitchChange,
+}: {
+  ventilationSwitchState: VentilationSwitchState
+  onVentilationSwitchChange: (
+    id: EnergymapVentilationCategory
+  ) => React.ChangeEventHandler<HTMLInputElement>
+}) => {
+  const { t } = useTranslate('energiakartta')
+
+  return (
+    <Box
+      sx={{
+        pt: '2.125rem',
+        mx: '2rem',
+        maxWidth: '15.875rem',
+      }}
+    >
+      <Box
+        component="p"
+        sx={{
+          ...ACCORDION_TEXT_SX,
+          m: 0,
+          mb: '2.5rem',
+        }}
+      >
+        <TText
+          keyName="sidebar.front_page.ventilation.body"
+          ns="energiakartta"
+        />
+      </Box>
+      <Box
+        component="ul"
+        sx={{
+          m: 0,
+          p: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1.25rem',
+          listStyle: 'none',
+        }}
+      >
+        {VENTILATION_SWITCH_ITEMS.map(({ id, keyName, color }) => (
+          <Box
+            key={id}
+            component="li"
+            sx={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              minHeight: '0.875rem',
+            }}
+          >
+            <SquishedSwitchWithLabel
+              checked={ventilationSwitchState[id]}
+              checkedTrackColor={color}
+              ariaLabel={t(keyName)}
+              onChange={onVentilationSwitchChange(id)}
+              sx={{ width: '100%' }}
+              labelSx={{
+                ...ACCORDION_TEXT_SX,
+                fontSize: '0.6875rem',
+                lineHeight: '0.875rem',
+              }}
+            >
+              <TText keyName={keyName} ns="energiakartta" />
+            </SquishedSwitchWithLabel>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  )
+}
+
 type EnergyHomePageProps = {
   locale?: string
 }
@@ -431,6 +531,9 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
   const [heatingSwitchState, setHeatingSwitchState] = React.useState(
     INITIAL_HEATING_SWITCH_STATE
   )
+  const [ventilationSwitchState, setVentilationSwitchState] = React.useState(
+    INITIAL_VENTILATION_SWITCH_STATE
+  )
   const [activeThematicMode, setActiveThematicMode] =
     React.useState<EnergymapMainThematicMode | null>(null)
   const [buildingInfoShellState, setBuildingInfoShellState] =
@@ -451,6 +554,18 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
     () => getHeatingEnergySourceFilter(activeHeatingFilterKeys),
     [activeHeatingFilterKeys]
   )
+  const activeVentilationCategories =
+    React.useMemo<EnergymapVentilationCategory[]>(
+      () =>
+        VENTILATION_SWITCH_ITEMS.filter(
+          ({ id }) => ventilationSwitchState[id]
+        ).map(({ id }) => id),
+      [ventilationSwitchState]
+    )
+  const ventilationFilter = React.useMemo(
+    () => getVentilationCategoryFilter(activeVentilationCategories),
+    [activeVentilationCategories]
+  )
   const buildingFilter = React.useMemo(
     () =>
       getEnergymapBuildingFilter({
@@ -469,6 +584,10 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
   const combinedHeatingFilter = React.useMemo(
     () => combineMapFilters([buildingFilter, heatingFilter]),
     [buildingFilter, heatingFilter]
+  )
+  const combinedVentilationFilter = React.useMemo(
+    () => combineMapFilters([buildingFilter, ventilationFilter]),
+    [buildingFilter, ventilationFilter]
   )
   const selectedEnergymapBuilding = React.useMemo(
     () =>
@@ -522,6 +641,9 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
   const isHeatingLayerVisible =
     isSharedBuildingLayerGroupVisible &&
     activeThematicMode === HEATING_THEMATIC_MODE
+  const isVentilationLayerVisible =
+    isSharedBuildingLayerGroupVisible &&
+    activeThematicMode === VENTILATION_THEMATIC_MODE
   const isEnergyCertificateLayerVisible =
     isSharedBuildingLayerGroupVisible &&
     activeThematicMode === ENERGY_CERTIFICATE_THEMATIC_MODE
@@ -532,6 +654,9 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
     'sidebar.front_page.aria.toggle_energy_classes'
   )
   const toggleHeatingAria = t('sidebar.front_page.aria.toggle_heating')
+  const toggleVentilationAria = t(
+    'sidebar.front_page.aria.toggle_ventilation'
+  )
   const footerLabel = t('sidebar.front_page.footer.edit_building_details')
   const buildingInfoAriaLabels = React.useMemo(
     () => ({
@@ -563,6 +688,16 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
     (id: HeatingSwitchKey): React.ChangeEventHandler<HTMLInputElement> =>
     (event) => {
       setHeatingSwitchState((currentState) => ({
+        ...currentState,
+        [id]: event.target.checked,
+      }))
+    }
+  const handleVentilationSwitchChange =
+    (
+      id: EnergymapVentilationCategory
+    ): React.ChangeEventHandler<HTMLInputElement> =>
+    (event) => {
+      setVentilationSwitchState((currentState) => ({
         ...currentState,
         [id]: event.target.checked,
       }))
@@ -758,12 +893,31 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
       return
     }
 
+    void Promise.all(
+      ENERGYMAP_VENTILATION_LAYER_IDS.map((layerId) =>
+        setFilter(layerId, combinedVentilationFilter)
+      )
+    )
+  }, [
+    combinedVentilationFilter,
+    isSharedBuildingLayerGroupRegistered,
+    setFilter,
+  ])
+
+  React.useEffect(() => {
+    if (!isSharedBuildingLayerGroupRegistered) {
+      return
+    }
+
     const energyCertificatesVisible =
       isSharedBuildingLayerGroupVisible &&
       activeThematicMode === ENERGY_CERTIFICATE_THEMATIC_MODE
     const heatingVisible =
       isSharedBuildingLayerGroupVisible &&
       activeThematicMode === HEATING_THEMATIC_MODE
+    const ventilationVisible =
+      isSharedBuildingLayerGroupVisible &&
+      activeThematicMode === VENTILATION_THEMATIC_MODE
 
     void Promise.all([
       ...ENERGYMAP_ENERGY_CERTIFICATE_LAYER_IDS.map((layerId) =>
@@ -806,6 +960,27 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
         'line-opacity',
         heatingVisible
           ? ENERGYMAP_HEATING_OUTLINE_OPACITY
+          : INACTIVE_THEMATIC_OPACITY
+      ),
+      ...ENERGYMAP_VENTILATION_LAYER_IDS.map((layerId) =>
+        setLayoutProperty(
+          layerId,
+          'visibility',
+          ventilationVisible ? 'visible' : 'none'
+        )
+      ),
+      setPaintProperty(
+        ENERGYMAP_VENTILATION_FILL_LAYER_ID,
+        'fill-opacity',
+        ventilationVisible
+          ? ENERGYMAP_VENTILATION_FILL_OPACITY
+          : INACTIVE_THEMATIC_OPACITY
+      ),
+      setPaintProperty(
+        ENERGYMAP_VENTILATION_OUTLINE_LAYER_ID,
+        'line-opacity',
+        ventilationVisible
+          ? ENERGYMAP_VENTILATION_OUTLINE_OPACITY
           : INACTIVE_THEMATIC_OPACITY
       ),
     ])
@@ -1006,25 +1181,26 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
                 onHeatingSwitchChange={handleHeatingSwitchChange}
               />
             </LayerToggleRowAccordion>
-            {LOWER_DISABLED_LAYER_ROWS.map(({ keyName, ariaKeyName }) => (
-              <PageTooltip key={keyName} title={upcomingTooltip}>
-                {(tooltipTriggerProps) => (
-                  <Box
-                    {...tooltipTriggerProps}
-                    component="span"
-                    sx={{ display: 'block', width: '100%' }}
-                  >
-                    <LayerToggleRow
-                      label={<TText keyName={keyName} ns="energiakartta" />}
-                      status="hidden"
-                      disabled
-                      ariaLabel={t(ariaKeyName)}
-                      onToggle={() => {}}
-                    />
-                  </Box>
-                )}
-              </PageTooltip>
-            ))}
+            <LayerToggleRowAccordion
+              applyNegativeMargins
+              label={
+                <TText
+                  keyName="sidebar.front_page.layers.ventilation"
+                  ns="energiakartta"
+                />
+              }
+              status={isVentilationLayerVisible ? 'visible' : 'hidden'}
+              expanded={isVentilationLayerVisible}
+              ariaLabel={toggleVentilationAria}
+              onToggle={() => {
+                void toggleThematicMode(VENTILATION_THEMATIC_MODE)
+              }}
+            >
+              <VentilationAccordionContent
+                ventilationSwitchState={ventilationSwitchState}
+                onVentilationSwitchChange={handleVentilationSwitchChange}
+              />
+            </LayerToggleRowAccordion>
           </Box>
         </Box>
       </SidebarContentBox>

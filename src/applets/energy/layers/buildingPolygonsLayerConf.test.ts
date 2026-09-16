@@ -13,6 +13,11 @@ import {
   ENERGYMAP_HEATING_LAYER_IDS,
   ENERGYMAP_HEATING_OUTLINE_LAYER_ID,
 } from './heatingLayerConf'
+import {
+  ENERGYMAP_VENTILATION_FILL_LAYER_ID,
+  ENERGYMAP_VENTILATION_LAYER_IDS,
+  ENERGYMAP_VENTILATION_OUTLINE_LAYER_ID,
+} from './ventilationLayerConf'
 import energymapBuildingPolygonsLayerConf, {
   ENERGYMAP_BUILDING_COMPLETION_DATE_PROPERTY,
   ENERGYMAP_BUILDING_POLYGONS_FILL_LAYER_ID,
@@ -213,7 +218,7 @@ describe('Energiakartta shared building polygon layer config', () => {
     )
   })
 
-  it('puts base, selected-highlight, energy certificate, and heating layers on the shared source-layer', async () => {
+  it('puts base, selected-highlight, and all thematic layers on the shared source-layer', async () => {
     const style = await getSharedBuildingStyle()
     const layerIds = style.layers.map((layer) => layer.id)
 
@@ -224,10 +229,14 @@ describe('Energiakartta shared building polygon layer config', () => {
       expect.arrayContaining(ENERGYMAP_ENERGY_CERTIFICATE_LAYER_IDS)
     )
     expect(layerIds).toEqual(expect.arrayContaining(ENERGYMAP_HEATING_LAYER_IDS))
+    expect(layerIds).toEqual(
+      expect.arrayContaining(ENERGYMAP_VENTILATION_LAYER_IDS)
+    )
     expect(ENERGYMAP_SHARED_BUILDING_LAYER_IDS).toEqual([
       ...ENERGYMAP_BUILDING_POLYGONS_LAYER_IDS,
       ...ENERGYMAP_ENERGY_CERTIFICATE_LAYER_IDS,
       ...ENERGYMAP_HEATING_LAYER_IDS,
+      ...ENERGYMAP_VENTILATION_LAYER_IDS,
     ])
 
     for (const layerId of ENERGYMAP_SHARED_BUILDING_LAYER_IDS) {
@@ -273,6 +282,18 @@ describe('Energiakartta shared building polygon layer config', () => {
     const heatingOutline = style.layers.find(
       (layer) => layer.id === ENERGYMAP_HEATING_OUTLINE_LAYER_ID
     ) as any
+    const ventilationFill = style.layers.find(
+      (layer) => layer.id === ENERGYMAP_VENTILATION_FILL_LAYER_ID
+    ) as {
+      layout?: { visibility?: string }
+      paint?: Record<string, unknown>
+    }
+    const ventilationOutline = style.layers.find(
+      (layer) => layer.id === ENERGYMAP_VENTILATION_OUTLINE_LAYER_ID
+    ) as {
+      layout?: { visibility?: string }
+      paint?: Record<string, unknown>
+    }
 
     expect(baseFill?.filter).toEqual(ENERGYMAP_BUILDING_MATCH_ALL_FILTER)
     expect(baseOutline?.filter).toEqual(ENERGYMAP_BUILDING_MATCH_ALL_FILTER)
@@ -280,6 +301,10 @@ describe('Energiakartta shared building polygon layer config', () => {
     expect(energyOutline?.paint?.['line-opacity']).toBe(0)
     expect(heatingFill?.paint?.['fill-opacity']).toBe(0)
     expect(heatingOutline?.paint?.['line-opacity']).toBe(0)
+    expect(ventilationFill?.paint?.['fill-opacity']).toBe(0)
+    expect(ventilationOutline?.paint?.['line-opacity']).toBe(0)
+    expect(ventilationFill?.layout?.visibility).toBe('none')
+    expect(ventilationOutline?.layout?.visibility).toBe('none')
   })
 
   it('opts the base fill into selection and pointer hover', async () => {
@@ -315,6 +340,7 @@ describe('Energiakartta shared building polygon layer config', () => {
       ...[
         ...ENERGYMAP_ENERGY_CERTIFICATE_LAYER_IDS,
         ...ENERGYMAP_HEATING_LAYER_IDS,
+        ...ENERGYMAP_VENTILATION_LAYER_IDS,
       ].map((layerId) => layerIds.indexOf(layerId))
     )
 

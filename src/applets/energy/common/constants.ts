@@ -8,6 +8,9 @@ import {
   ENERGYMAP_HEATING_LAYER_GROUP_ID,
 } from 'applets/energy/layers/heatingLayerConf'
 import {
+  ENERGYMAP_VENTILATION_LAYER_GROUP_ID,
+} from 'applets/energy/layers/ventilationLayerConf'
+import {
   listedMmlKiinteistojaotusLayerGroup,
   listedMmlKiinteistotunnuksetLayerGroup,
   listedMmlMaastokarttaLayerGroup,
@@ -20,6 +23,7 @@ import {
 export const ENERGYMAP_MAIN_LAYER_GROUP_IDS = [
   ENERGYMAP_ENERGY_CERTIFICATE_LAYER_GROUP_ID,
   ENERGYMAP_HEATING_LAYER_GROUP_ID,
+  ENERGYMAP_VENTILATION_LAYER_GROUP_ID,
 ] as const
 
 export const listedBackgroundBuildingFiltersAccordion: ListedLayerMenuItem = {

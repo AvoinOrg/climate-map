@@ -19,6 +19,10 @@ import {
   ENERGYMAP_HEATING_LAYER_IDS,
   createEnergymapHeatingLayers,
 } from './heatingLayerConf'
+import {
+  ENERGYMAP_VENTILATION_LAYER_IDS,
+  createEnergymapVentilationLayers,
+} from './ventilationLayerConf'
 
 export const ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID =
   ENERGYMAP_BUILDING_POLYGONS_SOURCE_ID
@@ -36,6 +40,7 @@ export const ENERGYMAP_SHARED_BUILDING_LAYER_IDS = [
   ...ENERGYMAP_BUILDING_POLYGONS_LAYER_IDS,
   ...ENERGYMAP_ENERGY_CERTIFICATE_LAYER_IDS,
   ...ENERGYMAP_HEATING_LAYER_IDS,
+  ...ENERGYMAP_VENTILATION_LAYER_IDS,
 ] as const
 export {
   ENERGYMAP_BUILDING_POLYGONS_SOURCE_ID,
@@ -268,6 +273,10 @@ const getStyle = async (): Promise<ExtendedStyleSpecification> => {
         sourceLayer: ENERGYMAP_BUILDING_POLYGONS_SOURCE_LAYER,
       }),
       ...createEnergymapHeatingLayers({
+        sourceId: ENERGYMAP_BUILDING_POLYGONS_SOURCE_ID,
+        sourceLayer: ENERGYMAP_BUILDING_POLYGONS_SOURCE_LAYER,
+      }),
+      ...createEnergymapVentilationLayers({
         sourceId: ENERGYMAP_BUILDING_POLYGONS_SOURCE_ID,
         sourceLayer: ENERGYMAP_BUILDING_POLYGONS_SOURCE_LAYER,
       }),

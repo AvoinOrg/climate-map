@@ -23,10 +23,34 @@ import {
   ENERGYMAP_MODELED_CLASS_REQUIRED_PROVENANCE_INPUT_IDS,
 } from '../common/buildingInfoProvenance'
 import {
+  ENERGYMAP_BUILDING_COMPLETION_DATE_PROPERTY,
+  ENERGYMAP_BUILDING_KEY_PROPERTY,
   ENERGYMAP_BUILDING_POLYGONS_FILL_LAYER_ID,
+  ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID,
   ENERGYMAP_BUILDING_POLYGONS_SOURCE_ID,
+  ENERGYMAP_BUILDING_TYPE_PROPERTY,
+  ENERGYMAP_SHARED_BUILDING_LAYER_IDS,
 } from '../layers/buildingPolygonsLayerConf'
 import { ENERGYMAP_BUILDING_POLYGONS_SOURCE_LAYER } from '../layers/buildingSource'
+import {
+  ENERGYMAP_ENERGY_CERTIFICATE_FILL_LAYER_ID,
+  ENERGYMAP_ENERGY_CERTIFICATE_LAYER_IDS,
+} from '../layers/energyCertificateLayerConf'
+import {
+  ENERGYMAP_HEATING_FILL_LAYER_ID,
+  ENERGYMAP_HEATING_LAYER_IDS,
+} from '../layers/heatingLayerConf'
+import {
+  ENERGYMAP_VENTILATION_CATEGORY_PROPERTY,
+  ENERGYMAP_VENTILATION_CATEGORY_VALUES,
+} from '../common/ventilation'
+import {
+  ENERGYMAP_VENTILATION_FILL_LAYER_ID,
+  ENERGYMAP_VENTILATION_FILL_OPACITY,
+  ENERGYMAP_VENTILATION_LAYER_IDS,
+  ENERGYMAP_VENTILATION_OUTLINE_LAYER_ID,
+  ENERGYMAP_VENTILATION_OUTLINE_OPACITY,
+} from '../layers/ventilationLayerConf'
 import { useAppletStore } from '../state/appletStore'
 import EnergyHomePage from './EnergyHomePage'
 
@@ -39,6 +63,15 @@ const mockBuildingInfoPanelFactoryLocales: string[] = []
 let mockIsMobile = false
 let mockDesktopWidthMatches = true
 let mockTranslationLocale: string | undefined
+let mockVisibleLayerGroupIds = [ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID]
+
+const createRegisteredSharedBuildingLayerGroup = () => ({
+  [ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID]: {
+    layers: Object.fromEntries(
+      ENERGYMAP_SHARED_BUILDING_LAYER_IDS.map((layerId) => [layerId, {}])
+    ),
+  },
+})
 
 const mockMapState = {
   setFilter: jest.fn(async () => undefined),
@@ -47,7 +80,7 @@ const mockMapState = {
   enableLayerGroup: jest.fn(async () => undefined),
   setSelectedFeatures: jest.fn(),
   selectedFeatures: [] as MapGeoJSONFeature[],
-  _layerGroups: {},
+  _layerGroups: createRegisteredSharedBuildingLayerGroup(),
 }
 
 jest.mock('#/common/store', () => ({
@@ -57,7 +90,7 @@ jest.mock('#/common/store', () => ({
 }))
 
 jest.mock('#/common/hooks/map/useVisibleLayerGroupIds', () => ({
-  useVisibleLayerGroupIds: () => ['energymap_building_polygons'],
+  useVisibleLayerGroupIds: () => mockVisibleLayerGroupIds,
 }))
 
 jest.mock('#/common/hooks/ui/useIsMobile', () => ({
@@ -292,6 +325,7 @@ describe('EnergyHomePage', () => {
   })
 
   beforeEach(() => {
+    jest.clearAllMocks()
     resetUIStore()
     mockBuildingInfoPanelsByBuildingKey.clear()
     mockBuildingInfoPanelFactoryKeys.length = 0
@@ -300,6 +334,8 @@ describe('EnergyHomePage', () => {
     mockIsMobile = false
     mockDesktopWidthMatches = true
     mockTranslationLocale = undefined
+    mockVisibleLayerGroupIds = [ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID]
+    mockMapState._layerGroups = createRegisteredSharedBuildingLayerGroup()
     useAppletStore.getState().resetBuildingFilters()
     useAppletStore.getState().resetEnergyCertificateClassFilters()
     useAppletStore.getState().clearSelectedBuilding()
@@ -309,7 +345,7 @@ describe('EnergyHomePage', () => {
     ['desktop', false],
     ['mobile', true],
   ])(
-    'omits other energy sources while preserving adjacent controls on %s',
+    'keeps the surrounding controls unchanged while activating ventilation on %s',
     (_viewport, isMobile) => {
       mockIsMobile = isMobile
       renderPage()
@@ -332,9 +368,10 @@ describe('EnergyHomePage', () => {
         name: 'sidebar.front_page.aria.toggle_heating',
       })
       expect(heatingButton).toBeInTheDocument()
-      expect(
-        screen.getByText('sidebar.front_page.layers.ventilation')
-      ).toBeInTheDocument()
+      const ventilationButton = screen.getByRole('button', {
+        name: 'sidebar.front_page.aria.toggle_ventilation',
+      })
+      expect(ventilationButton).toHaveAttribute('aria-expanded', 'false')
 
       fireEvent.click(heatingButton)
 
@@ -351,7 +388,7 @@ describe('EnergyHomePage', () => {
     }
   )
 
-  it('widens both accordion rows and keeps the expanded highlight aligned', () => {
+  it('widens all three accordion rows and keeps the expanded highlight aligned', () => {
     renderPage()
 
     const energyClassesButton = screen.getByRole('button', {
@@ -360,7 +397,14 @@ describe('EnergyHomePage', () => {
     const heatingButton = screen.getByRole('button', {
       name: 'sidebar.front_page.aria.toggle_heating',
     })
-    const thematicButtons = [energyClassesButton, heatingButton]
+    const ventilationButton = screen.getByRole('button', {
+      name: 'sidebar.front_page.aria.toggle_ventilation',
+    })
+    const thematicButtons = [
+      energyClassesButton,
+      heatingButton,
+      ventilationButton,
+    ]
 
     thematicButtons.forEach((button) => {
       expect(button).toHaveStyle({
@@ -386,6 +430,291 @@ describe('EnergyHomePage', () => {
       marginRight: '-0.375rem',
       backgroundColor: '#e6efff',
     })
+  })
+
+  it('exposes four localized, initially checked ventilation switches', () => {
+    renderPage()
+
+    const ventilationButton = screen.getByRole('button', {
+      name: 'sidebar.front_page.aria.toggle_ventilation',
+    })
+
+    expect(ventilationButton.tagName).toBe('BUTTON')
+    expect(ventilationButton).toHaveAttribute('aria-expanded', 'false')
+    expect(ventilationButton).toHaveAttribute('aria-controls')
+
+    fireEvent.click(ventilationButton)
+
+    expect(ventilationButton).toHaveAttribute('aria-expanded', 'true')
+    expect(
+      screen.getByText('sidebar.front_page.ventilation.body')
+    ).toBeInTheDocument()
+
+    const switches = ENERGYMAP_VENTILATION_CATEGORY_VALUES.map((category) =>
+      screen.getByRole('switch', {
+        name: `sidebar.front_page.ventilation.legend.${category}`,
+      })
+    )
+
+    expect(switches).toHaveLength(4)
+    switches.forEach((ventilationSwitch) => {
+      expect(ventilationSwitch).toBeChecked()
+    })
+  })
+
+  it('filters ventilation strictly for subsets and for no active options', async () => {
+    renderPage()
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'sidebar.front_page.aria.toggle_ventilation',
+      })
+    )
+
+    fireEvent.click(
+      screen.getByRole('switch', {
+        name: 'sidebar.front_page.ventilation.legend.gravity',
+      })
+    )
+
+    const subsetFilter = [
+      'all',
+      ['has', ENERGYMAP_BUILDING_KEY_PROPERTY],
+      [
+        'in',
+        ['get', ENERGYMAP_VENTILATION_CATEGORY_PROPERTY],
+        ['literal', ['mechanical', 'other', 'no_info']],
+      ],
+    ]
+
+    await waitFor(() => {
+      for (const layerId of ENERGYMAP_VENTILATION_LAYER_IDS) {
+        expect(mockMapState.setFilter).toHaveBeenCalledWith(
+          layerId,
+          subsetFilter
+        )
+      }
+    })
+
+    for (const category of ['mechanical', 'other', 'no_info'] as const) {
+      fireEvent.click(
+        screen.getByRole('switch', {
+          name: `sidebar.front_page.ventilation.legend.${category}`,
+        })
+      )
+    }
+
+    const noneFilter = [
+      'all',
+      ['has', ENERGYMAP_BUILDING_KEY_PROPERTY],
+      [
+        '==',
+        ['get', ENERGYMAP_VENTILATION_CATEGORY_PROPERTY],
+        '__avoin_no_matching_ventilation_category__',
+      ],
+    ]
+
+    await waitFor(() => {
+      for (const layerId of ENERGYMAP_VENTILATION_LAYER_IDS) {
+        expect(mockMapState.setFilter).toHaveBeenCalledWith(layerId, noneFilter)
+      }
+    })
+
+    ENERGYMAP_VENTILATION_CATEGORY_VALUES.forEach((category) => {
+      expect(
+        screen.getByRole('switch', {
+          name: `sidebar.front_page.ventilation.legend.${category}`,
+        })
+      ).not.toBeChecked()
+    })
+  })
+
+  it('composes ventilation categories with building type and decade filters', async () => {
+    useAppletStore.getState().setBuildingTypeFilter('05')
+    useAppletStore.getState().setSelectedConstructionDecade(1970)
+    useAppletStore.getState().setShowOnlySelectedDecade(true)
+    renderPage()
+
+    const completionYearExpression = [
+      'to-number',
+      [
+        'slice',
+        ['to-string', ['get', ENERGYMAP_BUILDING_COMPLETION_DATE_PROPERTY]],
+        0,
+        4,
+      ],
+      -1,
+    ]
+    const expectedFilter = [
+      'all',
+      [
+        'all',
+        ['==', ['get', ENERGYMAP_BUILDING_TYPE_PROPERTY], '05'],
+        [
+          'all',
+          ['>=', completionYearExpression, 1970],
+          ['<', completionYearExpression, 1980],
+        ],
+      ],
+      [
+        'in',
+        ['get', ENERGYMAP_VENTILATION_CATEGORY_PROPERTY],
+        ['literal', ENERGYMAP_VENTILATION_CATEGORY_VALUES],
+      ],
+    ]
+
+    await waitFor(() => {
+      for (const layerId of ENERGYMAP_VENTILATION_LAYER_IDS) {
+        expect(mockMapState.setFilter).toHaveBeenCalledWith(
+          layerId,
+          expectedFilter
+        )
+      }
+    })
+  })
+
+  it('keeps ventilation exclusive and returns to neutral shared buildings when toggled off', async () => {
+    renderPage()
+    mockMapState.setLayoutProperty.mockClear()
+    mockMapState.setPaintProperty.mockClear()
+
+    const ventilationButton = screen.getByRole('button', {
+      name: 'sidebar.front_page.aria.toggle_ventilation',
+    })
+    fireEvent.click(ventilationButton)
+
+    await waitFor(() => {
+      expect(mockMapState.setLayoutProperty).toHaveBeenCalledWith(
+        ENERGYMAP_VENTILATION_FILL_LAYER_ID,
+        'visibility',
+        'visible'
+      )
+      expect(mockMapState.setLayoutProperty).toHaveBeenCalledWith(
+        ENERGYMAP_ENERGY_CERTIFICATE_FILL_LAYER_ID,
+        'visibility',
+        'none'
+      )
+      expect(mockMapState.setLayoutProperty).toHaveBeenCalledWith(
+        ENERGYMAP_HEATING_FILL_LAYER_ID,
+        'visibility',
+        'none'
+      )
+      expect(mockMapState.setPaintProperty).toHaveBeenCalledWith(
+        ENERGYMAP_VENTILATION_FILL_LAYER_ID,
+        'fill-opacity',
+        ENERGYMAP_VENTILATION_FILL_OPACITY
+      )
+      expect(mockMapState.setPaintProperty).toHaveBeenCalledWith(
+        ENERGYMAP_VENTILATION_OUTLINE_LAYER_ID,
+        'line-opacity',
+        ENERGYMAP_VENTILATION_OUTLINE_OPACITY
+      )
+      expect(mockMapState.setPaintProperty).toHaveBeenCalledWith(
+        ENERGYMAP_ENERGY_CERTIFICATE_FILL_LAYER_ID,
+        'fill-opacity',
+        0
+      )
+      expect(mockMapState.setPaintProperty).toHaveBeenCalledWith(
+        ENERGYMAP_HEATING_FILL_LAYER_ID,
+        'fill-opacity',
+        0
+      )
+    })
+
+    mockMapState.setLayoutProperty.mockClear()
+    mockMapState.setPaintProperty.mockClear()
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'sidebar.front_page.aria.toggle_heating',
+      })
+    )
+
+    await waitFor(() => {
+      expect(mockMapState.setLayoutProperty).toHaveBeenCalledWith(
+        ENERGYMAP_HEATING_FILL_LAYER_ID,
+        'visibility',
+        'visible'
+      )
+      for (const layerId of ENERGYMAP_VENTILATION_LAYER_IDS) {
+        expect(mockMapState.setLayoutProperty).toHaveBeenCalledWith(
+          layerId,
+          'visibility',
+          'none'
+        )
+      }
+      expect(mockMapState.setPaintProperty).toHaveBeenCalledWith(
+        ENERGYMAP_VENTILATION_FILL_LAYER_ID,
+        'fill-opacity',
+        0
+      )
+    })
+
+    mockMapState.setLayoutProperty.mockClear()
+    fireEvent.click(ventilationButton)
+    await waitFor(() => {
+      expect(mockMapState.setLayoutProperty).toHaveBeenCalledWith(
+        ENERGYMAP_VENTILATION_FILL_LAYER_ID,
+        'visibility',
+        'visible'
+      )
+      for (const layerId of ENERGYMAP_HEATING_LAYER_IDS) {
+        expect(mockMapState.setLayoutProperty).toHaveBeenCalledWith(
+          layerId,
+          'visibility',
+          'none'
+        )
+      }
+    })
+
+    mockMapState.setLayoutProperty.mockClear()
+    mockMapState.setPaintProperty.mockClear()
+    fireEvent.click(ventilationButton)
+
+    await waitFor(() => {
+      for (const layerId of [
+        ...ENERGYMAP_ENERGY_CERTIFICATE_LAYER_IDS,
+        ...ENERGYMAP_HEATING_LAYER_IDS,
+        ...ENERGYMAP_VENTILATION_LAYER_IDS,
+      ]) {
+        expect(mockMapState.setLayoutProperty).toHaveBeenCalledWith(
+          layerId,
+          'visibility',
+          'none'
+        )
+      }
+      expect(mockMapState.setPaintProperty).toHaveBeenCalledWith(
+        ENERGYMAP_VENTILATION_FILL_LAYER_ID,
+        'fill-opacity',
+        0
+      )
+    })
+
+    expect(mockMapState.enableLayerGroup).not.toHaveBeenCalled()
+    expect(
+      mockMapState.setLayoutProperty.mock.calls.some(([layerId]) =>
+        String(layerId).startsWith(
+          `${ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID}-`
+        )
+      )
+    ).toBe(false)
+  })
+
+  it('enables only the shared building group when ventilation opens from a hidden group', async () => {
+    mockVisibleLayerGroupIds = []
+    renderPage()
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'sidebar.front_page.aria.toggle_ventilation',
+      })
+    )
+
+    await waitFor(() => {
+      expect(mockMapState.enableLayerGroup).toHaveBeenCalledWith(
+        ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID,
+        expect.objectContaining({ isHidden: false })
+      )
+    })
+    expect(mockMapState.enableLayerGroup).toHaveBeenCalledTimes(1)
   })
 
   it('registers the extension from filtered content and replaces it with sparse and empty topologies', async () => {
