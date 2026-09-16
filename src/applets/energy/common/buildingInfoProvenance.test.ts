@@ -67,6 +67,10 @@ const completeDistrictHeatingProperties = {
   energy_certificate_valid_until: '2031-12-31 00:00:00.0',
   energy_certificate_previous_class: 'E',
   energy_certificate_heated_net_area: 1355,
+  energy_certificate_ventilation_type_id: '0',
+  energy_certificate_ventilation_type_label_fi:
+    'Painovoimainen ilmanvaihtojärjestelmä',
+  ventilation_category: 'gravity',
   energy_certificate_ventilation_description_fi: 'Painovoimainen ilmanvaihto.',
   energy_certificate_recommendations_fi: 'Tiivistä yläpohjan lämmöneristystä.',
   distr_default_total: 367.7884615,
@@ -356,7 +360,27 @@ describe('Energiakartta building-info provenance catalog', () => {
         for (const evidence of definition.evidenceVariants) {
           expect(
             resolveEnergymapBuildingInfoProvenance({
-              provenance: { id, inputIds: evidence.inputIds },
+              provenance: {
+                id,
+                inputIds: evidence.inputIds,
+                runtimeValues: Object.fromEntries(
+                  evidence.inputIds.flatMap((inputId) => {
+                    if (
+                      inputId ===
+                      ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_VENTILATION_CODE
+                    ) {
+                      return [[inputId, '0']]
+                    }
+                    if (
+                      inputId ===
+                      ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.VENTILATION_CATEGORY
+                    ) {
+                      return [[inputId, 'gravity']]
+                    }
+                    return []
+                  })
+                ),
+              },
               sourceProperties: evidence.sourceProperties,
               sourceLanguage: evidence.sourceLanguage,
             })
@@ -2211,5 +2235,243 @@ describe('energy certificate consumption provenance', () => {
     expect(resolution.selectedEvidence.map(({ id }) => id)).not.toContain(
       ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.otherNames.other1
     )
+  })
+})
+
+describe('ventilation provenance evidence', () => {
+  const I = ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS
+  const IDS = ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS
+  const typeEvidence = (language: 'fi' | 'sv', code?: unknown) => ({
+    provenance: {
+      id: IDS.VENTILATION_TYPE,
+      inputIds: [
+        language === 'fi' ? I.VENTILATION_LABEL_FI : I.VENTILATION_LABEL_SV,
+        ...(code === undefined ? [] : [I.CERTIFICATE_VENTILATION_CODE]),
+      ],
+      ...(code === undefined
+        ? {}
+        : { runtimeValues: { [I.CERTIFICATE_VENTILATION_CODE]: code } }),
+    },
+    sourceLanguage: language,
+    sourceProperties: [
+      `energy_certificate_ventilation_type_label_${language}`,
+      ...(code === undefined ? [] : ['energy_certificate_ventilation_type_id']),
+    ],
+  })
+  const categoryEvidence = (value: unknown) => ({
+    provenance: {
+      id: IDS.VENTILATION_CATEGORY,
+      inputIds: [I.VENTILATION_CATEGORY],
+      runtimeValues: { [I.VENTILATION_CATEGORY]: value },
+    },
+    sourceProperties: ['ventilation_category'],
+  })
+
+  it.each(['fi', 'sv'] as const)(
+    'resolves label-only and code-supported %s labels',
+    (language) => {
+      for (const code of [undefined, '0', '8', 'unknown-code']) {
+        const result = resolveEnergymapBuildingInfoProvenance(
+          typeEvidence(language, code)
+        )
+        expect(result.status).toBe('resolved')
+        if (result.status !== 'resolved')
+          throw new Error('Expected ventilation type provenance')
+        expect(result.category.id).toBe('officialClassification')
+        expect(result.valueSources.map(({ id }) => id)).toEqual([
+          'officialVentilationClassification',
+        ])
+        expect(result.sources.map(({ id }) => id)).toEqual([
+          'officialVentilationClassification',
+          ...(code === undefined ? [] : ['energyCertificateRegister']),
+        ])
+        expect(result.metadata.sourceLanguage).toBe(language)
+        expect(result.metadata.modelYear).toBeUndefined()
+        expect(result.metadata.descriptors.map(({ id }) => id)).toEqual([
+          'sourceLanguage',
+          'ventilationCertificateContext',
+          'ventilationSourceLanguage',
+        ])
+        expect(
+          result.inputs.find(({ id }) => id === I.CERTIFICATE_VENTILATION_CODE)
+            ?.value
+        ).toBe(code)
+        expect(result.inputs).toHaveLength(code === undefined ? 1 : 2)
+      }
+    }
+  )
+
+  it.each(['mechanical', 'gravity', 'other', 'no_info'])(
+    'recognizes published category evidence %s without requiring certificate fields',
+    (category) => {
+      const result = resolveEnergymapBuildingInfoProvenance(
+        categoryEvidence(category)
+      )
+      expect(result).toMatchObject({
+        status: 'resolved',
+        category: { id: 'publishedDerivation' },
+        valueSources: [{ id: 'energyMapVentilationGrouping' }],
+        valueProviders: [{ id: 'energyMap' }],
+        inputs: [{ id: I.VENTILATION_CATEGORY, value: category }],
+        metadata: { descriptors: [{ id: 'ventilationCertificateContext' }] },
+      })
+    }
+  )
+
+  it.each([undefined, null, '', ' \n ', 0, 8, true, [], {}])(
+    'rejects claimed code evidence without a nonblank String value %p',
+    (code) => {
+      const evidence = typeEvidence('fi', '0')
+      evidence.provenance.runtimeValues = {
+        [I.CERTIFICATE_VENTILATION_CODE]: code,
+      }
+      expect(resolveEnergymapBuildingInfoProvenance(evidence)).toMatchObject({
+        status: 'unsupported',
+        reason: 'invalid-runtime-value',
+      })
+    }
+  )
+
+  it.each([
+    undefined,
+    null,
+    '',
+    '0',
+    'GRAVITY',
+    ' gravity',
+    'other ',
+    'stale',
+    0,
+    true,
+    [],
+    {},
+  ])('rejects stale or invalid category evidence %p', (category) => {
+    expect(
+      resolveEnergymapBuildingInfoProvenance(categoryEvidence(category))
+    ).toMatchObject({
+      status: 'unsupported',
+      reason: 'invalid-runtime-value',
+    })
+  })
+
+  it('keeps evidence sets, properties, source languages and runtime keys strict', () => {
+    const valid = typeEvidence('fi', '0')
+    const category = categoryEvidence('gravity')
+    const cases = [
+      {
+        evidence: {
+          ...valid,
+          provenance: { ...valid.provenance, runtimeValues: {} },
+        },
+        reason: 'missing-runtime-value',
+      },
+      {
+        evidence: {
+          ...category,
+          provenance: { ...category.provenance, runtimeValues: {} },
+        },
+        reason: 'missing-runtime-value',
+      },
+      {
+        evidence: {
+          ...valid,
+          sourceProperties: [
+            'energy_certificate_ventilation_type_label_sv',
+            'energy_certificate_ventilation_type_id',
+          ],
+        },
+        reason: 'source-property-mismatch',
+      },
+      {
+        evidence: { ...valid, sourceLanguage: 'en' },
+        reason: 'unsupported-source-language',
+      },
+      {
+        evidence: { ...valid, sourceLanguage: 'sv' },
+        reason: 'unsupported-source-language',
+      },
+      {
+        evidence: { ...category, sourceLanguage: 'fi' },
+        reason: 'unsupported-source-language',
+      },
+      {
+        evidence: {
+          ...valid,
+          provenance: {
+            ...valid.provenance,
+            inputIds: [...valid.provenance.inputIds, I.VENTILATION_LABEL_FI],
+          },
+        },
+        reason: 'invalid-input-set',
+      },
+      {
+        evidence: {
+          ...valid,
+          provenance: {
+            ...valid.provenance,
+            inputIds: [...valid.provenance.inputIds, 'unrecognized'],
+          },
+        },
+        reason: 'unknown-input',
+      },
+      {
+        evidence: {
+          ...valid,
+          provenance: {
+            ...valid.provenance,
+            inputIds: [
+              ...valid.provenance.inputIds,
+              I.CERTIFICATE_VENTILATION_FI,
+            ],
+          },
+        },
+        reason: 'invalid-input-set',
+      },
+      {
+        evidence: {
+          ...valid,
+          provenance: {
+            ...valid.provenance,
+            runtimeValues: {
+              ...valid.provenance.runtimeValues,
+              [I.VENTILATION_CATEGORY]: 'gravity',
+            },
+          },
+        },
+        reason: 'unexpected-runtime-value',
+      },
+      {
+        evidence: {
+          ...valid,
+          provenance: {
+            ...valid.provenance,
+            runtimeValues: {
+              ...valid.provenance.runtimeValues,
+              [I.VENTILATION_LABEL_FI]: 'Unrequested label value',
+            },
+          },
+        },
+        reason: 'unexpected-runtime-value',
+      },
+      {
+        evidence: {
+          ...valid,
+          provenance: {
+            id: IDS.VENTILATION,
+            inputIds: [I.CERTIFICATE_VENTILATION_FI],
+            runtimeValues: {
+              [I.CERTIFICATE_VENTILATION_FI]: 'Unexpected description value',
+            },
+          },
+        },
+        reason: 'unexpected-runtime-value',
+      },
+    ]
+    for (const { evidence, reason } of cases) {
+      expect(resolveEnergymapBuildingInfoProvenance(evidence)).toMatchObject({
+        status: 'unsupported',
+        reason,
+      })
+    }
   })
 })

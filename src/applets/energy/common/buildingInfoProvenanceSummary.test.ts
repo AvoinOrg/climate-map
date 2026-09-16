@@ -56,6 +56,10 @@ const completeDistrictHeatingProperties = {
   energy_certificate_valid_until: '2031-12-31 00:00:00.0',
   energy_certificate_previous_class: 'E',
   energy_certificate_heated_net_area: 1355,
+  energy_certificate_ventilation_type_id: '0',
+  energy_certificate_ventilation_type_label_fi:
+    'Painovoimainen ilmanvaihtojärjestelmä',
+  ventilation_category: 'gravity',
   energy_certificate_ventilation_description_fi:
     'Painovoimainen ilmanvaihto.',
   energy_certificate_recommendations_fi:
@@ -292,7 +296,9 @@ const COMPLETE_ITEM_SEQUENCE = [
   ['buildingDetails/previousEnergyClass/row/previousEnergyClass', 'row'],
   ['buildingDetails/technicalDetails/row/heating', 'row'],
   ['buildingDetails/technicalDetails/row/heatedNetArea', 'row'],
+  ['buildingDetails/technicalDetails/row/ventilationType', 'row'],
   ['buildingDetails/technicalDetails/row/ventilation', 'row'],
+  ['buildingDetails/technicalDetails/row/ventilationCategory', 'row'],
 ] as const
 
 describe('Energiakartta building-info provenance summary', () => {
@@ -1540,5 +1546,119 @@ describe('energy certificate consumption provenance summary', () => {
     ).toBe('SUMMARY-CERT-B')
     expect(JSON.stringify(summaryB)).not.toContain('SUMMARY-CERT-A')
     expect(summaryB.locale).toBe('fi-FI')
+  })
+})
+
+describe('ventilation summary integration', () => {
+  const I = ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS
+  const path = 'buildingDetails/technicalDetails/row/'
+  const properties = {
+    energy_certificate_ventilation_type_id: '0',
+    energy_certificate_ventilation_type_label_fi: 'Synthetic FI label',
+    energy_certificate_ventilation_description_sv: 'Synthetic SV description',
+    ventilation_category: 'other',
+  }
+
+  it('keeps distinct identities, independent languages and direct/supporting sources', () => {
+    const summary = deriveSummary({ properties })
+    expect(summary.items.map(({ id }) => id)).toEqual([
+      `${path}ventilationType`,
+      `${path}ventilation`,
+      `${path}ventilationCategory`,
+    ])
+    expect(summary.sources).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'officialVentilationClassification',
+          directValueItemIds: [`${path}ventilationType`],
+        }),
+        expect.objectContaining({
+          id: 'energyCertificateRegister',
+          itemIds: [`${path}ventilationType`, `${path}ventilation`],
+          directValueItemIds: [`${path}ventilation`],
+        }),
+        expect.objectContaining({
+          id: 'energyMapVentilationGrouping',
+          directValueItemIds: [`${path}ventilationCategory`],
+        }),
+      ])
+    )
+    expect(summary.sources).toHaveLength(3)
+    expect(summary.items.map(({ sourceLanguage }) => sourceLanguage)).toEqual([
+      'fi',
+      'sv',
+      undefined,
+    ])
+    expect(
+      summary.inputs.find(({ id }) => id === I.CERTIFICATE_VENTILATION_CODE)
+        ?.value
+    ).toBe('0')
+    expect(
+      summary.inputs.find(({ id }) => id === I.VENTILATION_CATEGORY)?.value
+    ).toBe('other')
+    expect(summary.inputs).toHaveLength(4)
+    expect(
+      summary.items.every(
+        ({ modelYear, referenceVersion }) =>
+          modelYear == null && referenceVersion == null
+      )
+    ).toBe(true)
+  })
+
+  it('removes old facts and evidence when a building loses ventilation coverage', () => {
+    for (const currentProperties of [
+      properties,
+      { ventilation_category: 'no_info' },
+      {
+        energy_certificate_ventilation_type_label_sv: 'Label without code',
+      },
+      { energy_certificate_ventilation_description_fi: 'Description only' },
+      { ventilation_category: 'mechanical' },
+    ]) {
+      const summary = deriveSummary({
+        properties: {
+          permanent_building_identifier: 'SAME-BUILDING',
+          ...currentProperties,
+        },
+      })
+      expect(
+        summary.inputs.find(({ id }) => id === I.CERTIFICATE_VENTILATION_CODE)
+          ?.value
+      ).toBe(
+        'energy_certificate_ventilation_type_id' in currentProperties
+          ? '0'
+          : undefined
+      )
+      const informativeCategory =
+        currentProperties.ventilation_category !== 'no_info'
+          ? currentProperties.ventilation_category
+          : undefined
+      expect(
+        summary.inputs.find(({ id }) => id === I.VENTILATION_CATEGORY)?.value
+      ).toBe(informativeCategory)
+    }
+  })
+
+  it('still fails the whole contract for conflicting runtime evidence', () => {
+    const panels = createPanels({ properties })
+    const section = panels[0].sections.find(
+      ({ id }) => id === 'technicalDetails'
+    )!
+    const category = section.rows!.find(
+      ({ id }) => id === 'ventilationCategory'
+    )!
+    section.rows!.push({
+      ...category,
+      id: 'duplicateCategory',
+      provenance: {
+        ...category.provenance!,
+        runtimeValues: { [I.VENTILATION_CATEGORY]: 'gravity' },
+      },
+    })
+    const result = deriveEnergymapBuildingInfoProvenanceSummary({
+      panels,
+      locale: 'en',
+    })
+    expect(result?.status).toBe('contractFailure')
   })
 })

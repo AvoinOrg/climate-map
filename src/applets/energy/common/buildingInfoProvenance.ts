@@ -1,4 +1,11 @@
 import {
+  ENERGYMAP_VENTILATION_CATEGORY_PROPERTY,
+  ENERGYMAP_VENTILATION_DESCRIPTION_PROPERTIES,
+  ENERGYMAP_VENTILATION_LABEL_PROPERTIES,
+  ENERGYMAP_VENTILATION_TYPE_PROPERTY,
+  isEnergymapVentilationCategory,
+} from 'applets/energy/common/ventilation'
+import {
   calculateCurrentReferenceAnnualWater,
   deriveAnnualPurchasedEnergyComponents,
   resolveCurrentReferenceBuildingClass,
@@ -173,6 +180,8 @@ const ENERGYMAP_BUILDING_INFO_CATALOG_PROVENANCE_IDS = {
   HEATING: 'buildingDetails.technicalDetails.row.heating',
   HEATED_NET_AREA: 'buildingDetails.technicalDetails.row.heatedNetArea',
   VENTILATION: 'buildingDetails.technicalDetails.row.ventilation',
+  VENTILATION_TYPE: 'buildingDetails.technicalDetails.row.ventilationType',
+  VENTILATION_CATEGORY: 'buildingDetails.technicalDetails.row.ventilationCategory',
   ...ENERGYMAP_CERTIFICATE_CONSUMPTION_PROVENANCE_IDS,
 } as const
 
@@ -189,6 +198,14 @@ type EnergymapBuildingInfoCatalogProvenanceId =
   (typeof ENERGYMAP_BUILDING_INFO_CATALOG_PROVENANCE_IDS)[keyof typeof ENERGYMAP_BUILDING_INFO_CATALOG_PROVENANCE_IDS]
 
 export const ENERGYMAP_BUILDING_INFO_PROVENANCE_CATEGORIES = {
+  officialClassification: {
+    id: 'officialClassification',
+    key: provenanceKey('categories.official_classification'),
+  },
+  publishedDerivation: {
+    id: 'publishedDerivation',
+    key: provenanceKey('categories.published_derivation'),
+  },
   officialCertificate: {
     id: 'officialCertificate',
     key: provenanceKey('categories.official_certificate'),
@@ -219,6 +236,14 @@ export type EnergymapBuildingInfoProvenanceCategoryId =
   keyof typeof ENERGYMAP_BUILDING_INFO_PROVENANCE_CATEGORIES
 
 export const ENERGYMAP_BUILDING_INFO_PROVENANCE_SOURCES = {
+  officialVentilationClassification: {
+    id: 'officialVentilationClassification',
+    key: provenanceKey('sources.official_ventilation_classification'),
+  },
+  energyMapVentilationGrouping: {
+    id: 'energyMapVentilationGrouping',
+    key: provenanceKey('sources.energy_map_ventilation_grouping'),
+  },
   ryhtiBuildingData: {
     id: 'ryhtiBuildingData',
     key: provenanceKey('sources.ryhti_building_data'),
@@ -303,6 +328,14 @@ export type EnergymapBuildingInfoProvenanceProviderId =
   keyof typeof ENERGYMAP_BUILDING_INFO_PROVENANCE_PROVIDERS
 
 export const ENERGYMAP_BUILDING_INFO_PROVENANCE_CALCULATIONS = {
+  publishedVentilationLabel: {
+    id: 'publishedVentilationLabel',
+    key: provenanceKey('calculations.published_ventilation_label'),
+  },
+  publishedVentilationGrouping: {
+    id: 'publishedVentilationGrouping',
+    key: provenanceKey('calculations.published_ventilation_grouping'),
+  },
   composeAddress: {
     id: 'composeAddress',
     key: provenanceKey('calculations.compose_address'),
@@ -379,6 +412,14 @@ export type EnergymapBuildingInfoProvenanceCalculationId =
   keyof typeof ENERGYMAP_BUILDING_INFO_PROVENANCE_CALCULATIONS
 
 export const ENERGYMAP_BUILDING_INFO_PROVENANCE_METADATA = {
+  ventilationCertificateContext: {
+    id: 'ventilationCertificateContext',
+    key: provenanceKey('metadata.ventilation_certificate_context'),
+  },
+  ventilationSourceLanguage: {
+    id: 'ventilationSourceLanguage',
+    key: provenanceKey('metadata.ventilation_source_language'),
+  },
   sourceLanguage: {
     id: 'sourceLanguage',
     key: provenanceKey('metadata.source_language'),
@@ -482,6 +523,10 @@ const STATIC_INPUT_IDS = {
   CERTIFICATE_HEATED_NET_AREA: 'sourceField.certificate.heatedNetArea',
   CERTIFICATE_RECOMMENDATIONS_FI: 'sourceField.certificate.recommendations.fi',
   CERTIFICATE_RECOMMENDATIONS_SV: 'sourceField.certificate.recommendations.sv',
+  CERTIFICATE_VENTILATION_CODE: 'sourceField.certificate.ventilation.code',
+  VENTILATION_LABEL_FI: 'sourceField.ventilationClassification.fi',
+  VENTILATION_LABEL_SV: 'sourceField.ventilationClassification.sv',
+  VENTILATION_CATEGORY: 'sourceField.energyMap.ventilationCategory',
   CERTIFICATE_VENTILATION_FI: 'sourceField.certificate.ventilation.fi',
   CERTIFICATE_VENTILATION_SV: 'sourceField.certificate.ventilation.sv',
   CERTIFICATE_CONSUMPTION_BASIS:
@@ -648,6 +693,8 @@ export type EnergymapBuildingInfoProvenanceDefinition = Readonly<{
   metadataIds?: readonly EnergymapBuildingInfoProvenanceMetadataId[]
   includeCurrentReferenceMetadata?: boolean
   modelYear?: 2018
+  // Only these declared inputs may carry runtime values outside certificate consumption.
+  runtimeInputIds?: readonly EnergymapBuildingInfoProvenanceInputId[]
   certificateEvidence?: boolean
   requiredCertificateCompleteness?: 'complete' | 'partial'
   evidenceVariants?: readonly EvidenceVariant[]
@@ -955,12 +1002,12 @@ const staticInputDefinitions: readonly EnergymapBuildingInfoProvenanceInputDefin
         [
           STATIC_INPUT_IDS.CERTIFICATE_VENTILATION_FI,
           'certificate_ventilation',
-          'energy_certificate_ventilation_description_fi',
+          ENERGYMAP_VENTILATION_DESCRIPTION_PROPERTIES.fi,
         ],
         [
           STATIC_INPUT_IDS.CERTIFICATE_VENTILATION_SV,
           'certificate_ventilation',
-          'energy_certificate_ventilation_description_sv',
+          ENERGYMAP_VENTILATION_DESCRIPTION_PROPERTIES.sv,
         ],
       ] as const
     ).map(([id, label, sourceProperty]) =>
@@ -973,6 +1020,37 @@ const staticInputDefinitions: readonly EnergymapBuildingInfoProvenanceInputDefin
         sourceProperty,
       })
     ),
+    inputDefinition({
+      id: STATIC_INPUT_IDS.CERTIFICATE_VENTILATION_CODE,
+      role: 'source-field',
+      label: 'certificate_ventilation_code',
+      sourceId: 'energyCertificateRegister',
+      providerIds: ['energyCertificateRegister'],
+      sourceProperty: ENERGYMAP_VENTILATION_TYPE_PROPERTY,
+      runtimeValueType: 'string',
+    }),
+    ...(['fi', 'sv'] as const).map((language) =>
+      inputDefinition({
+        id:
+          language === 'fi'
+            ? STATIC_INPUT_IDS.VENTILATION_LABEL_FI
+            : STATIC_INPUT_IDS.VENTILATION_LABEL_SV,
+        role: 'source-field',
+        label: `ventilation_label_${language}`,
+        sourceId: 'officialVentilationClassification',
+        providerIds: ['energyCertificateRegister'],
+        sourceProperty: ENERGYMAP_VENTILATION_LABEL_PROPERTIES[language],
+      })
+    ),
+    inputDefinition({
+      id: STATIC_INPUT_IDS.VENTILATION_CATEGORY,
+      role: 'source-field',
+      label: 'ventilation_category',
+      sourceId: 'energyMapVentilationGrouping',
+      providerIds: ['energyMap'],
+      sourceProperty: ENERGYMAP_VENTILATION_CATEGORY_PROPERTY,
+      runtimeValueType: 'string',
+    }),
     inputDefinition({
       id: STATIC_INPUT_IDS.CLASS_ORIGIN_OFFICIAL,
       role: 'source-field',
@@ -2891,22 +2969,73 @@ export const ENERGYMAP_BUILDING_INFO_PROVENANCE_CATALOG = {
       }),
     ],
   }),
+  [IDS.VENTILATION_TYPE]: defineCatalogEntry({
+    id: IDS.VENTILATION_TYPE,
+    fieldKey: provenanceKey('fields.ventilation_type'),
+    categoryId: 'officialClassification',
+    sourceIds: ['officialVentilationClassification'],
+    providerIds: ['energyCertificateRegister'],
+    calculationIds: ['publishedVentilationLabel'],
+    metadataIds: [
+      'sourceLanguage',
+      'ventilationCertificateContext',
+      'ventilationSourceLanguage',
+    ],
+    runtimeInputIds: [I.CERTIFICATE_VENTILATION_CODE],
+    evidenceVariants: (['fi', 'sv'] as const).flatMap((sourceLanguage) =>
+      [false, true].map((withCode) =>
+        evidenceVariant({
+          inputIds: [
+            sourceLanguage === 'fi'
+              ? I.VENTILATION_LABEL_FI
+              : I.VENTILATION_LABEL_SV,
+            ...(withCode ? [I.CERTIFICATE_VENTILATION_CODE] : []),
+          ],
+          sourceProperties: [
+            ENERGYMAP_VENTILATION_LABEL_PROPERTIES[sourceLanguage],
+            ...(withCode ? [ENERGYMAP_VENTILATION_TYPE_PROPERTY] : []),
+          ],
+          sourceLanguage,
+        })
+      )
+    ),
+  }),
+  [IDS.VENTILATION_CATEGORY]: defineCatalogEntry({
+    id: IDS.VENTILATION_CATEGORY,
+    fieldKey: provenanceKey('fields.ventilation_category'),
+    categoryId: 'publishedDerivation',
+    sourceIds: ['energyMapVentilationGrouping'],
+    providerIds: ['energyMap'],
+    calculationIds: ['publishedVentilationGrouping'],
+    metadataIds: ['ventilationCertificateContext'],
+    runtimeInputIds: [I.VENTILATION_CATEGORY],
+    evidenceVariants: [
+      evidenceVariant({
+        inputIds: [I.VENTILATION_CATEGORY],
+        sourceProperties: [ENERGYMAP_VENTILATION_CATEGORY_PROPERTY],
+      }),
+    ],
+  }),
   [IDS.VENTILATION]: defineCatalogEntry({
     id: IDS.VENTILATION,
     fieldKey: provenanceKey('fields.ventilation'),
     categoryId: 'officialCertificate',
     sourceIds: ['energyCertificateRegister'],
     providerIds: ['energyCertificateRegister'],
-    metadataIds: ['sourceLanguage'],
+    metadataIds: [
+      'sourceLanguage',
+      'ventilationCertificateContext',
+      'ventilationSourceLanguage',
+    ],
     evidenceVariants: [
       evidenceVariant({
         inputIds: [I.CERTIFICATE_VENTILATION_FI],
-        sourceProperties: ['energy_certificate_ventilation_description_fi'],
+        sourceProperties: [ENERGYMAP_VENTILATION_DESCRIPTION_PROPERTIES.fi],
         sourceLanguage: 'fi',
       }),
       evidenceVariant({
         inputIds: [I.CERTIFICATE_VENTILATION_SV],
-        sourceProperties: ['energy_certificate_ventilation_description_sv'],
+        sourceProperties: [ENERGYMAP_VENTILATION_DESCRIPTION_PROPERTIES.sv],
         sourceLanguage: 'sv',
       }),
     ],
@@ -3128,7 +3257,11 @@ export const resolveEnergymapBuildingInfoProvenance = ({
       !hasExpectedRuntimeValueType(
         runtimeValue,
         inputDefinition.runtimeValueType
-      )
+      ) ||
+      (inputId === I.CERTIFICATE_VENTILATION_CODE &&
+        (typeof runtimeValue !== 'string' || runtimeValue.trim() === '')) ||
+      (inputId === I.VENTILATION_CATEGORY &&
+        !isEnergymapVentilationCategory(runtimeValue))
     ) {
       return {
         status: 'unsupported',
@@ -3268,7 +3401,14 @@ export const resolveEnergymapBuildingInfoProvenance = ({
         inputId: I.CERTIFICATE_CONSUMPTION_COMPLETENESS,
       }
     }
-  } else if (Object.keys(runtimeValues).length > 0) {
+  } else if (
+    Object.keys(runtimeValues).some(
+      (inputId) =>
+        !definition.runtimeInputIds?.includes(
+          inputId as EnergymapBuildingInfoProvenanceInputId
+        )
+    )
+  ) {
     return {
       status: 'unsupported',
       reason: 'unexpected-runtime-value',

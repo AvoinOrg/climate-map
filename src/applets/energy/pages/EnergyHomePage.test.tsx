@@ -1026,6 +1026,92 @@ describe('EnergyHomePage', () => {
     })
   })
 
+  it('uses current ventilation facts across A → B → cleared selections and same-key updates', async () => {
+    const factory = jest.requireActual<typeof import('../common/buildingInfo')>(
+      '../common/buildingInfo'
+    ).createEnergymapBuildingInfoPanels
+    const select = (buildingKey: string, properties: Record<string, unknown>) => {
+      const feature = createMapBuildingFeature(buildingKey)
+      feature.properties = {
+        building_key: buildingKey,
+        permanent_building_identifier: buildingKey,
+        ...properties,
+      }
+      const panels = factory({
+        selectedBuilding: {
+          id: buildingKey,
+          buildingKey,
+          properties: feature.properties,
+          source: 'energymap_building_polygons',
+          sourceLayer: 'energymap_building_polygons',
+          layerId: 'energymap_building_polygons-fill',
+        },
+        locale: 'fi',
+      })!
+      mockBuildingInfoPanelsByBuildingKey.set(buildingKey, panels)
+      mockMapState.selectedFeatures = [feature]
+    }
+    select('A', {
+      energy_certificate_ventilation_type_id: '0',
+      energy_certificate_ventilation_type_label_fi: 'Label A',
+      energy_certificate_ventilation_description_sv: 'Description A',
+      ventilation_category: 'gravity',
+    })
+    const view = renderPage()
+    expect(await screen.findByText('Label A')).toBeVisible()
+    fireEvent.click(screen.getByTestId('building-info-provenance-trigger'), {
+      detail: 0,
+    })
+    await waitFor(() =>
+      expect(screen.getByTestId('building-info-provenance-heading')).toHaveFocus()
+    )
+
+    select('A', {
+      energy_certificate_ventilation_type_label_sv: 'Updated label A',
+      energy_certificate_ventilation_description_fi: 'Updated description A',
+      ventilation_category: 'no_info',
+    })
+    view.rerender(createPageElement())
+    await waitFor(() =>
+      expect(screen.queryByText('Label A')).not.toBeInTheDocument()
+    )
+    expect(screen.getByText('Updated label A').closest('[lang]')).toHaveAttribute(
+      'lang',
+      'sv'
+    )
+    expect(
+      screen.getByText('Updated description A').closest('[lang]')
+    ).toHaveAttribute('lang', 'fi')
+    expect(
+      screen.getByTestId('building-info-provenance-view')
+    ).not.toHaveTextContent(
+      'sidebar.building_info.provenance.inputs.certificate_ventilation_code'
+    )
+    expect(
+      screen.getByTestId('building-info-provenance-view')
+    ).not.toHaveTextContent(
+      'sidebar.building_info.provenance.fields.ventilation_category'
+    )
+
+    select('B', {
+      energy_certificate_ventilation_description_fi: 'Description B',
+    })
+    view.rerender(createPageElement())
+    expect(await screen.findByText('Description B')).toBeVisible()
+    expect(screen.queryByText('Updated label A')).not.toBeInTheDocument()
+    expect(
+      screen.getByTestId('building-info-provenance-trigger')
+    ).toHaveAttribute('aria-expanded', 'false')
+    mockMapState.selectedFeatures = []
+    view.rerender(createPageElement())
+    await waitFor(() =>
+      expect(screen.queryByText('Description B')).not.toBeInTheDocument()
+    )
+    expect(
+      screen.queryByTestId('building-info-provenance-trigger')
+    ).not.toBeInTheDocument()
+  })
+
   it('resets an open provenance view and its relationships for a new or cleared building', async () => {
     selectBuilding({
       buildingKey: 'official-provenance',

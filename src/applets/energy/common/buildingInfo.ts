@@ -48,6 +48,13 @@ import type {
   EnergyCertificateConsumptionStandardCarrier,
 } from './energyCertificateConsumption'
 import type { EnergymapSelectedBuilding } from './types'
+import {
+  ENERGYMAP_VENTILATION_CATEGORY_PROPERTY,
+  ENERGYMAP_VENTILATION_DESCRIPTION_PROPERTIES,
+  ENERGYMAP_VENTILATION_LABEL_PROPERTIES,
+  ENERGYMAP_VENTILATION_TYPE_PROPERTY,
+  isEnergymapVentilationCategory,
+} from 'applets/energy/common/ventilation'
 
 export type EnergymapBuildingInfoPanelId =
   | 'energyConsumption'
@@ -278,22 +285,6 @@ const IS_ENERGY_CLASS_MODELED_PROPERTY = 'is_energy_class_modeled'
 type EnergyClassProperty =
   | typeof ENERGY_CLASS_PROPERTY
   | typeof ENERGY_CERTIFICATE_PREVIOUS_CLASS_PROPERTY
-const ENERGY_CERTIFICATE_VENTILATION_TYPE_PROPERTY =
-  'energy_certificate_ventilation_type_id'
-const ENERGY_CERTIFICATE_VENTILATION_DESCRIPTION_FI_PROPERTY =
-  'energy_certificate_ventilation_description_fi'
-const ENERGY_CERTIFICATE_VENTILATION_DESCRIPTION_SV_PROPERTY =
-  'energy_certificate_ventilation_description_sv'
-const ENERGY_CERTIFICATE_VENTILATION_DESCRIPTION_PROPERTIES = {
-  fi: ENERGY_CERTIFICATE_VENTILATION_DESCRIPTION_FI_PROPERTY,
-  sv: ENERGY_CERTIFICATE_VENTILATION_DESCRIPTION_SV_PROPERTY,
-} as const
-// Energy supports Finnish and English UI locales, so registry descriptions use
-// Finnish first and the Swedish source only as a fallback.
-const ENERGY_CERTIFICATE_VENTILATION_DESCRIPTION_SOURCE_ORDER = [
-  'fi',
-  'sv',
-] as const
 const ENERGY_CERTIFICATE_RECOMMENDATIONS_FI_PROPERTY =
   'energy_certificate_recommendations_fi'
 const ENERGY_CERTIFICATE_RECOMMENDATIONS_SV_PROPERTY =
@@ -1964,42 +1955,100 @@ const getHeatingValue = (
   })
 }
 
+// FI/EN UI uses FI first, then SV, independently for each source fact.
+// Source-language metadata identifies the field, not detected prose language.
+const getVentilationSourceText = ({
+  properties,
+  fields,
+}: {
+  properties: EnergymapSelectedBuilding['properties']
+  fields: { fi: string; sv: string }
+}) => {
+  for (const sourceLanguage of ['fi', 'sv'] as const) {
+    const sourceProperty = fields[sourceLanguage]
+    const raw = properties[sourceProperty]
+    if (typeof raw === 'string' && raw.trim() !== '') {
+      return { text: raw.trim(), sourceProperty, sourceLanguage }
+    }
+  }
+  return null
+}
+
 const getVentilationValue = (
   properties: EnergymapSelectedBuilding['properties']
 ): EnergymapBuildingInfoValue => {
-  for (const sourceLanguage of ENERGY_CERTIFICATE_VENTILATION_DESCRIPTION_SOURCE_ORDER) {
-    const propertyName =
-      ENERGY_CERTIFICATE_VENTILATION_DESCRIPTION_PROPERTIES[sourceLanguage]
+  const source = getVentilationSourceText({
+    properties,
+    fields: ENERGYMAP_VENTILATION_DESCRIPTION_PROPERTIES,
+  })
+  if (source == null) return missingValue()
 
-    if (typeof properties[propertyName] !== 'string') {
-      continue
-    }
+  return realValue({
+    text: plainText(source.text),
+    sourceProperties: [source.sourceProperty],
+    sourceLanguage: source.sourceLanguage,
+    provenance: {
+      id: ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.VENTILATION,
+      inputIds: [
+        source.sourceLanguage === 'fi'
+          ? ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_VENTILATION_FI
+          : ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_VENTILATION_SV,
+      ],
+    },
+  })
+}
 
-    const description = getStringProperty(properties, propertyName)
+const getVentilationTypeValue = (
+  properties: EnergymapSelectedBuilding['properties']
+): EnergymapBuildingInfoValue => {
+  const source = getVentilationSourceText({
+    properties,
+    fields: ENERGYMAP_VENTILATION_LABEL_PROPERTIES,
+  })
+  if (source == null) return missingValue()
 
-    if (description != null) {
-      return realValue({
-        text: plainText(description),
-        sourceProperties: [propertyName],
-        sourceLanguage,
-        provenance: {
-          id: ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.VENTILATION,
-          inputIds: [
-            sourceLanguage === 'fi'
-              ? ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_VENTILATION_FI
-              : ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_VENTILATION_SV,
-          ],
-        },
-      })
-    }
+  const code = properties[ENERGYMAP_VENTILATION_TYPE_PROPERTY]
+  const hasCode = typeof code === 'string' && code.trim() !== ''
+  const codeInputId =
+    ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_VENTILATION_CODE
+  return realValue({
+    text: plainText(source.text),
+    sourceProperties: [
+      source.sourceProperty,
+      ...(hasCode ? [ENERGYMAP_VENTILATION_TYPE_PROPERTY] : []),
+    ],
+    sourceLanguage: source.sourceLanguage,
+    provenance: {
+      id: ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.VENTILATION_TYPE,
+      inputIds: [
+        source.sourceLanguage === 'fi'
+          ? ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.VENTILATION_LABEL_FI
+          : ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.VENTILATION_LABEL_SV,
+        ...(hasCode ? [codeInputId] : []),
+      ],
+      ...(hasCode ? { runtimeValues: { [codeInputId]: code } } : {}),
+    },
+  })
+}
+
+const getVentilationCategoryValue = (
+  properties: EnergymapSelectedBuilding['properties']
+): EnergymapBuildingInfoValue => {
+  const category = properties[ENERGYMAP_VENTILATION_CATEGORY_PROPERTY]
+  if (!isEnergymapVentilationCategory(category) || category === 'no_info') {
+    return missingValue()
   }
 
-  return missingValue({
-    sourceProperties: [
-      ENERGY_CERTIFICATE_VENTILATION_DESCRIPTION_FI_PROPERTY,
-      ENERGY_CERTIFICATE_VENTILATION_DESCRIPTION_SV_PROPERTY,
-      ENERGY_CERTIFICATE_VENTILATION_TYPE_PROPERTY,
-    ],
+  const inputId =
+    ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.VENTILATION_CATEGORY
+  return realValue({
+    text: translationText(`sidebar.front_page.ventilation.legend.${category}`),
+    sourceProperties: [ENERGYMAP_VENTILATION_CATEGORY_PROPERTY],
+    provenance: {
+      id: ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.VENTILATION_CATEGORY,
+      inputIds: [inputId],
+      runtimeValues: { [inputId]: category },
+    },
   })
 }
 
@@ -3539,9 +3588,19 @@ const createBuildingDetailsPanel = ({
           }),
         }),
         row({
+          id: 'ventilationType',
+          labelKey: key('panels.building.rows.ventilation_type'),
+          value: getVentilationTypeValue(properties),
+        }),
+        row({
           id: 'ventilation',
           labelKey: key('panels.building.rows.ventilation'),
           value: getVentilationValue(properties),
+        }),
+        row({
+          id: 'ventilationCategory',
+          labelKey: key('panels.building.rows.ventilation_category'),
+          value: getVentilationCategoryValue(properties),
         }),
       ],
     },

@@ -766,6 +766,110 @@ describe('BuildingInfoPanel', () => {
   })
 
   it.each([false, true])(
+    'renders independent literal ventilation facts and clears same-building updates (mobile=%s)',
+    async (forceMobileLayout) => {
+      const literal =
+        '<strong data-injected="true">Åä</strong>\n  {value} **original**'
+      const makePanels = (properties: Record<string, unknown>) =>
+        createCatalogValidPanels({
+          properties: {
+            permanent_building_identifier: 'VENTILATION-BUILDING',
+            ...properties,
+          },
+        })
+      const view = renderBuildingInfoTabs({
+        panels: makePanels({
+          energy_certificate_ventilation_type_id: '0',
+          energy_certificate_ventilation_type_label_fi:
+            'Synthetic long FI type label '.repeat(8).trim(),
+          energy_certificate_ventilation_description_sv: literal,
+          ventilation_category: 'other',
+        }),
+        panelKey: 'same-building',
+        forceMobileLayout,
+      })
+      const page = await screen.findByTestId('building-info-tab-page-basic')
+      for (const name of [
+        'ventilation_type',
+        'ventilation',
+        'ventilation_category',
+      ]) {
+        expect(
+          within(page).getByText(
+            `sidebar.building_info.panels.building.rows.${name}`
+          )
+        ).toBeVisible()
+      }
+      const value = page.querySelector(
+        '[data-source-properties="energy_certificate_ventilation_description_sv"]'
+      )!
+      expect(value).toHaveAttribute('lang', 'sv')
+      expect(value.textContent).toBe(literal)
+      expect(value.querySelector('strong, script, [data-injected]')).toBeNull()
+      expect(
+        page.querySelector(
+          '[data-source-properties^="energy_certificate_ventilation_type_label_fi"]'
+        )
+      ).toHaveAttribute('lang', 'fi')
+      const trigger = screen.getByTestId('building-info-provenance-trigger')
+      fireEvent.click(trigger, { detail: 0 })
+      await waitFor(() =>
+        expect(
+          screen.getByTestId('building-info-provenance-heading')
+        ).toHaveFocus()
+      )
+      const provenance = screen.getByTestId('building-info-provenance-view')
+      expect(provenance).toHaveTextContent(
+        'sidebar.building_info.provenance.fields.ventilation_type'
+      )
+
+      view.rerenderBuildingInfoTabs({
+        panels: makePanels({
+          energy_certificate_ventilation_type_label_sv: 'Updated SV label only',
+          ventilation_category: 'no_info',
+        }),
+      })
+      expect(provenance).not.toHaveTextContent(
+        'sidebar.building_info.provenance.inputs.certificate_ventilation_code'
+      )
+      expect(provenance).not.toHaveTextContent(
+        'sidebar.building_info.provenance.fields.ventilation_category'
+      )
+      fireEvent.keyDown(document, { key: 'Escape' })
+      await waitFor(() => expect(trigger).toHaveFocus())
+      expect(
+        within(page).getByText('Updated SV label only').closest('[lang]')
+      ).toHaveAttribute('lang', 'sv')
+      expect(
+        within(page).queryByText(
+          'sidebar.building_info.panels.building.rows.ventilation'
+        )
+      ).not.toBeInTheDocument()
+      expect(page).not.toHaveTextContent(literal)
+
+      view.rerenderBuildingInfoTabs({
+        panels: makePanels({
+          energy_certificate_ventilation_description_fi: 'Description only',
+        }),
+      })
+      expect(
+        within(page).getByText('Description only').closest('[lang]')
+      ).toHaveAttribute('lang', 'fi')
+      expect(
+        within(page).queryByText(
+          'sidebar.building_info.panels.building.rows.ventilation_type'
+        )
+      ).not.toBeInTheDocument()
+      view.rerenderBuildingInfoTabs({
+        panels: makePanels({ ventilation_category: 'no_info' }),
+        panelKey: 'next-building',
+      })
+      expect(screen.queryByText('Description only')).not.toBeInTheDocument()
+      expect(screen.queryByText('Updated SV label only')).not.toBeInTheDocument()
+    }
+  )
+
+  it.each([false, true])(
     'keeps property identity and provenance current (mobile=%s)',
     async (forceMobileLayout) => {
       const createPropertyPanels = (

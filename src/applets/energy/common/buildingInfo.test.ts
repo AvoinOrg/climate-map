@@ -2334,3 +2334,266 @@ describe('energy certificate consumption fallback model', () => {
     ).toMatch(/eivät ole mitattua tai nykyhetken kulutusta/i)
   })
 })
+
+describe('published ventilation facts', () => {
+  const I = ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS
+  const IDS = ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS
+  const rowsFor = (properties: Record<string, unknown>, locale = 'en') =>
+    createEnergymapBuildingInfoPanels({
+      selectedBuilding: createSelectedBuilding(properties),
+      locale,
+    })
+      ?.flatMap((panel) =>
+        panel.sections.flatMap((section) => section.rows ?? [])
+      )
+      .filter(({ id }) => id.startsWith('ventilation')) ?? []
+
+  // Published-contract examples from the mounted reference/ventilation.md.
+  // These are pass-through fixtures, never a frontend classification table.
+  it.each([
+    ['0', 'Painovoimainen ilmanvaihtojärjestelmä'],
+    ['1', 'Koneellinen poistoilmanvaihtojärjestelmä'],
+    ['2', 'Koneellinen tulo- ja poistoilmanvaihtojärjestelmä'],
+    ['3', 'Poistoilmalämpöpumppu (vain käyttötarkoitusluokka 1)'],
+    ['4', 'Painovoimainen/koneellinen poisto'],
+    ['5', 'Painovoimainen/koneellinen tulo- ja poisto'],
+    ['6', 'Muu ilmanvaihtojärjestelmä'],
+    ['7', 'Koneellinen poistoilmanvaihtojärjestelmä lämmöntalteenotolla'],
+    [
+      '8',
+      'Koneellinen tulo- ja poistoilmanvaihtojärjestelmä lämmöntalteenotolla',
+    ],
+    ['0', 'Updated service label, not a frontend lookup'],
+    ['future-code', 'Future published label'],
+  ])(
+    'displays only the supplied label with exact code evidence %s',
+    (code, label) => {
+      expect(
+        rowsFor({
+          energy_certificate_ventilation_type_id: code,
+          energy_certificate_ventilation_type_label_fi: label,
+        })
+      ).toEqual([
+        expect.objectContaining({
+          id: 'ventilationType',
+          text: plain(label),
+          sourceLanguage: 'fi',
+          sourceProperties: [
+            'energy_certificate_ventilation_type_label_fi',
+            'energy_certificate_ventilation_type_id',
+          ],
+          status: 'real',
+          provenance: {
+            id: IDS.VENTILATION_TYPE,
+            inputIds: [I.VENTILATION_LABEL_FI, I.CERTIFICATE_VENTILATION_CODE],
+            runtimeValues: { [I.CERTIFICATE_VENTILATION_CODE]: code },
+          },
+        }),
+      ])
+    }
+  )
+
+  it.each([undefined, null, '', ' \n ', 0, 8, false, {}, []])(
+    'keeps a supplied label without invalid code evidence %p',
+    (code) => {
+      const rows = rowsFor({
+        energy_certificate_ventilation_type_id: code,
+        energy_certificate_ventilation_type_label_sv: 'Synthetic SV label',
+      })
+      expect(rows).toHaveLength(1)
+      expect(rows[0]).toMatchObject({
+        id: 'ventilationType',
+        text: plain('Synthetic SV label'),
+        sourceLanguage: 'sv',
+        sourceProperties: ['energy_certificate_ventilation_type_label_sv'],
+        provenance: {
+          id: IDS.VENTILATION_TYPE,
+          inputIds: [I.VENTILATION_LABEL_SV],
+        },
+      })
+      expect(rows[0].provenance?.runtimeValues).toBeUndefined()
+    }
+  )
+
+  it.each(['0', '8', 'unknown', undefined])(
+    'never invents a label for code %p',
+    (code) => {
+      expect(rowsFor({ energy_certificate_ventilation_type_id: code })).toEqual(
+        []
+      )
+      expect(
+        rowsFor({
+          energy_certificate_ventilation_type_id: code,
+          energy_certificate_ventilation_description_fi:
+            'Original description only',
+        }).map(({ id }) => id)
+      ).toEqual(['ventilation'])
+    }
+  )
+
+  it.each([undefined, null, '', ' \t\n ', 0, 42, true, {}, []])(
+    'removes invalid labels and descriptions independently: %p',
+    (value) => {
+      const properties = {
+        energy_certificate_ventilation_type_label_fi: value,
+        energy_certificate_ventilation_type_label_sv: value,
+        energy_certificate_ventilation_description_fi: value,
+        energy_certificate_ventilation_description_sv: value,
+      }
+      expect(rowsFor(properties)).toEqual([])
+      expect(
+        rowsFor({
+          ...properties,
+          energy_certificate_ventilation_type_label_fi: 'Type',
+        }).map(({ id }) => id)
+      ).toEqual(['ventilationType'])
+      expect(
+        rowsFor({
+          ...properties,
+          energy_certificate_ventilation_description_sv: 'Description',
+        }).map(({ id }) => id)
+      ).toEqual(['ventilation'])
+    }
+  )
+
+  it.each(['fi', 'fi-FI', 'en', 'en-GB'])(
+    'selects FI then SV independently without translating source content in %s',
+    (locale) => {
+      for (const labelLanguage of ['fi', 'sv']) {
+        for (const descriptionLanguage of ['fi', 'sv']) {
+          const rows = rowsFor(
+            {
+              energy_certificate_ventilation_type_label_fi:
+                labelLanguage === 'fi' ? '  Synthetic FI label  ' : 123,
+              energy_certificate_ventilation_type_label_sv:
+                '  Synthetic SV label  ',
+              energy_certificate_ventilation_description_fi:
+                descriptionLanguage === 'fi' ? '  FI source prose  ' : ' \n ',
+              energy_certificate_ventilation_description_sv:
+                '  Suomenkielinen teksti SV-kentässä  ',
+            },
+            locale
+          )
+          expect(rows).toHaveLength(2)
+          expect(rows[0]).toMatchObject({
+            id: 'ventilationType',
+            text: plain(`Synthetic ${labelLanguage.toUpperCase()} label`),
+            sourceLanguage: labelLanguage,
+            sourceProperties: [
+              `energy_certificate_ventilation_type_label_${labelLanguage}`,
+            ],
+          })
+          expect(rows[1]).toMatchObject({
+            id: 'ventilation',
+            text: plain(
+              descriptionLanguage === 'fi'
+                ? 'FI source prose'
+                : 'Suomenkielinen teksti SV-kentässä'
+            ),
+            sourceLanguage: descriptionLanguage,
+            sourceProperties: [
+              `energy_certificate_ventilation_description_${descriptionLanguage}`,
+            ],
+          })
+        }
+      }
+    }
+  )
+
+  it('preserves internal whitespace, Unicode and markup-looking source text literally', () => {
+    const text =
+      'Ää Ö – <script>window.bad = true</script>\n  {count, plural, other {#}} **source**'
+    const rows = rowsFor({
+      energy_certificate_ventilation_type_label_fi: ` \n${text}  `,
+      energy_certificate_ventilation_description_sv: `  ${text}\n`,
+    })
+    expect(rows.map((row) => row.text)).toEqual([plain(text), plain(text)])
+  })
+
+  it.each(['mechanical', 'gravity', 'other'])(
+    'uses the exact informative published category %s independently',
+    (category) => {
+      expect(rowsFor({ ventilation_category: category })).toEqual([
+        expect.objectContaining({
+          id: 'ventilationCategory',
+          text: translation(
+            `sidebar.front_page.ventilation.legend.${category}`
+          ),
+          sourceProperties: ['ventilation_category'],
+          provenance: {
+            id: IDS.VENTILATION_CATEGORY,
+            inputIds: [I.VENTILATION_CATEGORY],
+            runtimeValues: { [I.VENTILATION_CATEGORY]: category },
+          },
+        }),
+      ])
+    }
+  )
+
+  it.each([
+    'no_info',
+    undefined,
+    null,
+    '',
+    '0',
+    'MECHANICAL',
+    ' gravity',
+    'other ',
+    'stale',
+    0,
+    true,
+    {},
+    [],
+  ])(
+    'does not reconstruct an unavailable category %p from code or text',
+    (category) => {
+      expect(rowsFor({ ventilation_category: category })).toEqual([])
+      expect(
+        rowsFor({
+          ventilation_category: category,
+          energy_certificate_ventilation_type_id: '0',
+          energy_certificate_ventilation_type_label_fi: 'Supplied label',
+          energy_certificate_ventilation_description_sv:
+            'Mechanical ventilation',
+        }).map(({ id }) => id)
+      ).toEqual(['ventilationType', 'ventilation'])
+    }
+  )
+
+  it.each([true, false, undefined])(
+    'keeps conflicting facts certificate-derived regardless of energy class origin %p',
+    (origin) => {
+      for (const validity of [undefined, '2010-01-01', '2035-01-01']) {
+        const rows = rowsFor({
+          energy_class: origin == null ? undefined : 'D',
+          is_energy_class_modeled: origin,
+          energy_certificate_valid_until: validity,
+          energy_certificate_ventilation_type_id: '0',
+          energy_certificate_ventilation_type_label_fi:
+            'Painovoimainen ilmanvaihtojärjestelmä',
+          energy_certificate_ventilation_description_fi: 'Koneellinen poisto',
+          ventilation_category: 'other',
+        })
+        expect(
+          rows.map(({ id, status, text }) => ({ id, status, text }))
+        ).toEqual([
+          {
+            id: 'ventilationType',
+            status: 'real',
+            text: plain('Painovoimainen ilmanvaihtojärjestelmä'),
+          },
+          {
+            id: 'ventilation',
+            status: 'real',
+            text: plain('Koneellinen poisto'),
+          },
+          {
+            id: 'ventilationCategory',
+            status: 'real',
+            text: translation('sidebar.front_page.ventilation.legend.other'),
+          },
+        ])
+      }
+    }
+  )
+})

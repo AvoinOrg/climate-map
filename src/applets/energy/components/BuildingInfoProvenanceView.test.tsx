@@ -159,6 +159,61 @@ const renderView = ({
 }
 
 describe('BuildingInfoProvenanceView', () => {
+  it('shows separate ventilation origins, runtime evidence and certificate/language context', () => {
+    renderView({
+      result: deriveResult({
+        properties: {
+          energy_certificate_ventilation_type_id: '0',
+          energy_certificate_ventilation_type_label_fi: 'Synthetic FI label',
+          energy_certificate_ventilation_description_sv:
+            'Synthetic SV description',
+          ventilation_category: 'other',
+        },
+      }),
+    })
+    const items = screen.getAllByTestId('building-info-provenance-item')
+    expect(items).toHaveLength(3)
+    const item = (rowId: string) =>
+      items.find(
+        (element) =>
+          element.getAttribute('data-provenance-item-id') ===
+          `buildingDetails/technicalDetails/row/${rowId}`
+      )!
+    const type = item('ventilationType')
+    for (const key of [
+      'fields.ventilation_type',
+      'categories.official_classification',
+      'sources.official_ventilation_classification',
+      'sources.energy_certificate_register',
+      'inputs.certificate_ventilation_code',
+      'metadata.ventilation_certificate_context',
+      'metadata.ventilation_source_language',
+    ]) {
+      expect(type).toHaveTextContent(`sidebar.building_info.provenance.${key}`)
+    }
+    expect(within(type).getByText('0', { exact: false })).toBeInTheDocument()
+    expect(item('ventilation')).toHaveTextContent(
+      'sidebar.building_info.provenance.sources.energy_certificate_register'
+    )
+    const category = item('ventilationCategory')
+    expect(category).toHaveTextContent(
+      'sidebar.building_info.provenance.sources.energy_map_ventilation_grouping'
+    )
+    expect(category).toHaveTextContent(
+      'sidebar.building_info.provenance.categories.published_derivation'
+    )
+    expect(category).toHaveTextContent(
+      'sidebar.building_info.provenance.providers.energy_map'
+    )
+    expect(category).toHaveTextContent('other')
+    expect(category).not.toHaveTextContent(
+      'sidebar.building_info.provenance.sources.energy_certificate_register'
+    )
+    expect(category).not.toHaveTextContent(
+      'sidebar.building_info.provenance.categories.modeled_output'
+    )
+  })
+
   it.each(['fi', 'en'])(
     'renders property-specific Ryhti evidence only when available (%s)',
     (locale) => {
