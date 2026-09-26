@@ -643,6 +643,62 @@
         "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
+        "id": "information-footer-basic-fi",
+        "label": "Building details footer FI",
+        "locale": "fi",
+        "description": "Basic tab information icon below the last building-details row.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "information-footer-renovation-fi",
+        "label": "Renovation details footer FI",
+        "locale": "fi",
+        "description": "Renovation tab information icon below the last building-details row.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "information-footer-fullscreen-fi",
+        "label": "Fullscreen information footer FI",
+        "locale": "fi",
+        "description": "Information icon in the desktop fullscreen extension shell.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "information-footer-fullscreen-en",
+        "label": "Fullscreen information footer EN",
+        "locale": "en",
+        "description": "Information icon in the desktop fullscreen extension shell.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "information-footer-forced-mobile-fi",
+        "label": "Forced mobile information footer FI",
+        "locale": "fi",
+        "description": "Stacked details footer at a desktop viewport.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "information-footer-forced-mobile-en",
+        "label": "Forced mobile information footer EN",
+        "locale": "en",
+        "description": "Stacked details footer at a desktop viewport.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "information-footer-details-only-fi",
+        "label": "Details-only information footer FI",
+        "locale": "fi",
+        "description": "Information access with a property identifier and no calculation data.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "information-footer-details-only-en",
+        "label": "Details-only information footer EN",
+        "locale": "en",
+        "description": "Information access with a property identifier and no calculation data.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
         "id": "information-unavailable-open",
         "label": "Diagnostics unavailable",
         "description": "Explicit unavailable-diagnostics status for authored panels without source candidates.",

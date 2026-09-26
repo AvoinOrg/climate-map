@@ -998,11 +998,14 @@ describe('BuildingInfoPanel', () => {
   })
 
   it.each([
-    ['desktop', false],
-    ['forced mobile', true],
-  ])(
+    ['desktop', false, false, false],
+    ['forced mobile', true, false, false],
+    ['natural mobile', false, true, false],
+    ['desktop fullscreen', false, false, true],
+  ] as const)(
     'opens and closes one accessible provenance region in %s layout',
-    async (_name, forceMobileLayout) => {
+    async (_name, forceMobileLayout, isMobile, isDesktopFullscreenLayout) => {
+      mockIsMobile = isMobile
       const provenancePanels = createCatalogValidPanels({
         properties: {
           building_key: `accessible-${forceMobileLayout ? 'mobile' : 'desktop'}`,
@@ -1010,7 +1013,11 @@ describe('BuildingInfoPanel', () => {
           is_energy_class_modeled: false,
         },
       })
-      renderBuildingInfoTabs({ panels: provenancePanels, forceMobileLayout })
+      renderBuildingInfoTabs({
+        panels: provenancePanels,
+        forceMobileLayout,
+        isDesktopFullscreenLayout,
+      })
 
       await screen.findByTestId('building-info-tab-page-basic')
       const triggerName = 'sidebar.building_info.provenance.view.open'
@@ -1038,15 +1045,19 @@ describe('BuildingInfoPanel', () => {
 
       const details = screen.getByTestId('building-info-panel-buildingDetails')
       expect(details).toContainElement(trigger)
-      expect(trigger).toHaveTextContent(
-        'sidebar.building_info.provenance.view.action'
+      expect(trigger.textContent).toBe('')
+      expect(trigger.children).toHaveLength(1)
+      const glyph = trigger.querySelector('svg')
+      expect(glyph).toHaveAttribute('aria-hidden', 'true')
+      expect(glyph?.tabIndex).toBe(-1)
+      const rows = details.querySelectorAll(
+        '[data-row-id], [data-section-row-id], [data-building-subheader-row-id]'
       )
-      const lastRow = details.querySelector('tr:last-child')
-      if (lastRow != null)
-        expect(
-          lastRow.compareDocumentPosition(trigger) &
-            Node.DOCUMENT_POSITION_FOLLOWING
-        ).toBeTruthy()
+      expect(rows.length).toBeGreaterThan(0)
+      expect(
+        rows[rows.length - 1].compareDocumentPosition(trigger) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy()
 
       fireEvent.click(trigger)
       await waitFor(() => {
@@ -1728,6 +1739,7 @@ describe('BuildingInfoPanel', () => {
 
     fireEvent.pointerDown(trigger, { pointerType: 'touch' })
     fireEvent.blur(residentInput, { relatedTarget: null })
+    fireEvent.pointerUp(trigger, { pointerType: 'touch' })
     fireEvent.click(trigger)
 
     await waitFor(() => {
@@ -1745,9 +1757,7 @@ describe('BuildingInfoPanel', () => {
     expect(residentInput).toHaveValue('')
     expect(
       screen.getByTestId('building-info-provenance-view')
-    ).toHaveTextContent(
-      'sidebar.building_info.missing_data.water_residents'
-    )
+    ).toHaveTextContent('sidebar.building_info.missing_data.water_residents')
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -1838,12 +1848,29 @@ describe('BuildingInfoPanel', () => {
     )
     expect(
       screen.getByTestId('building-info-provenance-view')
-    ).toHaveTextContent(
-      'sidebar.building_info.missing_data.water_residents'
-    )
+    ).toHaveTextContent('sidebar.building_info.missing_data.water_residents')
   })
 
   it.each([
+    {
+      interaction: 'a pressed pointer dragged out of the trigger',
+      moveFocus: ({
+        residentInput,
+        trigger,
+      }: {
+        residentInput: HTMLElement
+        trigger: HTMLElement
+      }) => {
+        fireEvent.pointerDown(trigger, { pointerType: 'mouse', buttons: 1 })
+        fireEvent.blur(residentInput, { relatedTarget: null })
+        // JSDOM has no PointerEvent constructor; keep the pressed-buttons
+        // value on the event that React uses to synthesize pointerleave.
+        fireEvent(
+          trigger,
+          new MouseEvent('pointerout', { bubbles: true, buttons: 1 })
+        )
+      },
+    },
     {
       interaction: 'a canceled touch pointer gesture',
       moveFocus: ({
@@ -4311,20 +4338,41 @@ describe('missing-information footer placement', () => {
     mockIsMobile = false
     resetUIStore()
   })
+  afterEach(() => {
+    mockIsMobile = false
+    act(() => resetUIStore())
+  })
   it.each([
-    ['basic', false, false],
-    ['renovation', false, false],
-    ['basic', true, false],
-    ['renovation', true, false],
-    ['basic', false, true],
-    ['renovation', false, true],
+    ['basic', false, false, false],
+    ['renovation', false, false, false],
+    ['basic', true, false, false],
+    ['renovation', true, false, false],
+    ['basic', false, true, false],
+    ['renovation', false, true, false],
+    ['basic', false, false, true],
+    ['renovation', false, false, true],
   ] as const)(
-    'places one footer after all building rows (%s, mobile=%s, fullscreen=%s)',
-    async (activeTabId, forceMobileLayout, isDesktopFullscreenLayout) => {
+    'places one footer after all building rows (%s, forced=%s, fullscreen=%s, mobile=%s)',
+    async (
+      activeTabId,
+      forceMobileLayout,
+      isDesktopFullscreenLayout,
+      isMobile
+    ) => {
+      mockIsMobile = isMobile
       renderBuildingInfoTabs({
         activeTabId,
         forceMobileLayout,
         isDesktopFullscreenLayout,
+        panels: createCatalogValidPanels({
+          properties: {
+            building_key: 'information-footer-placement',
+            property_identifier: '09102000040003',
+            energy_class: 'D',
+            is_energy_class_modeled: false,
+            energy_certificate_recommendations_fi: 'Korjaa ikkunat.',
+          },
+        }),
       })
       const page = await screen.findByTestId(
         `building-info-tab-page-${activeTabId}`
@@ -4339,16 +4387,57 @@ describe('missing-information footer placement', () => {
       expect(
         screen.getAllByTestId('building-info-provenance-trigger')
       ).toHaveLength(1)
-      for (const row of details.querySelectorAll('tr')) {
+      const rows = details.querySelectorAll(
+        '[data-row-id], [data-section-row-id], [data-building-subheader-row-id]'
+      )
+      expect(rows.length).toBeGreaterThan(0)
+      for (const row of rows) {
         expect(
           row.compareDocumentPosition(trigger) &
             Node.DOCUMENT_POSITION_FOLLOWING
         ).toBeTruthy()
       }
       expect(
-        trigger.closest('[data-testid="sidebar-panel-extension-page-controls"]')
+        trigger.closest('.sidebar-panel-extension-page-container-controls')
       ).toBeNull()
-      expect(trigger.closest('tr')).toBeNull()
+      expect(
+        trigger.closest(
+          '[data-row-id], [data-section-row-id], [data-building-subheader-row-id]'
+        )
+      ).toBeNull()
+    }
+  )
+
+  it.each(['fi', 'en'])(
+    'keeps the information icon usable with only property details (%s)',
+    async (locale) => {
+      renderBuildingInfoTabs({
+        locale,
+        panels: createCatalogValidPanels({
+          locale,
+          properties: {
+            building_key: 'information-details-only',
+            property_identifier: '00000000000001',
+          },
+        }),
+      })
+      const details = await screen.findByTestId(
+        'building-info-panel-buildingDetails'
+      )
+      expect(
+        screen.queryByTestId('building-info-panel-energyConsumption')
+      ).not.toBeInTheDocument()
+      const trigger = within(details).getByRole('button', {
+        name: 'sidebar.building_info.provenance.view.open',
+      })
+      fireEvent.click(trigger)
+      await waitFor(() =>
+        expect(
+          screen.getByTestId('building-info-provenance-heading')
+        ).toHaveFocus()
+      )
+      fireEvent.keyDown(document, { key: 'Escape' })
+      await waitFor(() => expect(trigger).toHaveFocus())
     }
   )
 

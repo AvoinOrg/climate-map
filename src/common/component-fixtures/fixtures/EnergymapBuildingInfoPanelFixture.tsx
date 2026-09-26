@@ -927,17 +927,23 @@ const createFixturePanels = ({
   return completePanels
 }
 
-const getFixtureExtensionOptions = (
-  forceMobileLayout: boolean,
+const getFixtureExtensionOptions = ({
+  forceMobileLayout,
+  isDesktopFullscreenLayout,
+  desktopContentWidthPx,
+}: {
+  forceMobileLayout: boolean
+  isDesktopFullscreenLayout: boolean
   desktopContentWidthPx?: number
-): SidebarPanelExtensionRuntimeOptions => ({
+}): SidebarPanelExtensionRuntimeOptions => ({
   visiblePanels: ['main'],
   activePanel: 'main',
   width: 'wide',
   chrome: 'hidden',
   panelLayout: 'single',
   forceMobileLayout,
-  ...(desktopContentWidthPx == null
+  layoutMode: isDesktopFullscreenLayout ? 'fullscreen' : 'default',
+  ...(isDesktopFullscreenLayout || desktopContentWidthPx == null
     ? {}
     : { desktopMainPanelWidth: `${desktopContentWidthPx}px` }),
 })
@@ -993,6 +999,7 @@ const BuildingInfoPanelFixtureState = ({
   currentClassOrigin = 'modeled',
   defaultPrimaryMetricId,
   forceMobileLayout = false,
+  isDesktopFullscreenLayout = false,
   interaction,
   locale = 'en',
   provenanceVariant,
@@ -1004,6 +1011,7 @@ const BuildingInfoPanelFixtureState = ({
   currentClassOrigin?: FixtureCurrentClassOrigin
   defaultPrimaryMetricId?: EnergymapBuildingInfoPrimaryMetricId
   forceMobileLayout?: boolean
+  isDesktopFullscreenLayout?: boolean
   recommendationSourceLanguage?: keyof typeof CERTIFICATE_RECOMMENDATIONS_BY_LANGUAGE
   topologyVariant?: FixtureTopology
   interaction?:
@@ -1088,11 +1096,16 @@ const BuildingInfoPanelFixtureState = ({
   })
   const extensionOptions = React.useMemo(
     () =>
-      getFixtureExtensionOptions(
+      getFixtureExtensionOptions({
         forceMobileLayout,
-        resolvedTab?.desktopContentWidthPx
-      ),
-    [forceMobileLayout, resolvedTab?.desktopContentWidthPx]
+        isDesktopFullscreenLayout,
+        desktopContentWidthPx: resolvedTab?.desktopContentWidthPx,
+      }),
+    [
+      forceMobileLayout,
+      isDesktopFullscreenLayout,
+      resolvedTab?.desktopContentWidthPx,
+    ]
   )
   const rootRef = React.useRef<HTMLDivElement | null>(null)
   const [interactionReady, setInteractionReady] = React.useState(false)
@@ -1109,6 +1122,7 @@ const BuildingInfoPanelFixtureState = ({
 
     let interactionRequested = false
     let observer: MutationObserver | null = null
+    let footerScrollFrame: number | null = null
 
     const markReady = () => {
       observer?.disconnect()
@@ -1118,11 +1132,14 @@ const BuildingInfoPanelFixtureState = ({
     const prepareInteraction = () => {
       if (interaction === 'information-footer') {
         const trigger = root.querySelector<HTMLButtonElement>(
-          '[data-testid="building-info-provenance-trigger"]'
+          `[data-testid="building-info-tab-page-${activeTabId}"] [data-testid="building-info-provenance-trigger"]`
         )
-        if (trigger == null) return
-        trigger.scrollIntoView({ block: 'center' })
-        markReady()
+        if (trigger == null || footerScrollFrame != null) return
+        // Wait for the requested tab and its scroll host to finish mounting.
+        footerScrollFrame = window.requestAnimationFrame(() => {
+          trigger.scrollIntoView({ block: 'center' })
+          markReady()
+        })
         return
       }
 
@@ -1555,8 +1572,14 @@ const BuildingInfoPanelFixtureState = ({
     })
     prepareInteraction()
 
-    return () => observer?.disconnect()
+    return () => {
+      observer?.disconnect()
+      if (footerScrollFrame != null) {
+        window.cancelAnimationFrame(footerScrollFrame)
+      }
+    }
   }, [
+    activeTabId,
     buildingSwitchPhase,
     certificateVariant,
     interaction,
@@ -1595,6 +1618,7 @@ const BuildingInfoPanelFixtureState = ({
                 ariaLabels={ariaLabels}
                 activeTabId={resolvedTab?.id}
                 forceMobileLayout={forceMobileLayout}
+                isDesktopFullscreenLayout={isDesktopFullscreenLayout}
                 onActiveTabChange={setRequestedTabId}
                 onClose={noop}
                 onCollapse={noop}
@@ -1705,6 +1729,145 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       render: () => (
         <BuildingInfoPanelFixtureState
           provenanceVariant="waterOnly"
+          interaction="information-footer"
+        />
+      ),
+    },
+
+    {
+      id: 'information-footer-basic-fi',
+      label: 'Building details footer FI',
+      locale: 'fi',
+      description:
+        'Basic tab information icon below the last building-details row.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          locale="fi"
+          provenanceVariant="official"
+          interaction="information-footer"
+        />
+      ),
+    },
+
+    {
+      id: 'information-footer-renovation-fi',
+      label: 'Renovation details footer FI',
+      locale: 'fi',
+      description:
+        'Renovation tab information icon below the last building-details row.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          locale="fi"
+          provenanceVariant="official"
+          activeTabId="renovation"
+          interaction="information-footer"
+        />
+      ),
+    },
+
+    {
+      id: 'information-footer-fullscreen-fi',
+      label: 'Fullscreen information footer FI',
+      locale: 'fi',
+      description:
+        'Information icon in the desktop fullscreen extension shell.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          locale="fi"
+          provenanceVariant="official"
+          isDesktopFullscreenLayout
+          interaction="information-footer"
+        />
+      ),
+    },
+
+    {
+      id: 'information-footer-fullscreen-en',
+      label: 'Fullscreen information footer EN',
+      locale: 'en',
+      description:
+        'Information icon in the desktop fullscreen extension shell.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          locale="en"
+          provenanceVariant="official"
+          isDesktopFullscreenLayout
+          interaction="information-footer"
+        />
+      ),
+    },
+
+    {
+      id: 'information-footer-forced-mobile-fi',
+      label: 'Forced mobile information footer FI',
+      locale: 'fi',
+      description: 'Stacked details footer at a desktop viewport.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          locale="fi"
+          provenanceVariant="official"
+          forceMobileLayout
+          interaction="information-footer"
+        />
+      ),
+    },
+
+    {
+      id: 'information-footer-forced-mobile-en',
+      label: 'Forced mobile information footer EN',
+      locale: 'en',
+      description: 'Stacked details footer at a desktop viewport.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          locale="en"
+          provenanceVariant="official"
+          forceMobileLayout
+          interaction="information-footer"
+        />
+      ),
+    },
+
+    {
+      id: 'information-footer-details-only-fi',
+      label: 'Details-only information footer FI',
+      locale: 'fi',
+      description:
+        'Information access with a property identifier and no calculation data.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          locale="fi"
+          provenanceVariant="propertyOnly"
+          interaction="information-footer"
+        />
+      ),
+    },
+
+    {
+      id: 'information-footer-details-only-en',
+      label: 'Details-only information footer EN',
+      locale: 'en',
+      description:
+        'Information access with a property identifier and no calculation data.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          locale="en"
+          provenanceVariant="propertyOnly"
           interaction="information-footer"
         />
       ),

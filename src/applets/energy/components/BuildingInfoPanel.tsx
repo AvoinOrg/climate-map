@@ -3714,7 +3714,6 @@ const getBuildingInfoPageControlsSx = ({
 }
 
 const BuildingInfoProvenanceTrigger = ({
-  locale,
   label,
   expanded,
   regionId,
@@ -3724,7 +3723,6 @@ const BuildingInfoProvenanceTrigger = ({
   onPointerActivationCancel,
   onOpen,
 }: {
-  locale: string
   label: string
   expanded: boolean
   regionId: string
@@ -3734,12 +3732,9 @@ const BuildingInfoProvenanceTrigger = ({
   onPointerActivationCancel: () => void
   onOpen: () => void
 }) => (
-  <Button
+  <ButtonBase
     ref={triggerRef}
     type="button"
-    variant="text"
-    size="small"
-    color="inherit"
     aria-label={label}
     aria-expanded={expanded}
     aria-controls={regionId}
@@ -3751,15 +3746,30 @@ const BuildingInfoProvenanceTrigger = ({
       if (event.buttons !== 0) onPointerActivationCancel()
     }}
     onClick={onOpen}
-    startIcon={<InfoCircle aria-hidden="true" sx={{ width: 18, height: 18 }} />}
-    sx={{ mt: '1.5rem' }}
+    sx={{
+      mt: '1.5rem',
+      width: 32,
+      height: 32,
+      minWidth: 0,
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      borderRadius: 0,
+      boxShadow: 'none',
+      lineHeight: 0,
+    }}
   >
-    <TText
-      keyName="sidebar.building_info.provenance.view.action"
-      ns="energiakartta"
-      language={locale}
+    <InfoCircle
+      aria-hidden="true"
+      sx={{
+        width: 18,
+        height: 18,
+        // Align the painted ring, inset 1 unit in its 16-unit viewBox,
+        // with the detail labels while keeping the transparent hit area.
+        transform: 'translateX(-1.125px)',
+      }}
     />
-  </Button>
+  </ButtonBase>
 )
 
 export const BuildingInfoTabPages = ({
@@ -4002,7 +4012,6 @@ export const BuildingInfoTabPages = ({
                 <BuildingInfoTabPageContent
                   detailsFooter={
                     <BuildingInfoProvenanceTrigger
-                      locale={locale}
                       label={provenanceOpenLabel}
                       expanded={isProvenanceOpen}
                       regionId={provenanceRegionId}
