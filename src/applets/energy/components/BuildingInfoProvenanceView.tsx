@@ -147,14 +147,12 @@ export const BuildingInfoProvenanceView = ({
             <Box component="span" sx={{ fontWeight: 600 }}>
               <MissingInfoText text={item.label} locale={locale} />
             </Box>
-            {item.reason != null && (
-              <Box
-                component="p"
-                sx={{ m: 0, mt: '0.25rem', color: 'neutral.darker' }}
-              >
-                <MissingInfoText text={item.reason} locale={locale} />
-              </Box>
-            )}
+            <Box
+              component="p"
+              sx={{ m: 0, mt: '0.25rem', color: 'neutral.darker' }}
+            >
+              <MissingInfoText text={item.reason} locale={locale} />
+            </Box>
           </Box>
         ))}
       </Box>

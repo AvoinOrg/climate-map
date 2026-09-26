@@ -1,3 +1,4 @@
+import { createWaterMissingItem } from 'applets/energy/common/buildingInfoMissingData'
 import React from 'react'
 import { Collapsible } from '@base-ui/react/collapsible'
 import { useTranslate } from '@tolgee/react'
@@ -1843,7 +1844,7 @@ const normalizeResidentCountOnCommit = ({
   maxValue,
 }: {
   rawValue: string
-  defaultValue: number
+  defaultValue: number | null
   minValue: number
   maxValue: number
 }) => {
@@ -1903,15 +1904,22 @@ const BuildingInfoWaterResidentControl = ({
         })
   const projection = React.useMemo(
     () =>
-      control == null || metric.value == null
+      control == null
         ? undefined
         : getEnergymapEffectiveWaterProjection({
             value: metric.value,
             residentCountControl: control,
             isOverrideEnabled,
             manualResidentCount,
+            manualResidentCountRawValue,
           }),
-    [control, isOverrideEnabled, manualResidentCount, metric.value]
+    [
+      control,
+      isOverrideEnabled,
+      manualResidentCount,
+      manualResidentCountRawValue,
+      metric.value,
+    ]
   )
 
   React.useEffect(() => {
@@ -1949,7 +1957,7 @@ const BuildingInfoWaterResidentControl = ({
           defaultValue: pendingControl.defaultValue,
           minValue: pendingControl.minValue,
           maxValue: pendingControl.maxValue,
-        })
+        }) ?? ''
       )
     )
   }, [projection, provenanceDisclosureState])
@@ -1977,7 +1985,7 @@ const BuildingInfoWaterResidentControl = ({
 
   const resetOverride = () => {
     setIsOverrideEnabled(false)
-    setManualResidentCountRawValue(String(control.defaultValue))
+    setManualResidentCountRawValue(String(control.defaultValue ?? ''))
   }
 
   return (
@@ -1987,7 +1995,12 @@ const BuildingInfoWaterResidentControl = ({
       data-primary-metric-supported="true"
       sx={{ mt: '1.5rem' }}
     >
-      <BuildingInfoMetricValueRow value={getAnnualPrimaryMetricValue(value)} />
+      {(metric.value != null ||
+        projection.calculationResult.status === 'complete') && (
+        <BuildingInfoMetricValueRow
+          value={getAnnualPrimaryMetricValue(value)}
+        />
+      )}
       <Box
         data-testid="building-info-water-resident-control"
         data-provenance-id={effectiveControl.provenance?.id}
@@ -2003,124 +2016,128 @@ const BuildingInfoWaterResidentControl = ({
           gap: '0.625rem',
         }}
       >
-        <Box
-          data-testid="building-info-water-description"
-          data-status="estimate"
-          sx={{ ...textSx, color: STATUS_SX.estimate.color }}
-        >
-          <BuildingInfoText text={effectiveControl.description} />
-        </Box>
-        <Box
-          data-testid="building-info-water-resident-row"
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1fr) 4.75rem',
-            columnGap: isOverrideEnabled ? '1.75rem' : '0.75rem',
-            alignItems: 'center',
-            width: '100%',
-            minHeight: '1.5rem',
-          }}
-        >
-          <Box id={residentLabelId} sx={{ ...textSx, color: '#111111' }}>
-            <BuildingInfoText text={effectiveControl.label} />
-          </Box>
+        {effectiveControl.defaultValue != null && (
           <Box
-            data-testid="building-info-water-resident-value-slot"
-            data-override-enabled={isOverrideEnabled ? 'true' : 'false'}
+            data-testid="building-info-water-description"
+            data-status="estimate"
+            sx={{ ...textSx, color: STATUS_SX.estimate.color }}
+          >
+            <BuildingInfoText text={effectiveControl.description} />
+          </Box>
+        )}
+        {(isOverrideEnabled || effectiveControl.defaultValue != null) && (
+          <Box
+            data-testid="building-info-water-resident-row"
             sx={{
-              width: '4.75rem',
-              minWidth: '4.75rem',
-              display: 'flex',
-              justifyContent: 'flex-end',
+              display: 'grid',
+              gridTemplateColumns: 'minmax(0, 1fr) 4.75rem',
+              columnGap: isOverrideEnabled ? '1.75rem' : '0.75rem',
               alignItems: 'center',
+              width: '100%',
+              minHeight: '1.5rem',
             }}
           >
-            {isOverrideEnabled ? (
-              <NumberInputField
-                applyNegativeMargins
-                size="small"
-                value={manualResidentCount ?? effectiveControl.defaultValue}
-                minValue={effectiveControl.minValue}
-                maxValue={effectiveControl.maxValue}
-                incrementStepValue={1}
-                format={{ maximumFractionDigits: 0 }}
-                rawValue={manualResidentCountRawValue}
-                containerSx={{ width: '4.75rem' }}
-                formControlSx={{ width: '100%' }}
-                inputSx={{
-                  '& [data-slot="number-input-input"]': {
-                    px: '0.5rem',
-                  },
-                }}
-                inputSlotProps={{
-                  inputMode: 'numeric',
-                  'aria-labelledby': residentLabelId,
-                }}
-                onRawValueChange={(rawValue) => {
-                  setManualResidentCountRawValue(rawValue)
-                }}
-                onRawValueCommitted={(rawValue) => {
-                  const isInvalidActiveInput =
-                    getValidManualResidentCount({
-                      rawValue,
-                      minValue: effectiveControl.minValue,
-                      maxValue: effectiveControl.maxValue,
-                    }) == null
-
-                  const currentProvenanceDisclosureState =
-                    getProvenanceDisclosureState?.() ??
-                    provenanceDisclosureState
-
-                  if (
-                    isInvalidActiveInput &&
-                    currentProvenanceDisclosureState !== 'closed'
-                  ) {
-                    // Preserve invalid active input whether blur happens before
-                    // the activating click or when opening focus reaches the
-                    // heading. A canceled pointer gesture is normalized by the
-                    // disclosure-state effect above.
-                    pendingInvalidCommitRawValueRef.current =
-                      currentProvenanceDisclosureState === 'pointerPending'
-                        ? rawValue
-                        : null
-                    return
-                  }
-
-                  pendingInvalidCommitRawValueRef.current = null
-                  setManualResidentCountRawValue(
-                    String(
-                      normalizeResidentCountOnCommit({
+            <Box id={residentLabelId} sx={{ ...textSx, color: '#111111' }}>
+              <BuildingInfoText text={effectiveControl.label} />
+            </Box>
+            <Box
+              data-testid="building-info-water-resident-value-slot"
+              data-override-enabled={isOverrideEnabled ? 'true' : 'false'}
+              sx={{
+                width: '4.75rem',
+                minWidth: '4.75rem',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+              }}
+            >
+              {isOverrideEnabled ? (
+                <NumberInputField
+                  applyNegativeMargins
+                  size="small"
+                  value={manualResidentCount ?? effectiveControl.defaultValue}
+                  minValue={effectiveControl.minValue}
+                  maxValue={effectiveControl.maxValue}
+                  incrementStepValue={1}
+                  format={{ maximumFractionDigits: 0 }}
+                  rawValue={manualResidentCountRawValue}
+                  containerSx={{ width: '4.75rem' }}
+                  formControlSx={{ width: '100%' }}
+                  inputSx={{
+                    '& [data-slot="number-input-input"]': {
+                      px: '0.5rem',
+                    },
+                  }}
+                  inputSlotProps={{
+                    inputMode: 'numeric',
+                    'aria-labelledby': residentLabelId,
+                  }}
+                  onRawValueChange={(rawValue) => {
+                    setManualResidentCountRawValue(rawValue)
+                  }}
+                  onRawValueCommitted={(rawValue) => {
+                    const isInvalidActiveInput =
+                      getValidManualResidentCount({
                         rawValue,
-                        defaultValue: effectiveControl.defaultValue,
                         minValue: effectiveControl.minValue,
                         maxValue: effectiveControl.maxValue,
-                      })
+                      }) == null
+
+                    const currentProvenanceDisclosureState =
+                      getProvenanceDisclosureState?.() ??
+                      provenanceDisclosureState
+
+                    if (
+                      isInvalidActiveInput &&
+                      currentProvenanceDisclosureState !== 'closed'
+                    ) {
+                      // Preserve invalid active input whether blur happens before
+                      // the activating click or when opening focus reaches the
+                      // heading. A canceled pointer gesture is normalized by the
+                      // disclosure-state effect above.
+                      pendingInvalidCommitRawValueRef.current =
+                        currentProvenanceDisclosureState === 'pointerPending'
+                          ? rawValue
+                          : null
+                      return
+                    }
+
+                    pendingInvalidCommitRawValueRef.current = null
+                    setManualResidentCountRawValue(
+                      String(
+                        normalizeResidentCountOnCommit({
+                          rawValue,
+                          defaultValue: effectiveControl.defaultValue,
+                          minValue: effectiveControl.minValue,
+                          maxValue: effectiveControl.maxValue,
+                        }) ?? ''
+                      )
                     )
-                  )
-                }}
-                onValueChange={(nextValue) => {
-                  setManualResidentCountRawValue(
-                    nextValue == null ? '' : String(nextValue)
-                  )
-                }}
-              />
-            ) : (
-              <Box
-                data-testid="building-info-water-resident-default"
-                sx={{
-                  ...textSx,
-                  width: '100%',
-                  fontWeight: 700,
-                  textAlign: 'right',
-                }}
-              >
-                {formatNumber(effectiveControl.defaultValue, {
-                  maximumFractionDigits: 0,
-                })}
-              </Box>
-            )}
+                  }}
+                  onValueChange={(nextValue) => {
+                    setManualResidentCountRawValue(
+                      nextValue == null ? '' : String(nextValue)
+                    )
+                  }}
+                />
+              ) : (
+                <Box
+                  data-testid="building-info-water-resident-default"
+                  sx={{
+                    ...textSx,
+                    width: '100%',
+                    fontWeight: 700,
+                    textAlign: 'right',
+                  }}
+                >
+                  {formatNumber(effectiveControl.defaultValue!, {
+                    maximumFractionDigits: 0,
+                  })}
+                </Box>
+              )}
+            </Box>
           </Box>
-        </Box>
+        )}
         <SquishedSwitchWithLabel
           checked={isOverrideEnabled}
           sx={{ width: 'fit-content', maxWidth: '100%' }}
@@ -2135,7 +2152,7 @@ const BuildingInfoWaterResidentControl = ({
               return
             }
 
-            setManualResidentCountRawValue(String(control.defaultValue))
+            setManualResidentCountRawValue(String(control.defaultValue ?? ''))
             setIsOverrideEnabled(true)
           }}
         >
@@ -2151,12 +2168,12 @@ const BuildingInfoPrimaryMetricValuePanel = ({
 }: {
   metric: EnergymapBuildingInfoPrimaryMetric
 }) => {
-  if (metric.value == null && metric.unavailableNote == null) {
-    return null
-  }
-
   if (metric.id === 'water' && metric.residentCountControl != null) {
     return <BuildingInfoWaterResidentControl metric={metric} />
+  }
+
+  if (metric.value == null && metric.unavailableNote == null) {
+    return null
   }
 
   return (
@@ -3808,25 +3825,18 @@ export const BuildingInfoTabPages = ({
     const items = missingData.items.filter(
       (item) => item.id !== 'energyConsumption.water'
     )
-    if (effectiveWaterProjection.calculationResult.status === 'unsupported') {
+    if (effectiveWaterProjection.missingReason != null) {
       const nextOutputIndex = items.findIndex(
         (item) =>
           item.id === 'energyConsumption.cost' ||
           item.id === 'energyConsumption.co2' ||
           item.panelId === 'renovationRecommendations'
       )
-      items.splice(nextOutputIndex < 0 ? items.length : nextOutputIndex, 0, {
-        id: 'energyConsumption.water',
-        panelId: 'energyConsumption',
-        label: {
-          type: 'translation',
-          keyName: 'sidebar.building_info.panels.energy.primary.water',
-        },
-        reason: {
-          type: 'translation',
-          keyName: 'sidebar.building_info.missing_data.water_residents',
-        },
-      })
+      items.splice(
+        nextOutputIndex < 0 ? items.length : nextOutputIndex,
+        0,
+        createWaterMissingItem(effectiveWaterProjection.missingReason)
+      )
     }
     return { ...missingData, items }
   }, [effectiveWaterProjection, missingData])

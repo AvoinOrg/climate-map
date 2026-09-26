@@ -457,6 +457,8 @@ describe('factor application and complete-only aggregation', () => {
       reason: 'incomplete-component',
       component: 'heating',
       cause: 'missing-input',
+      field: 'factorPerMwh',
+      causes: [{ status: 'unsupported', reason: 'missing-input', field: 'factorPerMwh', component: 'heating' }],
     })
     expect(partial).not.toHaveProperty('electricity')
     expect(partial).not.toHaveProperty('heating')
@@ -536,6 +538,10 @@ describe('complete current-reference Cost and CO2 calculations', () => {
       reason: 'incomplete-component',
       component: 'heating',
       cause: 'unsupported-reference-value',
+      field: 'factorPerMwh',
+      referenceReason: 'not-supplied',
+      causes: [{ status: 'unsupported', reason: 'unsupported-reference-value', field: 'factorPerMwh', component: 'heating', referenceReason: 'not-supplied' }],
+      context: { factorVersion: CURRENT_REFERENCE_DATA.version, buildingClass: 'apartmentBuilding', heatingCarrier: 'pellet' },
     })
     expect(cost).not.toHaveProperty('total')
     expect(calculateCurrentReferenceAnnualCo2(apartmentPelletInput)).toEqual({
@@ -624,5 +630,74 @@ describe('complete current-reference Cost and CO2 calculations', () => {
       field: 'scenarioPrefix',
     })
     expect(result).not.toHaveProperty('total')
+  })
+})
+
+it('rejects zero area while preserving real zero energy at positive area', () => {
+  expect(
+    calculateCurrentReferenceAnnualCo2({
+      ...completeEnergyInput,
+      floorAreaSquareMeters: 0,
+    })
+  ).toMatchObject({
+    status: 'unsupported',
+    reason: 'invalid-input',
+    field: 'floorAreaSquareMeters',
+  })
+  expect(
+    calculateCurrentReferenceAnnualCo2({
+      ...completeEnergyInput,
+      defaultElectricityIntensityKwhPerSquareMeterYear: 0,
+      defaultHeatingIntensityKwhPerSquareMeterYear: 0,
+    })
+  ).toMatchObject({ status: 'complete', total: 0 })
+})
+
+it('retains independently failing annual operands and factor components', () => {
+  expect(
+    deriveAnnualPurchasedEnergyComponents({
+      heatingCarrier: 'electricity',
+      floorAreaSquareMeters: 0,
+      defaultElectricityIntensityKwhPerSquareMeterYear: null,
+      defaultHeatingIntensityKwhPerSquareMeterYear: -1,
+    })
+  ).toMatchObject({
+    causes: [
+      {
+        status: 'unsupported',
+        reason: 'invalid-input',
+        field: 'floorAreaSquareMeters',
+      },
+      {
+        status: 'unsupported',
+        reason: 'missing-input',
+        field: 'defaultElectricityIntensityKwhPerSquareMeterYear',
+        component: 'electricity',
+      },
+      {
+        status: 'unsupported',
+        reason: 'invalid-input',
+        field: 'defaultHeatingIntensityKwhPerSquareMeterYear',
+        component: 'heating',
+      },
+    ],
+  })
+  const electricity = applyCurrentReferenceFactor({
+    energyKwhPerYear: 1,
+    component: 'electricity',
+    factorPerMwh: null,
+  })
+  const heating = applyCurrentReferenceFactor({
+    energyKwhPerYear: 1,
+    component: 'heating',
+    factorPerMwh: { status: 'unsupported', reason: 'not-supplied' },
+  })
+  expect(
+    aggregateCompleteCurrentReferenceTotal({ electricity, heating })
+  ).toMatchObject({
+    status: 'unsupported',
+    cause: 'missing-input',
+    field: 'factorPerMwh',
+    causes: [electricity, heating],
   })
 })

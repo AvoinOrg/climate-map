@@ -621,7 +621,11 @@
       "src/applets/energy/components/BuildingInfoProvenanceView.tsx",
       "src/applets/energy/components/BuildingInfoProvenanceView.test.tsx",
       "src/components/Sidebar/SidebarPanelExtensionPageContainer.tsx",
-      "src/common/component-fixtures/fixtures/EnergymapBuildingInfoPanelFixture.tsx"
+      "src/common/component-fixtures/fixtures/EnergymapBuildingInfoPanelFixture.tsx",
+      "src/applets/energy/common/buildingInfoEvidence.ts",
+      "src/applets/energy/common/buildingInfoMissingData.ts",
+      "src/applets/energy/common/energyCertificateConsumption.ts",
+      "src/applets/energy/common/currentReferenceCalculations.ts"
     ],
     "states": [
       {
@@ -852,6 +856,20 @@
         "waitFor": "[data-testid=\"building-info-water-resident-control\"]"
       },
       {
+        "id": "water-no-default-en",
+        "locale": "en",
+        "label": "Water without an area-derived default (en)",
+        "description": "Residential selection with absent floor area and an available resident editor; no missing-value row.",
+        "waitFor": "[data-testid=\"building-info-water-resident-control\"]"
+      },
+      {
+        "id": "water-no-default-fi",
+        "locale": "fi",
+        "label": "Water without an area-derived default (fi)",
+        "description": "Residential selection with absent floor area and an available resident editor; no missing-value row.",
+        "waitFor": "[data-testid=\"building-info-water-resident-control\"]"
+      },
+      {
         "id": "certificate-reported-en",
         "label": "Reported certificate building",
         "description": "Exact 1036581819 / 318510 certificate fallback with C class, zero registry floor area, all five carriers, and the complete total.",
@@ -905,6 +923,48 @@
         "label": "Certificate provenance open",
         "description": "Missing fields for a building with reported certificate consumption; available certificate values are excluded.",
         "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "source-partial-fi",
+        "label": "Source partial (fi)",
+        "description": "Production source-specific reasons (fi).",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])",
+        "locale": "fi"
+      },
+      {
+        "id": "source-partial-en",
+        "label": "Source partial (en)",
+        "description": "Production source-specific reasons (en).",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])",
+        "locale": "en"
+      },
+      {
+        "id": "source-invalid-fi",
+        "label": "Source invalid (fi)",
+        "description": "Production source-specific reasons (fi).",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])",
+        "locale": "fi"
+      },
+      {
+        "id": "source-invalid-en",
+        "label": "Source invalid (en)",
+        "description": "Production source-specific reasons (en).",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])",
+        "locale": "en"
+      },
+      {
+        "id": "source-unknown-fi",
+        "label": "Source unknown (fi)",
+        "description": "Production source-specific reasons (fi).",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])",
+        "locale": "fi"
+      },
+      {
+        "id": "source-unknown-en",
+        "label": "Source unknown (en)",
+        "description": "Production source-specific reasons (en).",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])",
+        "locale": "en"
       },
       {
         "id": "provenance-official-open",
@@ -1049,6 +1109,62 @@
         "label": "Collapsed action rail",
         "description": "Collapsed row action rail with both reopen buttons.",
         "waitFor": "[data-testid=\"building-info-action-rail\"]"
+      },
+      {
+        "id": "source-coverage-gshp-fi",
+        "locale": "fi",
+        "label": "source-coverage-gshp-fi",
+        "description": "Populated unsupported reference columns and invalid effective class with explicit origin evidence.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "source-coverage-gshp-en",
+        "locale": "en",
+        "label": "source-coverage-gshp-en",
+        "description": "Populated unsupported reference columns and invalid effective class with explicit origin evidence.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "source-coverage-apartment-fi",
+        "locale": "fi",
+        "label": "source-coverage-apartment-fi",
+        "description": "Populated unsupported reference columns and invalid effective class with explicit origin evidence.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "source-coverage-apartment-en",
+        "locale": "en",
+        "label": "source-coverage-apartment-en",
+        "description": "Populated unsupported reference columns and invalid effective class with explicit origin evidence.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "source-coverage-wood-fi",
+        "locale": "fi",
+        "label": "source-coverage-wood-fi",
+        "description": "Populated unsupported reference columns and invalid effective class with explicit origin evidence.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "source-coverage-wood-en",
+        "locale": "en",
+        "label": "source-coverage-wood-en",
+        "description": "Populated unsupported reference columns and invalid effective class with explicit origin evidence.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "source-coverage-boiler-fi",
+        "locale": "fi",
+        "label": "source-coverage-boiler-fi",
+        "description": "Populated unsupported reference columns and invalid effective class with explicit origin evidence.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "source-coverage-boiler-en",
+        "locale": "en",
+        "label": "source-coverage-boiler-en",
+        "description": "Populated unsupported reference columns and invalid effective class with explicit origin evidence.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       }
     ]
   },

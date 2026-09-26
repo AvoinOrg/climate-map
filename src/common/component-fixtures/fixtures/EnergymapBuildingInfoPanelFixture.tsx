@@ -78,8 +78,16 @@ type ProvenanceFixtureVariant =
   | 'modeled'
   | 'originUnknown'
   | 'waterOnly'
+  | 'waterNoDefault'
   | 'property'
   | 'propertyOnly'
+  | 'sourcePartial'
+  | 'sourceInvalid'
+  | 'sourceUnknown'
+  | 'sourceCoverageGshp'
+  | 'sourceCoverageApartment'
+  | 'sourceCoverageWood'
+  | 'sourceCoverageBoiler'
 
 type CertificateFixtureVariant =
   | 'reported'
@@ -133,7 +141,9 @@ const createCertificateConsumptionPayload = ({
   })
 
 const REPORTED_CERTIFICATE_PROPERTIES = {
-  building_key: '1036581819',
+  building_key: '1752c0cc-65e2-45d5-938a-b47f09349ae4',
+  completion_date: '1993-03-08',
+  heating_energy_source: '01',
   permanent_building_identifier: '1036581819',
   main_purpose: '02',
   floor_area: 0,
@@ -331,31 +341,117 @@ const createProvenanceFixturePresentation = ({
   const properties: EnergymapSelectedBuilding['properties'] =
     variant === 'propertyOnly'
       ? { building_key: buildingKey, property_identifier: '00000000000001' }
-      : variant === 'waterOnly'
+      : variant === 'waterNoDefault'
         ? {
             building_key: buildingKey,
-            floor_area: 100,
-            distr_default_total: null,
+            main_purpose: isReplacementBuilding ? '06' : '05',
+            ...(isReplacementBuilding ? { floor_area: 0 } : {}),
           }
-        : {
-            ...provenanceCompleteProperties,
-            ...(variant === 'property' && isReplacementBuilding
-              ? { property_identifier: null }
-              : {}),
-            building_key: buildingKey,
-            ...(isReplacementBuilding
-              ? {
-                  permanent_building_identifier: '101614423L',
-                  address_fin: 'Mikkolantie 35',
-                  energy_class: 'E',
-                }
-              : {}),
-            ...(variant === 'modeled'
-              ? { is_energy_class_modeled: true }
-              : variant === 'originUnknown'
-                ? { is_energy_class_modeled: 'true' }
-                : { is_energy_class_modeled: false }),
-          }
+        : variant === 'waterOnly'
+          ? {
+              building_key: buildingKey,
+              floor_area: 100,
+              distr_default_total: null,
+            }
+          : {
+              ...provenanceCompleteProperties,
+              ...(variant === 'property' && isReplacementBuilding
+                ? { property_identifier: null }
+                : {}),
+              building_key: buildingKey,
+              ...(isReplacementBuilding
+                ? {
+                    permanent_building_identifier: '101614423L',
+                    address_fin: 'Mikkolantie 35',
+                    energy_class: 'E',
+                  }
+                : {}),
+              ...(variant === 'modeled'
+                ? { is_energy_class_modeled: true }
+                : variant === 'originUnknown'
+                  ? { is_energy_class_modeled: 'true' }
+                  : { is_energy_class_modeled: false }),
+            }
+  if (variant === 'sourcePartial')
+    Object.assign(properties, {
+      postal_office_fin: null,
+      heating_method: null,
+      energy_certificate_ventilation_type_label_fi: null,
+      energy_certificate_ventilation_type_id: '1',
+      distr_default_heat: null,
+      distr_windows_total: null,
+      energy_certificate_consumption: createCertificateConsumptionPayload({
+        buildingIdentifier: String(properties.permanent_building_identifier),
+        certificateId: 'partial-fixture',
+        completeness: 'partial',
+        components: [{ carrier: 'electricity', annual_kwh: 0 }],
+        heatedNetAreaM2: null,
+        totalKwhYear: null,
+      }),
+    })
+  if (variant === 'sourceInvalid')
+    Object.assign(properties, {
+      address_fin: 123,
+      completion_date: '2024-02-30',
+      property_identifier: '00000000000000',
+      floor_area: 0,
+      energy_class: null,
+      modeled_energy_class_reason: 'missing_completion_date',
+      energy_certificate_valid_until: '2031-02-30',
+      energy_certificate_heated_net_area: -1,
+      distr_default_heat: -1,
+      distr_default_total: 0,
+      distr_windows_total: -1,
+      energy_certificate_consumption: createCertificateConsumptionPayload({
+        buildingIdentifier: 'another-building',
+        certificateId: 'mismatched-fixture',
+      }),
+    })
+  if (variant === 'sourceUnknown')
+    Object.assign(properties, {
+      energy_class: null,
+      modeled_energy_class_reason: 'unrecognized-future-reason',
+      energy_certificate_previous_class: null,
+      energy_certificate_valid_until: null,
+      ventilation_category: 'no_info',
+      energy_certificate_ventilation_type_label_fi: null,
+      energy_certificate_ventilation_description_fi: null,
+      distr_default_heat: null,
+    })
+  if (variant === 'sourceCoverageGshp') {
+    Object.assign(properties, {
+      main_purpose: '05',
+      heating_energy_source: '09',
+      gshp_default_total: 20,
+      gshp_aahp_total: 10,
+      energy_class: true,
+      is_energy_class_modeled: true,
+    })
+  }
+  if (variant === 'sourceCoverageApartment') {
+    Object.assign(properties, {
+      main_purpose: '06',
+      distr_aahp_total: 10,
+      energy_class: true,
+      is_energy_class_modeled: false,
+    })
+  }
+  if (variant === 'sourceCoverageWood' || variant === 'sourceCoverageBoiler') {
+    const prefix = variant === 'sourceCoverageWood' ? 'wood' : 'elecb'
+    Object.assign(properties, {
+      main_purpose: '06',
+      heating_energy_source: prefix === 'wood' ? '07' : '04',
+      heating_method: '01',
+      energy_class: true,
+      is_energy_class_modeled: null,
+      [`${prefix}_default_total`]: 20,
+      [`${prefix}_default_heat`]: 15,
+      [`${prefix}_default_elec`]: 5,
+      [`${prefix}_aahp_total`]: 10,
+      [`${prefix}_solar_total`]: 10,
+      [`${prefix}_windows_total`]: 10,
+    })
+  }
   const normalizedBuildingKey = String(properties.building_key)
   const presentation = createEnergymapBuildingInfoPresentation({
     selectedBuilding: {
@@ -1587,56 +1683,75 @@ const BuildingInfoPanelFixtureState = ({
   ])
 
   return (
-    <SlotsProvider>
-      <SidebarPanelExtensionTabsProvider>
-        <SidebarPanelExtensionContextProvider
-          value={{ extensionId: FIXTURE_EXTENSION_ID, depth: 0 }}
-        >
-          <Box
-            ref={rootRef}
-            data-fixture-building-key={buildingKey}
-            data-fixture-certificate-variant={certificateVariant}
-            data-fixture-locale={renderedLocale}
-            data-fixture-provenance-interaction-phase={
-              provenanceInteractionPhase
+    <>
+      {provenanceVariant === 'waterNoDefault' && (
+        <Box sx={{ position: 'fixed', right: '1rem', bottom: '1rem', zIndex: 2000 }}>
+          <button
+            type="button"
+            data-testid="water-fixture-change-building"
+            onClick={() =>
+              setBuildingKey((current) =>
+                current === 'fixture-building-a'
+                  ? 'fixture-building-b'
+                  : 'fixture-building-a'
+              )
             }
-            sx={{
-              position: 'relative',
-              width: forceMobileLayout ? 390 : 960,
-              height: 760,
-              maxWidth: '100%',
-              overflow: 'hidden',
-              backgroundColor: '#e7ece7',
-            }}
           >
-            <IntoSidebarPanelExtensionPanelSlot panelId="main">
-              <BuildingInfoTabPages
-                key={buildingKey}
-                missingData={missingData}
-                locale={renderedLocale}
-                topology={panelTopology}
-                ariaLabels={ariaLabels}
-                activeTabId={resolvedTab?.id}
-                forceMobileLayout={forceMobileLayout}
-                isDesktopFullscreenLayout={isDesktopFullscreenLayout}
-                onActiveTabChange={setRequestedTabId}
-                onClose={noop}
-                onCollapse={noop}
-              />
-            </IntoSidebarPanelExtensionPanelSlot>
-            {resolvedTab != null && (
-              <BuildingInfoPanelFixtureChrome options={extensionOptions} />
-            )}
-            {resolvedTab == null && (
-              <Box data-testid="building-info-fixture-empty-ready" />
-            )}
-            {interactionReady && (
-              <Box data-testid="building-info-fixture-interaction-ready" />
-            )}
-          </Box>
-        </SidebarPanelExtensionContextProvider>
-      </SidebarPanelExtensionTabsProvider>
-    </SlotsProvider>
+            Select another residential building
+          </button>
+        </Box>
+      )}
+      <SlotsProvider>
+        <SidebarPanelExtensionTabsProvider>
+          <SidebarPanelExtensionContextProvider
+            value={{ extensionId: FIXTURE_EXTENSION_ID, depth: 0 }}
+          >
+            <Box
+              ref={rootRef}
+              data-fixture-building-key={buildingKey}
+              data-fixture-certificate-variant={certificateVariant}
+              data-fixture-locale={renderedLocale}
+              data-fixture-provenance-interaction-phase={
+                provenanceInteractionPhase
+              }
+              sx={{
+                position: 'relative',
+                width: forceMobileLayout ? 390 : 960,
+                height: 760,
+                maxWidth: '100%',
+                overflow: 'hidden',
+                backgroundColor: '#e7ece7',
+              }}
+            >
+              <IntoSidebarPanelExtensionPanelSlot panelId="main">
+                <BuildingInfoTabPages
+                  key={buildingKey}
+                  missingData={missingData}
+                  locale={renderedLocale}
+                  topology={panelTopology}
+                  ariaLabels={ariaLabels}
+                  activeTabId={resolvedTab?.id}
+                  forceMobileLayout={forceMobileLayout}
+                  isDesktopFullscreenLayout={isDesktopFullscreenLayout}
+                  onActiveTabChange={setRequestedTabId}
+                  onClose={noop}
+                  onCollapse={noop}
+                />
+              </IntoSidebarPanelExtensionPanelSlot>
+              {resolvedTab != null && (
+                <BuildingInfoPanelFixtureChrome options={extensionOptions} />
+              )}
+              {resolvedTab == null && (
+                <Box data-testid="building-info-fixture-empty-ready" />
+              )}
+              {interactionReady && (
+                <Box data-testid="building-info-fixture-interaction-ready" />
+              )}
+            </Box>
+          </SidebarPanelExtensionContextProvider>
+        </SidebarPanelExtensionTabsProvider>
+      </SlotsProvider>
+    </>
   )
 }
 
@@ -1681,6 +1796,10 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
     'src/applets/energy/components/BuildingInfoProvenanceView.test.tsx',
     'src/components/Sidebar/SidebarPanelExtensionPageContainer.tsx',
     'src/common/component-fixtures/fixtures/EnergymapBuildingInfoPanelFixture.tsx',
+    'src/applets/energy/common/buildingInfoEvidence.ts',
+    'src/applets/energy/common/buildingInfoMissingData.ts',
+    'src/applets/energy/common/energyCertificateConsumption.ts',
+    'src/applets/energy/common/currentReferenceCalculations.ts',
   ],
   canvasSx: {
     p: 0,
@@ -2183,6 +2302,20 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
         <BuildingInfoPanelFixtureState defaultPrimaryMetricId="water" />
       ),
     },
+    ...(['en', 'fi'] as const).map((locale) => ({
+      id: `water-no-default-${locale}`,
+      locale,
+      label: `Water without an area-derived default (${locale})`,
+      description:
+        'Residential selection with absent floor area and an available resident editor; no missing-value row.',
+      waitFor: '[data-testid="building-info-water-resident-control"]',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="waterNoDefault"
+          locale={locale}
+        />
+      ),
+    })),
     {
       id: 'certificate-reported-en',
       label: 'Reported certificate building',
@@ -2235,9 +2368,7 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
         'Partial historical certificate with named and unnamed other carriers, visible zeroes, and no area-derived values.',
       waitFor: '[data-testid="building-info-certificate-consumption"]',
       render: () => (
-        <BuildingInfoPanelFixtureState
-          certificateVariant="partialNoAreaExpired"
-        />
+        <BuildingInfoPanelFixtureState certificateVariant="partialNoAreaExpired" />
       ),
     },
     {
@@ -2284,6 +2415,224 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
       render: () => (
         <BuildingInfoPanelFixtureState
           certificateVariant="reported"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'source-coverage-gshp-fi',
+      locale: 'fi',
+      label: 'source-coverage-gshp-fi',
+      description:
+        'Populated unsupported reference columns and invalid effective class with explicit origin evidence.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="sourceCoverageGshp"
+          locale="fi"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'source-coverage-gshp-en',
+      locale: 'en',
+      label: 'source-coverage-gshp-en',
+      description:
+        'Populated unsupported reference columns and invalid effective class with explicit origin evidence.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="sourceCoverageGshp"
+          locale="en"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'source-coverage-apartment-fi',
+      locale: 'fi',
+      label: 'source-coverage-apartment-fi',
+      description:
+        'Populated unsupported reference columns and invalid effective class with explicit origin evidence.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="sourceCoverageApartment"
+          locale="fi"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'source-coverage-apartment-en',
+      locale: 'en',
+      label: 'source-coverage-apartment-en',
+      description:
+        'Populated unsupported reference columns and invalid effective class with explicit origin evidence.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="sourceCoverageApartment"
+          locale="en"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'source-coverage-wood-fi',
+      locale: 'fi',
+      label: 'source-coverage-wood-fi',
+      description:
+        'Populated unsupported reference columns and invalid effective class with explicit origin evidence.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="sourceCoverageWood"
+          locale="fi"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'source-coverage-wood-en',
+      locale: 'en',
+      label: 'source-coverage-wood-en',
+      description:
+        'Populated unsupported reference columns and invalid effective class with explicit origin evidence.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="sourceCoverageWood"
+          locale="en"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'source-coverage-boiler-fi',
+      locale: 'fi',
+      label: 'source-coverage-boiler-fi',
+      description:
+        'Populated unsupported reference columns and invalid effective class with explicit origin evidence.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="sourceCoverageBoiler"
+          locale="fi"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'source-coverage-boiler-en',
+      locale: 'en',
+      label: 'source-coverage-boiler-en',
+      description:
+        'Populated unsupported reference columns and invalid effective class with explicit origin evidence.',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="sourceCoverageBoiler"
+          locale="en"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'source-partial-fi',
+      locale: 'fi',
+      label: 'source-partial-fi',
+      description: 'Production source-specific reasons (fi).',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="sourcePartial"
+          locale="fi"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'source-partial-en',
+      locale: 'en',
+      label: 'source-partial-en',
+      description: 'Production source-specific reasons (en).',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="sourcePartial"
+          locale="en"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'source-invalid-fi',
+      locale: 'fi',
+      label: 'source-invalid-fi',
+      description: 'Production source-specific reasons (fi).',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="sourceInvalid"
+          locale="fi"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'source-invalid-en',
+      locale: 'en',
+      label: 'source-invalid-en',
+      description: 'Production source-specific reasons (en).',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="sourceInvalid"
+          locale="en"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'source-unknown-fi',
+      locale: 'fi',
+      label: 'source-unknown-fi',
+      description: 'Production source-specific reasons (fi).',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="sourceUnknown"
+          locale="fi"
+          interaction="provenance-open"
+        />
+      ),
+    },
+    {
+      id: 'source-unknown-en',
+      locale: 'en',
+      label: 'source-unknown-en',
+      description: 'Production source-specific reasons (en).',
+      waitFor:
+        '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+      render: () => (
+        <BuildingInfoPanelFixtureState
+          provenanceVariant="sourceUnknown"
+          locale="en"
           interaction="provenance-open"
         />
       ),

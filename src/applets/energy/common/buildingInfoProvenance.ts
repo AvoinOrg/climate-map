@@ -1,4 +1,8 @@
 import {
+  resolveEffectiveWaterOutcome,
+  type BuildingInfoMissingReason,
+} from './buildingInfoMissingData'
+import {
   ENERGYMAP_VENTILATION_CATEGORY_PROPERTY,
   ENERGYMAP_VENTILATION_DESCRIPTION_PROPERTIES,
   ENERGYMAP_VENTILATION_LABEL_PROPERTIES,
@@ -6,7 +10,6 @@ import {
   isEnergymapVentilationCategory,
 } from 'applets/energy/common/ventilation'
 import {
-  calculateCurrentReferenceAnnualWater,
   deriveAnnualPurchasedEnergyComponents,
   resolveCurrentReferenceBuildingClass,
   resolveCurrentReferenceCarrier,
@@ -181,7 +184,8 @@ const ENERGYMAP_BUILDING_INFO_CATALOG_PROVENANCE_IDS = {
   HEATED_NET_AREA: 'buildingDetails.technicalDetails.row.heatedNetArea',
   VENTILATION: 'buildingDetails.technicalDetails.row.ventilation',
   VENTILATION_TYPE: 'buildingDetails.technicalDetails.row.ventilationType',
-  VENTILATION_CATEGORY: 'buildingDetails.technicalDetails.row.ventilationCategory',
+  VENTILATION_CATEGORY:
+    'buildingDetails.technicalDetails.row.ventilationCategory',
   ...ENERGYMAP_CERTIFICATE_CONSUMPTION_PROVENANCE_IDS,
 } as const
 
@@ -529,8 +533,7 @@ const STATIC_INPUT_IDS = {
   VENTILATION_CATEGORY: 'sourceField.energyMap.ventilationCategory',
   CERTIFICATE_VENTILATION_FI: 'sourceField.certificate.ventilation.fi',
   CERTIFICATE_VENTILATION_SV: 'sourceField.certificate.ventilation.sv',
-  CERTIFICATE_CONSUMPTION_BASIS:
-    'sourceField.certificateConsumption.basis',
+  CERTIFICATE_CONSUMPTION_BASIS: 'sourceField.certificateConsumption.basis',
   CERTIFICATE_CONSUMPTION_UNIT: 'sourceField.certificateConsumption.unit',
   CERTIFICATE_CONSUMPTION_VERSION:
     'sourceField.certificateConsumption.certificateVersion',
@@ -1598,9 +1601,7 @@ const evidenceVariant = ({
   inputIds: unique(inputIds),
   sourceProperties: unique(sourceProperties),
   ...(sourceLanguage == null ? {} : { sourceLanguage }),
-  ...(valueSourceIds == null
-    ? {}
-    : { valueSourceIds: unique(valueSourceIds) }),
+  ...(valueSourceIds == null ? {} : { valueSourceIds: unique(valueSourceIds) }),
   ...(valueProviderIds == null
     ? {}
     : { valueProviderIds: unique(valueProviderIds) }),
@@ -2035,6 +2036,7 @@ export const ENERGYMAP_USER_OVERRIDE_WATER_RESIDENT_CONTROL_PROVENANCE_INPUT_IDS
 
 export type EnergymapEffectiveWaterProjection = {
   calculationResult: CurrentReferenceAnnualWaterResult
+  missingReason: BuildingInfoMissingReason | null
   value: EnergymapBuildingInfoValue
   residentCountControl: EnergymapBuildingInfoResidentCountControl
 }
@@ -2044,20 +2046,35 @@ export const getEnergymapEffectiveWaterProjection = ({
   residentCountControl,
   isOverrideEnabled,
   manualResidentCount,
+  manualResidentCountRawValue,
 }: {
-  value: EnergymapBuildingInfoValue
+  value?: EnergymapBuildingInfoValue
   residentCountControl: EnergymapBuildingInfoResidentCountControl
   isOverrideEnabled: boolean
   manualResidentCount: number | null
+  manualResidentCountRawValue?: string
 }): EnergymapEffectiveWaterProjection => {
-  const calculationResult = calculateCurrentReferenceAnnualWater(
-    isOverrideEnabled ? manualResidentCount : residentCountControl.defaultValue
+  const { calculationResult, missingReason } = resolveEffectiveWaterOutcome(
+    isOverrideEnabled
+      ? {
+          origin: 'override',
+          rawValue: manualResidentCountRawValue ?? manualResidentCount,
+        }
+      : {
+          origin: 'default',
+          residentCount: residentCountControl.defaultValue ?? undefined,
+          floorArea: residentCountControl.defaultFloorArea,
+        }
   )
 
   if (!isOverrideEnabled) {
     return {
       calculationResult,
-      value: { ...value },
+      missingReason,
+      value: value ?? {
+        status: 'missing',
+        text: residentCountControl.unavailableText,
+      },
       residentCountControl: { ...residentCountControl },
     }
   }
@@ -2066,7 +2083,7 @@ export const getEnergymapEffectiveWaterProjection = ({
     sourceProperties: _valueSourceProperties,
     provenance: _valueProvenance,
     ...valueWithoutDefaultEvidence
-  } = value
+  } = value ?? {}
   const {
     sourceProperties: _controlSourceProperties,
     provenance: _controlProvenance,
@@ -2084,6 +2101,7 @@ export const getEnergymapEffectiveWaterProjection = ({
   if (calculationResult.status === 'unsupported') {
     return {
       calculationResult,
+      missingReason,
       value: {
         text: residentCountControl.unavailableText,
         status: 'missing',
@@ -2094,8 +2112,15 @@ export const getEnergymapEffectiveWaterProjection = ({
 
   return {
     calculationResult,
+    missingReason,
     value: {
       ...valueWithoutDefaultEvidence,
+      status: 'estimate',
+      text: {
+        type: 'plain',
+        text: String(calculationResult.cubicMetersPerYear),
+      },
+      unitKey: 'sidebar.building_info.units.cubic_meters_per_year',
       provenance: {
         id: ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.WATER_ANNUAL,
         inputIds: ENERGYMAP_USER_OVERRIDE_WATER_PROVENANCE_INPUT_IDS,
@@ -2253,14 +2278,12 @@ export const ENERGYMAP_BUILDING_INFO_CERTIFICATE_COMPONENT_PROVENANCE = {
   electricity: {
     label: IDS.CERTIFICATE_CONSUMPTION_ELECTRICITY_LABEL,
     annual: IDS.CERTIFICATE_CONSUMPTION_ELECTRICITY_ANNUAL,
-    perSquareMeter:
-      IDS.CERTIFICATE_CONSUMPTION_ELECTRICITY_PER_SQUARE_METER,
+    perSquareMeter: IDS.CERTIFICATE_CONSUMPTION_ELECTRICITY_PER_SQUARE_METER,
   },
   district_heat: {
     label: IDS.CERTIFICATE_CONSUMPTION_DISTRICT_HEAT_LABEL,
     annual: IDS.CERTIFICATE_CONSUMPTION_DISTRICT_HEAT_ANNUAL,
-    perSquareMeter:
-      IDS.CERTIFICATE_CONSUMPTION_DISTRICT_HEAT_PER_SQUARE_METER,
+    perSquareMeter: IDS.CERTIFICATE_CONSUMPTION_DISTRICT_HEAT_PER_SQUARE_METER,
   },
   district_cooling: {
     label: IDS.CERTIFICATE_CONSUMPTION_DISTRICT_COOLING_LABEL,
@@ -2271,14 +2294,12 @@ export const ENERGYMAP_BUILDING_INFO_CERTIFICATE_COMPONENT_PROVENANCE = {
   fossil_fuel: {
     label: IDS.CERTIFICATE_CONSUMPTION_FOSSIL_FUEL_LABEL,
     annual: IDS.CERTIFICATE_CONSUMPTION_FOSSIL_FUEL_ANNUAL,
-    perSquareMeter:
-      IDS.CERTIFICATE_CONSUMPTION_FOSSIL_FUEL_PER_SQUARE_METER,
+    perSquareMeter: IDS.CERTIFICATE_CONSUMPTION_FOSSIL_FUEL_PER_SQUARE_METER,
   },
   renewable_fuel: {
     label: IDS.CERTIFICATE_CONSUMPTION_RENEWABLE_FUEL_LABEL,
     annual: IDS.CERTIFICATE_CONSUMPTION_RENEWABLE_FUEL_ANNUAL,
-    perSquareMeter:
-      IDS.CERTIFICATE_CONSUMPTION_RENEWABLE_FUEL_PER_SQUARE_METER,
+    perSquareMeter: IDS.CERTIFICATE_CONSUMPTION_RENEWABLE_FUEL_PER_SQUARE_METER,
   },
   other0: {
     label: IDS.CERTIFICATE_CONSUMPTION_OTHER_0_LABEL,
@@ -2373,12 +2394,12 @@ const certificateDefinition = ({
       kind === 'derived' ? 'compositeCalculation' : 'officialCertificate',
     sourceIds: ['energyCertificateRegister'],
     providerIds:
-      kind === 'derived' ? (['energyMap'] as const) : ['energyCertificateRegister'],
+      kind === 'derived'
+        ? (['energyMap'] as const)
+        : ['energyCertificateRegister'],
     ...(kind === 'derived'
       ? {
-          calculationIds: [
-            'certificateAnnualDividedByHeatedArea',
-          ] as const,
+          calculationIds: ['certificateAnnualDividedByHeatedArea'] as const,
         }
       : {}),
     certificateEvidence: true,
@@ -2460,18 +2481,17 @@ const certificateCatalogEntries = {
     requiredInputIds: [I.CERTIFICATE_CONSUMPTION_TOTAL],
     requiredCompleteness: 'complete',
   }),
-  [IDS.CERTIFICATE_CONSUMPTION_TOTAL_PER_SQUARE_METER]:
-    certificateDefinition({
-      id: IDS.CERTIFICATE_CONSUMPTION_TOTAL_PER_SQUARE_METER,
-      field: 'certificate_consumption_total_per_square_meter',
-      kind: 'derived',
-      requiredInputIds: [
-        I.CERTIFICATE_CONSUMPTION_TOTAL,
-        I.CERTIFICATE_CONSUMPTION_HEATED_AREA,
-        I.CERTIFICATE_ANNUAL_DIVIDED_BY_HEATED_AREA,
-      ],
-      requiredCompleteness: 'complete',
-    }),
+  [IDS.CERTIFICATE_CONSUMPTION_TOTAL_PER_SQUARE_METER]: certificateDefinition({
+    id: IDS.CERTIFICATE_CONSUMPTION_TOTAL_PER_SQUARE_METER,
+    field: 'certificate_consumption_total_per_square_meter',
+    kind: 'derived',
+    requiredInputIds: [
+      I.CERTIFICATE_CONSUMPTION_TOTAL,
+      I.CERTIFICATE_CONSUMPTION_HEATED_AREA,
+      I.CERTIFICATE_ANNUAL_DIVIDED_BY_HEATED_AREA,
+    ],
+    requiredCompleteness: 'complete',
+  }),
   ...certificateComponentDefinitions({
     ids: ENERGYMAP_BUILDING_INFO_CERTIFICATE_COMPONENT_PROVENANCE.electricity,
     inputId: I.CERTIFICATE_CONSUMPTION_ELECTRICITY,
@@ -3250,9 +3270,9 @@ export const resolveEnergymapBuildingInfoProvenance = ({
       }
     }
 
-    const runtimeValue = (
-      runtimeValues as Readonly<Record<string, unknown>>
-    )[inputId]
+    const runtimeValue = (runtimeValues as Readonly<Record<string, unknown>>)[
+      inputId
+    ]
     if (
       !hasExpectedRuntimeValueType(
         runtimeValue,

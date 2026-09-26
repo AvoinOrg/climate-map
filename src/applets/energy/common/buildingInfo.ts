@@ -1,3 +1,21 @@
+import {
+  collectMissingBuildingInfo,
+  type BuildingInfoMissingReason,
+  type BuildingInfoFieldResolution,
+} from './buildingInfoMissingData'
+import {
+  getStringProperty,
+  getEnergyReferenceCoverageExclusions,
+  getCodeProperty,
+  getPositiveNumberProperty,
+  getEnergyNumberProperty,
+  formatCalendarDate,
+  formatYearFromDate,
+  getOpaqueIdentifier,
+  isUsableProduct,
+  isUsableEnergyIntensity,
+} from './buildingInfoEvidence'
+export { formatCalendarDate, formatYearFromDate } from './buildingInfoEvidence'
 import { ENERGY_CERTIFICATE_CLASS_CODES } from '../layers/energyCertificateLayerConf'
 import {
   ENERGYMAP_BUILDING_COMPLETION_DATE_PROPERTY,
@@ -40,7 +58,7 @@ import type {
 } from './buildingInfoProvenance'
 import {
   ENERGY_CERTIFICATE_CONSUMPTION_PROPERTY,
-  parseEnergyCertificateConsumption,
+  parseEnergyCertificateConsumptionOutcome,
 } from './energyCertificateConsumption'
 import type {
   EnergyCertificateConsumptionComponent,
@@ -163,10 +181,13 @@ export type EnergymapBuildingInfoPrimaryMetric = {
   value?: EnergymapBuildingInfoValue
   unavailableNote?: EnergymapBuildingInfoNote
   residentCountControl?: EnergymapBuildingInfoResidentCountControl
+  calculationFailure?: CurrentReferenceUnsupportedResult
 }
 
 export type EnergymapBuildingInfoResidentCountControl = {
-  defaultValue: number
+  defaultValue: number | null
+  /** Retained to explain a failed default while allowing a manual count. */
+  defaultFloorArea?: unknown
   minValue: number
   maxValue: number
   label: EnergymapBuildingInfoText
@@ -249,12 +270,14 @@ export type EnergymapBuildingInfoMissingItem = {
   id: string
   panelId: EnergymapBuildingInfoPanelId
   label: EnergymapBuildingInfoText
-  reason?: EnergymapBuildingInfoText
+  reason: EnergymapBuildingInfoText
+  evidence: BuildingInfoMissingReason
 }
 
 export type EnergymapBuildingInfoMissingData = {
   locale: string
   items: EnergymapBuildingInfoMissingItem[]
+  inventory?: BuildingInfoFieldResolution[]
 }
 
 export type EnergymapBuildingInfoPresentation = {
@@ -335,19 +358,6 @@ const HEATING_ENERGY_SOURCE_CODES = [
   '10',
   '99',
 ] as const
-
-const PUBLISHED_SCENARIO_MEASURES_BY_PREFIX: Record<
-  EnergymapEnergyScenarioPrefix,
-  readonly EnergymapEnergyMeasure[]
-> = {
-  awhp: ['default', 'solar', 'windows'],
-  delec: ['default', 'aahp', 'solar', 'windows'],
-  distr: ['default', 'aahp', 'solar', 'windows'],
-  elecb: ['default', 'aahp', 'solar', 'windows'],
-  gshp: ['default', 'solar', 'windows'],
-  oil: ['default', 'aahp', 'solar', 'windows'],
-  wood: ['default', 'aahp', 'solar', 'windows'],
-}
 
 const CURRENT_ENERGY_PROVENANCE_IDS = {
   total: {
@@ -709,68 +719,6 @@ const normalizeNote = (
   return text == null ? null : { ...candidate, text }
 }
 
-const getStringProperty = (
-  properties: EnergymapSelectedBuilding['properties'],
-  propertyName: string
-): string | null => {
-  const value = properties[propertyName]
-
-  if (typeof value === 'string') {
-    const trimmedValue = value.trim()
-    return trimmedValue === '' ? null : trimmedValue
-  }
-
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value)
-  }
-
-  return null
-}
-
-const getCodeProperty = (
-  properties: EnergymapSelectedBuilding['properties'],
-  propertyName: string
-): string | null => {
-  const value = properties[propertyName]
-
-  if (typeof value === 'number' && Number.isInteger(value)) {
-    return String(value).padStart(2, '0')
-  }
-
-  return getStringProperty(properties, propertyName)
-}
-
-const getNumberProperty = (
-  properties: EnergymapSelectedBuilding['properties'],
-  propertyName: string
-): number | null => {
-  const value = properties[propertyName]
-
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value
-  }
-
-  if (typeof value === 'string') {
-    const normalizedValue = value.trim().replace(',', '.')
-    if (normalizedValue === '') {
-      return null
-    }
-
-    const parsedValue = Number(normalizedValue)
-    return Number.isFinite(parsedValue) ? parsedValue : null
-  }
-
-  return null
-}
-
-const getPositiveNumberProperty = (
-  properties: EnergymapSelectedBuilding['properties'],
-  propertyName: string
-) => {
-  const value = getNumberProperty(properties, propertyName)
-  return value != null && value > 0 ? value : null
-}
-
 const formatNumber = ({
   value,
   locale,
@@ -786,100 +734,6 @@ const formatNumber = ({
     maximumFractionDigits,
     minimumFractionDigits,
   }).format(value)
-
-export const formatYearFromDate = (value: unknown): string | null => {
-  if (typeof value !== 'string' && typeof value !== 'number') {
-    return null
-  }
-
-  const valueAsString = String(value).trim()
-  const leadingYearMatch = valueAsString.match(/^(\d{4})/)
-
-  if (leadingYearMatch != null) {
-    return leadingYearMatch[1]
-  }
-
-  const timestamp = Date.parse(valueAsString)
-
-  if (!Number.isFinite(timestamp)) {
-    return null
-  }
-
-  return String(new Date(timestamp).getUTCFullYear())
-}
-
-export const formatCalendarDate = ({
-  value,
-  locale,
-}: {
-  value: unknown
-  locale: string
-}): string | null => {
-  if (typeof value !== 'string') {
-    return null
-  }
-
-  const match = value
-    .trim()
-    .match(
-      /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|[+-](\d{2}):?(\d{2}))?)?$/
-    )
-
-  if (match == null) {
-    return null
-  }
-
-  const [
-    ,
-    yearText,
-    monthText,
-    dayText,
-    hourText,
-    minuteText,
-    secondText,
-    offsetHourText,
-    offsetMinuteText,
-  ] = match
-  const year = Number(yearText)
-  const month = Number(monthText)
-  const day = Number(dayText)
-  const hour = Number(hourText)
-  const minute = Number(minuteText)
-  const second = Number(secondText)
-  const offsetHour = Number(offsetHourText)
-  const offsetMinute = Number(offsetMinuteText)
-
-  if (
-    (hourText != null && (hour > 23 || minute > 59 || second > 59)) ||
-    (offsetHourText != null &&
-      (offsetHour > 14 ||
-        offsetMinute > 59 ||
-        (offsetHour === 14 && offsetMinute !== 0)))
-  ) {
-    return null
-  }
-
-  const date = new Date(0)
-
-  date.setUTCHours(0, 0, 0, 0)
-  date.setUTCFullYear(year, month - 1, day)
-
-  if (
-    !Number.isFinite(date.getTime()) ||
-    date.getUTCFullYear() !== year ||
-    date.getUTCMonth() !== month - 1 ||
-    date.getUTCDate() !== day
-  ) {
-    return null
-  }
-
-  return new Intl.DateTimeFormat(locale, {
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    timeZone: 'UTC',
-  }).format(date)
-}
 
 export const composeEnergymapBuildingAddress = (
   properties: EnergymapSelectedBuilding['properties']
@@ -947,14 +801,6 @@ const getScenarioProperty = ({
   measure: EnergymapEnergyMeasure
   estimateType: EnergymapEnergyEstimateType
 }) => `${prefix}_${measure}_${estimateType}`
-
-const isScenarioMeasurePublished = ({
-  prefix,
-  measure,
-}: {
-  prefix: EnergymapEnergyScenarioPrefix
-  measure: EnergymapEnergyMeasure
-}) => PUBLISHED_SCENARIO_MEASURES_BY_PREFIX[prefix].includes(measure)
 
 const getUnsupportedEstimateValue = (sourceProperties: string[]) =>
   missingValue({
@@ -1044,14 +890,23 @@ const getPerSquareMeterEstimateValue = ({
     estimateType,
   })
 
-  if (!isScenarioMeasurePublished({ prefix, measure })) {
+  if (
+    getEnergyReferenceCoverageExclusions({
+      purpose: getCodeProperty(properties, ENERGYMAP_BUILDING_TYPE_PROPERTY),
+      prefix,
+      measure,
+    }).length > 0
+  ) {
     return placeholderValue({
       keyName: key('placeholders.not_published'),
       sourceProperties: [sourceProperty],
     })
   }
 
-  const perSquareMeterValue = getNumberProperty(properties, sourceProperty)
+  const perSquareMeterValue = getEnergyNumberProperty(
+    properties,
+    sourceProperty
+  )
 
   if (perSquareMeterValue == null) {
     return missingValue({ sourceProperties: [sourceProperty] })
@@ -1111,14 +966,23 @@ const getAnnualEstimateValue = ({
     estimateType,
   })
 
-  if (!isScenarioMeasurePublished({ prefix, measure })) {
+  if (
+    getEnergyReferenceCoverageExclusions({
+      purpose: getCodeProperty(properties, ENERGYMAP_BUILDING_TYPE_PROPERTY),
+      prefix,
+      measure,
+    }).length > 0
+  ) {
     return placeholderValue({
       keyName: key('placeholders.not_published'),
       sourceProperties: [sourceProperty],
     })
   }
 
-  const perSquareMeterValue = getNumberProperty(properties, sourceProperty)
+  const perSquareMeterValue = getEnergyNumberProperty(
+    properties,
+    sourceProperty
+  )
   const floorArea = getPositiveNumberProperty(properties, FLOOR_AREA_PROPERTY)
 
   if (perSquareMeterValue == null) {
@@ -1127,7 +991,7 @@ const getAnnualEstimateValue = ({
     })
   }
 
-  if (floorArea == null) {
+  if (floorArea == null || !isUsableProduct(perSquareMeterValue, floorArea)) {
     return missingValue({
       sourceProperties: [sourceProperty, FLOOR_AREA_PROPERTY],
     })
@@ -1520,13 +1384,16 @@ const createCurrentReferencePrimaryMetric = ({
       properties,
     })
 
-    return createUnsupportedPrimaryMetric({
-      id,
-      labelKey,
-      unavailableNoteKey: presentation.keyName,
-      sourceProperties,
-      status: presentation.status,
-    })
+    return {
+      ...createUnsupportedPrimaryMetric({
+        id,
+        labelKey,
+        unavailableNoteKey: presentation.keyName,
+        sourceProperties,
+        status: presentation.status,
+      }),
+      calculationFailure: result,
+    }
   }
 
   const provenanceInputIds = getEnergymapCurrentReferenceProvenanceInputIds({
@@ -1573,9 +1440,11 @@ const createCurrentReferencePrimaryMetric = ({
 
 const createCurrentReferenceWaterPrimaryMetric = ({
   floorAreaSquareMeters,
+  allowOverrideWithoutDefault,
   locale,
 }: {
   floorAreaSquareMeters: unknown
+  allowOverrideWithoutDefault: boolean
   locale: string
 }): EnergymapBuildingInfoPrimaryMetric => {
   const labelKey = key('panels.energy.primary.water')
@@ -1583,31 +1452,66 @@ const createCurrentReferenceWaterPrimaryMetric = ({
   const residentCountResult = deriveCurrentReferenceResidentCount(
     floorAreaSquareMeters
   )
+  const defaultValue =
+    residentCountResult.status === 'complete'
+      ? residentCountResult.residentCount
+      : null
+  const { occupancy } = CURRENT_REFERENCE_DATA.water
+  const residentCountControl: EnergymapBuildingInfoResidentCountControl = {
+    defaultValue,
+    defaultFloorArea: floorAreaSquareMeters,
+    minValue: occupancy.minimumResidents,
+    maxValue: occupancy.maximumResidents,
+    label: translationText(key('panels.energy.water.resident_count')),
+    toggleLabel: translationText(
+      key('panels.energy.water.change_resident_count')
+    ),
+    description: translationText(key('panels.energy.water.description')),
+    unavailableText: translationText(
+      key('panels.energy.water.invalid_resident_count')
+    ),
+    ...(defaultValue == null
+      ? {}
+      : {
+          sourceProperties,
+          provenance: {
+            id: ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.WATER_RESIDENT_COUNT_CONTROL,
+            inputIds:
+              ENERGYMAP_DERIVED_WATER_RESIDENT_CONTROL_PROVENANCE_INPUT_IDS,
+          },
+        }),
+  }
 
   if (residentCountResult.status === 'unsupported') {
-    return createUnsupportedPrimaryMetric({
-      id: 'water',
-      labelKey,
-      unavailableNoteKey: key('panels.energy.unsupported.water'),
-      sourceProperties,
-      status: 'missing',
-    })
+    return {
+      ...createUnsupportedPrimaryMetric({
+        id: 'water',
+        labelKey,
+        unavailableNoteKey: key('panels.energy.unsupported.water'),
+        sourceProperties,
+        status: 'missing',
+      }),
+      calculationFailure: residentCountResult,
+      ...(allowOverrideWithoutDefault ? { residentCountControl } : {}),
+    }
   }
 
   const annualWaterResult = calculateCurrentReferenceAnnualWater(
     residentCountResult.residentCount
   )
   if (annualWaterResult.status === 'unsupported') {
-    return createUnsupportedPrimaryMetric({
-      id: 'water',
-      labelKey,
-      unavailableNoteKey: key('panels.energy.unsupported.water'),
-      sourceProperties,
-      status: 'missing',
-    })
+    return {
+      ...createUnsupportedPrimaryMetric({
+        id: 'water',
+        labelKey,
+        unavailableNoteKey: key('panels.energy.unsupported.water'),
+        sourceProperties,
+        status: 'missing',
+      }),
+      calculationFailure: annualWaterResult,
+    }
   }
 
-  const { occupancy } = CURRENT_REFERENCE_DATA.water
   return {
     id: 'water',
     label: translationText(labelKey),
@@ -1628,24 +1532,7 @@ const createCurrentReferenceWaterPrimaryMetric = ({
         inputIds: ENERGYMAP_DERIVED_WATER_PROVENANCE_INPUT_IDS,
       },
     }),
-    residentCountControl: {
-      defaultValue: residentCountResult.residentCount,
-      minValue: occupancy.minimumResidents,
-      maxValue: occupancy.maximumResidents,
-      label: translationText(key('panels.energy.water.resident_count')),
-      toggleLabel: translationText(
-        key('panels.energy.water.change_resident_count')
-      ),
-      description: translationText(key('panels.energy.water.description')),
-      unavailableText: translationText(
-        key('panels.energy.water.invalid_resident_count')
-      ),
-      sourceProperties,
-      provenance: {
-        id: ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.WATER_RESIDENT_COUNT_CONTROL,
-        inputIds: ENERGYMAP_DERIVED_WATER_RESIDENT_CONTROL_PROVENANCE_INPUT_IDS,
-      },
-    },
+    residentCountControl,
   }
 }
 
@@ -1654,11 +1541,13 @@ const normalizeResidentCountControl = (
 ): EnergymapBuildingInfoResidentCountControl | null => {
   if (
     control == null ||
-    !Number.isFinite(control.defaultValue) ||
     !Number.isFinite(control.minValue) ||
     !Number.isFinite(control.maxValue) ||
-    control.minValue > control.defaultValue ||
-    control.defaultValue > control.maxValue
+    control.minValue > control.maxValue ||
+    (control.defaultValue != null &&
+      (!Number.isFinite(control.defaultValue) ||
+        control.minValue > control.defaultValue ||
+        control.defaultValue > control.maxValue))
   ) {
     return null
   }
@@ -1687,20 +1576,25 @@ const normalizeResidentCountControl = (
 const normalizePrimaryMetric = (
   candidate: EnergymapBuildingInfoPrimaryMetric
 ): EnergymapBuildingInfoPrimaryMetric | null => {
-  if (candidate.id === 'energy' || !candidate.supported) {
+  if (candidate.id === 'energy') {
     return null
   }
 
   const label = normalizeEnergymapBuildingInfoText(candidate.label)
   const value = normalizeValue(candidate.value)
-  if (label == null || candidate.ariaLabelKey.trim() === '' || value == null) {
-    return null
-  }
-
   const residentCountControl =
     candidate.id === 'water'
       ? normalizeResidentCountControl(candidate.residentCountControl)
       : null
+  // An available editor can produce Water even when its default estimate fails.
+  // Keep the control, but never normalize an unavailable result into a value.
+  if (
+    label == null ||
+    candidate.ariaLabelKey.trim() === '' ||
+    ((!candidate.supported || value == null) && residentCountControl == null)
+  ) {
+    return null
+  }
   const {
     value: _value,
     unavailableNote: _unavailableNote,
@@ -1712,7 +1606,7 @@ const normalizePrimaryMetric = (
     ...candidateWithoutOptionalContent,
     label,
     supported: true,
-    value,
+    ...(value == null ? {} : { value }),
     ...(residentCountControl == null ? {} : { residentCountControl }),
   }
 }
@@ -2292,7 +2186,7 @@ const getStringValue = ({
   propertyName: string
   provenance?: EnergymapBuildingInfoProvenanceRef
 }): EnergymapBuildingInfoValue => {
-  const value = getStringProperty(properties, propertyName)
+  const value = getOpaqueIdentifier(properties[propertyName])
 
   if (value == null) {
     return missingValue({ sourceProperties: [propertyName] })
@@ -2554,10 +2448,7 @@ const createCertificateProvenance = ({
   }[]
 }): EnergymapBuildingInfoProvenanceRef => ({
   id,
-  inputIds: [
-    ...context.inputIds,
-    ...additionalInputs.map((input) => input.id),
-  ],
+  inputIds: [...context.inputIds, ...additionalInputs.map((input) => input.id)],
   runtimeValues: {
     ...context.runtimeValues,
     ...Object.fromEntries(
@@ -2680,7 +2571,8 @@ const createCertificateMetric = ({
           }),
         }),
       }),
-      ...(heatedNetAreaM2 == null
+      ...(heatedNetAreaM2 == null ||
+      !isUsableEnergyIntensity(component.annualKwh, heatedNetAreaM2)
         ? []
         : [
             metricValue({
@@ -2743,7 +2635,10 @@ const createCertificateTotalMetric = ({
   context,
   locale,
 }: {
-  record: Extract<EnergyCertificateConsumptionRecord, { completeness: 'complete' }>
+  record: Extract<
+    EnergyCertificateConsumptionRecord,
+    { completeness: 'complete' }
+  >
   context: CertificateEvidenceContext
   locale: string
 }): EnergymapBuildingInfoMetric => {
@@ -2784,7 +2679,8 @@ const createCertificateTotalMetric = ({
           }),
         }),
       }),
-      ...(record.heatedNetAreaM2 == null
+      ...(record.heatedNetAreaM2 == null ||
+      !isUsableEnergyIntensity(record.totalKwhYear, record.heatedNetAreaM2)
         ? []
         : [
             metricValue({
@@ -3037,9 +2933,7 @@ const createCertificateConsumptionSection = ({
     notes: [
       note({
         id: 'standardizedCalculation',
-        keyName: key(
-          'panels.energy.certificate.note.standardized_calculation'
-        ),
+        keyName: key('panels.energy.certificate.note.standardized_calculation'),
         status: 'real',
         sourceProperties: [...CERTIFICATE_SOURCE_PROPERTIES],
         provenance: createCertificateProvenance({
@@ -3160,6 +3054,9 @@ const createEnergyConsumptionPanel = ({
   })
   const waterMetric = createCurrentReferenceWaterPrimaryMetric({
     floorAreaSquareMeters: properties[FLOOR_AREA_PROPERTY],
+    allowOverrideWithoutDefault: ['05', '06'].includes(
+      getCodeProperty(properties, ENERGYMAP_BUILDING_TYPE_PROPERTY) ?? ''
+    ),
     locale,
   })
   const hasCostMetric = normalizePrimaryMetric(costMetric) != null
@@ -3306,15 +3203,21 @@ const getSavingsPercentValue = ({
     estimateType: 'total',
   })
 
-  if (!isScenarioMeasurePublished({ prefix, measure })) {
+  if (
+    getEnergyReferenceCoverageExclusions({
+      purpose: getCodeProperty(properties, ENERGYMAP_BUILDING_TYPE_PROPERTY),
+      prefix,
+      measure,
+    }).length > 0
+  ) {
     return placeholderValue({
       keyName: key('placeholders.not_published'),
       sourceProperties: [baselineProperty, measureProperty],
     })
   }
 
-  const baselineValue = getNumberProperty(properties, baselineProperty)
-  const measureValue = getNumberProperty(properties, measureProperty)
+  const baselineValue = getEnergyNumberProperty(properties, baselineProperty)
+  const measureValue = getEnergyNumberProperty(properties, measureProperty)
 
   if (baselineValue == null || baselineValue <= 0 || measureValue == null) {
     return missingValue({
@@ -3323,6 +3226,10 @@ const getSavingsPercentValue = ({
   }
 
   const savings = (baselineValue - measureValue) / baselineValue
+  if (!Number.isFinite(savings) || !Number.isFinite(savings * 100))
+    return missingValue({
+      sourceProperties: [baselineProperty, measureProperty],
+    })
   const savingsText = new Intl.NumberFormat(locale, {
     maximumFractionDigits: 0,
     style: 'percent',
@@ -3731,9 +3638,7 @@ const normalizeSection = (
       ? {}
       : {
           title,
-          ...(titleSourceProperties == null
-            ? {}
-            : { titleSourceProperties }),
+          ...(titleSourceProperties == null ? {} : { titleSourceProperties }),
           ...(titleProvenance == null ? {} : { titleProvenance }),
         }),
     ...(description == null ? {} : { description }),
@@ -3770,198 +3675,6 @@ const normalizePanel = (
   }
 }
 
-// Collect from candidates, before normalization removes unavailable values.
-// This inventory deliberately excludes context/evidence rows and unused controls.
-const collectMissingBuildingInfo = ({
-  candidates,
-  properties,
-  prefix,
-  certificateConsumption,
-}: {
-  candidates: EnergymapBuildingInfoPanel[]
-  properties: EnergymapSelectedBuilding['properties']
-  prefix: EnergymapEnergyScenarioPrefix | null
-  certificateConsumption: EnergyCertificateConsumptionRecord | null
-}): EnergymapBuildingInfoMissingItem[] => {
-  const items: EnergymapBuildingInfoMissingItem[] = []
-  const missingText = (name: string) =>
-    translationText(key(`missing_data.${name}`))
-  const hasSourceValue = (property: string) => {
-    const value = properties[property]
-    return value != null && !(typeof value === 'string' && value.trim() === '')
-  }
-  const sourceReason = (
-    value: EnergymapBuildingInfoValue,
-    source: 'ryhti' | 'certificate'
-  ) =>
-    missingText(
-      `${source}_${value.sourceProperties?.some(hasSourceValue) ? 'invalid' : 'unavailable'}`
-    )
-  const add = (item: EnergymapBuildingInfoMissingItem) => items.push(item)
-  const details = candidates.find((panel) => panel.id === 'buildingDetails')
-  // Current class can also be modeled; its absence alone has no known cause.
-  const rowSources: Record<string, 'ryhti' | 'certificate' | undefined> = {
-    address: 'ryhti',
-    buildingIdentifier: 'ryhti',
-    propertyIdentifier: 'ryhti',
-    constructionYear: 'ryhti',
-    buildingType: 'ryhti',
-    heating: 'ryhti',
-    energyCertificateValidity: 'certificate',
-    previousEnergyClass: 'certificate',
-    heatedNetArea: 'certificate',
-    ventilationType: 'certificate',
-    ventilation: 'certificate',
-    ventilationCategory: 'certificate',
-  }
-
-  for (const section of details?.sections ?? []) {
-    for (const row of section.rows ?? []) {
-      if (isEnergymapBuildingInfoValueAvailable(row)) continue
-      const source = rowSources[row.id]
-      add({
-        id: `buildingDetails.${row.id}`,
-        panelId: 'buildingDetails',
-        // The ordinary address row is a subheader labelled "Building".
-        label: row.id === 'address' ? missingText('address') : row.label,
-        ...(source == null ? {} : { reason: sourceReason(row, source) }),
-      })
-    }
-  }
-
-  const estimateReason = (value: EnergymapBuildingInfoMetricValue) => {
-    if (prefix == null) {
-      return translationText(key('placeholders.unsupported_energy_estimate'))
-    }
-    if (
-      value.id === 'annualTotal' &&
-      getPositiveNumberProperty(properties, FLOOR_AREA_PROPERTY) == null
-    ) {
-      return missingText('annual_area')
-    }
-    return missingText(
-      value.id === 'savingsPercent' ? 'savings_inputs' : 'model_output'
-    )
-  }
-  const addEstimateValues = ({
-    id,
-    label,
-    values,
-    panelId,
-  }: {
-    id: string
-    label: EnergymapBuildingInfoText
-    values: EnergymapBuildingInfoMetricValue[]
-    panelId: EnergymapBuildingInfoPanelId
-  }) => {
-    for (const value of values) {
-      if (isEnergymapBuildingInfoValueAvailable(value)) continue
-      add({
-        id: `${panelId}.${id}.${value.id}`,
-        panelId,
-        label: sequenceText([label, value.label], ' — '),
-        reason: estimateReason(value),
-      })
-    }
-  }
-  const energy = candidates.find((panel) => panel.id === 'energyConsumption')
-  const estimated = energy?.sections.find(
-    (section) => section.id === 'estimatedConsumption'
-  )
-  for (const metric of estimated?.metrics ?? []) {
-    addEstimateValues({ ...metric, panelId: 'energyConsumption' })
-  }
-  for (const metric of estimated?.consumptionControls?.primaryMetrics ?? []) {
-    // Energy is represented by the three metrics above, not by this selector.
-    if (
-      metric.id === 'energy' ||
-      (metric.value != null &&
-        isEnergymapBuildingInfoValueAvailable(metric.value))
-    )
-      continue
-    add({
-      id: `energyConsumption.${metric.id}`,
-      panelId: 'energyConsumption',
-      label: metric.label,
-      reason: metric.unavailableNote?.text,
-    })
-  }
-
-  const certificate = energy?.sections.find(
-    (section) => section.id === 'certificateConsumption'
-  )
-  if (certificate != null && certificateConsumption != null) {
-    if (certificateConsumption.completeness === 'partial') {
-      add({
-        id: 'energyConsumption.certificateTotal.annualTotal',
-        panelId: 'energyConsumption',
-        label: translationText(
-          key('panels.energy.certificate.metric.complete_total')
-        ),
-        reason: translationText(
-          key('panels.energy.certificate.note.partial_record')
-        ),
-      })
-    }
-    if (certificateConsumption.heatedNetAreaM2 == null) {
-      for (const metric of certificate.metrics ?? []) {
-        add({
-          id: `energyConsumption.${metric.id}.perSquareMeter`,
-          panelId: 'energyConsumption',
-          label: sequenceText(
-            [
-              metric.label,
-              translationText(
-                key('panels.energy.certificate.metric.per_square_meter')
-              ),
-            ],
-            ' — '
-          ),
-          reason: missingText('certificate_area'),
-        })
-      }
-    }
-  } else if (
-    certificateConsumption == null &&
-    estimated?.metrics?.some((metric) =>
-      metric.values.some(
-        (value) => !isEnergymapBuildingInfoValueAvailable(value)
-      )
-    )
-  ) {
-    add({
-      id: 'energyConsumption.certificateConsumption',
-      panelId: 'energyConsumption',
-      label: translationText(key('panels.energy.certificate.title')),
-      reason: missingText('certificate_unavailable'),
-    })
-  }
-
-  const renovation = candidates.find(
-    (panel) => panel.id === 'renovationRecommendations'
-  )
-  for (const section of renovation?.sections ?? []) {
-    for (const row of section.rows ?? []) {
-      if (isEnergymapBuildingInfoValueAvailable(row)) continue
-      add({
-        id: `renovationRecommendations.${row.id}`,
-        panelId: 'renovationRecommendations',
-        label: row.label,
-        reason: missingText('certificate_unavailable'),
-      })
-    }
-    for (const scenario of section.scenarios ?? []) {
-      if (
-        prefix == null ||
-        !isScenarioMeasurePublished({ prefix, measure: scenario.id })
-      )
-        continue
-      addEstimateValues({ ...scenario, panelId: 'renovationRecommendations' })
-    }
-  }
-  return items
-}
-
 export const createEnergymapBuildingInfoPresentation = ({
   selectedBuilding,
   locale,
@@ -3971,7 +3684,10 @@ export const createEnergymapBuildingInfoPresentation = ({
   }
 
   const { properties } = selectedBuilding
-  const certificateConsumption = parseEnergyCertificateConsumption(properties)
+  const certificateOutcome =
+    parseEnergyCertificateConsumptionOutcome(properties)
+  const certificateConsumption =
+    certificateOutcome.status === 'available' ? certificateOutcome.record : null
   const heatingMethod = getCodeProperty(properties, HEATING_METHOD_PROPERTY)
   const heatingEnergySource = getCodeProperty(
     properties,
@@ -3994,11 +3710,11 @@ export const createEnergymapBuildingInfoPresentation = ({
   ]
   const missingData = {
     locale,
-    items: collectMissingBuildingInfo({
+    ...collectMissingBuildingInfo({
       candidates,
       properties,
       prefix,
-      certificateConsumption,
+      certificateOutcome,
     }),
   }
   return {

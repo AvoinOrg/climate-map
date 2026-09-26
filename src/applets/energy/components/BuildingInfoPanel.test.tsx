@@ -877,7 +877,9 @@ describe('BuildingInfoPanel', () => {
         panelKey: 'next-building',
       })
       expect(screen.queryByText('Description only')).not.toBeInTheDocument()
-      expect(screen.queryByText('Updated SV label only')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('Updated SV label only')
+      ).not.toBeInTheDocument()
     }
   )
 
@@ -1585,7 +1587,7 @@ describe('BuildingInfoPanel', () => {
     expect(
       screen.getByTestId('building-info-provenance-view')
     ).not.toHaveTextContent(
-      'sidebar.building_info.missing_data.water_residents'
+      'sidebar.building_info.missing_reason.causes.water-empty'
     )
     fireEvent.click(
       screen.getByRole('button', {
@@ -1613,7 +1615,7 @@ describe('BuildingInfoPanel', () => {
       expect(
         screen.getByTestId('building-info-provenance-view')
       ).not.toHaveTextContent(
-        'sidebar.building_info.missing_data.water_residents'
+        'sidebar.building_info.missing_reason.causes.water-empty'
       )
       expect(
         screen.getByTestId('building-info-provenance-view')
@@ -1624,7 +1626,7 @@ describe('BuildingInfoPanel', () => {
     expect(
       screen.getByTestId('building-info-provenance-view')
     ).not.toHaveTextContent(
-      'sidebar.building_info.missing_data.water_residents'
+      'sidebar.building_info.missing_reason.causes.water-empty'
     )
 
     fireEvent.click(
@@ -1659,7 +1661,7 @@ describe('BuildingInfoPanel', () => {
       expect(
         screen.getByTestId('building-info-provenance-view')
       ).not.toHaveTextContent(
-        'sidebar.building_info.missing_data.water_residents'
+        'sidebar.building_info.missing_reason.causes.water-empty'
       )
     })
     const previousRegionId = trigger.getAttribute('aria-controls')
@@ -1699,7 +1701,7 @@ describe('BuildingInfoPanel', () => {
         'building-info-provenance-view'
       )
       expect(replacementView).not.toHaveTextContent(
-        'sidebar.building_info.missing_data.water_residents'
+        'sidebar.building_info.missing_reason.causes.water-empty'
       )
       expect(
         replacementView.querySelector(
@@ -1708,6 +1710,157 @@ describe('BuildingInfoPanel', () => {
       ).toBeNull()
     })
   })
+
+  it.each([undefined, 0, 'invalid'])(
+    'allows a Water override through the mounted UI without a usable floor area (%p)',
+    async (floorArea) => {
+      const waterPanels = createCatalogValidPanels({
+        properties: {
+          building_key: 'water-without-default',
+          main_purpose: '05',
+          floor_area: floorArea,
+        },
+      })
+      const rendered = renderBuildingInfoTabs({
+        panelKey: 'water-without-default-a',
+        panels: waterPanels,
+      })
+      const waterPanel = await screen.findByTestId(
+        'building-info-primary-metric-value'
+      )
+      const getInput = () =>
+        screen.getByLabelText(
+          'sidebar.building_info.panels.energy.water.resident_count'
+        )
+      const getSwitch = () =>
+        screen.getByRole('switch', {
+          name: 'sidebar.building_info.panels.energy.water.change_resident_count',
+        })
+      const getTrigger = () =>
+        screen.getByRole('button', {
+          name: 'sidebar.building_info.provenance.view.open',
+        })
+      const getMissingWater = () =>
+        screen
+          .getByTestId('building-info-provenance-view')
+          .querySelector('[data-missing-item-id="energyConsumption.water"]')
+      const closeInformation = () =>
+        fireEvent.click(
+          screen.getByRole('button', {
+            name: 'sidebar.building_info.provenance.view.close',
+          })
+        )
+      const expectNoWaterValue = () => {
+        expect(
+          waterPanel.querySelector('[data-metric-value-id="annualTotal"]')
+        ).toBeNull()
+        expect(
+          within(waterPanel).queryByTestId(
+            'building-info-unavailable-value-icon'
+          )
+        ).not.toBeInTheDocument()
+        expect(
+          within(waterPanel).queryByTestId(
+            'building-info-water-resident-default'
+          )
+        ).not.toBeInTheDocument()
+      }
+
+      expectNoWaterValue()
+      fireEvent.click(getTrigger())
+      expect(getMissingWater()).toHaveTextContent(
+        'sidebar.building_info.missing_reason.causes.water-default'
+      )
+      const unrelatedMissingIds = Array.from(
+        screen
+          .getByTestId('building-info-provenance-view')
+          .querySelectorAll('[data-missing-item-id]')
+      )
+        .map((item) => item.getAttribute('data-missing-item-id'))
+        .filter((id) => id !== 'energyConsumption.water')
+      closeInformation()
+
+      fireEvent.click(getSwitch())
+      expect(getInput()).toHaveValue('')
+      fireEvent.change(getInput(), { target: { value: '3' } })
+      fireEvent.blur(getInput())
+      await waitFor(() => expect(waterPanel).toHaveTextContent('131,4'))
+      expect(getInput()).toHaveValue('3')
+      fireEvent.click(getTrigger())
+      expect(getMissingWater()).toBeNull()
+      expect(
+        Array.from(
+          screen
+            .getByTestId('building-info-provenance-view')
+            .querySelectorAll('[data-missing-item-id]')
+        ).map((item) => item.getAttribute('data-missing-item-id'))
+      ).toEqual(unrelatedMissingIds)
+      closeInformation()
+
+      for (const [raw, code] of [
+        ['', 'water-empty'],
+        ['2.5', 'water-invalid'],
+        ['10001', 'water-range'],
+      ]) {
+        fireEvent.change(getInput(), { target: { value: raw } })
+        expectNoWaterValue()
+        expect(waterPanel).not.toHaveTextContent('131,4')
+        // Pointer opening must retain the actual invalid draft across blur.
+        fireEvent.pointerDown(getTrigger(), { pointerType: 'touch' })
+        fireEvent.blur(getInput())
+        fireEvent.click(getTrigger())
+        expect(getMissingWater()).toHaveTextContent(
+          `sidebar.building_info.missing_reason.causes.${code}`
+        )
+        closeInformation()
+        expect(getInput()).toHaveValue(raw)
+      }
+
+      fireEvent.blur(getInput())
+      expect(getInput()).toHaveValue('10000')
+      expect(waterPanel).toHaveTextContent('438 000')
+      fireEvent.change(getInput(), { target: { value: 'abc' } })
+      fireEvent.blur(getInput())
+      expect(getInput()).toHaveValue('')
+      expectNoWaterValue()
+
+      fireEvent.change(getInput(), { target: { value: '3' } })
+      fireEvent.blur(getInput())
+      fireEvent.click(getSwitch())
+      expectNoWaterValue()
+      fireEvent.click(getTrigger())
+      expect(getMissingWater()).toHaveTextContent(
+        'sidebar.building_info.missing_reason.causes.water-default'
+      )
+      closeInformation()
+
+      fireEvent.click(getSwitch())
+      fireEvent.change(getInput(), { target: { value: '3' } })
+      fireEvent.blur(getInput())
+      expect(waterPanel).toHaveTextContent('131,4')
+      rendered.rerenderBuildingInfoTabs({
+        panelKey: 'water-without-default-b',
+        panels: createCatalogValidPanels({
+          properties: {
+            building_key: 'water-without-default-b',
+            main_purpose: '06',
+            floor_area: 0,
+          },
+        }),
+      })
+      expect(getTrigger()).toHaveAttribute('aria-expanded', 'false')
+      expect(getSwitch()).not.toBeChecked()
+      expect(
+        screen.getByTestId('building-info-primary-metric-value')
+      ).not.toHaveTextContent('131,4')
+      fireEvent.click(getSwitch())
+      expect(getInput()).toHaveValue('')
+      fireEvent.click(getTrigger())
+      expect(getMissingWater()).toHaveTextContent(
+        'sidebar.building_info.missing_reason.causes.water-empty'
+      )
+    }
+  )
 
   it('retains invalid Water provenance when touch activation blurs without a related target', async () => {
     const waterPanels = createCatalogValidPanels({
@@ -1757,7 +1910,9 @@ describe('BuildingInfoPanel', () => {
     expect(residentInput).toHaveValue('')
     expect(
       screen.getByTestId('building-info-provenance-view')
-    ).toHaveTextContent('sidebar.building_info.missing_data.water_residents')
+    ).toHaveTextContent(
+      'sidebar.building_info.missing_reason.causes.water-empty'
+    )
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -1790,7 +1945,7 @@ describe('BuildingInfoPanel', () => {
       expect(
         screen.getByTestId('building-info-provenance-view')
       ).not.toHaveTextContent(
-        'sidebar.building_info.missing_data.water_residents'
+        'sidebar.building_info.missing_reason.causes.water-empty'
       )
     })
   })
@@ -1848,7 +2003,9 @@ describe('BuildingInfoPanel', () => {
     )
     expect(
       screen.getByTestId('building-info-provenance-view')
-    ).toHaveTextContent('sidebar.building_info.missing_data.water_residents')
+    ).toHaveTextContent(
+      'sidebar.building_info.missing_reason.causes.water-empty'
+    )
   })
 
   it.each([

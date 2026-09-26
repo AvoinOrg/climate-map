@@ -56,7 +56,7 @@ export const ENERGY_CERTIFICATE_CONSUMPTION_PROPERTY =
   'energy_certificate_consumption'
 const BUILDING_IDENTIFIER_PROPERTY = 'permanent_building_identifier'
 
-const STANDARD_CARRIERS = [
+export const ENERGY_CERTIFICATE_STANDARD_CARRIERS = [
   'electricity',
   'district_heat',
   'district_cooling',
@@ -64,7 +64,9 @@ const STANDARD_CARRIERS = [
   'renewable_fuel',
 ] as const satisfies readonly EnergyCertificateConsumptionStandardCarrier[]
 
-const STANDARD_CARRIER_SET: ReadonlySet<string> = new Set(STANDARD_CARRIERS)
+const STANDARD_CARRIER_SET: ReadonlySet<string> = new Set(
+  ENERGY_CERTIFICATE_STANDARD_CARRIERS
+)
 const OTHER_SOURCE_SLOTS: ReadonlySet<number> = new Set([0, 1, 2])
 
 const ISO_TIMESTAMP_PATTERN =
@@ -86,9 +88,8 @@ const isOtherSourceSlot = (value: unknown): value is 0 | 1 | 2 =>
   Number.isInteger(value) &&
   OTHER_SOURCE_SLOTS.has(value)
 
-const isSupportedCertificateVersion = (
-  value: unknown
-): value is 2013 | 2018 => value === 2013 || value === 2018
+const isSupportedCertificateVersion = (value: unknown): value is 2013 | 2018 =>
+  value === 2013 || value === 2018
 
 const isLeapYear = (year: number) =>
   year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)
@@ -167,52 +168,119 @@ const totalsAreConsistent = ({
   return Math.abs(componentSum - total) <= tolerance
 }
 
+export const ENERGY_CERTIFICATE_CONSUMPTION_FAILURES = [
+  'wrong-type',
+  'malformed-json',
+  'invalid-object',
+  'unsupported-schema',
+  'unsupported-version',
+  'unsupported-basis',
+  'unsupported-unit',
+  'selected-identity',
+  'payload-identity',
+  'certificate-identity',
+  'identity-mismatch',
+  'invalid-completeness',
+  'invalid-components',
+  'invalid-component',
+  'invalid-quantity',
+  'unsupported-carrier',
+  'invalid-slot',
+  'invalid-name',
+  'duplicate-carrier',
+  'duplicate-slot',
+  'incomplete-declared-total',
+  'partial-declared-total',
+  'invalid-total',
+  'inconsistent-total',
+  'unreadable-record',
+] as const
+export type EnergyCertificateConsumptionFailure =
+  (typeof ENERGY_CERTIFICATE_CONSUMPTION_FAILURES)[number]
+
+export type EnergyCertificateMetadataOutcome =
+  | 'available'
+  | 'absent'
+  | 'invalid'
+export type EnergyCertificateConsumptionOutcome =
+  | { status: 'absent' }
+  | { status: 'unusable'; reason: EnergyCertificateConsumptionFailure }
+  | {
+      status: 'available'
+      record: EnergyCertificateConsumptionRecord
+      metadata: {
+        signedAt: EnergyCertificateMetadataOutcome
+        validUntil: EnergyCertificateMetadataOutcome
+        heatedNetAreaM2: EnergyCertificateMetadataOutcome
+      }
+    }
+
+const unusable = (
+  reason: EnergyCertificateConsumptionFailure
+): EnergyCertificateConsumptionOutcome => ({ status: 'unusable', reason })
+const metadataOutcome = (
+  raw: unknown,
+  normalized: unknown
+): EnergyCertificateMetadataOutcome =>
+  normalized !== undefined ? 'available' : raw == null ? 'absent' : 'invalid'
+
 const parseRecord = (
   properties: EnergymapSelectedBuildingProperties
-): EnergyCertificateConsumptionRecord | null => {
+): EnergyCertificateConsumptionOutcome => {
   const rawConsumption = properties[ENERGY_CERTIFICATE_CONSUMPTION_PROPERTY]
-  if (rawConsumption === undefined || rawConsumption === null) return null
-  if (typeof rawConsumption !== 'string') return null
+  if (rawConsumption === undefined || rawConsumption === null)
+    return { status: 'absent' }
+  if (typeof rawConsumption !== 'string') return unusable('wrong-type')
 
   const selectedBuildingIdentifier = properties[BUILDING_IDENTIFIER_PROPERTY]
   if (
     typeof selectedBuildingIdentifier !== 'string' ||
     selectedBuildingIdentifier.length === 0
   ) {
-    return null
+    return unusable('selected-identity')
   }
 
-  const parsed: unknown = JSON.parse(rawConsumption)
-  if (!isObject(parsed)) return null
-
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(rawConsumption)
+  } catch {
+    return unusable('malformed-json')
+  }
+  if (!isObject(parsed)) return unusable('invalid-object')
+  if (parsed.schema_version !== 1) return unusable('unsupported-schema')
+  if (parsed.basis !== 'standardized_calculation')
+    return unusable('unsupported-basis')
+  if (parsed.unit !== 'kWh/year') return unusable('unsupported-unit')
+  if (!isSupportedCertificateVersion(parsed.certificate_version))
+    return unusable('unsupported-version')
   if (
-    parsed.schema_version !== 1 ||
-    parsed.basis !== 'standardized_calculation' ||
-    parsed.unit !== 'kWh/year' ||
-    !isSupportedCertificateVersion(parsed.certificate_version) ||
     typeof parsed.certificate_id !== 'string' ||
-    parsed.certificate_id.length === 0 ||
+    parsed.certificate_id.length === 0
+  )
+    return unusable('certificate-identity')
+  if (
     typeof parsed.building_identifier !== 'string' ||
-    parsed.building_identifier.length === 0 ||
-    parsed.building_identifier !== selectedBuildingIdentifier ||
-    (parsed.completeness !== 'complete' && parsed.completeness !== 'partial') ||
-    !Array.isArray(parsed.components) ||
-    parsed.components.length === 0
-  ) {
-    return null
-  }
+    parsed.building_identifier.length === 0
+  )
+    return unusable('payload-identity')
+  if (parsed.building_identifier !== selectedBuildingIdentifier)
+    return unusable('identity-mismatch')
+  if (parsed.completeness !== 'complete' && parsed.completeness !== 'partial')
+    return unusable('invalid-completeness')
+  if (!Array.isArray(parsed.components) || parsed.components.length === 0)
+    return unusable('invalid-components')
 
   const components: EnergyCertificateConsumptionComponent[] = []
-  const seenStandardCarriers = new Set<EnergyCertificateConsumptionStandardCarrier>()
+  const seenStandardCarriers =
+    new Set<EnergyCertificateConsumptionStandardCarrier>()
   const seenOtherSlots = new Set<0 | 1 | 2>()
-
   for (const rawComponent of parsed.components) {
-    if (!isObject(rawComponent) || !isAnnualKwh(rawComponent.annual_kwh)) {
-      return null
-    }
-
+    if (!isObject(rawComponent)) return unusable('invalid-component')
+    if (!isAnnualKwh(rawComponent.annual_kwh))
+      return unusable('invalid-quantity')
     if (isStandardCarrier(rawComponent.carrier)) {
-      if (seenStandardCarriers.has(rawComponent.carrier)) return null
+      if (seenStandardCarriers.has(rawComponent.carrier))
+        return unusable('duplicate-carrier')
       seenStandardCarriers.add(rawComponent.carrier)
       components.push({
         carrier: rawComponent.carrier,
@@ -220,16 +288,13 @@ const parseRecord = (
       })
       continue
     }
-
-    if (rawComponent.carrier !== 'other') return null
-    if (
-      !isOtherSourceSlot(rawComponent.source_slot) ||
-      (typeof rawComponent.name !== 'string' && rawComponent.name !== null) ||
-      seenOtherSlots.has(rawComponent.source_slot)
-    ) {
-      return null
-    }
-
+    if (rawComponent.carrier !== 'other') return unusable('unsupported-carrier')
+    if (!isOtherSourceSlot(rawComponent.source_slot))
+      return unusable('invalid-slot')
+    if (typeof rawComponent.name !== 'string' && rawComponent.name !== null)
+      return unusable('invalid-name')
+    if (seenOtherSlots.has(rawComponent.source_slot))
+      return unusable('duplicate-slot')
     seenOtherSlots.add(rawComponent.source_slot)
     components.push({
       carrier: 'other',
@@ -242,10 +307,13 @@ const parseRecord = (
   const signedAt = normalizeTimestamp(parsed.signed_at)
   const validUntil = normalizeTimestamp(parsed.valid_until)
   const heatedNetAreaM2 = normalizeHeatedNetArea(parsed.heated_net_area_m2)
-  const context = {
-    ...(signedAt === undefined ? {} : { signedAt }),
-    ...(validUntil === undefined ? {} : { validUntil }),
-    ...(heatedNetAreaM2 === undefined ? {} : { heatedNetAreaM2 }),
+  const metadata = {
+    signedAt: metadataOutcome(parsed.signed_at, signedAt),
+    validUntil: metadataOutcome(parsed.valid_until, validUntil),
+    heatedNetAreaM2: metadataOutcome(
+      parsed.heated_net_area_m2,
+      heatedNetAreaM2
+    ),
   }
   const baseRecord = {
     schemaVersion: 1,
@@ -255,31 +323,26 @@ const parseRecord = (
     certificateId: parsed.certificate_id,
     buildingIdentifier: parsed.building_identifier,
     components,
-    ...context,
+    ...(signedAt === undefined ? {} : { signedAt }),
+    ...(validUntil === undefined ? {} : { validUntil }),
+    ...(heatedNetAreaM2 === undefined ? {} : { heatedNetAreaM2 }),
   } as const
 
   if (parsed.completeness === 'partial') {
     if (
       Object.hasOwn(parsed, 'total_kwh_year') &&
       parsed.total_kwh_year !== null
-    ) {
-      return null
-    }
-
+    )
+      return unusable('partial-declared-total')
     return {
-      ...baseRecord,
-      completeness: 'partial',
-      totalKwhYear: null,
+      status: 'available',
+      metadata,
+      record: { ...baseRecord, completeness: 'partial', totalKwhYear: null },
     }
   }
-
-  if (
-    seenStandardCarriers.size !== STANDARD_CARRIERS.length ||
-    !isAnnualKwh(parsed.total_kwh_year)
-  ) {
-    return null
-  }
-
+  if (seenStandardCarriers.size !== ENERGY_CERTIFICATE_STANDARD_CARRIERS.length)
+    return unusable('incomplete-declared-total')
+  if (!isAnnualKwh(parsed.total_kwh_year)) return unusable('invalid-total')
   const componentSum = components.reduce(
     (sum, component) => sum + component.annualKwh,
     0
@@ -291,23 +354,33 @@ const parseRecord = (
       total: parsed.total_kwh_year,
       componentCount: components.length,
     })
-  ) {
-    return null
-  }
-
+  )
+    return unusable('inconsistent-total')
   return {
-    ...baseRecord,
-    completeness: 'complete',
-    totalKwhYear: parsed.total_kwh_year,
+    status: 'available',
+    metadata,
+    record: {
+      ...baseRecord,
+      completeness: 'complete',
+      totalKwhYear: parsed.total_kwh_year,
+    },
+  }
+}
+
+/** The sole parser. Optional metadata failures never reject otherwise usable energy. */
+export const parseEnergyCertificateConsumptionOutcome = (
+  properties: EnergymapSelectedBuildingProperties
+): EnergyCertificateConsumptionOutcome => {
+  try {
+    return parseRecord(properties)
+  } catch {
+    return unusable('unreadable-record')
   }
 }
 
 export const parseEnergyCertificateConsumption = (
   properties: EnergymapSelectedBuildingProperties
 ): EnergyCertificateConsumptionRecord | null => {
-  try {
-    return parseRecord(properties)
-  } catch {
-    return null
-  }
+  const outcome = parseEnergyCertificateConsumptionOutcome(properties)
+  return outcome.status === 'available' ? outcome.record : null
 }

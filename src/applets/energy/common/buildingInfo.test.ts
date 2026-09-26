@@ -310,6 +310,11 @@ const expectAvailableSection = (section: EnergymapBuildingInfoSection) => {
       expectAvailableText(metric.label)
       if (metric.id === 'energy') {
         expect(controls.energySubmetrics?.length).toBeGreaterThan(0)
+      } else if (
+        metric.id === 'water' &&
+        metric.residentCountControl?.defaultValue === null
+      ) {
+        expect(metric.value).toBeUndefined()
       } else {
         expect(metric.value).toBeDefined()
         expectAvailableValue(metric.value as EnergymapBuildingInfoValue)
@@ -862,7 +867,7 @@ describe('Energiakartta building info availability model', () => {
   })
 
   it.each([undefined, 0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
-    'removes Water and its resident control for invalid floor area %p',
+    'retains the residential Water editor without inventing a default for invalid floor area %p',
     (floorArea) => {
       const panels = createEnergymapBuildingInfoPanels({
         selectedBuilding: createSelectedBuilding({
@@ -874,12 +879,15 @@ describe('Energiakartta building info availability model', () => {
       }) as EnergymapBuildingInfoPanel[]
       const controls = getControls(getPanel(panels, 'energyConsumption'))
 
-      expect(controls.primaryMetrics.map(({ id }) => id)).not.toContain('water')
-      expect(
-        controls.primaryMetrics.some(
-          (metric) => metric.residentCountControl != null
-        )
-      ).toBe(false)
+      const water = getPrimaryMetric(controls, 'water')
+      expect(water.value).toBeUndefined()
+      expect(water.residentCountControl).toMatchObject({
+        defaultValue: null,
+        defaultFloorArea: floorArea,
+        minValue: 1,
+        maxValue: 10000,
+      })
+      expect(water.residentCountControl?.provenance).toBeUndefined()
       expectAvailableGraph(panels)
     }
   )
@@ -1016,7 +1024,6 @@ describe('Energiakartta building info availability model', () => {
     const controls = getControls(energy)
 
     expect(controls.primaryMetrics.map(({ id }) => id)).toEqual([
-      'energy',
       'water',
       'co2',
     ])
@@ -1156,7 +1163,10 @@ describe('Energiakartta building info availability model', () => {
             ],
           },
         })
-        expectPlainText(getRow(building, 'buildingIdentifier').text, '101614422K')
+        expectPlainText(
+          getRow(building, 'buildingIdentifier').text,
+          '101614422K'
+        )
         expect(properties.property_identifier).toBe(value)
         expectAvailableGraph(panels)
       }
@@ -1857,7 +1867,6 @@ describe('Energiakartta building info availability model', () => {
     const controls = getControls(energy)
 
     expect(controls.primaryMetrics.map(({ id }) => id)).toEqual([
-      'energy',
       'water',
       'co2',
     ])
@@ -2085,9 +2094,7 @@ describe('energy certificate consumption fallback model', () => {
       'electricity',
     ])
     expect(
-      reference.metrics?.flatMap(({ values }) =>
-        values.map(({ id }) => id)
-      )
+      reference.metrics?.flatMap(({ values }) => values.map(({ id }) => id))
     ).toEqual(['perSquareMeter', 'perSquareMeter', 'perSquareMeter'])
     expect(getSection(energy, 'certificateConsumption').variant).toBe(
       'energyCertificateConsumption'
@@ -2198,10 +2205,8 @@ describe('energy certificate consumption fallback model', () => {
     })
     const electricityRateEvidence = section.metrics?.[0].values[1].provenance
     expect(electricityRateEvidence?.runtimeValues).toMatchObject({
-      [ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_CONSUMPTION_ELECTRICITY]:
-        0,
-      [ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_CONSUMPTION_HEATED_AREA]:
-        10,
+      [ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_CONSUMPTION_ELECTRICITY]: 0,
+      [ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_CONSUMPTION_HEATED_AREA]: 10,
     })
     expect(electricityRateEvidence?.inputIds).not.toContain(
       ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.RYHTI_FLOOR_AREA
@@ -2301,8 +2306,7 @@ describe('energy certificate consumption fallback model', () => {
       fiMetric?.values[1].provenance?.runtimeValues
     )
     expect(enMetric?.values[1].provenance?.runtimeValues).toMatchObject({
-      [ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_CONSUMPTION_HEATED_AREA]:
-        50,
+      [ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_CONSUMPTION_HEATED_AREA]: 50,
     })
     expect(enMetric?.values[1].sourceProperties).toEqual([
       'energy_certificate_consumption',
@@ -2314,14 +2318,18 @@ describe('energy certificate consumption fallback model', () => {
       const certificate =
         translations.sidebar.building_info.panels.energy.certificate
       expect(certificate.title.trim()).not.toBe('')
-      expect(Object.values(certificate.carriers).every((value) => value.trim()))
-        .toBe(true)
-      expect(Object.values(certificate.context).every((value) => value.trim()))
-        .toBe(true)
-      expect(Object.values(certificate.metric).every((value) => value.trim()))
-        .toBe(true)
-      expect(Object.values(certificate.note).every((value) => value.trim()))
-        .toBe(true)
+      expect(
+        Object.values(certificate.carriers).every((value) => value.trim())
+      ).toBe(true)
+      expect(
+        Object.values(certificate.context).every((value) => value.trim())
+      ).toBe(true)
+      expect(
+        Object.values(certificate.metric).every((value) => value.trim())
+      ).toBe(true)
+      expect(
+        Object.values(certificate.note).every((value) => value.trim())
+      ).toBe(true)
     }
 
     expect(

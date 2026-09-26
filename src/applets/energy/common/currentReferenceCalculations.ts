@@ -45,6 +45,12 @@ export type CurrentReferenceUnsupportedResult = {
   component?: CurrentReferenceComponent
   referenceReason?: 'not-supplied'
   cause?: CurrentReferenceUnsupportedReason
+  causes?: readonly CurrentReferenceUnsupportedResult[]
+  context?: {
+    factorVersion: string
+    buildingClass?: CurrentReferenceBuildingClass
+    heatingCarrier?: CurrentReferenceEnergyCarrier
+  }
 }
 
 export type CurrentReferenceResolution<T> =
@@ -101,12 +107,11 @@ export type CurrentReferenceAnnualCostResult =
     }
   >
 
-export type CurrentReferenceAnnualCo2Result =
-  CurrentReferenceCalculationResult<
-    CurrentReferenceCompleteTotal & {
-      unit: 'kg CO2/year'
-    }
-  >
+export type CurrentReferenceAnnualCo2Result = CurrentReferenceCalculationResult<
+  CurrentReferenceCompleteTotal & {
+    unit: 'kg CO2/year'
+  }
+>
 
 export type CurrentReferenceResidentCountResult =
   CurrentReferenceCalculationResult<{
@@ -372,30 +377,35 @@ export const deriveAnnualPurchasedEnergyComponents = ({
     })
   }
 
-  const floorArea = validateNonNegativeFiniteNumber({
+  const floorArea = validatePositiveFiniteNumber({
     value: floorAreaSquareMeters,
     field: 'floorAreaSquareMeters',
   })
-  if (floorArea.status === 'unsupported') {
-    return floorArea
-  }
 
   const electricityIntensity = validateNonNegativeFiniteNumber({
     value: defaultElectricityIntensityKwhPerSquareMeterYear,
     field: 'defaultElectricityIntensityKwhPerSquareMeterYear',
     component: 'electricity',
   })
-  if (electricityIntensity.status === 'unsupported') {
-    return electricityIntensity
-  }
 
   const heatingIntensity = validateNonNegativeFiniteNumber({
     value: defaultHeatingIntensityKwhPerSquareMeterYear,
     field: 'defaultHeatingIntensityKwhPerSquareMeterYear',
     component: 'heating',
   })
-  if (heatingIntensity.status === 'unsupported') {
-    return heatingIntensity
+  const failures = [floorArea, electricityIntensity, heatingIntensity].filter(
+    (result): result is CurrentReferenceUnsupportedResult =>
+      result.status === 'unsupported'
+  )
+  if (
+    floorArea.status === 'unsupported' ||
+    electricityIntensity.status === 'unsupported' ||
+    heatingIntensity.status === 'unsupported'
+  ) {
+    return {
+      ...failures[0],
+      ...(failures.length > 1 ? { causes: failures } : {}),
+    }
   }
 
   const electricityEnergyKwhPerYear =
@@ -538,9 +548,7 @@ export const applyCurrentReferenceFactor = ({
     return unsupported({
       reason: 'non-finite-result',
       field:
-        component === 'electricity'
-          ? 'electricityAmount'
-          : 'heatingAmount',
+        component === 'electricity' ? 'electricityAmount' : 'heatingAmount',
       component,
     })
   }
@@ -548,9 +556,7 @@ export const applyCurrentReferenceFactor = ({
     return unsupported({
       reason: 'non-representable-result',
       field:
-        component === 'electricity'
-          ? 'electricityAmount'
-          : 'heatingAmount',
+        component === 'electricity' ? 'electricityAmount' : 'heatingAmount',
       component,
     })
   }
@@ -568,20 +574,20 @@ export const aggregateCompleteCurrentReferenceTotal = ({
   electricity: CurrentReferenceAppliedFactorResult
   heating: CurrentReferenceAppliedFactorResult
 }): CurrentReferenceCalculationResult<CurrentReferenceCompleteTotal> => {
-  if (electricity.status === 'unsupported') {
-    return unsupported({
+  if (
+    electricity.status === 'unsupported' ||
+    heating.status === 'unsupported'
+  ) {
+    const failures = [electricity, heating].filter(
+      (result): result is CurrentReferenceUnsupportedResult =>
+        result.status === 'unsupported'
+    )
+    return {
+      ...failures[0],
       reason: 'incomplete-component',
-      component: 'electricity',
-      cause: electricity.reason,
-    })
-  }
-
-  if (heating.status === 'unsupported') {
-    return unsupported({
-      reason: 'incomplete-component',
-      component: 'heating',
-      cause: heating.reason,
-    })
+      cause: failures[0].reason,
+      causes: failures,
+    }
   }
 
   const electricityAmount = validateNonNegativeFiniteNumber({
@@ -667,7 +673,14 @@ export const calculateCurrentReferenceAnnualCost = (
   })
 
   if (total.status === 'unsupported') {
-    return total
+    return {
+      ...total,
+      context: {
+        factorVersion: CURRENT_REFERENCE_DATA.version,
+        buildingClass: buildingClass.value,
+        heatingCarrier: energy.heating.carrier,
+      },
+    }
   }
 
   return {
@@ -699,7 +712,13 @@ export const calculateCurrentReferenceAnnualCo2 = (
   })
 
   if (total.status === 'unsupported') {
-    return total
+    return {
+      ...total,
+      context: {
+        factorVersion: CURRENT_REFERENCE_DATA.version,
+        heatingCarrier: energy.heating.carrier,
+      },
+    }
   }
 
   return {

@@ -1,4 +1,11 @@
-import { parseEnergyCertificateConsumption } from './energyCertificateConsumption'
+import { projectBuildingInfoMissingReason } from './buildingInfoMissingData'
+import fiTranslations from '@i18n/energiakartta/fi.json'
+import enTranslations from '@i18n/energiakartta/en.json'
+import {
+  parseEnergyCertificateConsumption,
+  parseEnergyCertificateConsumptionOutcome,
+  ENERGY_CERTIFICATE_CONSUMPTION_FAILURES,
+} from './energyCertificateConsumption'
 
 const BUILDING_IDENTIFIER = '103000000A'
 
@@ -147,9 +154,7 @@ describe('parseEnergyCertificateConsumption identity', () => {
     ['object', { id: BUILDING_IDENTIFIER }],
     ['empty', ''],
   ])('rejects a %s selected identifier', (_label, selectedIdentifier) => {
-    expect(
-      parsePayload(createCompletePayload(), selectedIdentifier)
-    ).toBeNull()
+    expect(parsePayload(createCompletePayload(), selectedIdentifier)).toBeNull()
   })
 
   it('rejects a missing selected identifier', () => {
@@ -248,10 +253,12 @@ describe('parseEnergyCertificateConsumption components', () => {
     ]
 
     expect(
-      parsePayload(createCompletePayload({
-        components,
-        total_kwh_year: 18.5,
-      }))
+      parsePayload(
+        createCompletePayload({
+          components,
+          total_kwh_year: 18.5,
+        })
+      )
     ).toMatchObject({
       completeness: 'complete',
       components: [
@@ -326,9 +333,7 @@ describe('parseEnergyCertificateConsumption components', () => {
     ['boolean quantity', [{ carrier: 'electricity', annual_kwh: true }]],
     ['negative quantity', [{ carrier: 'electricity', annual_kwh: -1 }]],
   ])('rejects %s', (_label, components) => {
-    expect(
-      parsePayload(createCompletePayload({ components }))
-    ).toBeNull()
+    expect(parsePayload(createCompletePayload({ components }))).toBeNull()
   })
 
   it('rejects a post-parse nonfinite annual quantity', () => {
@@ -372,10 +377,7 @@ describe('parseEnergyCertificateConsumption components', () => {
       'string source slot',
       { carrier: 'other', source_slot: '1', name: null, annual_kwh: 1 },
     ],
-    [
-      'missing name',
-      { carrier: 'other', source_slot: 1, annual_kwh: 1 },
-    ],
+    ['missing name', { carrier: 'other', source_slot: 1, annual_kwh: 1 }],
     [
       'numeric name',
       { carrier: 'other', source_slot: 1, name: 42, annual_kwh: 1 },
@@ -691,5 +693,203 @@ describe('parseEnergyCertificateConsumption live reported payload', () => {
       completeness: 'complete',
       totalKwhYear: 4388248,
     })
+  })
+})
+
+const detailed = (raw: unknown, identity: unknown = BUILDING_IDENTIFIER) =>
+  parseEnergyCertificateConsumptionOutcome({
+    permanent_building_identifier: identity,
+    energy_certificate_consumption: raw,
+  })
+const detailedPayload = (overrides: Record<string, unknown>) =>
+  detailed(JSON.stringify(createCompletePayload(overrides)))
+
+describe('typed local certificate outcomes', () => {
+  it.each([undefined, null])(
+    'reserves absence for a missing published property (%s)',
+    (raw) => {
+      expect(detailed(raw)).toEqual({ status: 'absent' })
+    }
+  )
+  it.each([
+    [false, 'wrong-type'],
+    ['', 'malformed-json'],
+    [' ', 'malformed-json'],
+    ['{', 'malformed-json'],
+    ['null', 'invalid-object'],
+    ['[]', 'invalid-object'],
+  ])('identifies received payload rejection %s', (raw, reason) =>
+    expect(detailed(raw)).toEqual({ status: 'unusable', reason })
+  )
+  const cases = [
+    [{ schema_version: 2 }, 'unsupported-schema'],
+    [{ certificate_version: 2026 }, 'unsupported-version'],
+    [{ basis: 'measured' }, 'unsupported-basis'],
+    [{ unit: 'MWh/year' }, 'unsupported-unit'],
+    [{ building_identifier: 123 }, 'payload-identity'],
+    [{ certificate_id: '' }, 'certificate-identity'],
+    [{ building_identifier: 'other' }, 'identity-mismatch'],
+    [{ completeness: 'unknown' }, 'invalid-completeness'],
+    [{ components: [] }, 'invalid-components'],
+    [{ components: [null] }, 'invalid-component'],
+    [
+      { components: [{ carrier: 'electricity', annual_kwh: -1 }] },
+      'invalid-quantity',
+    ],
+    [
+      { components: [{ carrier: 'future', annual_kwh: 0 }] },
+      'unsupported-carrier',
+    ],
+    [
+      {
+        components: [
+          { carrier: 'other', annual_kwh: 0, name: null, source_slot: 3 },
+        ],
+      },
+      'invalid-slot',
+    ],
+    [
+      {
+        components: [
+          { carrier: 'other', annual_kwh: 0, name: 1, source_slot: 0 },
+        ],
+      },
+      'invalid-name',
+    ],
+    [
+      { components: [STANDARD_COMPONENTS[0], STANDARD_COMPONENTS[0]] },
+      'duplicate-carrier',
+    ],
+    [
+      {
+        components: [
+          { carrier: 'other', annual_kwh: 0, name: null, source_slot: 0 },
+          { carrier: 'other', annual_kwh: 1, name: '', source_slot: 0 },
+        ],
+      },
+      'duplicate-slot',
+    ],
+    [{ components: [STANDARD_COMPONENTS[0]] }, 'incomplete-declared-total'],
+    [{ completeness: 'partial' }, 'partial-declared-total'],
+    [{ total_kwh_year: -1 }, 'invalid-total'],
+    [{ total_kwh_year: 16 }, 'inconsistent-total'],
+  ] as const
+  it.each(cases)(
+    'reports the exact local envelope/component failure %s',
+    (overrides, reason) => {
+      expect(detailedPayload(overrides)).toEqual({ status: 'unusable', reason })
+      expect(parsePayload(createCompletePayload(overrides))).toBeNull()
+    }
+  )
+  it('preserves identity semantics and safely catches hostile property access', () => {
+    expect(detailed(JSON.stringify(createCompletePayload()), 1)).toEqual({
+      status: 'unusable',
+      reason: 'selected-identity',
+    })
+    expect(
+      parseEnergyCertificateConsumptionOutcome(
+        Object.defineProperty({}, 'energy_certificate_consumption', {
+          get() {
+            throw Error('never display this')
+          },
+        })
+      )
+    ).toEqual({ status: 'unusable', reason: 'unreadable-record' })
+    expect(detailedPayload({ building_identifier: ' 000123 ' })).toMatchObject({
+      reason: 'identity-mismatch',
+    })
+    expect(
+      detailed(
+        JSON.stringify(
+          createCompletePayload({ building_identifier: ' 000123 ' })
+        ),
+        ' 000123 '
+      )
+    ).toMatchObject({
+      status: 'available',
+      record: { buildingIdentifier: ' 000123 ' },
+    })
+  })
+  it('keeps optional metadata validation separate from accepted energy', () => {
+    const payload = createCompletePayload({
+      signed_at: '2024-02-30T00:00:00',
+      valid_until: null,
+      heated_net_area_m2: 0,
+    })
+    const result = detailed(JSON.stringify(payload))
+    expect(result).toMatchObject({
+      status: 'available',
+      metadata: {
+        signedAt: 'invalid',
+        validUntil: 'absent',
+        heatedNetAreaM2: 'invalid',
+      },
+    })
+    if (result.status !== 'available') throw Error('expected usable energy')
+    expect(result.record).toEqual(parsePayload(payload))
+    expect(result.record).not.toHaveProperty('heatedNetAreaM2')
+    expect(result.record.totalKwhYear).toBe(15)
+    expect(
+      detailedPayload({ signed_at: null, heated_net_area_m2: null })
+    ).toMatchObject({
+      status: 'available',
+      metadata: {
+        signedAt: 'absent',
+        validUntil: 'available',
+        heatedNetAreaM2: 'absent',
+      },
+    })
+  })
+  it('keeps all-zero complete records and source-partial records distinct', () => {
+    const components = STANDARD_COMPONENTS.map((component) => ({
+      ...component,
+      annual_kwh: 0,
+    }))
+    expect(detailedPayload({ components, total_kwh_year: 0 })).toMatchObject({
+      status: 'available',
+      record: { completeness: 'complete', totalKwhYear: 0 },
+    })
+    expect(
+      detailedPayload({
+        components,
+        total_kwh_year: null,
+        completeness: 'partial',
+      })
+    ).toMatchObject({
+      status: 'available',
+      record: { completeness: 'partial', totalKwhYear: null },
+    })
+  })
+  it('has a localized source-specific projection for every typed rejection and a future-code fallback', () => {
+    for (const code of [
+      ...ENERGY_CERTIFICATE_CONSUMPTION_FAILURES,
+      'future-code',
+    ]) {
+      const text = projectBuildingInfoMissingReason({
+        source: 'energyCertificateRegister',
+        field: 'certificateConsumption',
+        code,
+        kind: 'unusable-published-payload',
+        evidence: 'parser',
+      })
+      expect(text).toEqual({
+        type: 'translation',
+        keyName: `sidebar.building_info.missing_reason.${code === 'future-code' ? 'fallback.certificate' : `payload.${code}`}`,
+      })
+      const key = text.type === 'translation' ? text.keyName : ''
+      for (const resource of [fiTranslations, enTranslations]) {
+        const value = key
+          .split('.')
+          .reduce<unknown>(
+            (node, part) =>
+              (node as Record<string, unknown> | undefined)?.[part],
+            resource
+          )
+        expect(typeof value).toBe('string')
+        expect(value).not.toMatch(
+          /future-code|schema_version|annual_kwh|stack trace/
+        )
+      }
+    }
   })
 })
