@@ -1,7 +1,8 @@
 import {
   formatCalendarDate,
   isEnergymapBuildingInfoValueAvailable,
-  normalizeEnergymapBuildingInfoText,
+  getSelectedEnergyConsumption,
+  type EnergymapBuildingInfoEnergySelection,
   type EnergymapBuildingInfoPanel,
   type EnergymapBuildingInfoPanelId,
   type EnergymapBuildingInfoValue,
@@ -286,9 +287,11 @@ const getEffectiveWaterTargetFailure = ({
 const collectCandidates = ({
   panels,
   effectiveWaterProjection,
+  energySelection,
 }: {
   panels: readonly EnergymapBuildingInfoPanel[]
   effectiveWaterProjection?: EnergymapEffectiveWaterProjection
+  energySelection?: EnergymapBuildingInfoEnergySelection
 }): CandidateCollection => {
   const candidates: Candidate[] = []
   const failures: EnergymapBuildingInfoProvenanceSummaryFailure[] = []
@@ -358,20 +361,6 @@ const collectCandidates = ({
       const location = (segments: readonly string[]) =>
         createLocation({ panelId: panel.id, sectionId: section.id, segments })
 
-      if (
-        section.variant === 'energyCertificateConsumption' &&
-        normalizeEnergymapBuildingInfoText(section.title) != null
-      ) {
-        add({
-          location: location(['title']),
-          kind: 'sectionTitle',
-          evidence: {
-            provenance: section.titleProvenance,
-            sourceProperties: section.titleSourceProperties,
-          },
-        })
-      }
-
       for (const row of section.rows ?? []) {
         const rowLocation = location(['row', row.id])
         addValue({
@@ -392,8 +381,13 @@ const collectCandidates = ({
         }
       }
 
-      for (const metric of section.metrics ?? []) {
-        if (section.variant === 'energyCertificateConsumption') {
+      for (const metric of section.consumptionControls == null
+        ? (section.metrics ?? [])
+        : []) {
+        if (
+          metric.labelProvenance != null ||
+          metric.labelSourceProperties != null
+        ) {
           add({
             location: location(['metric', metric.id, 'label']),
             kind: 'metricLabel',
@@ -416,6 +410,11 @@ const collectCandidates = ({
       const controls = section.consumptionControls
       if (controls != null) {
         for (const primaryMetric of controls.primaryMetrics) {
+          if (
+            energySelection != null &&
+            primaryMetric.id !== energySelection.primaryMetricId
+          )
+            continue
           const isEffectiveWaterTarget =
             panel.id === 'energyConsumption' &&
             section.id === 'estimatedConsumption' &&
@@ -436,11 +435,7 @@ const collectCandidates = ({
               isEnergymapBuildingInfoValueAvailable(value))
           ) {
             addValue({
-              location: location([
-                'primaryMetric',
-                primaryMetric.id,
-                'value',
-              ]),
+              location: location(['primaryMetric', primaryMetric.id, 'value']),
               kind: 'primaryMetricValue',
               noteKind: 'primaryMetricValueNote',
               value,
@@ -460,37 +455,58 @@ const collectCandidates = ({
           }
         }
 
-        for (const submetric of controls.energySubmetrics ?? []) {
-          for (const value of submetric.metric.values) {
-            addValue({
-              location: location([
-                'energySubmetric',
-                submetric.id,
-                'metric',
-                submetric.metric.id,
-                'value',
-                value.id,
-              ]),
-              kind: 'energySubmetricValue',
-              noteKind: 'energySubmetricValueNote',
-              value,
+        const selected =
+          energySelection == null
+            ? undefined
+            : getSelectedEnergyConsumption({ controls, ...energySelection })
+        const metrics =
+          energySelection == null
+            ? [
+                ...(controls.energySubmetrics ?? []).map(
+                  ({ metric }) => metric
+                ),
+                ...(controls.combinedEnergyMetric
+                  ? [controls.combinedEnergyMetric]
+                  : []),
+              ]
+            : energySelection.primaryMetricId === 'energy' &&
+                selected?.metric != null
+              ? [selected.metric]
+              : []
+        for (const metric of metrics) {
+          const segments = ['energySubmetric', metric.id, 'metric', metric.id]
+          if (
+            (metric.labelProvenance != null ||
+              metric.labelSourceProperties != null) &&
+            selected?.basisId !== 'registryFloorArea'
+          ) {
+            add({
+              location: location([...segments, 'label']),
+              kind: 'metricLabel',
+              evidence: {
+                provenance: metric.labelProvenance,
+                sourceProperties: metric.labelSourceProperties,
+              },
             })
           }
-        }
-
-        if (controls.combinedEnergyMetric != null) {
-          for (const value of controls.combinedEnergyMetric.values) {
-            addValue({
-              location: location([
-                'combinedEnergyMetric',
-                controls.combinedEnergyMetric.id,
-                'value',
-                value.id,
-              ]),
-              kind: 'combinedEnergyValue',
-              noteKind: 'combinedEnergyValueNote',
-              value,
-            })
+          const families =
+            energySelection != null
+              ? [{ id: selected?.basisId, values: selected?.values ?? [] }]
+              : (metric.bases ?? [{ id: undefined, values: metric.values }])
+          for (const family of families) {
+            for (const value of family.values) {
+              addValue({
+                location: location([
+                  ...segments,
+                  ...(family.id ? ['basis', family.id] : []),
+                  'value',
+                  value.id,
+                ]),
+                kind: 'energySubmetricValue',
+                noteKind: 'energySubmetricValueNote',
+                value,
+              })
+            }
           }
         }
       }
@@ -561,12 +577,8 @@ const cloneInputDefinition = (
   input: EnergymapBuildingInfoProvenanceInputDefinition
 ): MutableInput => ({
   ...input,
-  ...(input.providerIds == null
-    ? {}
-    : { providerIds: [...input.providerIds] }),
-  ...(input.metadataIds == null
-    ? {}
-    : { metadataIds: [...input.metadataIds] }),
+  ...(input.providerIds == null ? {} : { providerIds: [...input.providerIds] }),
+  ...(input.metadataIds == null ? {} : { metadataIds: [...input.metadataIds] }),
   ...(input.details == null ? {} : { details: { ...input.details } }),
   selectedEvidenceItemIds: [],
   documentedMethodItemIds: [],
@@ -640,10 +652,12 @@ export const deriveEnergymapBuildingInfoProvenanceSummary = ({
   panels,
   locale,
   effectiveWaterProjection,
+  energySelection,
 }: {
   panels: readonly EnergymapBuildingInfoPanel[] | null
   locale: string
   effectiveWaterProjection?: EnergymapEffectiveWaterProjection
+  energySelection?: EnergymapBuildingInfoEnergySelection
 }): EnergymapBuildingInfoProvenanceSummaryResult | null => {
   if (panels == null && effectiveWaterProjection == null) return null
 
@@ -664,6 +678,7 @@ export const deriveEnergymapBuildingInfoProvenanceSummary = ({
   const collection = collectCandidates({
     panels: currentPanels,
     effectiveWaterProjection,
+    energySelection,
   })
   if (collection.failures.length > 0) {
     return {
@@ -695,9 +710,7 @@ export const deriveEnergymapBuildingInfoProvenanceSummary = ({
         itemKind: candidate.kind,
         reason: resolution.reason,
         ...(resolution.id == null ? {} : { id: resolution.id }),
-        ...(resolution.inputId == null
-          ? {}
-          : { inputId: resolution.inputId }),
+        ...(resolution.inputId == null ? {} : { inputId: resolution.inputId }),
       })
       continue
     }
@@ -787,8 +800,7 @@ export const deriveEnergymapBuildingInfoProvenanceSummary = ({
       ...(resolution.metadata.referenceLastReviewed == null
         ? {}
         : {
-            referenceLastReviewed:
-              resolution.metadata.referenceLastReviewed,
+            referenceLastReviewed: resolution.metadata.referenceLastReviewed,
           }),
       ...(resolution.metadata.modelYear == null
         ? {}

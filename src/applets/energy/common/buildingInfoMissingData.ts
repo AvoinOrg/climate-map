@@ -26,7 +26,6 @@ import {
   getPositiveNumberProperty,
   getEnergyNumberProperty,
   formatYearFromDate,
-  isUsableEnergyIntensity,
   getEnergyReferenceCoverageExclusions,
 } from './buildingInfoEvidence'
 import type { EnergymapSelectedBuildingProperties } from './types'
@@ -749,10 +748,13 @@ export const resolveWaterMissingReason = (
     }
   }
   if (
-    calculateCurrentReferenceAnnualWater(input.residentCount).status === 'complete'
+    calculateCurrentReferenceAnnualWater(input.residentCount).status ===
+    'complete'
   )
     return null
-  if (deriveCurrentReferenceResidentCount(input.floorArea).status === 'complete')
+  if (
+    deriveCurrentReferenceResidentCount(input.floorArea).status === 'complete'
+  )
     return null
   return cause({
     source: 'currentReferenceOccupancy',
@@ -809,11 +811,11 @@ export const createWaterMissingItem = (
 })
 
 const CERTIFICATE_METRICS = {
-  electricity: 'certificateElectricity',
-  district_heat: 'certificateDistrictHeat',
-  district_cooling: 'certificateDistrictCooling',
-  fossil_fuel: 'certificateFossilFuel',
-  renewable_fuel: 'certificateRenewableFuel',
+  electricity: 'purchasedElectricity',
+  district_heat: 'districtHeat',
+  district_cooling: 'districtCooling',
+  fossil_fuel: 'fossilFuel',
+  renewable_fuel: 'renewableFuel',
 } as const
 
 /** Effective quantities, not card/section presence, own applicability. F099 can suppress filled or intentionally unused quantities here. */
@@ -931,6 +933,56 @@ export const collectMissingBuildingInfo = ({
       .filter((metric) =>
         ['total', 'heating', 'electricity'].includes(metric.id)
       ) ?? []
+  const controls = energy?.sections.find(
+    (section) => section.id === 'estimatedConsumption'
+  )?.consumptionControls
+  const effectiveMetrics = [
+    ...(controls?.energySubmetrics ?? []).map(({ metric }) => metric),
+    ...(controls?.combinedEnergyMetric == null
+      ? []
+      : [controls.combinedEnergyMetric]),
+  ]
+  const certificateApplicable =
+    metrics.length < 3 ||
+    metrics.some((metric) => metric.values.some((value) => !available(value)))
+  const certificateInUse =
+    certificateApplicable && certificateOutcome.status === 'available'
+  const effectiveValue = (id: string, basis: string) =>
+    effectiveMetrics
+      .filter((metric) => metric.id === id)
+      .flatMap(
+        (metric) =>
+          metric.bases?.flatMap(({ values }) => values) ?? metric.values
+      )
+      .find((value) => value.id === basis && available(value))
+  const certificateFailure = (): BuildingInfoMissingReason =>
+    certificateOutcome.status === 'unusable'
+      ? {
+          source: C,
+          field: 'energy',
+          kind: 'unusable-published-payload',
+          code: certificateOutcome.reason,
+          evidence: 'parser',
+        }
+      : cause({
+          source: C,
+          field: 'energy',
+          code: 'certificate-absent',
+          kind: 'legacy-cause-unestablished',
+          dependencies: !getStringProperty(
+            properties,
+            'permanent_building_identifier'
+          )
+            ? [
+                cause({
+                  source: C,
+                  field: 'energy',
+                  code: 'certificate-join',
+                  kind: 'missing-join-identifier',
+                }),
+              ]
+            : [],
+        })
   const addEstimate = ({
     panelId,
     id,
@@ -964,6 +1016,13 @@ export const collectMissingBuildingInfo = ({
             quantity,
           })
           const dependencies = output == null ? [] : [output]
+          if (
+            panelId === 'energyConsumption' &&
+            quantity === 'total' &&
+            certificateOutcome.status !== 'available' &&
+            output != null
+          )
+            dependencies.push(certificateFailure())
           if (
             value.id === 'annualTotal' &&
             getPositiveNumberProperty(properties, 'floor_area') == null
@@ -1019,7 +1078,22 @@ export const collectMissingBuildingInfo = ({
         },
       })
   }
-  for (const metric of metrics)
+  for (const metric of metrics) {
+    // Certificate-supported equivalents are diagnosed below using the resolved
+    // quantity. Unused reference alternatives are not displayed as missing data.
+    if (
+      certificateInUse &&
+      (metric.id === 'total' || (prefix === 'distr' && metric.id === 'heating'))
+    )
+      continue
+    if (certificateInUse && !metric.values.some(available)) {
+      inventory.push({
+        id: `energyConsumption.${metric.id}`,
+        status: 'excluded',
+        basis: 'effective-quantity-unused',
+      })
+      continue
+    }
     addEstimate({
       ...metric,
       panelId: 'energyConsumption',
@@ -1030,7 +1104,11 @@ export const collectMissingBuildingInfo = ({
           : metric.id === 'electricity'
             ? 'elec'
             : 'total',
+      values: metric.values.map(
+        (value) => effectiveValue(metric.id, value.id) ?? value
+      ),
     })
+  }
   for (const metric of energy?.sections.flatMap(
     (section) => section.consumptionControls?.primaryMetrics ?? []
   ) ?? []) {
@@ -1061,60 +1139,7 @@ export const collectMissingBuildingInfo = ({
     })
   }
 
-  const certificateApplicable =
-    metrics.length < 3 ||
-    metrics.some((metric) => metric.values.some((value) => !available(value)))
-  if (
-    !certificateApplicable ||
-    effectiveAvailability['energyConsumption.certificateConsumption'] ===
-      'excluded'
-  ) {
-    inventory.push({
-      id: 'energyConsumption.certificateConsumption',
-      status: 'excluded',
-      basis: !certificateApplicable
-        ? 'complete-reference-energy'
-        : 'effective-quantity-unused',
-    })
-  } else if (certificateOutcome.status !== 'available') {
-    add({
-      id: 'energyConsumption.certificateConsumption',
-      panelId: 'energyConsumption',
-      label: tr('panels.energy.certificate.title'),
-      isAvailable: false,
-      reason: () =>
-        certificateOutcome.status === 'absent'
-          ? cause({
-              source: C,
-              field: 'certificateConsumption',
-              code: 'certificate-absent',
-              kind: 'legacy-cause-unestablished',
-              dependencies:
-                typeof properties.permanent_building_identifier !== 'string' ||
-                properties.permanent_building_identifier.length === 0
-                  ? [
-                      cause({
-                        source: C,
-                        field: 'certificateConsumption',
-                        code: 'certificate-join',
-                        kind: 'missing-join-identifier',
-                      }),
-                    ]
-                  : [],
-            })
-          : {
-              source: C,
-              field: 'certificateConsumption',
-              kind: 'unusable-published-payload',
-              code: certificateOutcome.reason,
-              evidence: 'parser',
-            },
-    })
-  } else {
-    inventory.push({
-      id: 'energyConsumption.certificateConsumption',
-      status: 'available',
-    })
+  if (certificateInUse && certificateOutcome.status === 'available') {
     const record = certificateOutcome.record
     const missingCarriers = ENERGY_CERTIFICATE_STANDARD_CARRIERS.filter(
       (carrier) =>
@@ -1132,48 +1157,52 @@ export const collectMissingBuildingInfo = ({
     const totalReason = () =>
       cause({
         source: C,
-        field: 'certificateTotal',
+        field: 'total',
         code: 'certificate-total',
         kind: 'incomplete-calculation',
         dependencies: missingCarriers.map(carrierReason),
       })
     const quantities = [
       ...ENERGY_CERTIFICATE_STANDARD_CARRIERS.map((carrier) => ({
-        id: CERTIFICATE_METRICS[carrier],
-        label: tr(`panels.energy.certificate.carriers.${carrier}`),
-        annual: record.components.find(
-          (component) => component.carrier === carrier
-        )?.annualKwh,
+        id:
+          carrier === 'district_heat' &&
+          prefix === 'distr' &&
+          effectiveMetrics.some(
+            (metric) => metric.id === 'heating' && metric.values.some(available)
+          )
+            ? 'heating'
+            : CERTIFICATE_METRICS[carrier],
+        label:
+          carrier === 'electricity'
+            ? tr('panels.energy.series.purchased_electricity')
+            : tr(`panels.energy.certificate.carriers.${carrier}`),
         reason: () => carrierReason(carrier),
       })),
       ...record.components
         .filter((component) => component.carrier === 'other')
         .map((component) => ({
-          id: `certificateOther${component.sourceSlot}`,
+          id: `other${component.sourceSlot}`,
           label: component.sourceName?.trim()
             ? { type: 'plain' as const, text: component.sourceName }
             : {
                 type: 'translation' as const,
                 keyName: `sidebar.building_info.panels.energy.certificate.carriers.other_${component.sourceSlot + 1}`,
               },
-          annual: component.annualKwh,
           reason: () => carrierReason(`other${component.sourceSlot}`),
         })),
       {
-        id: 'certificateTotal',
-        label: tr('panels.energy.certificate.metric.complete_total'),
-        annual:
-          record.completeness === 'complete' ? record.totalKwhYear : undefined,
+        id: 'total',
+        label: tr('panels.energy.series.total'),
         reason: totalReason,
       },
     ]
     for (const quantity of quantities) {
       const certificateArea = record.heatedNetAreaM2
       for (const basis of ['annualTotal', 'perSquareMeter'] as const) {
-        const annualAvailable = quantity.annual != null
+        const annualAvailable =
+          effectiveValue(quantity.id, 'annualTotal') != null
         const intensityAvailable =
-          annualAvailable &&
-          isUsableEnergyIntensity(quantity.annual!, certificateArea)
+          effectiveValue(quantity.id, 'perSquareMeter') != null
         add({
           id: `energyConsumption.${quantity.id}.${basis}`,
           panelId: 'energyConsumption',
@@ -1239,7 +1268,7 @@ export const collectMissingBuildingInfo = ({
         )
       )
         inventory.push({
-          id: `energyConsumption.certificateOther${slot}`,
+          id: `energyConsumption.other${slot}`,
           status: 'excluded',
           basis: 'optional-slot-usage-not-established',
         })

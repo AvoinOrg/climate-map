@@ -14,7 +14,7 @@ Canonical table (read in full on 2026-09-26):
 `buildingInfoMissingData.ts` owns the inventory before display pruning. Each
 emitted item has semantic `evidence` and required localized `reason` text. Its
 `inventory` records available, missing and explicitly excluded product fields.
-The inventory uses product quantities, not certificate-card presence. An absent
+The inventory follows the effective Estimated consumption quantities. An absent
 published property establishes neither a source blank nor a failed source join.
 
 ## Table rows and product applicability
@@ -47,12 +47,12 @@ are separate semantic quantities, even when one ordinary row displays them.
 | AAHP | R.aahp × annualTotal/perSquareMeter/savingsPercent | Project scenario; no apartment AAHP, no detached GSHP/AWHP AAHP. Enumeration precedes ordinary pruning. | MissingData coverage and each savings scenario |
 | Solar | R.solar × annualTotal/perSquareMeter/savingsPercent | Project scenario; reference intensity + area for annual, positive baseline + scenario for savings. Not installed equipment evidence. | MissingData coverage and independent operands |
 | Windows/doors | R.windows × annualTotal/perSquareMeter/savingsPercent | Project scenario; same independent operands. Valid increases and zero savings survive. | MissingData savings matrix |
-| Certificate envelope | E.certificateConsumption | Semantic fallback record: absent versus typed local rejection. No subordinate source-blank diagnoses from a rejected envelope. Hidden under complete reference Energy. | Parser full compatibility/detailed suites; MissingData suppression/F099 seam |
-| Five standard annual carriers | E.certificateElectricity, E.certificateDistrictHeat, E.certificateDistrictCooling, E.certificateFossilFuel, E.certificateRenewableFuel × annualTotal | Public certificate normalized purchased energy. Each missing standard carrier in an accepted partial record gets source-specific normalization uncertainty. Cooling/fuels retain original meanings. | MissingData each omitted carrier; zero/partial parser tests |
-| Five standard intensities | Same five fields × perSquareMeter | Corresponding annual quantity / positive area in the same accepted certificate. Both failing operands survive; no registry/detail area substitution. | MissingData partial/no-area tests; Evidence unrepresentable intensity |
-| Used optional slots | E.certificateOther0, E.certificateOther1, E.certificateOther2 × annualTotal/perSquareMeter | Only accepted used slots; source names are inert text; unnamed quantities use existing localized slot labels. Omitted legacy slots have unknown usage. | Parser named/unnamed/duplicates; MissingData optional-slot test |
-| Complete certificate total | E.certificateTotal.annualTotal | Only declared complete, validated totals. Partial sum never becomes a total; identify known missing carriers and unknown optional normalization loss. | Parser totals/tolerance; MissingData all-standard partial and office regression |
-| Complete certificate intensity | E.certificateTotal.perSquareMeter | Complete total / same-certificate area, retaining both dependencies. | MissingData partial total and same-certificate area |
+| Energy fallback rejection | E.total.annualTotal dependencies | Absent versus typed parser rejection is attached to the unavailable effective total. No card diagnostic and no inferred carrier/area blanks from rejected payloads. | Parser compatibility; MissingData rejected payload coverage |
+| Purchased electricity, district heat/cooling, generic fuels | E.purchasedElectricity, E.districtHeat (E.heating for retained compatible district-heat reference), E.districtCooling, E.fossilFuel, E.renewableFuel × annualTotal | Effective Energy controls own availability. Only the `distr` scenario equates retained reference heating with district heat; oil, wood and electric heating keep separate identities and conversion diagnostics. Purchased electricity never invents a non-heating split. | Integrated model/component mixed and overlap cases; MissingData: non-district heating and compatible district-heat regressions |
+| Carrier intensities | Same quantities × perSquareMeter | Coherent numerator and denominator family. Certificate annual energy / positive payload heated net area; retained registry intensity stays in its own selectable basis. No annual/intensity splicing. | Basis-selection model/component regressions |
+| Used optional slots | E.other0, E.other1, E.other2 × annualTotal/perSquareMeter | Accepted used slots only; literal names with stable slot identities. Omitted slots have unknown usage. | Parser names/duplicates; component accessible names |
+| Whole-building total | E.total.annualTotal | Reference first; otherwise validated complete certificate partition. Compatible reference district-heat replacement recalculates its partition once. Partial sums never become totals. | 10,000 kWh mixed oracle, 4,388,248 kWh office oracle |
+| Whole-building intensity | E.total.perSquareMeter | Derived from the resolved annual total and an explicit whole-building denominator. Unknown area removes intensity only. | Mixed 10,000 / 200 = 50; no-area and zero tests |
 | Envelope ID/version/basis/unit/completeness | Rejection evidence, no duplicate rows | Strict single parser; compatibility wrapper returns identical accepted records. | Parser rejection table, all existing acceptance tests |
 | Signed/expiry/area metadata | Local parser metadata outcomes or existing product fields | Optional invalid metadata does not reject valid energy. No hidden signed-date product row. | Parser metadata matrix; MissingData annual survival |
 | Model inputs | Dependencies of affected outputs | Ryhti purpose/age/heating/area/storeys and modeled permitted-area context; no standalone hidden-input rows. | MissingData modeled/reference/annual dependencies |
@@ -88,7 +88,7 @@ pellet-price failure); it makes no claim about which stored-model job ran.
   another raw JSON path.
 - `collectMissingBuildingInfo` receives semantic candidates and an optional
   `effectiveAvailability` map. Filled quantities are `available`; unused
-  alternatives are `excluded`. It never looks up a certificate-card section ID.
+  alternatives are `excluded`. The normalized consumption controls are the availability authority; no standalone certificate section exists.
   Adapt this map to F099's resolved quantities; purchased electricity, auxiliary
   electricity and cooling are not interchangeable.
 - `resolveEffectiveWaterOutcome` supplies a shared calculation and missing reason.

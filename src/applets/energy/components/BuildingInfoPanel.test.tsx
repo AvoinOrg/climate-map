@@ -41,7 +41,6 @@ import {
   createEnergymapBuildingInfoPresentation,
   type EnergymapBuildingInfoMissingData,
 } from '../common/buildingInfo'
-import { deriveEnergymapBuildingInfoProvenanceSummary } from '../common/buildingInfoProvenanceSummary'
 import type {
   EnergymapBuildingInfoConsumptionControls,
   EnergymapBuildingInfoMetric,
@@ -1098,455 +1097,283 @@ describe('BuildingInfoPanel', () => {
     }
   )
 
-  it('renders the exact reported certificate as one distinct static Energy group', async () => {
-    const reportedPanels = createCatalogValidPanels({
-      properties: createCertificateProperties({
-        buildingKey: '1036581819',
-        buildingIdentifier: '1036581819',
-        certificateId: '318510',
-        properties: {
-          main_purpose: '02',
-          floor_area: 0,
-          energy_class: 'C',
-          is_energy_class_modeled: false,
-          energy_certificate_valid_until: '2033-04-14T00:00:00',
-          energy_certificate_heated_net_area: 22707.2,
-        },
+  it.each([false, true])(
+    'integrates every reported office quantity into Energy and deletes the standalone card (mobile=%s)',
+    async (forceMobileLayout) => {
+      const reportedPanels = createCatalogValidPanels({
+        properties: createCertificateProperties({
+          buildingKey: '1036581819',
+          certificateId: '318510',
+          properties: {
+            main_purpose: '02',
+            floor_area: 0,
+            energy_class: 'C',
+            is_energy_class_modeled: false,
+          },
+        }),
+      })
+      renderBuildingInfoTabs({ panels: reportedPanels, forceMobileLayout })
+      const values = await screen.findByTestId(
+        'building-info-energy-consumption-values'
+      )
+      expect(values).toHaveTextContent('4,388,248')
+      expect(values).toHaveTextContent('193.3')
+      expect(
+        screen.queryByTestId('building-info-certificate-consumption')
+      ).not.toBeInTheDocument()
+      expect(
+        document.querySelector('[data-section-id="certificateConsumption"]')
+      ).toBeNull()
+      expect(screen.getByText('C')).toBeVisible()
+      for (const [id, text] of [
+        ['purchasedElectricity', '1,196,074'],
+        ['districtHeat', '2,994,881'],
+        ['districtCooling', '197,293'],
+        ['fossilFuel', '0'],
+        ['renewableFuel', '0'],
+        ['total', '4,388,248'],
+      ]) {
+        const button = document.querySelector(
+          `[data-energy-submetric-id="${id}"]`
+        )!
+        fireEvent.click(button)
+        expect(button).toHaveAttribute('aria-pressed', 'true')
+        expect(values).toHaveTextContent(text)
+        expect(
+          document.querySelectorAll(
+            '[data-energy-submetric-id][aria-pressed="true"]'
+          )
+        ).toHaveLength(1)
+      }
+      fireEvent.click(
+        document.querySelector('[data-energy-submetric-id="districtCooling"]')!
+      )
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: 'sidebar.building_info.provenance.view.open',
+        })
+      )
+      const evidence = await screen.findByTestId(
+        'building-info-energy-evidence'
+      )
+      expect(evidence).toHaveTextContent('197,293')
+      expect(evidence).toHaveTextContent('318510')
+      expect(evidence).toHaveTextContent('2018')
+      expect(evidence).toHaveTextContent('4/13/2023')
+      expect(evidence).toHaveTextContent('4/14/2033')
+      expect(evidence).toHaveTextContent('22,707.2')
+      expect(evidence).not.toHaveTextContent('1,196,074')
+      fireEvent.keyDown(document, { key: 'Escape' })
+      await waitFor(() =>
+        expect(
+          screen.getByRole('button', {
+            name: 'sidebar.building_info.provenance.view.open',
+          })
+        ).toHaveFocus()
+      )
+      expect(values).toHaveTextContent('197,293')
+    }
+  )
+
+  it('switches Energy and Water without a permanent certificate block', async () => {
+    renderBuildingInfoTabs({
+      panels: createCatalogValidPanels({
+        properties: createCertificateProperties({
+          buildingKey: 'water-certificate',
+          properties: { floor_area: 100 },
+        }),
       }),
     })
-
-    renderBuildingInfoTabs({ panels: reportedPanels })
-
-    const certificateGroup = await screen.findByTestId(
-      'building-info-certificate-consumption'
-    )
-    const heading = within(certificateGroup).getByRole('heading', { level: 3 })
-    const metrics = within(certificateGroup).getAllByTestId(
-      'building-info-certificate-metric'
-    )
-
-    expect(certificateGroup.tagName).toBe('SECTION')
-    expect(certificateGroup).toHaveAttribute('aria-labelledby', heading.id)
-    expect(heading).toHaveTextContent(
-      'sidebar.building_info.panels.energy.certificate.title'
-    )
-    expect(metrics.map((metric) => metric.dataset.metricId)).toEqual([
-      'certificateElectricity',
-      'certificateDistrictHeat',
-      'certificateDistrictCooling',
-      'certificateFossilFuel',
-      'certificateRenewableFuel',
-      'certificateTotal',
-    ])
+    await screen.findByTestId('building-info-energy-consumption-values')
+    fireEvent.click(document.querySelector('[data-primary-metric-id="water"]')!)
     expect(
-      metrics.map(
-        (metric) =>
-          within(metric).getByRole('heading', { level: 4 }).textContent
-      )
-    ).toEqual([
-      'sidebar.building_info.panels.energy.certificate.carriers.electricity',
-      'sidebar.building_info.panels.energy.certificate.carriers.district_heat',
-      'sidebar.building_info.panels.energy.certificate.carriers.district_cooling',
-      'sidebar.building_info.panels.energy.certificate.carriers.fossil_fuel',
-      'sidebar.building_info.panels.energy.certificate.carriers.renewable_fuel',
-      'sidebar.building_info.panels.energy.certificate.metric.complete_total',
-    ])
-    expect(metrics[0]).toHaveTextContent('1,196,074')
-    expect(metrics[1]).toHaveTextContent('2,994,881')
-    expect(metrics[2]).toHaveTextContent('197,293')
-    expect(metrics[3]).toHaveTextContent('0')
-    expect(metrics[4]).toHaveTextContent('0')
-    expect(metrics[5]).toHaveAttribute(
-      'data-certificate-complete-total',
-      'true'
-    )
-    expect(metrics[5]).toHaveTextContent('4,388,248')
-    expect(
-      certificateGroup.querySelectorAll('[data-metric-value-id="annualTotal"]')
-    ).toHaveLength(6)
-    expect(
-      certificateGroup.querySelectorAll(
-        '[data-metric-value-id="perSquareMeter"]'
-      )
-    ).toHaveLength(6)
-    expect(
-      within(certificateGroup).getAllByTestId(
-        'building-info-certificate-value-note'
-      )
-    ).toHaveLength(6)
-    expect(certificateGroup).toHaveTextContent(
-      'sidebar.building_info.units.kwh_per_year'
-    )
-    expect(certificateGroup).toHaveTextContent(
-      'sidebar.building_info.units.kwh_per_square_meter_year'
-    )
-    expect(
-      certificateGroup.querySelector('[data-row-id="heatedNetArea"]')
-    ).toHaveTextContent('22,707.2')
-    expect(
-      screen.getByTestId('building-info-energy-class-value-stack')
-    ).toHaveTextContent('C')
-    expect(
-      screen
-        .getByTestId('building-info-panel-energyConsumption')
-        .querySelector('[data-section-id="estimatedConsumption"]')
+      screen.queryByTestId('building-info-energy-consumption-values')
     ).not.toBeInTheDocument()
+    expect(
+      screen.queryByTestId('building-info-energy-submetric-row')
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByTestId('building-info-certificate-consumption')
+    ).not.toBeInTheDocument()
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'sidebar.building_info.provenance.view.open',
+      })
+    )
+    expect(
+      screen.queryByTestId('building-info-energy-evidence')
+    ).not.toBeInTheDocument()
+    fireEvent.keyDown(document, { key: 'Escape' })
+    fireEvent.click(
+      document.querySelector('[data-primary-metric-id="energy"]')!
+    )
+    expect(
+      await screen.findByTestId('building-info-energy-consumption-values')
+    ).toHaveTextContent('4,388,248')
   })
 
-  it('keeps Water and partial reference content as certificate-group siblings while complete reference suppresses fallback', async () => {
-    const waterPanels = createCatalogValidPanels({
-      properties: createCertificateProperties({
-        buildingKey: 'water-certificate-ui',
-        properties: { floor_area: 100 },
-      }),
-    })
-    const rendered = renderBuildingInfoTabs({ panels: waterPanels })
-    const waterEnergyPanel = await screen.findByTestId(
-      'building-info-panel-energyConsumption'
-    )
-
-    expect(
-      Array.from(waterEnergyPanel.querySelectorAll('[data-section-id]')).map(
-        (section) => section.getAttribute('data-section-id')
-      )
-    ).toEqual(['estimatedConsumption', 'certificateConsumption'])
-    expect(
-      within(waterEnergyPanel).getByRole('button', {
-        name: 'sidebar.building_info.panels.energy.primary.water',
-      })
-    ).toBeInTheDocument()
-    expect(
-      within(waterEnergyPanel).queryByRole('button', {
-        name: 'sidebar.building_info.panels.energy.primary.energy',
-      })
-    ).not.toBeInTheDocument()
-
-    const partialReferencePanels = createCatalogValidPanels({
-      properties: createCertificateProperties({
-        buildingKey: 'partial-reference-certificate-ui',
-        properties: {
-          ...COMPLETE_REFERENCE_PROPERTIES,
-          floor_area: undefined,
-        },
-      }),
-    })
-    rendered.rerenderBuildingInfoTabs({
-      panelKey: 'partial-reference-certificate-ui',
-      panels: partialReferencePanels,
-    })
-    const partialEnergyPanel = await screen.findByTestId(
-      'building-info-panel-energyConsumption'
-    )
-
-    expect(
-      Array.from(partialEnergyPanel.querySelectorAll('[data-section-id]')).map(
-        (section) => section.getAttribute('data-section-id')
-      )
-    ).toEqual(['estimatedConsumption', 'certificateConsumption'])
-    expect(
-      partialEnergyPanel.querySelector(
-        '[data-section-id="estimatedConsumption"] [data-metric-value-id]'
-      )
-    ).toBeInTheDocument()
-    expect(
-      partialEnergyPanel.querySelector(
-        '[data-section-id="certificateConsumption"] [data-certificate-complete-total="true"]'
-      )
-    ).toBeInTheDocument()
-
-    const completeReferencePanels = createCatalogValidPanels({
-      properties: createCertificateProperties({
-        buildingKey: 'complete-reference-certificate-ui',
-        properties: COMPLETE_REFERENCE_PROPERTIES,
-      }),
-    })
-    rendered.rerenderBuildingInfoTabs({
-      panelKey: 'complete-reference-certificate-ui',
-      panels: completeReferencePanels,
-    })
-    const completeEnergyPanel = await screen.findByTestId(
-      'building-info-panel-energyConsumption'
-    )
-
-    expect(
-      within(completeEnergyPanel).queryByTestId(
-        'building-info-certificate-consumption'
-      )
-    ).not.toBeInTheDocument()
-    expect(
-      within(completeEnergyPanel).getByRole('button', {
-        name: 'sidebar.building_info.panels.energy.primary.energy',
-      })
-    ).toBeInTheDocument()
-    expect(
-      completeEnergyPanel.querySelectorAll(
-        '[data-section-id="estimatedConsumption"]'
-      )
-    ).toHaveLength(1)
-  })
-
-  it('renders partial, expired, named, unnamed, and zero certificate facts literally without area-derived wrappers', async () => {
-    const dangerousName = '<b data-injected="true">Named source</b>'
-    const partialPanels = createCatalogValidPanels({
-      properties: createCertificateProperties({
-        buildingKey: 'partial-expired-certificate-ui',
-        payload: {
-          completeness: 'partial',
-          components: [
-            { annual_kwh: 0, carrier: 'electricity' },
-            { annual_kwh: 20, carrier: 'district_heat' },
-            { annual_kwh: 0, carrier: 'district_cooling' },
-            { annual_kwh: 0, carrier: 'fossil_fuel' },
-            { annual_kwh: 0, carrier: 'renewable_fuel' },
-            {
-              annual_kwh: 5,
-              carrier: 'other',
-              name: dangerousName,
-              source_slot: 0,
-            },
-            {
-              annual_kwh: 0,
-              carrier: 'other',
-              name: '   ',
-              source_slot: 1,
-            },
-            {
-              annual_kwh: 15,
-              carrier: 'other',
-              name: null,
-              source_slot: 2,
-            },
-          ],
-          heated_net_area_m2: null,
-          signed_at: '2010-01-02T00:00:00Z',
-          total_kwh_year: null,
-          valid_until: '2020-01-02T00:00:00Z',
-        },
-      }),
-    })
-
-    renderBuildingInfoTabs({ panels: partialPanels })
-    const certificateGroup = await screen.findByTestId(
-      'building-info-certificate-consumption'
-    )
-    const metrics = within(certificateGroup).getAllByTestId(
-      'building-info-certificate-metric'
-    )
-
-    expect(metrics.map((metric) => metric.dataset.metricId)).toEqual([
-      'certificateElectricity',
-      'certificateDistrictHeat',
-      'certificateDistrictCooling',
-      'certificateFossilFuel',
-      'certificateRenewableFuel',
-      'certificateOther0',
-      'certificateOther1',
-      'certificateOther2',
-    ])
-    expect(metrics[5]).toHaveTextContent(dangerousName)
-    expect(metrics[5].querySelector('[data-injected]')).not.toBeInTheDocument()
-    expect(metrics[5].querySelector('b')).not.toBeInTheDocument()
-    expect(certificateGroup.querySelector('script')).not.toBeInTheDocument()
-    expect(metrics[6]).toHaveTextContent(
-      'sidebar.building_info.panels.energy.certificate.carriers.other_2'
-    )
-    expect(metrics[7]).toHaveTextContent(
-      'sidebar.building_info.panels.energy.certificate.carriers.other_3'
-    )
-    expect(metrics[0]).toHaveTextContent('0')
-    expect(metrics[0]).toHaveTextContent(
-      'sidebar.building_info.units.kwh_per_year'
-    )
-    expect(
-      certificateGroup.querySelectorAll('[data-metric-value-id="annualTotal"]')
-    ).toHaveLength(8)
-    expect(
-      certificateGroup.querySelector('[data-metric-value-id="perSquareMeter"]')
-    ).not.toBeInTheDocument()
-    expect(
-      certificateGroup.querySelector('[data-row-id="heatedNetArea"]')
-    ).not.toBeInTheDocument()
-    expect(
-      certificateGroup.querySelector('[data-certificate-complete-total]')
-    ).not.toBeInTheDocument()
-    expect(certificateGroup).toHaveTextContent('1/2/2020')
-    expect(certificateGroup).toHaveTextContent(
-      'sidebar.building_info.panels.energy.certificate.note.partial_record'
-    )
-    expect(certificateGroup).toHaveTextContent(
-      'sidebar.building_info.panels.energy.certificate.note.historical_not_measured'
-    )
-  })
-
-  it('updates localized certificate display and resets open provenance on keyed source replacement', async () => {
-    const certificateProperties = createCertificateProperties({
-      buildingKey: 'certificate-locale-selection-a',
-      buildingIdentifier: '1036581819',
-      certificateId: '318510',
-    })
-    const enPanels = createCatalogValidPanels({
-      properties: certificateProperties,
-      locale: 'en-US',
-    })
-    const fiPanels = createCatalogValidPanels({
-      properties: certificateProperties,
-      locale: 'fi-FI',
+  it('selects the effective mixed total and retains compatible reference heat through the real controls', async () => {
+    const properties = createCertificateProperties({
+      buildingKey: 'mixed',
+      properties: {
+        ...COMPLETE_REFERENCE_PROPERTIES,
+        main_purpose: '05',
+        distr_default_elec: null,
+        distr_default_total: null,
+      },
+      payload: {
+        components: [
+          { carrier: 'electricity', annual_kwh: 2000 },
+          { carrier: 'district_heat', annual_kwh: 7000 },
+          { carrier: 'district_cooling', annual_kwh: 500 },
+          { carrier: 'fossil_fuel', annual_kwh: 0 },
+          { carrier: 'renewable_fuel', annual_kwh: 0 },
+        ],
+        total_kwh_year: 9500,
+        heated_net_area_m2: 200,
+      },
     })
     const rendered = renderBuildingInfoTabs({
-      panelKey: 'certificate-locale-selection-a',
-      locale: 'en-US',
-      panels: enPanels,
+      panels: createCatalogValidPanels({ properties }),
     })
-    let certificateGroup = await screen.findByTestId(
-      'building-info-certificate-consumption'
+    const values = await screen.findByTestId(
+      'building-info-energy-consumption-values'
     )
-
-    expect(certificateGroup.textContent).toContain('1,196,074')
-    expect(certificateGroup.textContent).toContain('4/13/2023')
-
-    rendered.rerenderBuildingInfoTabs({ locale: 'fi-FI', panels: fiPanels })
-    certificateGroup = await screen.findByTestId(
-      'building-info-certificate-consumption'
+    expect(values).toHaveTextContent('10,000')
+    expect(values).not.toHaveTextContent('9,500')
+    fireEvent.click(
+      document.querySelector('[data-energy-submetric-id="heating"]')!
     )
-    expect(certificateGroup.textContent).toContain('1 196 074')
-    expect(certificateGroup.textContent).toContain('13.4.2023')
-
-    const fiResult = deriveEnergymapBuildingInfoProvenanceSummary({
-      panels: fiPanels,
-      locale: 'fi-FI',
-    })
-    if (fiResult == null || fiResult.status !== 'resolved') {
-      throw new Error('Expected resolved Finnish certificate provenance')
-    }
-    expect(
-      Array.from(
-        certificateGroup.querySelectorAll<HTMLElement>('[data-provenance-id]')
-      ).map((item) => item.dataset.provenanceId)
-    ).toEqual(
-      fiResult.summary.items
-        .filter(
-          ({ location }) => location.sectionId === 'certificateConsumption'
-        )
-        .map(({ provenanceId }) => provenanceId)
+    expect(values).toHaveTextContent('7,500')
+    fireEvent.click(
+      document.querySelector(
+        '[data-energy-submetric-id="purchasedElectricity"]'
+      )!
     )
-
-    const trigger = screen.getByRole('button', {
-      name: 'sidebar.building_info.provenance.view.open',
-    })
-    fireEvent.click(trigger)
-    await waitFor(() => {
-      expect(
-        screen.getByTestId('building-info-provenance-heading')
-      ).toHaveFocus()
-    })
-    expect(
-      screen
-        .getAllByTestId('building-info-missing-item')
-        .map((item) => item.dataset.missingItemId)
-    ).toEqual(diagnosticsByPanels.get(fiPanels)!.items.map(({ id }) => id))
-    expect(screen.getByTestId('building-info-provenance-view')).toHaveAttribute(
-      'data-missing-data-locale',
-      'fi-FI'
+    expect(values).toHaveTextContent('2,000')
+    fireEvent.click(
+      document.querySelector('[data-energy-submetric-id="total"]')!
     )
-
-    fireEvent.keyDown(document, { key: 'Escape' })
-    await waitFor(() => {
-      expect(trigger).toHaveFocus()
-      expect(trigger).toHaveAttribute('aria-expanded', 'false')
-    })
-
-    fireEvent.click(trigger)
-    await waitFor(() => {
-      expect(trigger).toHaveAttribute('aria-expanded', 'true')
-    })
-    const previousRegionId = trigger.getAttribute('aria-controls')
-    const completeReferencePanels = createCatalogValidPanels({
-      properties: createCertificateProperties({
-        buildingKey: 'certificate-locale-selection-b',
-        properties: COMPLETE_REFERENCE_PROPERTIES,
-      }),
-    })
-
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'sidebar.building_info.provenance.view.open',
+      })
+    )
+    const evidence = await screen.findByTestId('building-info-energy-evidence')
+    expect(evidence).toHaveTextContent('10,000')
+    expect(evidence).toHaveTextContent(
+      'sidebar.building_info.provenance.calculations.resolved_carrier_total'
+    )
+    expect(evidence).toHaveTextContent(
+      'sidebar.building_info.provenance.calculations.resolved_annual_divided_by_heated_area'
+    )
+    expect(evidence).not.toHaveTextContent(
+      'sidebar.building_info.provenance.calculations.complete_only_aggregation'
+    )
+    expect(evidence).not.toHaveTextContent('7,000')
     rendered.rerenderBuildingInfoTabs({
-      panelKey: 'certificate-locale-selection-b',
-      locale: 'en',
-      panels: completeReferencePanels,
-    })
-    const replacementTrigger = await screen.findByRole('button', {
-      name: 'sidebar.building_info.provenance.view.open',
-    })
-    expect(replacementTrigger).toHaveAttribute('aria-expanded', 'false')
-    expect(replacementTrigger.getAttribute('aria-controls')).not.toBe(
-      previousRegionId
-    )
-    expect(
-      screen.queryByTestId('building-info-certificate-consumption')
-    ).not.toBeInTheDocument()
-
-    fireEvent.click(replacementTrigger)
-    await waitFor(() => {
-      expect(replacementTrigger).toHaveAttribute('aria-expanded', 'true')
-    })
-    expect(
-      screen
-        .getAllByTestId('building-info-missing-item')
-        .some((item) =>
-          item.dataset.missingItemId?.includes('certificateConsumption')
-        )
-    ).toBe(false)
-
-    rendered.rerenderBuildingInfoTabs({
-      panelKey: 'certificate-locale-selection-c',
+      panelKey: 'replacement',
       panels: createCatalogValidPanels({
         properties: {
-          building_key: 'certificate-locale-selection-c',
-          energy_class: 'C',
-          is_energy_class_modeled: false,
+          ...COMPLETE_REFERENCE_PROPERTIES,
+          building_key: 'replacement',
+          main_purpose: '05',
         },
       }),
     })
-    await screen.findByTestId('building-info-panel-buildingDetails')
+    await waitFor(() =>
+      expect(
+        screen.getByTestId('building-info-provenance-view')
+      ).not.toBeVisible()
+    )
     expect(
-      screen.queryByTestId('building-info-panel-energyConsumption')
-    ).not.toBeInTheDocument()
-    expect(
-      screen.queryByTestId('building-info-certificate-consumption')
-    ).not.toBeInTheDocument()
+      screen.getByTestId('building-info-energy-consumption-values')
+    ).toHaveTextContent('10,000')
   })
 
-  it('renders no certificate artifact for a defensively empty authored certificate section', async () => {
-    const energyPanel = panels.find(
-      (panel) => panel.id === 'energyConsumption'
-    ) as EnergymapBuildingInfoPanel
-
+  it('selects coherent basis families and updates their evidence in place', async () => {
     renderBuildingInfoTabs({
-      panels: [
-        {
-          ...energyPanel,
-          sections: [
-            {
-              id: 'emptyCertificateConsumption',
-              variant: 'energyCertificateConsumption',
-              title: plain('Must not render'),
-              notes: [
-                {
-                  id: 'orphanNote',
-                  text: plain('Must not render either'),
-                  status: 'real',
-                },
-              ],
-            },
-          ],
-        },
-      ],
+      panels: createCatalogValidPanels({
+        properties: createCertificateProperties({
+          buildingKey: 'basis',
+          properties: {
+            ...COMPLETE_REFERENCE_PROPERTIES,
+            main_purpose: '05',
+            floor_area: 0,
+          },
+        }),
+      }),
     })
-
-    await screen.findByTestId('building-info-tab-page-basic')
+    await screen.findByTestId('building-info-energy-consumption-values')
+    fireEvent.click(
+      document.querySelector('[data-energy-submetric-id="heating"]')!
+    )
     expect(
-      screen.queryByTestId('building-info-certificate-consumption')
-    ).not.toBeInTheDocument()
-    expect(screen.queryByText('Must not render')).not.toBeInTheDocument()
-    expect(screen.queryByText('Must not render either')).not.toBeInTheDocument()
+      screen.getByTestId('building-info-energy-consumption-values')
+    ).toHaveTextContent('2,994,881')
+    fireEvent.click(
+      document.querySelector('[data-energy-basis-id="registryFloorArea"]')!
+    )
+    const values = screen.getByTestId('building-info-energy-consumption-values')
+    expect(values).toHaveTextContent('75')
+    expect(
+      values.querySelector('[data-metric-value-id="annualTotal"]')
+    ).toBeNull()
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'sidebar.building_info.provenance.view.open',
+      })
+    )
+    const evidence = await screen.findByTestId('building-info-energy-evidence')
+    expect(evidence).not.toHaveTextContent('CERTIFICATE-001')
+    expect(evidence).toHaveTextContent('75')
+  })
+
+  it('renders duplicate and markup-like other carrier names as accessible literal text', async () => {
+    renderBuildingInfoTabs({
+      panels: createCatalogValidPanels({
+        properties: createCertificateProperties({
+          buildingKey: 'other',
+          payload: {
+            completeness: 'partial',
+            total_kwh_year: null,
+            heated_net_area_m2: null,
+            components: [
+              {
+                carrier: 'other',
+                source_slot: 0,
+                name: '<b data-injected="true">same</b>',
+                annual_kwh: 0,
+              },
+              {
+                carrier: 'other',
+                source_slot: 1,
+                name: '<b data-injected="true">same</b>',
+                annual_kwh: 5,
+              },
+            ],
+          },
+        }),
+      }),
+    })
+    await screen.findByTestId('building-info-energy-submetric-row')
+    expect(
+      screen.getByRole('button', {
+        name: '<b data-injected="true">same</b> (1)',
+      })
+    ).toBeVisible()
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: '<b data-injected="true">same</b> (2)',
+      })
+    )
+    expect(document.querySelector('[data-injected]')).toBeNull()
+    expect(
+      screen.getByTestId('building-info-energy-consumption-values')
+    ).toHaveTextContent('5')
+    expect(
+      document.querySelector('[data-metric-value-id="perSquareMeter"]')
+    ).toBeNull()
   })
 
   it('keeps Water output and provenance synchronized through override transitions', async () => {

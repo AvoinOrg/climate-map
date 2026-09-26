@@ -32,6 +32,8 @@ import { useNullableSidebarPanelExtensionTabsContext } from '#/components/Sideba
 import type {
   EnergymapBuildingInfoMissingData,
   EnergymapBuildingInfoConsumptionControls,
+  EnergymapBuildingInfoEnergyBasis,
+  EnergymapBuildingInfoEnergySelection,
   EnergymapBuildingInfoEnergySubmetric,
   EnergymapBuildingInfoEnergySubmetricId,
   EnergymapEnergyMeasure,
@@ -72,6 +74,7 @@ import type {
   EnergymapBuildingInfoPanelTopology,
   EnergymapBuildingInfoTabTopology,
 } from '../common/buildingInfoPanelTopology'
+import { deriveEnergymapBuildingInfoProvenanceSummary } from '../common/buildingInfoProvenanceSummary'
 import { BuildingInfoProvenanceView } from './BuildingInfoProvenanceView'
 
 export type { BuildingInfoDesktopMode, BuildingInfoTabId }
@@ -113,6 +116,9 @@ type BuildingInfoProvenanceDisclosureState =
 
 type BuildingInfoEffectiveWaterProjectionContextValue = {
   onProjectionChange: BuildingInfoEffectiveWaterProjectionChange
+  onEnergySelectionChange: (
+    selection: EnergymapBuildingInfoEnergySelection
+  ) => void
   provenanceDisclosureState: BuildingInfoProvenanceDisclosureState
   getProvenanceDisclosureState: () => BuildingInfoProvenanceDisclosureState
 }
@@ -266,9 +272,6 @@ const energyControlTextSx = {
 
 const ENERGY_PRIMARY_METRIC_ORDER: readonly EnergymapBuildingInfoPrimaryMetricId[] =
   ['energy', 'water', 'cost', 'co2']
-
-const ENERGY_SUBMETRIC_ORDER: readonly EnergymapBuildingInfoEnergySubmetricId[] =
-  ['electricity', 'heating', 'waterHeating']
 
 const ENERGY_ANNUAL_TOTAL_LABEL: EnergymapBuildingInfoText = {
   type: 'translation',
@@ -1605,10 +1608,8 @@ const BuildingInfoMeasureListSection = ({
 
 const BuildingInfoMetricValueRow = ({
   value,
-  showNote = false,
 }: {
   value: EnergymapBuildingInfoMetricValue
-  showNote?: boolean
 }) => (
   <Box
     data-metric-value-id={value.id}
@@ -1630,22 +1631,6 @@ const BuildingInfoMetricValueRow = ({
     <Box component="div" sx={{ ...textSx, textAlign: 'right' }}>
       <BuildingInfoValueText value={value} />
     </Box>
-    {showNote && value.note != null && (
-      <Box
-        data-testid="building-info-certificate-value-note"
-        data-metric-value-note-for={value.id}
-        sx={{ gridColumn: '1 / -1', minWidth: 0 }}
-      >
-        <BuildingInfoNoteText
-          note={{
-            text: value.note,
-            status: value.status,
-            sourceProperties: value.note.sourceProperties,
-            provenance: value.note.provenance,
-          }}
-        />
-      </Box>
-    )}
   </Box>
 )
 
@@ -1773,7 +1758,10 @@ const BuildingInfoEnergySubmetricButton = ({
     <ButtonBase
       component="button"
       type="button"
-      aria-label={t(submetric.ariaLabelKey)}
+      aria-label={
+        submetric.ariaLabel ??
+        (submetric.ariaLabelKey == null ? undefined : t(submetric.ariaLabelKey))
+      }
       aria-pressed={selected}
       data-energy-submetric-id={submetric.id}
       onClick={onClick}
@@ -1816,10 +1804,8 @@ const BuildingInfoEnergySubmetricButton = ({
         sx={{
           ...energyControlTextSx,
           color: '#111111',
-          maxWidth: '12rem',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
+          minWidth: 0,
+          overflowWrap: 'anywhere',
         }}
       >
         <BuildingInfoText text={submetric.label} />
@@ -2236,6 +2222,11 @@ const BuildingInfoEnergyConsumptionSectionContent = ({
       controls?.defaultEnergySubmetricIds ?? []
     )
 
+  const [basisId, setBasisId] =
+    React.useState<EnergymapBuildingInfoEnergyBasis['id']>()
+  const onEnergySelectionChange = React.useContext(
+    BuildingInfoEffectiveWaterProjectionContext
+  )?.onEnergySelectionChange
   const activePrimaryMetricId = getNormalizedPrimaryMetricId(
     controls,
     requestedPrimaryMetricId
@@ -2253,25 +2244,25 @@ const BuildingInfoEnergyConsumptionSectionContent = ({
   ).filter(
     (metric): metric is EnergymapBuildingInfoPrimaryMetric => metric != null
   )
-  const energySubmetricById = new Map(
-    (controls.energySubmetrics ?? []).map((submetric) => [
-      submetric.id,
-      submetric,
-    ])
-  )
-  const sortedEnergySubmetrics = ENERGY_SUBMETRIC_ORDER.map((submetricId) =>
-    energySubmetricById.get(submetricId)
-  ).filter(
-    (submetric): submetric is EnergymapBuildingInfoEnergySubmetric =>
-      submetric != null
-  )
+  const sortedEnergySubmetrics = controls.energySubmetrics ?? []
   const activePrimaryMetric =
     primaryMetricById.get(activePrimaryMetricId) ??
     primaryMetricById.get(controls.defaultPrimaryMetricId)
   const selectedEnergyConsumption = getSelectedEnergyConsumption({
     controls,
     selectedSubmetricIds: selectedEnergySubmetricIds,
+    basisId,
   })
+  const selectionKey = JSON.stringify({
+    primaryMetricId: activePrimaryMetricId,
+    selectedSubmetricIds: selectedEnergySubmetricIds,
+    basisId: selectedEnergyConsumption.basisId,
+  })
+  React.useEffect(() => {
+    onEnergySelectionChange?.(
+      JSON.parse(selectionKey) as EnergymapBuildingInfoEnergySelection
+    )
+  }, [onEnergySelectionChange, selectionKey])
   const selectedSubmetricIds = new Set(selectedEnergySubmetricIds)
   const unavailableNotes = [
     ...selectedEnergyConsumption.notes,
@@ -2281,6 +2272,7 @@ const BuildingInfoEnergyConsumptionSectionContent = ({
   const toggleEnergySubmetric = (
     submetricId: EnergymapBuildingInfoEnergySubmetricId
   ) => {
+    setBasisId(undefined)
     setRequestedEnergySubmetricIds((current) => {
       const normalized = normalizeEnergySubmetricSelection({
         controls,
@@ -2288,7 +2280,9 @@ const BuildingInfoEnergyConsumptionSectionContent = ({
       })
 
       return normalized.includes(submetricId)
-        ? normalized.filter((id) => id !== submetricId)
+        ? controls.combinedEnergyMetric == null && normalized.length === 1
+          ? normalized
+          : normalized.filter((id) => id !== submetricId)
         : normalizeEnergySubmetricSelection({
             controls,
             selectedSubmetricIds: [submetricId, ...normalized],
@@ -2358,6 +2352,30 @@ const BuildingInfoEnergyConsumptionSectionContent = ({
                   selected={selectedSubmetricIds.has(submetric.id)}
                   onClick={() => toggleEnergySubmetric(submetric.id)}
                 />
+              ))}
+            </Box>
+          )}
+          {selectedEnergyConsumption.metric?.bases != null && (
+            <Box
+              data-testid="building-info-energy-basis"
+              sx={{
+                mt: '1rem',
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '0.5rem',
+              }}
+            >
+              {selectedEnergyConsumption.metric.bases.map((basis) => (
+                <Button
+                  key={basis.id}
+                  size="small"
+                  variant="text"
+                  aria-pressed={selectedEnergyConsumption.basisId === basis.id}
+                  data-energy-basis-id={basis.id}
+                  onClick={() => setBasisId(basis.id)}
+                >
+                  <BuildingInfoText text={basis.label} />
+                </Button>
               ))}
             </Box>
           )}
@@ -2527,199 +2545,6 @@ const BuildingInfoScenarioBlock = ({
   )
 }
 
-const BuildingInfoCertificateContextRow = ({
-  row,
-}: {
-  row: EnergymapBuildingInfoRow
-}) => (
-  <Box
-    component="div"
-    data-row-id={row.id}
-    data-provenance-id={row.provenance?.id}
-    data-provenance-input-ids={row.provenance?.inputIds?.join(' ')}
-    data-source-properties={getSourcePropertiesData(row.sourceProperties)}
-    sx={{
-      display: 'grid',
-      gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
-      columnGap: '0.75rem',
-      alignItems: 'start',
-      borderTop: '0.3px solid #cfcfcf',
-      py: '0.625rem',
-    }}
-  >
-    <Box
-      component="dt"
-      sx={{
-        ...textSx,
-        m: 0,
-        minWidth: 0,
-        color: '#111111',
-        overflowWrap: 'anywhere',
-      }}
-    >
-      <BuildingInfoText text={row.label} />
-    </Box>
-    <Box
-      component="dd"
-      sx={{
-        ...textSx,
-        m: 0,
-        minWidth: 0,
-        textAlign: 'right',
-      }}
-    >
-      <BuildingInfoValueText value={row} />
-      {row.note != null && (
-        <BuildingInfoNoteText
-          note={{
-            text: row.note,
-            status: row.status,
-            sourceProperties: row.note.sourceProperties,
-            provenance: row.note.provenance,
-          }}
-        />
-      )}
-    </Box>
-  </Box>
-)
-
-const BuildingInfoCertificateConsumptionSection = ({
-  section,
-  accentColor,
-}: {
-  section: EnergymapBuildingInfoSection
-  accentColor: string
-}) => {
-  const headingId = React.useId()
-  const rows = section.rows ?? []
-  const metrics = section.metrics ?? []
-
-  if (rows.length === 0 && metrics.length === 0) {
-    return null
-  }
-
-  return (
-    <Box
-      component="section"
-      aria-labelledby={section.title == null ? undefined : headingId}
-      data-testid="building-info-certificate-consumption"
-      data-section-id={section.id}
-      sx={{
-        mt: '2.25rem',
-        px: { mobile: '1rem', desktop: '1.25rem' },
-        py: { mobile: '1.125rem', desktop: '1.25rem' },
-        minWidth: 0,
-        border: `0.75px solid ${accentColor}`,
-        borderRadius: '0.75rem',
-        backgroundColor: '#f8faff',
-      }}
-    >
-      {section.title != null && (
-        <Box
-          component="h3"
-          id={headingId}
-          data-provenance-id={section.titleProvenance?.id}
-          data-provenance-input-ids={section.titleProvenance?.inputIds?.join(
-            ' '
-          )}
-          data-source-properties={getSourcePropertiesData(
-            section.titleSourceProperties
-          )}
-          sx={{
-            ...textSx,
-            m: 0,
-            color: accentColor,
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            overflowWrap: 'anywhere',
-          }}
-        >
-          <BuildingInfoText text={section.title} />
-        </Box>
-      )}
-      {rows.length > 0 && (
-        <Box component="dl" sx={{ m: 0, mt: '1rem' }}>
-          {rows.map((row) => (
-            <BuildingInfoCertificateContextRow key={row.id} row={row} />
-          ))}
-        </Box>
-      )}
-      {metrics.length > 0 && (
-        <Box
-          component="ul"
-          data-testid="building-info-certificate-metrics"
-          sx={{
-            m: 0,
-            mt: '1.25rem',
-            p: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1rem',
-            listStyle: 'none',
-          }}
-        >
-          {metrics.map((metric) => {
-            const isCompleteTotal = metric.id === 'certificateTotal'
-
-            return (
-              <Box
-                component="li"
-                key={metric.id}
-                data-testid="building-info-certificate-metric"
-                data-metric-id={metric.id}
-                data-certificate-complete-total={
-                  isCompleteTotal ? 'true' : undefined
-                }
-                sx={{
-                  minWidth: 0,
-                  p: isCompleteTotal ? '0.75rem' : 0,
-                  border: isCompleteTotal
-                    ? `1px solid ${accentColor}`
-                    : undefined,
-                  borderRadius: isCompleteTotal ? '0.625rem' : undefined,
-                  backgroundColor: isCompleteTotal ? '#eaf1ff' : undefined,
-                }}
-              >
-                <Box
-                  component="h4"
-                  data-provenance-id={metric.labelProvenance?.id}
-                  data-provenance-input-ids={metric.labelProvenance?.inputIds?.join(
-                    ' '
-                  )}
-                  data-source-properties={getSourcePropertiesData(
-                    metric.labelSourceProperties
-                  )}
-                  sx={{
-                    ...textSx,
-                    m: 0,
-                    mb: '0.5rem',
-                    minWidth: 0,
-                    color: '#111111',
-                    fontWeight: isCompleteTotal ? 700 : 400,
-                    overflowWrap: 'anywhere',
-                  }}
-                >
-                  <BuildingInfoText text={metric.label} />
-                </Box>
-                {metric.values.map((value) => (
-                  <BuildingInfoMetricValueRow
-                    key={value.id}
-                    value={value}
-                    showNote
-                  />
-                ))}
-              </Box>
-            )
-          })}
-        </Box>
-      )}
-      {section.notes?.map((note) => (
-        <BuildingInfoNoteText key={note.id} note={note} />
-      ))}
-    </Box>
-  )
-}
-
 const BuildingInfoSectionBlock = ({
   section,
   accentColor,
@@ -2763,15 +2588,6 @@ const BuildingInfoSectionBlock = ({
 
   if (section.variant === 'measureList' && hasOnlyRowContent) {
     return <BuildingInfoMeasureListSection section={section} />
-  }
-
-  if (section.variant === 'energyCertificateConsumption') {
-    return (
-      <BuildingInfoCertificateConsumptionSection
-        section={section}
-        accentColor={accentColor}
-      />
-    )
   }
 
   if (section.consumptionControls != null) {
@@ -3809,6 +3625,54 @@ export const BuildingInfoTabPages = ({
   const isProvenanceOpen = provenanceDisclosureState === 'open'
   const [effectiveWaterProjection, setEffectiveWaterProjection] =
     React.useState<EnergymapEffectiveWaterProjection>()
+  const [energySelection, setEnergySelection] =
+    React.useState<EnergymapBuildingInfoEnergySelection>()
+  const handleEnergySelectionChange = React.useCallback(
+    (selection: EnergymapBuildingInfoEnergySelection) => {
+      setEnergySelection((current) =>
+        JSON.stringify(current) === JSON.stringify(selection)
+          ? current
+          : selection
+      )
+    },
+    []
+  )
+  const energyPanel = topology.availableTabs
+    .flatMap((tab) => tab.panels)
+    .find((panel) => panel.id === 'energyConsumption')
+  const energySection = energyPanel?.sections.find(
+    (section) => section.id === 'estimatedConsumption'
+  )
+  const energyControls = energySection?.consumptionControls
+  const effectiveEnergySelection =
+    energySelection ??
+    (energyControls == null
+      ? undefined
+      : {
+          primaryMetricId: energyControls.defaultPrimaryMetricId,
+          selectedSubmetricIds: energyControls.defaultEnergySubmetricIds ?? [],
+        })
+  const selectedEnergy =
+    energyControls != null &&
+    effectiveEnergySelection?.primaryMetricId === 'energy'
+      ? getSelectedEnergyConsumption({
+          controls: energyControls,
+          ...effectiveEnergySelection,
+        })
+      : undefined
+  const energyProvenance =
+    selectedEnergy == null || energyPanel == null || energySection == null
+      ? null
+      : deriveEnergymapBuildingInfoProvenanceSummary({
+          panels: [
+            {
+              ...energyPanel,
+              sections: [{ ...energySection, notes: undefined }],
+            },
+          ],
+          locale,
+          energySelection: effectiveEnergySelection,
+        })
   const provenanceTriggerRef = React.useRef<HTMLButtonElement | null>(null)
   const provenanceHeadingRef = React.useRef<HTMLHeadingElement | null>(null)
   const returnFocusFrameRef = React.useRef<number | null>(null)
@@ -3860,12 +3724,14 @@ export const BuildingInfoTabPages = ({
   const effectiveWaterProjectionContextValue = React.useMemo(
     () => ({
       onProjectionChange: handleEffectiveWaterProjectionChange,
+      onEnergySelectionChange: handleEnergySelectionChange,
       provenanceDisclosureState,
       getProvenanceDisclosureState,
     }),
     [
       getProvenanceDisclosureState,
       handleEffectiveWaterProjectionChange,
+      handleEnergySelectionChange,
       provenanceDisclosureState,
     ]
   )
@@ -4048,6 +3914,8 @@ export const BuildingInfoTabPages = ({
               >
                 <BuildingInfoProvenanceView
                   missingData={effectiveMissingData}
+                  energyProvenance={energyProvenance}
+                  selectedEnergy={selectedEnergy}
                   locale={locale}
                   regionId={provenanceRegionId}
                   headingId={provenanceHeadingId}

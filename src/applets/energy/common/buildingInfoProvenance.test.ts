@@ -166,13 +166,6 @@ const collectProvenanceCandidates = (
     for (const section of panel.sections) {
       const sectionPath = `${panel.id}.${section.id}`
 
-      if (section.variant === 'energyCertificateConsumption') {
-        add(`${sectionPath}.title`, {
-          provenance: section.titleProvenance,
-          sourceProperties: section.titleSourceProperties,
-        })
-      }
-
       for (const row of section.rows ?? []) {
         addValue(`${sectionPath}.row.${row.id}`, row)
         if (row.modeledIndicator != null) {
@@ -184,7 +177,7 @@ const collectProvenanceCandidates = (
       }
 
       for (const metric of section.metrics ?? []) {
-        if (section.variant === 'energyCertificateConsumption') {
+        if (metric.labelProvenance != null) {
           add(`${sectionPath}.metric.${metric.id}.label`, {
             provenance: metric.labelProvenance,
             sourceProperties: metric.labelSourceProperties,
@@ -229,6 +222,11 @@ const collectProvenanceCandidates = (
       }
 
       for (const submetric of controls.energySubmetrics ?? []) {
+        if (submetric.metric.labelProvenance != null)
+          add(`${sectionPath}.submetric.${submetric.id}.label`, {
+            provenance: submetric.metric.labelProvenance,
+            sourceProperties: submetric.metric.labelSourceProperties,
+          })
         for (const value of submetric.metric.values) {
           addValue(
             `${sectionPath}.submetric.${submetric.id}.${value.id}`,
@@ -289,7 +287,9 @@ describe('Energiakartta building-info provenance catalog', () => {
       'sidebar.building_info.provenance.fields.property_identifier'
     )
     expect(resolution.definition.categoryId).toBe('buildingRegistry')
-    expect(resolution.sources.map(({ id }) => id)).toEqual(['ryhtiBuildingData'])
+    expect(resolution.sources.map(({ id }) => id)).toEqual([
+      'ryhtiBuildingData',
+    ])
     expect(resolution.providers.map(({ id }) => id)).toEqual(['ryhti'])
     expect(resolution.calculations).toEqual([])
     expect(resolution.metadata).toEqual({ descriptors: [] })
@@ -439,7 +439,7 @@ describe('Energiakartta building-info provenance catalog', () => {
   it('resolves every available production data item in a complete building graph', () => {
     const candidates = collectProvenanceCandidates(createPanels())
 
-    expect(candidates.length).toBeGreaterThan(30)
+    expect(candidates.length).toBeGreaterThan(15)
     for (const candidate of candidates) {
       expect(candidate.provenance).toBeDefined()
       expect(resolveCandidate(candidate)).toMatchObject({ status: 'resolved' })
@@ -455,9 +455,7 @@ describe('Energiakartta building-info provenance catalog', () => {
           building_key: 'district-zero-electricity',
           distr_default_elec: 0,
         },
-        costFactorIds: [
-          'referenceFactor.cost.detachedHouse.districtHeat',
-        ],
+        costFactorIds: ['referenceFactor.cost.detachedHouse.districtHeat'],
         co2FactorIds: ['referenceFactor.co2.districtHeat'],
       },
       {
@@ -467,9 +465,7 @@ describe('Energiakartta building-info provenance catalog', () => {
           building_key: 'district-zero-heating',
           distr_default_heat: 0,
         },
-        costFactorIds: [
-          'referenceFactor.cost.detachedHouse.electricity',
-        ],
+        costFactorIds: ['referenceFactor.cost.detachedHouse.electricity'],
         co2FactorIds: ['referenceFactor.co2.electricity'],
       },
       {
@@ -495,9 +491,7 @@ describe('Energiakartta building-info provenance catalog', () => {
           wood_default_elec: 10,
           wood_default_heat: 0,
         },
-        costFactorIds: [
-          'referenceFactor.cost.apartmentBuilding.electricity',
-        ],
+        costFactorIds: ['referenceFactor.cost.apartmentBuilding.electricity'],
         co2FactorIds: ['referenceFactor.co2.electricity'],
       },
       {
@@ -634,7 +628,17 @@ describe('Energiakartta building-info provenance catalog', () => {
       }),
       createPanels(withoutOrigin),
       createPanels(certificateConsumptionProperties()),
-      createPanels(certificateConsumptionProperties({ completeness: 'partial' })),
+      createPanels({
+        ...certificateConsumptionProperties(),
+        main_purpose: '05',
+        heating_method: '01',
+        heating_energy_source: '01',
+        floor_area: 100,
+        distr_default_heat: 75,
+      }),
+      createPanels(
+        certificateConsumptionProperties({ completeness: 'partial' })
+      ),
     ]
     const attachedIds = new Set(
       graphMatrix.flatMap((panels) =>
@@ -825,7 +829,7 @@ describe('Energiakartta building-info provenance catalog', () => {
     ).toMatchObject({ status: 'unsupported', reason: 'invalid-input-set' })
   })
 
-  it('uses one identity for duplicate representations and distinct identities for different meanings', () => {
+  it('uses one canonical identity per effective quantity and distinct identities for different meanings', () => {
     const candidates = collectProvenanceCandidates(createPanels())
     const totalAnnual = candidates.filter(
       (candidate) =>
@@ -835,7 +839,6 @@ describe('Energiakartta building-info provenance catalog', () => {
 
     expect(totalAnnual.map((candidate) => candidate.path).sort()).toEqual([
       'energyConsumption.estimatedConsumption.combinedEnergy.annualTotal',
-      'energyConsumption.estimatedConsumption.metric.total.annualTotal',
     ])
 
     const comparedIds = [
@@ -1051,9 +1054,9 @@ describe('Energiakartta building-info provenance catalog', () => {
       expect(
         overriddenResidentControl.valueProviders.map(({ id }) => id)
       ).toEqual(['user'])
-      expect(overriddenResidentControl.sources.map(({ id }) => id)).not.toContain(
-        'currentReferenceOccupancy'
-      )
+      expect(
+        overriddenResidentControl.sources.map(({ id }) => id)
+      ).not.toContain('currentReferenceOccupancy')
       expect(
         overriddenResidentControl.inputs.map(({ id }) => id)
       ).not.toContain(
@@ -1364,8 +1367,7 @@ describe('Energiakartta building-info provenance catalog', () => {
       ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.KWH_TO_MWH
     )
     expect(apartmentPelletAllZeroInputs).not.toContain(
-      ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS
-        .COMPONENT_FACTOR_MULTIPLICATION
+      ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.COMPONENT_FACTOR_MULTIPLICATION
     )
     expect(
       getEnergymapCurrentReferenceProvenanceInputIds({
@@ -2029,16 +2031,17 @@ describe('Energiakartta building-info provenance catalog', () => {
 })
 
 describe('energy certificate consumption provenance', () => {
-  const certificatePanels = (completeness: 'complete' | 'partial' = 'complete') =>
-    createPanels(certificateConsumptionProperties({ completeness }))
+  const certificatePanels = (
+    completeness: 'complete' | 'partial' = 'complete'
+  ) => createPanels(certificateConsumptionProperties({ completeness }))
 
-  it('resolves every retained group, label, value, context row, and note through the public register', () => {
+  it('resolves every integrated carrier label and value through the public register', () => {
     for (const completeness of ['complete', 'partial'] as const) {
       const candidates = collectProvenanceCandidates(
         certificatePanels(completeness)
-      ).filter(({ path }) => path.includes('.certificateConsumption.'))
+      ).filter(({ provenance }) => provenance?.id.includes('.certificate.'))
 
-      expect(candidates.length).toBeGreaterThan(30)
+      expect(candidates.length).toBeGreaterThan(15)
       for (const candidate of candidates) {
         const resolution = resolveCandidate(candidate)
         expect(resolution).toMatchObject({ status: 'resolved' })
@@ -2084,9 +2087,7 @@ describe('energy certificate consumption provenance', () => {
     expect(intensity).toMatchObject({
       status: 'resolved',
       category: { id: 'compositeCalculation' },
-      valueCalculations: [
-        { id: 'certificateAnnualDividedByHeatedArea' },
-      ],
+      valueCalculations: [{ id: 'certificateAnnualDividedByHeatedArea' }],
     })
     if (intensity.status !== 'resolved') return
     expect(
@@ -2215,6 +2216,73 @@ describe('energy certificate consumption provenance', () => {
       status: 'unsupported',
       reason: 'unexpected-runtime-value',
     })
+  })
+
+  it('validates the complete mixed partition without discarded heat or total inputs', () => {
+    const panels = createPanels({
+      ...certificateConsumptionProperties(),
+      main_purpose: '05',
+      heating_energy_source: '01',
+      floor_area: 100,
+      distr_default_heat: 75,
+    })
+    const candidate = getCandidate({
+      panels,
+      id: ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.MIXED_ENERGY_INTENSITY,
+    })
+    const resolution = resolveCandidate(candidate)
+    expect(resolution).toMatchObject({
+      status: 'resolved',
+      calculations: [
+        { id: 'intensityTimesArea' },
+        { id: 'resolvedCarrierTotal' },
+        { id: 'resolvedAnnualDividedByHeatedArea' },
+      ],
+    })
+    const provenance = candidate.provenance!
+    const inputs = ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS
+    for (const discarded of [
+      inputs.CERTIFICATE_CONSUMPTION_DISTRICT_HEAT,
+      inputs.CERTIFICATE_CONSUMPTION_TOTAL,
+    ]) {
+      expect(
+        resolveCandidate({
+          ...candidate,
+          provenance: {
+            ...provenance,
+            inputIds: [...provenance.inputIds!, discarded],
+            runtimeValues: { ...provenance.runtimeValues, [discarded]: 10 },
+          },
+        })
+      ).toMatchObject({ status: 'unsupported', reason: 'invalid-input-set' })
+    }
+    const missingAreaRuntime = { ...provenance.runtimeValues }
+    delete missingAreaRuntime[inputs.RESOLVED_REGISTRY_AREA]
+    expect(
+      resolveCandidate({
+        ...candidate,
+        provenance: {
+          ...provenance,
+          inputIds: provenance.inputIds!.filter(
+            (id) => id !== inputs.RESOLVED_REGISTRY_AREA
+          ),
+          runtimeValues: missingAreaRuntime,
+        },
+      })
+    ).toMatchObject({ status: 'unsupported', reason: 'invalid-input-set' })
+    expect(
+      resolveCandidate({
+        ...candidate,
+        provenance: {
+          ...provenance,
+          runtimeValues: {
+            ...provenance.runtimeValues,
+            [ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.completeness]:
+              'partial',
+          },
+        },
+      })
+    ).toMatchObject({ status: 'unsupported' })
   })
 
   it('keeps named other-source evidence literal and slot-specific', () => {

@@ -409,7 +409,7 @@ describe('deriveEnergymapBuildingInfoPanelTopology', () => {
     ).toBeUndefined()
   })
 
-  it('passes normalized certificate-only and Water-plus-certificate sections through unchanged', () => {
+  it('retains integrated Energy-only and Energy plus Water sections', () => {
     for (const building of [
       certificateBuilding(),
       certificateBuilding({ extraProperties: { floor_area: 100 } }),
@@ -420,13 +420,20 @@ describe('deriveEnergymapBuildingInfoPanelTopology', () => {
       }) as EnergymapBuildingInfoPanel[]
       const certificateSection = panels
         .find(({ id }) => id === 'energyConsumption')
-        ?.sections.find(({ id }) => id === 'certificateConsumption')
+        ?.sections.find(({ id }) => id === 'estimatedConsumption')
       const topology = deriveEnergymapBuildingInfoPanelTopology(panels)
       const topologyEnergyPanel = topology.availableTabs
         .find(({ id }) => id === 'basic')
         ?.panels.find(({ id }) => id === 'energyConsumption')
 
-      expect(certificateSection).toBeDefined()
+      expect(
+        certificateSection?.consumptionControls?.primaryMetrics[0].id
+      ).toBe('energy')
+      expect(
+        panels
+          .flatMap(({ sections }) => sections)
+          .some(({ id }) => id === 'certificateConsumption')
+      ).toBe(false)
       expect(topologyEnergyPanel?.sections).toContain(certificateSection)
     }
   })

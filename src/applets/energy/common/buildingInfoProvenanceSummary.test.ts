@@ -6,7 +6,6 @@ import {
 } from './buildingInfo'
 import {
   ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS,
-  ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS,
   ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS,
   ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS,
   ENERGYMAP_DERIVED_WATER_PROVENANCE_INPUT_IDS,
@@ -60,10 +59,8 @@ const completeDistrictHeatingProperties = {
   energy_certificate_ventilation_type_label_fi:
     'Painovoimainen ilmanvaihtojärjestelmä',
   ventilation_category: 'gravity',
-  energy_certificate_ventilation_description_fi:
-    'Painovoimainen ilmanvaihto.',
-  energy_certificate_recommendations_fi:
-    'Tiivistä yläpohjan lämmöneristystä.',
+  energy_certificate_ventilation_description_fi: 'Painovoimainen ilmanvaihto.',
+  energy_certificate_recommendations_fi: 'Tiivistä yläpohjan lämmöneristystä.',
   distr_default_total: 367.7884615,
   distr_default_heat: 343.6634615,
   distr_default_elec: 24.125,
@@ -237,56 +234,152 @@ const metadataValueForItem = ({
 }
 
 const COMPLETE_ITEM_SEQUENCE = [
-  ['energyConsumption/estimatedConsumption/metric/total/value/annualTotal', 'metricValue'],
-  ['energyConsumption/estimatedConsumption/metric/total/value/annualTotal/note', 'metricValueNote'],
-  ['energyConsumption/estimatedConsumption/metric/total/value/perSquareMeter', 'metricValue'],
-  ['energyConsumption/estimatedConsumption/metric/total/value/perSquareMeter/note', 'metricValueNote'],
-  ['energyConsumption/estimatedConsumption/metric/heating/value/annualTotal', 'metricValue'],
-  ['energyConsumption/estimatedConsumption/metric/heating/value/annualTotal/note', 'metricValueNote'],
-  ['energyConsumption/estimatedConsumption/metric/heating/value/perSquareMeter', 'metricValue'],
-  ['energyConsumption/estimatedConsumption/metric/heating/value/perSquareMeter/note', 'metricValueNote'],
-  ['energyConsumption/estimatedConsumption/metric/electricity/value/annualTotal', 'metricValue'],
-  ['energyConsumption/estimatedConsumption/metric/electricity/value/annualTotal/note', 'metricValueNote'],
-  ['energyConsumption/estimatedConsumption/metric/electricity/value/perSquareMeter', 'metricValue'],
-  ['energyConsumption/estimatedConsumption/metric/electricity/value/perSquareMeter/note', 'metricValueNote'],
-  ['energyConsumption/estimatedConsumption/primaryMetric/water/value', 'primaryMetricValue'],
-  ['energyConsumption/estimatedConsumption/primaryMetric/water/residentCountControl', 'residentCountControl'],
-  ['energyConsumption/estimatedConsumption/primaryMetric/cost/value', 'primaryMetricValue'],
-  ['energyConsumption/estimatedConsumption/primaryMetric/co2/value', 'primaryMetricValue'],
-  ['energyConsumption/estimatedConsumption/energySubmetric/electricity/metric/electricity/value/annualTotal', 'energySubmetricValue'],
-  ['energyConsumption/estimatedConsumption/energySubmetric/electricity/metric/electricity/value/annualTotal/note', 'energySubmetricValueNote'],
-  ['energyConsumption/estimatedConsumption/energySubmetric/electricity/metric/electricity/value/perSquareMeter', 'energySubmetricValue'],
-  ['energyConsumption/estimatedConsumption/energySubmetric/electricity/metric/electricity/value/perSquareMeter/note', 'energySubmetricValueNote'],
-  ['energyConsumption/estimatedConsumption/energySubmetric/heating/metric/heating/value/annualTotal', 'energySubmetricValue'],
-  ['energyConsumption/estimatedConsumption/energySubmetric/heating/metric/heating/value/annualTotal/note', 'energySubmetricValueNote'],
-  ['energyConsumption/estimatedConsumption/energySubmetric/heating/metric/heating/value/perSquareMeter', 'energySubmetricValue'],
-  ['energyConsumption/estimatedConsumption/energySubmetric/heating/metric/heating/value/perSquareMeter/note', 'energySubmetricValueNote'],
-  ['energyConsumption/estimatedConsumption/combinedEnergyMetric/total/value/annualTotal', 'combinedEnergyValue'],
-  ['energyConsumption/estimatedConsumption/combinedEnergyMetric/total/value/annualTotal/note', 'combinedEnergyValueNote'],
-  ['energyConsumption/estimatedConsumption/combinedEnergyMetric/total/value/perSquareMeter', 'combinedEnergyValue'],
-  ['energyConsumption/estimatedConsumption/combinedEnergyMetric/total/value/perSquareMeter/note', 'combinedEnergyValueNote'],
-  ['energyConsumption/estimatedConsumption/note/estimatedConsumption', 'sectionNote'],
+  [
+    'energyConsumption/estimatedConsumption/primaryMetric/water/value',
+    'primaryMetricValue',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/primaryMetric/water/residentCountControl',
+    'residentCountControl',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/primaryMetric/cost/value',
+    'primaryMetricValue',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/primaryMetric/co2/value',
+    'primaryMetricValue',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/energySubmetric/electricity/metric/electricity/value/annualTotal',
+    'energySubmetricValue',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/energySubmetric/electricity/metric/electricity/value/annualTotal/note',
+    'energySubmetricValueNote',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/energySubmetric/electricity/metric/electricity/value/perSquareMeter',
+    'energySubmetricValue',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/energySubmetric/electricity/metric/electricity/value/perSquareMeter/note',
+    'energySubmetricValueNote',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/energySubmetric/heating/metric/heating/value/annualTotal',
+    'energySubmetricValue',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/energySubmetric/heating/metric/heating/value/annualTotal/note',
+    'energySubmetricValueNote',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/energySubmetric/heating/metric/heating/value/perSquareMeter',
+    'energySubmetricValue',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/energySubmetric/heating/metric/heating/value/perSquareMeter/note',
+    'energySubmetricValueNote',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/energySubmetric/total/metric/total/value/annualTotal',
+    'energySubmetricValue',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/energySubmetric/total/metric/total/value/annualTotal/note',
+    'energySubmetricValueNote',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/energySubmetric/total/metric/total/value/perSquareMeter',
+    'energySubmetricValue',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/energySubmetric/total/metric/total/value/perSquareMeter/note',
+    'energySubmetricValueNote',
+  ],
+  [
+    'energyConsumption/estimatedConsumption/note/estimatedConsumption',
+    'sectionNote',
+  ],
   ['energyConsumption/calculationContext/row/costMode', 'row'],
   ['energyConsumption/calculationContext/row/co2Mode', 'row'],
-  ['renovationRecommendations/publishedRecommendations/row/energyCertificateRecommendations', 'row'],
-  ['renovationRecommendations/scenarioComparison/scenario/aahp/value/annualTotal', 'scenarioValue'],
-  ['renovationRecommendations/scenarioComparison/scenario/aahp/value/annualTotal/note', 'scenarioValueNote'],
-  ['renovationRecommendations/scenarioComparison/scenario/aahp/value/perSquareMeter', 'scenarioValue'],
-  ['renovationRecommendations/scenarioComparison/scenario/aahp/value/perSquareMeter/note', 'scenarioValueNote'],
-  ['renovationRecommendations/scenarioComparison/scenario/aahp/value/savingsPercent', 'scenarioValue'],
-  ['renovationRecommendations/scenarioComparison/scenario/aahp/value/savingsPercent/note', 'scenarioValueNote'],
-  ['renovationRecommendations/scenarioComparison/scenario/solar/value/annualTotal', 'scenarioValue'],
-  ['renovationRecommendations/scenarioComparison/scenario/solar/value/annualTotal/note', 'scenarioValueNote'],
-  ['renovationRecommendations/scenarioComparison/scenario/solar/value/perSquareMeter', 'scenarioValue'],
-  ['renovationRecommendations/scenarioComparison/scenario/solar/value/perSquareMeter/note', 'scenarioValueNote'],
-  ['renovationRecommendations/scenarioComparison/scenario/solar/value/savingsPercent', 'scenarioValue'],
-  ['renovationRecommendations/scenarioComparison/scenario/solar/value/savingsPercent/note', 'scenarioValueNote'],
-  ['renovationRecommendations/scenarioComparison/scenario/windows/value/annualTotal', 'scenarioValue'],
-  ['renovationRecommendations/scenarioComparison/scenario/windows/value/annualTotal/note', 'scenarioValueNote'],
-  ['renovationRecommendations/scenarioComparison/scenario/windows/value/perSquareMeter', 'scenarioValue'],
-  ['renovationRecommendations/scenarioComparison/scenario/windows/value/perSquareMeter/note', 'scenarioValueNote'],
-  ['renovationRecommendations/scenarioComparison/scenario/windows/value/savingsPercent', 'scenarioValue'],
-  ['renovationRecommendations/scenarioComparison/scenario/windows/value/savingsPercent/note', 'scenarioValueNote'],
+  [
+    'renovationRecommendations/publishedRecommendations/row/energyCertificateRecommendations',
+    'row',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/aahp/value/annualTotal',
+    'scenarioValue',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/aahp/value/annualTotal/note',
+    'scenarioValueNote',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/aahp/value/perSquareMeter',
+    'scenarioValue',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/aahp/value/perSquareMeter/note',
+    'scenarioValueNote',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/aahp/value/savingsPercent',
+    'scenarioValue',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/aahp/value/savingsPercent/note',
+    'scenarioValueNote',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/solar/value/annualTotal',
+    'scenarioValue',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/solar/value/annualTotal/note',
+    'scenarioValueNote',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/solar/value/perSquareMeter',
+    'scenarioValue',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/solar/value/perSquareMeter/note',
+    'scenarioValueNote',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/solar/value/savingsPercent',
+    'scenarioValue',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/solar/value/savingsPercent/note',
+    'scenarioValueNote',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/windows/value/annualTotal',
+    'scenarioValue',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/windows/value/annualTotal/note',
+    'scenarioValueNote',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/windows/value/perSquareMeter',
+    'scenarioValue',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/windows/value/perSquareMeter/note',
+    'scenarioValueNote',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/windows/value/savingsPercent',
+    'scenarioValue',
+  ],
+  [
+    'renovationRecommendations/scenarioComparison/scenario/windows/value/savingsPercent/note',
+    'scenarioValueNote',
+  ],
   ['buildingDetails/buildingSubheader/row/address', 'row'],
   ['buildingDetails/identity/row/buildingIdentifier', 'row'],
   ['buildingDetails/identity/row/constructionYear', 'row'],
@@ -392,7 +485,7 @@ describe('Energiakartta building-info provenance summary', () => {
           provenanceId ===
           ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.ESTIMATED_VALUE_NOTE
       ).length
-    ).toBeGreaterThan(10)
+    ).toBeGreaterThan(5)
     expect(
       new Set(
         summary.items
@@ -403,7 +496,7 @@ describe('Energiakartta building-info provenance summary', () => {
           )
           .map(({ id }) => id)
       ).size
-    ).toBeGreaterThan(10)
+    ).toBeGreaterThan(5)
   })
 
   it('deduplicates descriptors while preserving direct, complete, and reverse associations', () => {
@@ -442,8 +535,7 @@ describe('Energiakartta building-info provenance summary', () => {
       }
       for (const sourceId of item.valueSourceIds) {
         expect(
-          summary.sources.find(({ id }) => id === sourceId)
-            ?.directValueItemIds
+          summary.sources.find(({ id }) => id === sourceId)?.directValueItemIds
         ).toContain(item.id)
       }
       for (const providerId of item.providerIds) {
@@ -561,7 +653,7 @@ describe('Energiakartta building-info provenance summary', () => {
     const summary = deriveSummary()
     const annualTotal = getItemById({
       summary,
-      id: 'energyConsumption/estimatedConsumption/metric/total/value/annualTotal',
+      id: 'energyConsumption/estimatedConsumption/energySubmetric/total/metric/total/value/annualTotal',
     })
     expect(annualTotal).toMatchObject({
       categoryId: 'compositeCalculation',
@@ -600,10 +692,7 @@ describe('Energiakartta building-info provenance summary', () => {
         ])
       )
       expect(item.metadataIds).toEqual(
-        expect.arrayContaining([
-          'referenceVersion',
-          'referenceLastReviewed',
-        ])
+        expect.arrayContaining(['referenceVersion', 'referenceLastReviewed'])
       )
     }
 
@@ -629,7 +718,8 @@ describe('Energiakartta building-info provenance summary', () => {
 
     const scenarioSavings = getItem({
       summary,
-      provenanceId: ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.SCENARIO_AAHP_SAVINGS,
+      provenanceId:
+        ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.SCENARIO_AAHP_SAVINGS,
     })
     expect(scenarioSavings.categoryId).toBe('compositeCalculation')
     expect(scenarioSavings.valueCalculationIds).toEqual(['scenarioSavings'])
@@ -651,7 +741,9 @@ describe('Energiakartta building-info provenance summary', () => {
       },
     })
 
-    expect(summary.items.map(({ id, provenanceId }) => [id, provenanceId])).toEqual([
+    expect(
+      summary.items.map(({ id, provenanceId }) => [id, provenanceId])
+    ).toEqual([
       [
         'energyConsumption/estimatedConsumption/primaryMetric/water/value',
         ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.WATER_ANNUAL,
@@ -696,8 +788,7 @@ describe('Energiakartta building-info provenance summary', () => {
     })
     const modeled = getItem({
       summary: modeledSummary,
-      provenanceId:
-        ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.ENERGY_CLASS_MODELED,
+      provenanceId: ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.ENERGY_CLASS_MODELED,
     })
     const indicator = getItem({
       summary: modeledSummary,
@@ -956,8 +1047,7 @@ describe('Energiakartta building-info provenance summary', () => {
       expect(
         summary.items.some(
           ({ provenanceId }) =>
-            provenanceId ===
-            ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.WATER_ANNUAL
+            provenanceId === ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.WATER_ANNUAL
         )
       ).toBe(false)
       expect(summary.inputs.map(({ id }) => id)).toEqual([
@@ -1246,306 +1336,95 @@ describe('Energiakartta building-info provenance summary', () => {
   })
 })
 
-describe('energy certificate consumption provenance summary', () => {
-  const certificateSummary = ({
-    properties = createCertificateProperties(),
-    locale = 'en-US',
-  }: {
-    properties?: EnergymapSelectedBuilding['properties']
-    locale?: string
-  } = {}) => deriveSummary({ properties, locale })
-
-  it('traverses certificate group, context, carrier labels and values, total, and notes in deterministic graph order', () => {
-    const summary = certificateSummary()
-    const itemIds = summary.items
-      .filter(({ location }) => location.sectionId === 'certificateConsumption')
-      .map(({ id }) => id)
-
-    expect(itemIds).toEqual([
-      'energyConsumption/certificateConsumption/title',
-      'energyConsumption/certificateConsumption/row/sourceRegister',
-      'energyConsumption/certificateConsumption/row/basis',
-      'energyConsumption/certificateConsumption/row/certificateId',
-      'energyConsumption/certificateConsumption/row/certificateVersion',
-      'energyConsumption/certificateConsumption/row/signedAt',
-      'energyConsumption/certificateConsumption/row/validUntil',
-      'energyConsumption/certificateConsumption/row/annualUnit',
-      'energyConsumption/certificateConsumption/row/completeness',
-      'energyConsumption/certificateConsumption/row/heatedNetArea',
-      'energyConsumption/certificateConsumption/metric/certificateElectricity/label',
-      'energyConsumption/certificateConsumption/metric/certificateElectricity/value/annualTotal',
-      'energyConsumption/certificateConsumption/metric/certificateElectricity/value/perSquareMeter',
-      'energyConsumption/certificateConsumption/metric/certificateElectricity/value/perSquareMeter/note',
-      'energyConsumption/certificateConsumption/metric/certificateDistrictHeat/label',
-      'energyConsumption/certificateConsumption/metric/certificateDistrictHeat/value/annualTotal',
-      'energyConsumption/certificateConsumption/metric/certificateDistrictHeat/value/perSquareMeter',
-      'energyConsumption/certificateConsumption/metric/certificateDistrictHeat/value/perSquareMeter/note',
-      'energyConsumption/certificateConsumption/metric/certificateDistrictCooling/label',
-      'energyConsumption/certificateConsumption/metric/certificateDistrictCooling/value/annualTotal',
-      'energyConsumption/certificateConsumption/metric/certificateDistrictCooling/value/perSquareMeter',
-      'energyConsumption/certificateConsumption/metric/certificateDistrictCooling/value/perSquareMeter/note',
-      'energyConsumption/certificateConsumption/metric/certificateFossilFuel/label',
-      'energyConsumption/certificateConsumption/metric/certificateFossilFuel/value/annualTotal',
-      'energyConsumption/certificateConsumption/metric/certificateFossilFuel/value/perSquareMeter',
-      'energyConsumption/certificateConsumption/metric/certificateFossilFuel/value/perSquareMeter/note',
-      'energyConsumption/certificateConsumption/metric/certificateRenewableFuel/label',
-      'energyConsumption/certificateConsumption/metric/certificateRenewableFuel/value/annualTotal',
-      'energyConsumption/certificateConsumption/metric/certificateRenewableFuel/value/perSquareMeter',
-      'energyConsumption/certificateConsumption/metric/certificateRenewableFuel/value/perSquareMeter/note',
-      'energyConsumption/certificateConsumption/metric/certificateTotal/label',
-      'energyConsumption/certificateConsumption/metric/certificateTotal/value/annualTotal',
-      'energyConsumption/certificateConsumption/metric/certificateTotal/value/perSquareMeter',
-      'energyConsumption/certificateConsumption/metric/certificateTotal/value/perSquareMeter/note',
-      'energyConsumption/certificateConsumption/note/standardizedCalculation',
-      'energyConsumption/certificateConsumption/note/historicalNotMeasured',
-    ])
-  })
-
-  it('keeps complete/partial and area/no-area summary differences exact', () => {
-    const complete = certificateSummary()
-    const partial = certificateSummary({
-      properties: createCertificateProperties({ completeness: 'partial' }),
-    })
-    const noArea = certificateSummary({
-      properties: createCertificateProperties({ heatedArea: null }),
-    })
-
-    expect(
-      complete.items.filter(({ provenanceId }) =>
-        provenanceId.includes('.certificateTotal')
-      )
-    ).toHaveLength(3)
-    expect(
-      partial.items.filter(({ provenanceId }) =>
-        provenanceId.includes('.certificateTotal')
-      )
-    ).toHaveLength(0)
-    expect(partial.items.map(({ provenanceId }) => provenanceId)).toContain(
-      ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_PARTIAL_NOTE
+describe('integrated Energy provenance summary', () => {
+  it('records each effective value once under Estimated consumption with no removed heading or context rows', () => {
+    const summary = deriveSummary({ properties: createCertificateProperties() })
+    const energyItems = summary.items.filter(
+      ({ location }) => location.panelId === 'energyConsumption'
     )
+    expect(energyItems.length).toBeGreaterThan(10)
     expect(
-      noArea.items.some(({ calculationIds }) =>
-        calculationIds.includes('certificateAnnualDividedByHeatedArea')
+      energyItems.every(
+        ({ location }) => location.sectionId === 'estimatedConsumption'
       )
+    ).toBe(true)
+    expect(
+      energyItems.some(({ kind }) => kind === 'sectionTitle' || kind === 'row')
     ).toBe(false)
-    expect(
-      noArea.inputs.some(
-        ({ id }) =>
-          id === ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.heatedNetArea
-      )
-    ).toBe(false)
-  })
-
-  it('retains exact per-building evidence and public-register associations without cross-source area inputs', () => {
-    const summary = certificateSummary()
-    const intensity = getItem({
-      summary,
-      provenanceId:
-        ENERGYMAP_BUILDING_INFO_CERTIFICATE_PROVENANCE_IDS.CERTIFICATE_CONSUMPTION_ELECTRICITY_PER_SQUARE_METER,
-    })
-    const selectedInputs = intensity.selectedEvidenceInputIds.map((id) =>
-      summary.inputs.find((input) => input.id === id)
-    )
-
-    expect(
-      selectedInputs.find(
-        (input) =>
-          input?.id ===
-          ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.components.electricity
-      )?.value
-    ).toBe(0)
-    expect(
-      selectedInputs.find(
-        (input) =>
-          input?.id ===
-          ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.heatedNetArea
-      )?.value
-    ).toBe(10)
-    expect(intensity.selectedEvidenceInputIds).not.toContain(
-      ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.RYHTI_FLOOR_AREA
-    )
-    expect(
-      summary.sources.find(({ id }) => id === 'energyCertificateRegister')
-        ?.directValueItemIds
-    ).toContain(
-      'energyConsumption/certificateConsumption/metric/certificateElectricity/value/annualTotal'
+    expect(new Set(energyItems.map(({ id }) => id)).size).toBe(
+      energyItems.length
     )
     expect(
       summary.metadata.find(({ id }) => id === 'certificateId')?.value
     ).toBe('SUMMARY-CERT-A')
-    expect(
-      summary.metadata.find(({ id }) => id === 'certificateValidUntil')?.value
-    ).toBe('1/2/2025')
-    expect(
-      summary.inputs.find(
-        ({ id }) =>
-          id === ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.validUntil
-      )?.value
-    ).toBe('2025-01-02T00:00:00Z')
   })
 
-  it('suppresses all certificate summary evidence for complete reference Energy', () => {
-    const summary = certificateSummary({
-      properties: {
-        ...completeDistrictHeatingProperties,
-        energy_certificate_consumption:
-          createCertificateProperties({
-            buildingIdentifier: '101614422K',
-          }).energy_certificate_consumption,
+  it('projects only the active quantity and basis, preserving exact validation', () => {
+    const panels = createPanels({ properties: createCertificateProperties() })
+    const result = deriveEnergymapBuildingInfoProvenanceSummary({
+      panels,
+      locale: 'en',
+      energySelection: {
+        primaryMetricId: 'energy',
+        selectedSubmetricIds: ['purchasedElectricity'],
       },
     })
-
+    expect(result?.status).toBe('resolved')
+    if (result?.status !== 'resolved') throw new Error('Expected summary')
     expect(
-      summary.items.some(
-        ({ location }) => location.sectionId === 'certificateConsumption'
+      result.summary.inputs.some(
+        ({ id }) =>
+          id ===
+          ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.components.district_heat
       )
     ).toBe(false)
+    const metric = panels
+      .find(({ id }) => id === 'energyConsumption')!
+      .sections[0].consumptionControls!.energySubmetrics!.find(
+        ({ id }) => id === 'purchasedElectricity'
+      )!.metric
+    metric.values[0].provenance = {
+      ...metric.values[0].provenance!,
+      inputIds: [],
+    }
     expect(
-      summary.inputs.some(({ id }) => id.includes('certificateConsumption'))
-    ).toBe(false)
+      deriveEnergymapBuildingInfoProvenanceSummary({ panels, locale: 'en' })
+        ?.status
+    ).toBe('contractFailure')
   })
 
-  it('skips absent or invalid certificate titles while resolving the remaining visible items', () => {
+  it('rejects conflicting runtime evidence and refreshes certificate metadata by building and locale', () => {
     const panels = createPanels({ properties: createCertificateProperties() })
-
-    for (const title of [undefined, { type: 'plain', text: '   ' }] as const) {
-      const titlePanels = clonePanels(panels)
-      const certificateSection = titlePanels
-        .find(({ id }) => id === 'energyConsumption')
-        ?.sections.find(({ id }) => id === 'certificateConsumption')
-      if (certificateSection == null) {
-        throw new Error('Expected certificate section')
-      }
-
-      if (title == null) {
-        delete certificateSection.title
-      } else {
-        certificateSection.title = title
-      }
-
-      const result = deriveEnergymapBuildingInfoProvenanceSummary({
-        panels: titlePanels,
-        locale: 'en-US',
-      })
-      expect(result.status).toBe('resolved')
-      if (result.status !== 'resolved') continue
-
-      expect(
-        result.summary.items.some(
-          ({ id }) =>
-            id === 'energyConsumption/certificateConsumption/title'
-        )
-      ).toBe(false)
-      expect(
-        result.summary.items.some(
-          ({ location }) =>
-            location.sectionId === 'certificateConsumption'
-        )
-      ).toBe(true)
-    }
-  })
-
-  it('fails closed for missing semantic-label provenance and conflicting per-building evidence', () => {
-    const panels = createPanels({ properties: createCertificateProperties() })
-    const missingLabelPanels = clonePanels(panels)
-    const certificateSection = missingLabelPanels
-      .find(({ id }) => id === 'energyConsumption')
-      ?.sections.find(({ id }) => id === 'certificateConsumption')
-    if (certificateSection == null) throw new Error('Expected certificate section')
-    delete certificateSection.titleProvenance
-    expect(
-      deriveEnergymapBuildingInfoProvenanceSummary({
-        panels: missingLabelPanels,
-        locale: 'en-US',
-      })
-    ).toMatchObject({
-      status: 'contractFailure',
-      failures: [
-        expect.objectContaining({
-          itemKind: 'sectionTitle',
-          reason: 'missing-provenance',
-        }),
-      ],
-    })
-
-    const missingCarrierLabelPanels = clonePanels(panels)
-    const firstCertificateMetric = missingCarrierLabelPanels
-      .find(({ id }) => id === 'energyConsumption')
-      ?.sections.find(({ id }) => id === 'certificateConsumption')?.metrics?.[0]
-    if (firstCertificateMetric == null) {
-      throw new Error('Expected certificate metric')
-    }
-    delete firstCertificateMetric.labelProvenance
-    expect(
-      deriveEnergymapBuildingInfoProvenanceSummary({
-        panels: missingCarrierLabelPanels,
-        locale: 'en-US',
-      })
-    ).toMatchObject({
-      status: 'contractFailure',
-      failures: [
-        expect.objectContaining({
-          itemKind: 'metricLabel',
-          reason: 'missing-provenance',
-        }),
-      ],
-    })
-
-    const conflictingPanels = clonePanels(panels)
-    const conflictingSection = conflictingPanels
-      .find(({ id }) => id === 'energyConsumption')
-      ?.sections.find(({ id }) => id === 'certificateConsumption')
-    const conflictingValue = conflictingSection?.metrics?.[1]?.values[0]
-    if (conflictingValue?.provenance?.runtimeValues == null) {
-      throw new Error('Expected certificate runtime evidence')
-    }
-    conflictingValue.provenance = {
-      ...conflictingValue.provenance,
+    const value = panels.find(({ id }) => id === 'energyConsumption')!
+      .sections[0].consumptionControls!.energySubmetrics![0].metric.values[0]
+    value.provenance = {
+      ...value.provenance!,
       runtimeValues: {
-        ...conflictingValue.provenance.runtimeValues,
+        ...value.provenance!.runtimeValues,
         [ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.certificateId]:
-          'CONFLICTING-CERTIFICATE',
+          'CONFLICT',
       },
     }
     expect(
-      deriveEnergymapBuildingInfoProvenanceSummary({
-        panels: conflictingPanels,
-        locale: 'en-US',
-      })
+      deriveEnergymapBuildingInfoProvenanceSummary({ panels, locale: 'en' })
     ).toMatchObject({
       status: 'contractFailure',
-      failures: [
-        expect.objectContaining({
-          failureType: 'dynamicEvidenceConflict',
-          reason: 'conflicting-dynamic-input-value',
-          inputId: ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.certificateId,
-        }),
-      ],
+      failures: expect.arrayContaining([
+        expect.objectContaining({ failureType: 'dynamicEvidenceConflict' }),
+      ]),
     })
-  })
-
-  it('rebuilds immutable selection and locale summaries without leaking certificate context', () => {
-    const propertiesA = createCertificateProperties()
-    const propertiesB = createCertificateProperties({
-      certificateId: 'SUMMARY-CERT-B',
-      buildingIdentifier: 'SUMMARY-BUILDING-B',
-      heatedArea: 25,
+    const fi = deriveSummary({
+      properties: createCertificateProperties({
+        certificateId: 'SUMMARY-CERT-B',
+      }),
+      locale: 'fi-FI',
     })
-    const summaryA = certificateSummary({ properties: propertiesA })
-    const snapshotA = JSON.stringify(summaryA)
-    const summaryB = certificateSummary({ properties: propertiesB, locale: 'fi-FI' })
-    const summaryAAgain = certificateSummary({ properties: propertiesA })
-
-    expect(JSON.stringify(summaryA)).toBe(snapshotA)
-    expect(summaryAAgain).toEqual(summaryA)
-    expect(summaryA).not.toBe(summaryAAgain)
+    expect(fi.metadata.find(({ id }) => id === 'certificateId')?.value).toBe(
+      'SUMMARY-CERT-B'
+    )
     expect(
-      summaryB.inputs.find(
-        ({ id }) => id === ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.certificateId
-      )?.value
-    ).toBe('SUMMARY-CERT-B')
-    expect(JSON.stringify(summaryB)).not.toContain('SUMMARY-CERT-A')
-    expect(summaryB.locale).toBe('fi-FI')
+      fi.metadata.find(({ id }) => id === 'certificateSignedAt')?.value
+    ).toBe('2.1.2015')
   })
 })
 

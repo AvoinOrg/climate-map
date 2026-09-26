@@ -108,6 +108,7 @@ jest.mock('#/common/hooks/ui/useIsMobile', () => ({
 }))
 
 jest.mock('../common/buildingInfo', () => ({
+  ...jest.requireActual('../common/buildingInfo'),
   createEnergymapBuildingInfoPresentation: ({
     selectedBuilding,
     locale,
@@ -131,6 +132,14 @@ jest.mock('../common/buildingInfo', () => ({
               locale,
               items: [
                 {
+                  reason: { type: 'plain', text: 'Missing test source' },
+                  evidence: {
+                    source: 'ryhtiBuildingData',
+                    field: 'testMissingField',
+                    kind: 'legacy-cause-unestablished',
+                    code: 'legacy',
+                    evidence: 'published-field',
+                  },
                   id: 'buildingDetails.testMissingField',
                   panelId: 'buildingDetails',
                   label: {
@@ -1057,7 +1066,10 @@ describe('EnergyHomePage', () => {
     const factory = jest.requireActual<typeof import('../common/buildingInfo')>(
       '../common/buildingInfo'
     ).createEnergymapBuildingInfoPanels
-    const select = (buildingKey: string, properties: Record<string, unknown>) => {
+    const select = (
+      buildingKey: string,
+      properties: Record<string, unknown>
+    ) => {
       const feature = createMapBuildingFeature(buildingKey)
       feature.properties = {
         building_key: buildingKey,
@@ -1090,7 +1102,9 @@ describe('EnergyHomePage', () => {
       detail: 0,
     })
     await waitFor(() =>
-      expect(screen.getByTestId('building-info-provenance-heading')).toHaveFocus()
+      expect(
+        screen.getByTestId('building-info-provenance-heading')
+      ).toHaveFocus()
     )
 
     select('A', {
@@ -1102,10 +1116,9 @@ describe('EnergyHomePage', () => {
     await waitFor(() =>
       expect(screen.queryByText('Label A')).not.toBeInTheDocument()
     )
-    expect(screen.getByText('Updated label A').closest('[lang]')).toHaveAttribute(
-      'lang',
-      'sv'
-    )
+    expect(
+      screen.getByText('Updated label A').closest('[lang]')
+    ).toHaveAttribute('lang', 'sv')
     expect(
       screen.getByText('Updated description A').closest('[lang]')
     ).toHaveAttribute('lang', 'fi')

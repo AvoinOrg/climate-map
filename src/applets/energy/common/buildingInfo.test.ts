@@ -175,7 +175,18 @@ const findRow = (panel: EnergymapBuildingInfoPanel, rowId: string) =>
   getRows(panel).find((candidate) => candidate.id === rowId)
 
 const getMetrics = (panel: EnergymapBuildingInfoPanel) =>
-  panel.sections.flatMap((section) => section.metrics ?? [])
+  panel.sections.flatMap((section) =>
+    section.consumptionControls == null
+      ? (section.metrics ?? [])
+      : [
+          ...(section.consumptionControls.combinedEnergyMetric
+            ? [section.consumptionControls.combinedEnergyMetric]
+            : []),
+          ...(section.consumptionControls.energySubmetrics ?? []).map(
+            ({ metric }) => metric
+          ),
+        ]
+  )
 
 const getMetric = (
   panel: EnergymapBuildingInfoPanel,
@@ -855,8 +866,11 @@ describe('Energiakartta building info availability model', () => {
     }) as EnergymapBuildingInfoPanel[]
     const controls = getControls(getPanel(panels, 'energyConsumption'))
 
-    expect(controls.energySubmetrics?.map(({ id }) => id)).toEqual(['heating'])
-    expect(controls.defaultEnergySubmetricIds).toEqual(['heating'])
+    expect(controls.energySubmetrics?.map(({ id }) => id)).toEqual([
+      'total',
+      'heating',
+    ])
+    expect(controls.defaultEnergySubmetricIds).toEqual(['total'])
     expect(controls.energySubmetrics?.[0].defaultSelected).toBe(true)
     expect(controls.combinedEnergyMetric).toBeUndefined()
     expect(controls.primaryMetrics.map(({ id }) => id)).toEqual([
@@ -892,7 +906,7 @@ describe('Energiakartta building info availability model', () => {
     }
   )
 
-  it('omits controls when no primary choice can produce output', () => {
+  it('keeps a usable independent total in normal Energy controls', () => {
     const panels = createEnergymapBuildingInfoPanels({
       selectedBuilding: createSelectedBuilding({
         building_key: 'total-only',
@@ -907,11 +921,15 @@ describe('Energiakartta building info availability model', () => {
       'estimatedConsumption'
     )
 
-    expect(estimated.consumptionControls).toBeUndefined()
-    expect(estimated.metrics?.map(({ id }) => id)).toEqual(['total'])
-    expect(estimated.metrics?.[0].values.map(({ id }) => id)).toEqual([
-      'perSquareMeter',
+    expect(estimated.consumptionControls?.defaultEnergySubmetricIds).toEqual([
+      'total',
     ])
+    expect(estimated.metrics).toBeUndefined()
+    expect(
+      estimated.consumptionControls?.energySubmetrics?.[0].metric.values.map(
+        ({ id }) => id
+      )
+    ).toEqual(['perSquareMeter'])
     expectAvailableGraph(panels)
   })
 
@@ -2051,295 +2069,333 @@ describe('Energiakartta building info availability model', () => {
   })
 })
 
-describe('energy certificate consumption fallback model', () => {
-  const createCertificatePanels = ({
-    properties,
-    payload,
-    locale = 'en-US',
-  }: {
-    properties: EnergymapSelectedBuilding['properties']
-    payload?: Record<string, unknown>
-    locale?: string
-  }) =>
+describe('integrated certificate Energy', () => {
+  const panelsFor = (
+    properties: EnergymapSelectedBuilding['properties'] = {},
+    payload: Record<string, unknown> = {},
+    locale = 'en-US'
+  ) =>
     createEnergymapBuildingInfoPanels({
       selectedBuilding: createSelectedBuilding(
         createCertificateConsumptionProperties({ properties, payload })
       ),
       locale,
-    }) as EnergymapBuildingInfoPanel[]
-
-  it('suppresses the certificate group only when all six reference Energy slots are available', () => {
-    const completePanels = createCertificatePanels({
-      properties: districtHeatingProperties,
+    })!
+  const controlsFor = (
+    properties: EnergymapSelectedBuilding['properties'] = {},
+    payload: Record<string, unknown> = {}
+  ) =>
+    getControls(getPanel(panelsFor(properties, payload), 'energyConsumption'))
+  const selected = (
+    controls: EnergymapBuildingInfoConsumptionControls,
+    id: EnergymapBuildingInfoEnergySubmetricId,
+    basisId?: 'registryFloorArea' | 'certificateHeatedNetArea'
+  ) =>
+    getSelectedEnergyConsumption({
+      controls,
+      selectedSubmetricIds: [id],
+      basisId,
     })
-    expect(
-      findSection(
-        getPanel(completePanels, 'energyConsumption'),
-        'certificateConsumption'
-      )
-    ).toBeUndefined()
+  const complete = {
+    components: [
+      { carrier: 'electricity', annual_kwh: 2000 },
+      { carrier: 'district_heat', annual_kwh: 7000 },
+      { carrier: 'district_cooling', annual_kwh: 500 },
+      { carrier: 'fossil_fuel', annual_kwh: 0 },
+      { carrier: 'renewable_fuel', annual_kwh: 0 },
+    ],
+    total_kwh_year: 9500,
+    heated_net_area_m2: 200,
+  }
+  const partialReference = {
+    ...districtHeatingProperties,
+    floor_area: 100,
+    distr_default_heat: 75,
+    distr_default_elec: null,
+    distr_default_total: null,
+  }
 
-    const partialPanels = createCertificatePanels({
-      properties: {
-        ...districtHeatingProperties,
-        building_key: 'partial-reference',
-        floor_area: undefined,
-      },
-    })
-    const energy = getPanel(partialPanels, 'energyConsumption')
-    const reference = getSection(energy, 'estimatedConsumption')
-    expect(reference.metrics?.map(({ id }) => id)).toEqual([
-      'total',
-      'heating',
-      'electricity',
-    ])
-    expect(
-      reference.metrics?.flatMap(({ values }) => values.map(({ id }) => id))
-    ).toEqual(['perSquareMeter', 'perSquareMeter', 'perSquareMeter'])
-    expect(getSection(energy, 'certificateConsumption').variant).toBe(
-      'energyCertificateConsumption'
-    )
-  })
-
-  it('retains certificate-only and Water-plus-certificate Energy panels independently of purpose and registry area', () => {
-    const certificateOnly = createCertificatePanels({
-      properties: {
-        building_key: 'certificate-only',
-        permanent_building_identifier: 'CERTIFICATE-ONLY',
-        main_purpose: '03',
-        floor_area: 0,
-      },
-    })
-    expect(
-      getSection(
-        getPanel(certificateOnly, 'energyConsumption'),
-        'certificateConsumption'
-      ).metrics
-    ).toHaveLength(6)
-
-    const waterAndCertificate = createCertificatePanels({
-      properties: {
-        building_key: 'water-and-certificate',
-        permanent_building_identifier: 'WATER-CERTIFICATE',
-        floor_area: 100,
-      },
-    })
-    const energy = getPanel(waterAndCertificate, 'energyConsumption')
-    expect(getControls(energy).primaryMetrics.map(({ id }) => id)).toEqual([
-      'water',
-    ])
-    expect(getSection(energy, 'estimatedConsumption').notes).toBeUndefined()
-    expect(findSection(energy, 'certificateConsumption')).toBeDefined()
-
-    const neither = createEnergymapBuildingInfoPanels({
-      selectedBuilding: createSelectedBuilding({ building_key: 'neither' }),
+  it('preserves complete references exactly and removes the obsolete section for every model', () => {
+    const without = createEnergymapBuildingInfoPanels({
+      selectedBuilding: districtHeatingBuilding,
       locale: 'en-US',
-    }) as EnergymapBuildingInfoPanel[]
-    expect(findPanel(neither, 'energyConsumption')).toBeUndefined()
+    })!
+    const withCertificate = panelsFor(districtHeatingProperties)
+    expect(withCertificate).toEqual(without)
+    for (const panels of [
+      withCertificate,
+      panelsFor(),
+      panelsFor(partialReference, complete),
+    ]) {
+      expect(
+        panels
+          .flatMap(({ sections }) => sections)
+          .some(({ id }) => id === 'certificateConsumption')
+      ).toBe(false)
+      expect(
+        getControls(getPanel(panels, 'energyConsumption')).primaryMetrics[0].id
+      ).toBe('energy')
+    }
   })
 
-  it('preserves all carriers, stable other slots, zeroes, complete-only total, and same-certificate area evidence', () => {
-    const dangerousName = '<b>{{untranslated-source}}</b>'
-    const components = [
-      { carrier: 'electricity', annual_kwh: 0 },
-      { carrier: 'district_heat', annual_kwh: 10 },
-      { carrier: 'district_cooling', annual_kwh: 20 },
-      { carrier: 'fossil_fuel', annual_kwh: 30 },
-      { carrier: 'renewable_fuel', annual_kwh: 40 },
+  it('exposes the office total and all carriers in ordinary controls with class C intact', () => {
+    const panels = panelsFor(
       {
-        carrier: 'other',
-        source_slot: 0,
-        name: dangerousName,
-        annual_kwh: 5,
+        permanent_building_identifier: '1036581819',
+        main_purpose: '02',
+        floor_area: 0,
+        energy_class: 'C',
+        is_energy_class_modeled: false,
       },
-      { carrier: 'other', source_slot: 1, name: '   ', annual_kwh: 0 },
-      { carrier: 'other', source_slot: 2, name: null, annual_kwh: 15 },
-    ]
-    const panels = createCertificatePanels({
-      properties: {
-        building_key: 'all-certificate-carriers',
-        permanent_building_identifier: 'ALL-CARRIERS',
-      },
-      payload: {
-        components,
-        total_kwh_year: 120,
-        heated_net_area_m2: 10,
-        valid_until: '2020-01-02T00:00:00Z',
-      },
-    })
-    const section = getSection(
-      getPanel(panels, 'energyConsumption'),
-      'certificateConsumption'
-    )
-    expect(section.metrics?.map(({ id }) => id)).toEqual([
-      'certificateElectricity',
-      'certificateDistrictHeat',
-      'certificateDistrictCooling',
-      'certificateFossilFuel',
-      'certificateRenewableFuel',
-      'certificateOther0',
-      'certificateOther1',
-      'certificateOther2',
-      'certificateTotal',
-    ])
-    expect(section.metrics?.every(({ values }) => values.length === 2)).toBe(
-      true
-    )
-    expect(section.metrics?.[0].values[0]).toMatchObject({
-      status: 'real',
-      text: { type: 'plain', text: '0' },
-      unitKey: `${translationPrefix}.units.kwh_per_year`,
-    })
-    expect(section.metrics?.[0].values[1]).toMatchObject({
-      status: 'estimate',
-      text: { type: 'plain', text: '0' },
-      unitKey: `${translationPrefix}.units.kwh_per_square_meter_year`,
-    })
-    expect(section.metrics?.[5].label).toEqual({
-      type: 'plain',
-      text: dangerousName,
-    })
-    expect(section.metrics?.[6].label).toMatchObject({
-      type: 'translation',
-      keyName: `${translationPrefix}.panels.energy.certificate.carriers.other_2`,
-    })
-    const electricityRateEvidence = section.metrics?.[0].values[1].provenance
-    expect(electricityRateEvidence?.runtimeValues).toMatchObject({
-      [ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_CONSUMPTION_ELECTRICITY]: 0,
-      [ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_CONSUMPTION_HEATED_AREA]: 10,
-    })
-    expect(electricityRateEvidence?.inputIds).not.toContain(
-      ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.RYHTI_FLOOR_AREA
-    )
-    expect(
-      getRow(getPanel(panels, 'energyConsumption'), 'validUntil').text
-    ).toEqual({ type: 'plain', text: '1/2/2020' })
-
-    const zeroPanels = createCertificatePanels({
-      properties: {
-        building_key: 'zero-certificate',
-        permanent_building_identifier: 'ZERO-CERTIFICATE',
-      },
-      payload: {
+      {
+        certificate_id: '318510',
+        heated_net_area_m2: 22707.2,
         components: [
-          { carrier: 'electricity', annual_kwh: 0 },
-          { carrier: 'district_heat', annual_kwh: 0 },
-          { carrier: 'district_cooling', annual_kwh: 0 },
+          { carrier: 'electricity', annual_kwh: 1196074 },
+          { carrier: 'district_heat', annual_kwh: 2994881 },
+          { carrier: 'district_cooling', annual_kwh: 197293 },
           { carrier: 'fossil_fuel', annual_kwh: 0 },
           { carrier: 'renewable_fuel', annual_kwh: 0 },
         ],
-        total_kwh_year: 0,
-      },
-    })
-    const zeroTotal = getSection(
-      getPanel(zeroPanels, 'energyConsumption'),
-      'certificateConsumption'
-    ).metrics?.find(({ id }) => id === 'certificateTotal')
-    expect(zeroTotal?.values.map(({ text }) => text)).toEqual([
-      { type: 'plain', text: '0' },
-      { type: 'plain', text: '0' },
+        total_kwh_year: 4388248,
+      }
+    )
+    const controls = getControls(getPanel(panels, 'energyConsumption'))
+    expect(controls.defaultEnergySubmetricIds).toEqual(['total'])
+    expect(controls.energySubmetrics?.map(({ id }) => id)).toEqual([
+      'total',
+      'purchasedElectricity',
+      'districtHeat',
+      'districtCooling',
+      'fossilFuel',
+      'renewableFuel',
     ])
+    for (const [id, annual, intensity] of [
+      ['total', 4388248, '193.3'],
+      ['purchasedElectricity', 1196074, '52.7'],
+      ['districtHeat', 2994881, '131.9'],
+      ['districtCooling', 197293, '8.7'],
+      ['fossilFuel', 0, '0'],
+      ['renewableFuel', 0, '0'],
+    ] as const) {
+      const result = selected(controls, id)
+      expect(result.values[0]).toMatchObject({
+        status: 'estimate',
+        amount: annual,
+      })
+      expect(result.values[1].text).toEqual(plain(intensity))
+    }
+    expect(
+      getRow(getPanel(panels, 'buildingDetails'), 'energyClass').text
+    ).toEqual(plain('C'))
   })
 
-  it('never synthesizes a total for partial records and omits area-derived items without certificate area', () => {
-    const panels = createCertificatePanels({
-      properties: {
-        building_key: 'partial-certificate',
-        permanent_building_identifier: 'PARTIAL-CERTIFICATE',
-      },
-      payload: {
-        completeness: 'partial',
-        components: [
-          { carrier: 'electricity', annual_kwh: 0 },
-          { carrier: 'district_heat', annual_kwh: 25 },
-          { carrier: 'district_cooling', annual_kwh: 25 },
-          { carrier: 'fossil_fuel', annual_kwh: 25 },
-          { carrier: 'renewable_fuel', annual_kwh: 25 },
-        ],
-        total_kwh_year: null,
-        heated_net_area_m2: undefined,
-        signed_at: undefined,
-        valid_until: undefined,
-      },
-    })
-    const section = getSection(
-      getPanel(panels, 'energyConsumption'),
-      'certificateConsumption'
-    )
-    expect(section.metrics?.map(({ id }) => id)).not.toContain(
-      'certificateTotal'
-    )
+  it('resolves a complete disjoint mixed partition before formatting and records only contributing operands', () => {
+    const controls = controlsFor(partialReference, complete)
     expect(
-      section.metrics?.every(({ values }) =>
-        values.every(({ id }) => id === 'annualTotal')
+      selected(controls, 'heating').values.map(({ amount }) => amount)
+    ).toEqual([7500, 75])
+    expect(
+      selected(controls, 'purchasedElectricity').values.map(
+        ({ amount }) => amount
       )
-    ).toBe(true)
-    expect(section.rows?.map(({ id }) => id)).not.toEqual(
-      expect.arrayContaining(['signedAt', 'validUntil', 'heatedNetArea'])
+    ).toEqual([2000, 10])
+    const total = selected(controls, 'total')
+    expect(total.values.map(({ amount }) => amount)).toEqual([10000, 50])
+    expect(total.values[0].provenance?.id).toBe(
+      ENERGYMAP_BUILDING_INFO_PROVENANCE_IDS.MIXED_ENERGY_ANNUAL
     )
-    expect(section.notes?.map(({ id }) => id)).toContain('partialRecord')
-  })
-
-  it('keeps registry and certificate rate pairs isolated and rebuilds localized display with stable evidence', () => {
-    const properties = {
-      ...districtHeatingProperties,
-      building_key: 'isolated-area-sources',
-      permanent_building_identifier: 'ISOLATED-AREAS',
-      floor_area: 1000,
-      distr_default_total: undefined,
-      energy_certificate_heated_net_area: 9999,
-    }
-    const enPanels = createCertificatePanels({ properties, locale: 'en-US' })
-    const fiPanels = createCertificatePanels({ properties, locale: 'fi-FI' })
-    const getCertificateElectricity = (panels: EnergymapBuildingInfoPanel[]) =>
-      getSection(
-        getPanel(panels, 'energyConsumption'),
-        'certificateConsumption'
-      ).metrics?.find(({ id }) => id === 'certificateElectricity')
-
-    const enMetric = getCertificateElectricity(enPanels)
-    const fiMetric = getCertificateElectricity(fiPanels)
-    expect(enMetric?.values[1].text).toEqual({ type: 'plain', text: '0.2' })
-    expect(fiMetric?.values[1].text).toEqual({ type: 'plain', text: '0,2' })
-    expect(enMetric?.id).toBe(fiMetric?.id)
-    expect(enMetric?.values[1].provenance?.runtimeValues).toEqual(
-      fiMetric?.values[1].provenance?.runtimeValues
-    )
-    expect(enMetric?.values[1].provenance?.runtimeValues).toMatchObject({
-      [ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_CONSUMPTION_HEATED_AREA]: 50,
+    expect(total.values[0].provenance?.runtimeValues).toMatchObject({
+      'resolvedInput.districtHeatIntensity': 75,
+      'resolvedInput.registryArea': 100,
+      [ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_CONSUMPTION_ELECTRICITY]: 2000,
     })
-    expect(enMetric?.values[1].sourceProperties).toEqual([
-      'energy_certificate_consumption',
-    ])
+    expect(total.values[0].provenance?.inputIds).not.toContain(
+      ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_CONSUMPTION_DISTRICT_HEAT
+    )
+    expect(total.values[0].provenance?.inputIds).not.toContain(
+      ENERGYMAP_BUILDING_INFO_PROVENANCE_INPUT_IDS.CERTIFICATE_CONSUMPTION_TOTAL
+    )
+    expect(controls.combinedEnergyMetric).toBeUndefined()
   })
 
-  it('has truthful Finnish and English certificate descriptors', () => {
-    for (const translations of [enTranslations, fiTranslations]) {
-      const certificate =
-        translations.sidebar.building_info.panels.energy.certificate
-      expect(certificate.title.trim()).not.toBe('')
+  it.each(['04', '02', '03'])(
+    'does not equate electric heating or specific oil/wood with generic purchased carriers (%s)',
+    (heatingEnergySource) => {
+      const prefix =
+        heatingEnergySource === '04'
+          ? 'delec'
+          : heatingEnergySource === '02'
+            ? 'oil'
+            : 'wood'
+      const controls = controlsFor(
+        {
+          ...partialReference,
+          heating_energy_source: heatingEnergySource,
+          [`${prefix}_default_heat`]: 75,
+        },
+        complete
+      )
+      expect(selected(controls, 'total').values[0].amount).toBe(9500)
+      expect(selected(controls, 'purchasedElectricity').values[0].amount).toBe(
+        2000
+      )
       expect(
-        Object.values(certificate.carriers).every((value) => value.trim())
-      ).toBe(true)
-      expect(
-        Object.values(certificate.context).every((value) => value.trim())
-      ).toBe(true)
-      expect(
-        Object.values(certificate.metric).every((value) => value.trim())
-      ).toBe(true)
-      expect(
-        Object.values(certificate.note).every((value) => value.trim())
-      ).toBe(true)
+        normalizeEnergySubmetricSelection({
+          controls,
+          selectedSubmetricIds: ['purchasedElectricity', 'heating'],
+        })
+      ).toEqual(['purchasedElectricity'])
+      expect(selected(controls, 'waterHeating').values).toEqual([])
     }
+  )
 
+  it('keeps registry intensity and certificate conversion families together without splicing values', () => {
+    const controls = controlsFor(
+      { ...partialReference, floor_area: 0, distr_default_total: 100 },
+      complete
+    )
     expect(
-      enTranslations.sidebar.building_info.panels.energy.certificate.note
-        .historical_not_measured
-    ).toMatch(/not measured or current consumption/i)
+      selected(controls, 'heating').values.map(({ amount }) => amount)
+    ).toEqual([7000, 35])
     expect(
-      fiTranslations.sidebar.building_info.panels.energy.certificate.note
-        .historical_not_measured
-    ).toMatch(/eivät ole mitattua tai nykyhetken kulutusta/i)
+      selected(controls, 'heating', 'registryFloorArea').values.map(
+        ({ amount }) => amount
+      )
+    ).toEqual([75])
+    expect(
+      selected(controls, 'heating', 'registryFloorArea').values[0]
+        .sourceProperties
+    ).toEqual(['distr_default_heat'])
+    expect(
+      selected(controls, 'total', 'registryFloorArea').values.map(
+        ({ amount }) => amount
+      )
+    ).toEqual([100])
+    expect(
+      selected(controls, 'total').values.map(({ amount }) => amount)
+    ).toEqual([9500, 47.5])
+  })
+
+  it('retains independent reference totals without implying that fallback components sum to them', () => {
+    const controls = controlsFor(
+      { ...partialReference, distr_default_total: 110 },
+      complete
+    )
+    expect(selected(controls, 'total').values[0].amount).toBe(11000)
+    expect(
+      normalizeEnergySubmetricSelection({
+        controls,
+        selectedSubmetricIds: ['total', 'heating'],
+      })
+    ).toEqual(['total'])
+    const withoutCertificate = createEnergymapBuildingInfoPanels({
+      selectedBuilding: createSelectedBuilding({
+        ...partialReference,
+        distr_default_heat: null,
+        distr_default_total: 110,
+      }),
+      locale: 'en-US',
+    })!
+    expect(
+      getControls(getPanel(withoutCertificate, 'energyConsumption'))
+        .defaultEnergySubmetricIds
+    ).toEqual(['total'])
+  })
+
+  it.each([undefined, 0, -1, Number.POSITIVE_INFINITY])(
+    'preserves partial annual quantities and zeroes with unusable area %s',
+    (area) => {
+      const controls = controlsFor(
+        {},
+        {
+          ...complete,
+          completeness: 'partial',
+          total_kwh_year: null,
+          heated_net_area_m2: area,
+        }
+      )
+      expect(controls.energySubmetrics?.map(({ id }) => id)).not.toContain(
+        'total'
+      )
+      expect(
+        selected(controls, 'fossilFuel').values.map(({ amount }) => amount)
+      ).toEqual([0])
+      expect(
+        selected(controls, 'purchasedElectricity').values.map(({ id }) => id)
+      ).toEqual(['annualTotal'])
+    }
+  )
+
+  it('keeps partial mixed components without claiming complete coverage', () => {
+    const controls = controlsFor(partialReference, {
+      completeness: 'partial',
+      components: [{ carrier: 'electricity', annual_kwh: 2000 }],
+      total_kwh_year: null,
+    })
+    expect(selected(controls, 'heating').values[0].amount).toBe(7500)
+    expect(selected(controls, 'purchasedElectricity').values[0].amount).toBe(
+      2000
+    )
+    expect(selected(controls, 'total').values).toEqual([])
+  })
+
+  it('preserves safe names, unnamed slots, zero-only Energy, and locale formatting', () => {
+    const payload = {
+      completeness: 'partial',
+      total_kwh_year: null,
+      components: [
+        {
+          carrier: 'other',
+          source_slot: 0,
+          name: '<b>same</b>',
+          annual_kwh: 0,
+        },
+        {
+          carrier: 'other',
+          source_slot: 1,
+          name: '<b>same</b>',
+          annual_kwh: 5,
+        },
+        { carrier: 'other', source_slot: 2, name: ' ', annual_kwh: 15 },
+      ],
+    }
+    const controls = controlsFor({}, payload)
+    expect(
+      controls.energySubmetrics?.map(({ id, ariaLabel }) => [id, ariaLabel])
+    ).toEqual([
+      ['other0', '<b>same</b> (1)'],
+      ['other1', '<b>same</b> (2)'],
+      ['other2', undefined],
+    ])
+    expect(selected(controls, 'other0').values[0].amount).toBe(0)
+    const fiControls = getControls(
+      getPanel(panelsFor({}, complete, 'fi-FI'), 'energyConsumption')
+    )
+    expect(selected(fiControls, 'total').values[1].text).toEqual(plain('47,5'))
+  })
+
+  it('leaves Water, pricing, emissions and renovation unchanged', () => {
+    const without = createEnergymapBuildingInfoPanels({
+      selectedBuilding: createSelectedBuilding(partialReference),
+      locale: 'en-US',
+    })!
+    const withCertificate = panelsFor(partialReference, complete)
+    expect(
+      getControls(
+        getPanel(withCertificate, 'energyConsumption')
+      ).primaryMetrics.filter(({ id }) => id !== 'energy')
+    ).toEqual(
+      getControls(getPanel(without, 'energyConsumption')).primaryMetrics.filter(
+        ({ id }) => id !== 'energy'
+      )
+    )
+    expect(findPanel(withCertificate, 'renovationRecommendations')).toEqual(
+      findPanel(without, 'renovationRecommendations')
+    )
+    expect(
+      controlsFor({ floor_area: 100 }).primaryMetrics.map(({ id }) => id)
+    ).toEqual(['energy', 'water'])
   })
 })
 

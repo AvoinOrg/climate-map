@@ -34,91 +34,67 @@ const TRANSLATION_PREFIX = 'sidebar.building_info.provenance'
 const provenanceKey = (suffix: string) => `${TRANSLATION_PREFIX}.${suffix}`
 
 const ENERGYMAP_CERTIFICATE_CONSUMPTION_PROVENANCE_IDS = {
-  CERTIFICATE_CONSUMPTION_SECTION_TITLE:
-    'energyConsumption.certificateConsumption.title',
   CERTIFICATE_CONSUMPTION_TOTAL_LABEL:
-    'energyConsumption.certificateConsumption.metric.certificateTotal.label',
+    'energyConsumption.estimatedConsumption.certificate.certificateTotal.label',
   CERTIFICATE_CONSUMPTION_TOTAL_ANNUAL:
-    'energyConsumption.certificateConsumption.metric.certificateTotal.annualTotal',
+    'energyConsumption.estimatedConsumption.certificate.certificateTotal.annualTotal',
   CERTIFICATE_CONSUMPTION_TOTAL_PER_SQUARE_METER:
-    'energyConsumption.certificateConsumption.metric.certificateTotal.perSquareMeter',
+    'energyConsumption.estimatedConsumption.certificate.certificateTotal.perSquareMeter',
   CERTIFICATE_CONSUMPTION_ELECTRICITY_LABEL:
-    'energyConsumption.certificateConsumption.metric.certificateElectricity.label',
+    'energyConsumption.estimatedConsumption.certificate.certificateElectricity.label',
   CERTIFICATE_CONSUMPTION_ELECTRICITY_ANNUAL:
-    'energyConsumption.certificateConsumption.metric.certificateElectricity.annualTotal',
+    'energyConsumption.estimatedConsumption.certificate.certificateElectricity.annualTotal',
   CERTIFICATE_CONSUMPTION_ELECTRICITY_PER_SQUARE_METER:
-    'energyConsumption.certificateConsumption.metric.certificateElectricity.perSquareMeter',
+    'energyConsumption.estimatedConsumption.certificate.certificateElectricity.perSquareMeter',
   CERTIFICATE_CONSUMPTION_DISTRICT_HEAT_LABEL:
-    'energyConsumption.certificateConsumption.metric.certificateDistrictHeat.label',
+    'energyConsumption.estimatedConsumption.certificate.certificateDistrictHeat.label',
   CERTIFICATE_CONSUMPTION_DISTRICT_HEAT_ANNUAL:
-    'energyConsumption.certificateConsumption.metric.certificateDistrictHeat.annualTotal',
+    'energyConsumption.estimatedConsumption.certificate.certificateDistrictHeat.annualTotal',
   CERTIFICATE_CONSUMPTION_DISTRICT_HEAT_PER_SQUARE_METER:
-    'energyConsumption.certificateConsumption.metric.certificateDistrictHeat.perSquareMeter',
+    'energyConsumption.estimatedConsumption.certificate.certificateDistrictHeat.perSquareMeter',
   CERTIFICATE_CONSUMPTION_DISTRICT_COOLING_LABEL:
-    'energyConsumption.certificateConsumption.metric.certificateDistrictCooling.label',
+    'energyConsumption.estimatedConsumption.certificate.certificateDistrictCooling.label',
   CERTIFICATE_CONSUMPTION_DISTRICT_COOLING_ANNUAL:
-    'energyConsumption.certificateConsumption.metric.certificateDistrictCooling.annualTotal',
+    'energyConsumption.estimatedConsumption.certificate.certificateDistrictCooling.annualTotal',
   CERTIFICATE_CONSUMPTION_DISTRICT_COOLING_PER_SQUARE_METER:
-    'energyConsumption.certificateConsumption.metric.certificateDistrictCooling.perSquareMeter',
+    'energyConsumption.estimatedConsumption.certificate.certificateDistrictCooling.perSquareMeter',
   CERTIFICATE_CONSUMPTION_FOSSIL_FUEL_LABEL:
-    'energyConsumption.certificateConsumption.metric.certificateFossilFuel.label',
+    'energyConsumption.estimatedConsumption.certificate.certificateFossilFuel.label',
   CERTIFICATE_CONSUMPTION_FOSSIL_FUEL_ANNUAL:
-    'energyConsumption.certificateConsumption.metric.certificateFossilFuel.annualTotal',
+    'energyConsumption.estimatedConsumption.certificate.certificateFossilFuel.annualTotal',
   CERTIFICATE_CONSUMPTION_FOSSIL_FUEL_PER_SQUARE_METER:
-    'energyConsumption.certificateConsumption.metric.certificateFossilFuel.perSquareMeter',
+    'energyConsumption.estimatedConsumption.certificate.certificateFossilFuel.perSquareMeter',
   CERTIFICATE_CONSUMPTION_RENEWABLE_FUEL_LABEL:
-    'energyConsumption.certificateConsumption.metric.certificateRenewableFuel.label',
+    'energyConsumption.estimatedConsumption.certificate.certificateRenewableFuel.label',
   CERTIFICATE_CONSUMPTION_RENEWABLE_FUEL_ANNUAL:
-    'energyConsumption.certificateConsumption.metric.certificateRenewableFuel.annualTotal',
+    'energyConsumption.estimatedConsumption.certificate.certificateRenewableFuel.annualTotal',
   CERTIFICATE_CONSUMPTION_RENEWABLE_FUEL_PER_SQUARE_METER:
-    'energyConsumption.certificateConsumption.metric.certificateRenewableFuel.perSquareMeter',
+    'energyConsumption.estimatedConsumption.certificate.certificateRenewableFuel.perSquareMeter',
   CERTIFICATE_CONSUMPTION_OTHER_0_LABEL:
-    'energyConsumption.certificateConsumption.metric.certificateOther0.label',
+    'energyConsumption.estimatedConsumption.certificate.certificateOther0.label',
   CERTIFICATE_CONSUMPTION_OTHER_0_ANNUAL:
-    'energyConsumption.certificateConsumption.metric.certificateOther0.annualTotal',
+    'energyConsumption.estimatedConsumption.certificate.certificateOther0.annualTotal',
   CERTIFICATE_CONSUMPTION_OTHER_0_PER_SQUARE_METER:
-    'energyConsumption.certificateConsumption.metric.certificateOther0.perSquareMeter',
+    'energyConsumption.estimatedConsumption.certificate.certificateOther0.perSquareMeter',
   CERTIFICATE_CONSUMPTION_OTHER_1_LABEL:
-    'energyConsumption.certificateConsumption.metric.certificateOther1.label',
+    'energyConsumption.estimatedConsumption.certificate.certificateOther1.label',
   CERTIFICATE_CONSUMPTION_OTHER_1_ANNUAL:
-    'energyConsumption.certificateConsumption.metric.certificateOther1.annualTotal',
+    'energyConsumption.estimatedConsumption.certificate.certificateOther1.annualTotal',
   CERTIFICATE_CONSUMPTION_OTHER_1_PER_SQUARE_METER:
-    'energyConsumption.certificateConsumption.metric.certificateOther1.perSquareMeter',
+    'energyConsumption.estimatedConsumption.certificate.certificateOther1.perSquareMeter',
   CERTIFICATE_CONSUMPTION_OTHER_2_LABEL:
-    'energyConsumption.certificateConsumption.metric.certificateOther2.label',
+    'energyConsumption.estimatedConsumption.certificate.certificateOther2.label',
   CERTIFICATE_CONSUMPTION_OTHER_2_ANNUAL:
-    'energyConsumption.certificateConsumption.metric.certificateOther2.annualTotal',
+    'energyConsumption.estimatedConsumption.certificate.certificateOther2.annualTotal',
   CERTIFICATE_CONSUMPTION_OTHER_2_PER_SQUARE_METER:
-    'energyConsumption.certificateConsumption.metric.certificateOther2.perSquareMeter',
-  CERTIFICATE_CONSUMPTION_SOURCE_CONTEXT:
-    'energyConsumption.certificateConsumption.row.sourceRegister',
-  CERTIFICATE_CONSUMPTION_BASIS_CONTEXT:
-    'energyConsumption.certificateConsumption.row.basis',
-  CERTIFICATE_CONSUMPTION_ID_CONTEXT:
-    'energyConsumption.certificateConsumption.row.certificateId',
-  CERTIFICATE_CONSUMPTION_VERSION_CONTEXT:
-    'energyConsumption.certificateConsumption.row.certificateVersion',
-  CERTIFICATE_CONSUMPTION_SIGNED_AT_CONTEXT:
-    'energyConsumption.certificateConsumption.row.signedAt',
-  CERTIFICATE_CONSUMPTION_VALID_UNTIL_CONTEXT:
-    'energyConsumption.certificateConsumption.row.validUntil',
-  CERTIFICATE_CONSUMPTION_UNIT_CONTEXT:
-    'energyConsumption.certificateConsumption.row.annualUnit',
-  CERTIFICATE_CONSUMPTION_COMPLETENESS_CONTEXT:
-    'energyConsumption.certificateConsumption.row.completeness',
-  CERTIFICATE_CONSUMPTION_HEATED_AREA_CONTEXT:
-    'energyConsumption.certificateConsumption.row.heatedNetArea',
-  CERTIFICATE_CONSUMPTION_STANDARDIZED_NOTE:
-    'energyConsumption.certificateConsumption.note.standardizedCalculation',
-  CERTIFICATE_CONSUMPTION_HISTORICAL_NOTE:
-    'energyConsumption.certificateConsumption.note.historicalNotMeasured',
-  CERTIFICATE_CONSUMPTION_PARTIAL_NOTE:
-    'energyConsumption.certificateConsumption.note.partialRecord',
-  CERTIFICATE_CONSUMPTION_INTENSITY_NOTE:
-    'energyConsumption.certificateConsumption.note.derivedIntensity',
+    'energyConsumption.estimatedConsumption.certificate.certificateOther2.perSquareMeter',
 } as const
 
 const ENERGYMAP_BUILDING_INFO_CATALOG_PROVENANCE_IDS = {
+  MIXED_ENERGY_ANNUAL:
+    'energyConsumption.estimatedConsumption.resolvedTotal.annualTotal',
+  MIXED_ENERGY_INTENSITY:
+    'energyConsumption.estimatedConsumption.resolvedTotal.perSquareMeter',
   CURRENT_TOTAL_ANNUAL:
     'energyConsumption.estimatedConsumption.metric.total.annualTotal',
   CURRENT_TOTAL_PER_SQUARE_METER:
@@ -400,6 +376,14 @@ export const ENERGYMAP_BUILDING_INFO_PROVENANCE_CALCULATIONS = {
     id: 'completeOnlyAggregation',
     key: provenanceKey('calculations.complete_only_aggregation'),
   },
+  resolvedCarrierTotal: {
+    id: 'resolvedCarrierTotal',
+    key: provenanceKey('calculations.resolved_carrier_total'),
+  },
+  resolvedAnnualDividedByHeatedArea: {
+    id: 'resolvedAnnualDividedByHeatedArea',
+    key: provenanceKey('calculations.resolved_annual_divided_by_heated_area'),
+  },
   modeledClass2018: {
     id: 'modeledClass2018',
     key: provenanceKey('calculations.modeled_class_2018'),
@@ -516,6 +500,8 @@ const STATIC_INPUT_IDS = {
   RYHTI_BUILDING_TYPE: 'sourceField.ryhti.buildingType',
   RYHTI_HEATING_SOURCE: 'sourceField.ryhti.heatingSource',
   RYHTI_HEATING_METHOD: 'sourceField.ryhti.heatingMethod',
+  RESOLVED_DISTRICT_HEAT_INTENSITY: 'resolvedInput.districtHeatIntensity',
+  RESOLVED_REGISTRY_AREA: 'resolvedInput.registryArea',
   RYHTI_FLOOR_AREA: 'sourceField.ryhti.floorArea',
   SELECTED_BUILDING_CURRENT_CLASS:
     'sourceField.energyMapSelectedBuilding.currentEnergyClass',
@@ -604,6 +590,9 @@ const STATIC_INPUT_IDS = {
   COMPONENT_FACTOR_MULTIPLICATION:
     'frontendArithmetic.componentFactorMultiplication',
   COMPLETE_ONLY_AGGREGATION: 'frontendArithmetic.completeOnlyAggregation',
+  RESOLVED_CARRIER_TOTAL: 'frontendArithmetic.resolvedCarrierTotal',
+  RESOLVED_ANNUAL_DIVIDED_BY_HEATED_AREA:
+    'frontendArithmetic.resolvedAnnualDividedByHeatedArea',
   MODELED_CLASS_METHOD: 'modelCalculation.modeledClass2018',
   CERTIFICATE_ANNUAL_DIVIDED_BY_HEATED_AREA:
     'frontendArithmetic.certificateAnnualDividedByHeatedArea',
@@ -745,6 +734,26 @@ const certificateConsumptionSourceInput = ({
   })
 
 const certificateConsumptionInputDefinitions = [
+  inputDefinition({
+    id: STATIC_INPUT_IDS.RESOLVED_DISTRICT_HEAT_INTENSITY,
+    role: 'source-field',
+    label: 'resolved_district_heat_intensity',
+    sourceId: 'energyMapConsumptionModel',
+    providerIds: ['energyMap'],
+    sourceProperty: 'distr_default_heat',
+    runtimeValueType: 'number',
+    unit: 'kWh/(m²·year)',
+  }),
+  inputDefinition({
+    id: STATIC_INPUT_IDS.RESOLVED_REGISTRY_AREA,
+    role: 'source-field',
+    label: 'floor_area',
+    sourceId: 'ryhtiBuildingData',
+    providerIds: ['ryhti'],
+    sourceProperty: 'floor_area',
+    runtimeValueType: 'number',
+    unit: 'm²',
+  }),
   certificateConsumptionSourceInput({
     id: STATIC_INPUT_IDS.CERTIFICATE_CONSUMPTION_BASIS,
     label: 'certificate_consumption_basis',
@@ -1250,6 +1259,16 @@ const staticInputDefinitions: readonly EnergymapBuildingInfoProvenanceInputDefin
           STATIC_INPUT_IDS.COMPLETE_ONLY_AGGREGATION,
           'complete_only_aggregation',
           'completeOnlyAggregation',
+        ],
+        [
+          STATIC_INPUT_IDS.RESOLVED_CARRIER_TOTAL,
+          'resolved_carrier_total',
+          'resolvedCarrierTotal',
+        ],
+        [
+          STATIC_INPUT_IDS.RESOLVED_ANNUAL_DIVIDED_BY_HEATED_AREA,
+          'resolved_annual_divided_by_heated_area',
+          'resolvedAnnualDividedByHeatedArea',
         ],
       ] as const
     ).map(([id, label, calculationId]) =>
@@ -2465,10 +2484,6 @@ const certificateComponentDefinitions = ({
 })
 
 const certificateCatalogEntries = {
-  [IDS.CERTIFICATE_CONSUMPTION_SECTION_TITLE]: certificateDefinition({
-    id: IDS.CERTIFICATE_CONSUMPTION_SECTION_TITLE,
-    field: 'certificate_consumption_section_title',
-  }),
   [IDS.CERTIFICATE_CONSUMPTION_TOTAL_LABEL]: certificateDefinition({
     id: IDS.CERTIFICATE_CONSUMPTION_TOTAL_LABEL,
     field: 'certificate_consumption_total_label',
@@ -2535,67 +2550,6 @@ const certificateCatalogEntries = {
     optionalNameInputId: I.CERTIFICATE_CONSUMPTION_OTHER_2_NAME,
     field: 'certificate_consumption_other_2',
   }),
-  [IDS.CERTIFICATE_CONSUMPTION_SOURCE_CONTEXT]: certificateDefinition({
-    id: IDS.CERTIFICATE_CONSUMPTION_SOURCE_CONTEXT,
-    field: 'certificate_consumption_source_context',
-  }),
-  [IDS.CERTIFICATE_CONSUMPTION_BASIS_CONTEXT]: certificateDefinition({
-    id: IDS.CERTIFICATE_CONSUMPTION_BASIS_CONTEXT,
-    field: 'certificate_consumption_basis_context',
-  }),
-  [IDS.CERTIFICATE_CONSUMPTION_ID_CONTEXT]: certificateDefinition({
-    id: IDS.CERTIFICATE_CONSUMPTION_ID_CONTEXT,
-    field: 'certificate_consumption_id_context',
-  }),
-  [IDS.CERTIFICATE_CONSUMPTION_VERSION_CONTEXT]: certificateDefinition({
-    id: IDS.CERTIFICATE_CONSUMPTION_VERSION_CONTEXT,
-    field: 'certificate_consumption_version_context',
-  }),
-  [IDS.CERTIFICATE_CONSUMPTION_SIGNED_AT_CONTEXT]: certificateDefinition({
-    id: IDS.CERTIFICATE_CONSUMPTION_SIGNED_AT_CONTEXT,
-    field: 'certificate_consumption_signed_at_context',
-    requiredInputIds: [I.CERTIFICATE_CONSUMPTION_SIGNED_AT],
-  }),
-  [IDS.CERTIFICATE_CONSUMPTION_VALID_UNTIL_CONTEXT]: certificateDefinition({
-    id: IDS.CERTIFICATE_CONSUMPTION_VALID_UNTIL_CONTEXT,
-    field: 'certificate_consumption_valid_until_context',
-    requiredInputIds: [I.CERTIFICATE_CONSUMPTION_VALID_UNTIL],
-  }),
-  [IDS.CERTIFICATE_CONSUMPTION_UNIT_CONTEXT]: certificateDefinition({
-    id: IDS.CERTIFICATE_CONSUMPTION_UNIT_CONTEXT,
-    field: 'certificate_consumption_unit_context',
-  }),
-  [IDS.CERTIFICATE_CONSUMPTION_COMPLETENESS_CONTEXT]: certificateDefinition({
-    id: IDS.CERTIFICATE_CONSUMPTION_COMPLETENESS_CONTEXT,
-    field: 'certificate_consumption_completeness_context',
-  }),
-  [IDS.CERTIFICATE_CONSUMPTION_HEATED_AREA_CONTEXT]: certificateDefinition({
-    id: IDS.CERTIFICATE_CONSUMPTION_HEATED_AREA_CONTEXT,
-    field: 'certificate_consumption_heated_area_context',
-    requiredInputIds: [I.CERTIFICATE_CONSUMPTION_HEATED_AREA],
-  }),
-  [IDS.CERTIFICATE_CONSUMPTION_STANDARDIZED_NOTE]: certificateDefinition({
-    id: IDS.CERTIFICATE_CONSUMPTION_STANDARDIZED_NOTE,
-    field: 'certificate_consumption_standardized_note',
-  }),
-  [IDS.CERTIFICATE_CONSUMPTION_HISTORICAL_NOTE]: certificateDefinition({
-    id: IDS.CERTIFICATE_CONSUMPTION_HISTORICAL_NOTE,
-    field: 'certificate_consumption_historical_note',
-  }),
-  [IDS.CERTIFICATE_CONSUMPTION_PARTIAL_NOTE]: certificateDefinition({
-    id: IDS.CERTIFICATE_CONSUMPTION_PARTIAL_NOTE,
-    field: 'certificate_consumption_partial_note',
-    requiredCompleteness: 'partial',
-  }),
-  [IDS.CERTIFICATE_CONSUMPTION_INTENSITY_NOTE]: certificateDefinition({
-    id: IDS.CERTIFICATE_CONSUMPTION_INTENSITY_NOTE,
-    field: 'certificate_consumption_intensity_note',
-    kind: 'derived',
-    requiredInputIds: [
-      I.CERTIFICATE_CONSUMPTION_HEATED_AREA,
-      I.CERTIFICATE_ANNUAL_DIVIDED_BY_HEATED_AREA,
-    ],
-  }),
 } as Readonly<
   Record<
     (typeof ENERGYMAP_CERTIFICATE_CONSUMPTION_PROVENANCE_IDS)[keyof typeof ENERGYMAP_CERTIFICATE_CONSUMPTION_PROVENANCE_IDS],
@@ -2603,8 +2557,63 @@ const certificateCatalogEntries = {
   >
 >
 
+// A complete certificate carrier partition with its district-heat operand
+// replaced by the compatible reference estimate. No certificate heat/total input
+// is allowed: neither discarded amount contributes to the effective total.
+const mixedEnergyDefinition = (intensity: boolean) =>
+  defineCatalogEntry({
+    id: intensity ? IDS.MIXED_ENERGY_INTENSITY : IDS.MIXED_ENERGY_ANNUAL,
+    fieldKey: provenanceKey(
+      `fields.resolved_energy_${intensity ? 'intensity' : 'annual'}`
+    ),
+    categoryId: 'compositeCalculation',
+    sourceIds: [
+      'energyCertificateRegister',
+      'energyMapConsumptionModel',
+      'ryhtiBuildingData',
+    ],
+    providerIds: ['energyMap'],
+    calculationIds: [
+      'intensityTimesArea',
+      'resolvedCarrierTotal',
+      ...(intensity ? ['resolvedAnnualDividedByHeatedArea' as const] : []),
+    ],
+    certificateEvidence: true,
+    requiredCertificateCompleteness: 'complete',
+    evidencePolicy: {
+      requiredInputIds: [
+        ...CERTIFICATE_REQUIRED_CONTEXT_INPUT_IDS,
+        I.CERTIFICATE_CONSUMPTION_ELECTRICITY,
+        I.CERTIFICATE_CONSUMPTION_DISTRICT_COOLING,
+        I.CERTIFICATE_CONSUMPTION_FOSSIL_FUEL,
+        I.CERTIFICATE_CONSUMPTION_RENEWABLE_FUEL,
+        I.RESOLVED_DISTRICT_HEAT_INTENSITY,
+        I.RESOLVED_REGISTRY_AREA,
+        I.INTENSITY_TIMES_AREA,
+        I.RESOLVED_CARRIER_TOTAL,
+        ...(intensity
+          ? [
+              I.CERTIFICATE_CONSUMPTION_HEATED_AREA,
+              I.RESOLVED_ANNUAL_DIVIDED_BY_HEATED_AREA,
+            ]
+          : []),
+      ],
+      optionalInputIds: [
+        ...CERTIFICATE_OPTIONAL_DATE_INPUT_IDS,
+        I.CERTIFICATE_CONSUMPTION_OTHER_0,
+        I.CERTIFICATE_CONSUMPTION_OTHER_1,
+        I.CERTIFICATE_CONSUMPTION_OTHER_2,
+        I.CERTIFICATE_CONSUMPTION_OTHER_0_NAME,
+        I.CERTIFICATE_CONSUMPTION_OTHER_1_NAME,
+        I.CERTIFICATE_CONSUMPTION_OTHER_2_NAME,
+      ],
+    },
+  })
+
 export const ENERGYMAP_BUILDING_INFO_PROVENANCE_CATALOG = {
   ...certificateCatalogEntries,
+  [IDS.MIXED_ENERGY_ANNUAL]: mixedEnergyDefinition(false),
+  [IDS.MIXED_ENERGY_INTENSITY]: mixedEnergyDefinition(true),
   [IDS.CURRENT_TOTAL_ANNUAL]: modeledDefinition({
     id: IDS.CURRENT_TOTAL_ANNUAL,
     field: 'current_total_annual',
@@ -3401,6 +3410,48 @@ export const resolveEnergymapBuildingInfoProvenance = ({
       return {
         status: 'unsupported',
         reason: 'unsupported-source-language',
+        id: provenance.id,
+      }
+    }
+  }
+
+  if (
+    definition.id === IDS.MIXED_ENERGY_ANNUAL ||
+    definition.id === IDS.MIXED_ENERGY_INTENSITY
+  ) {
+    const amount = (id: EnergymapBuildingInfoProvenanceInputId) =>
+      inputs.find((input) => input.id === id)?.value
+    const heat = amount(I.RESOLVED_DISTRICT_HEAT_INTENSITY)
+    const area = amount(I.RESOLVED_REGISTRY_AREA)
+    const invalidSlot = Object.entries(
+      ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.otherNames
+    ).some(
+      ([slot, nameId]) =>
+        validatedInputIds.includes(nameId) &&
+        !validatedInputIds.includes(
+          ENERGYMAP_BUILDING_INFO_CERTIFICATE_INPUT_IDS.components[
+            slot as 'other0' | 'other1' | 'other2'
+          ]
+        )
+    )
+    if (
+      typeof heat !== 'number' ||
+      heat < 0 ||
+      typeof area !== 'number' ||
+      area <= 0 ||
+      !Number.isFinite(heat * area) ||
+      (heat > 0 && heat * area === 0) ||
+      invalidSlot ||
+      inputs.some(
+        (input) =>
+          input.runtimeValueType === 'number' &&
+          typeof input.value === 'number' &&
+          input.value < 0
+      )
+    ) {
+      return {
+        status: 'unsupported',
+        reason: 'invalid-runtime-value',
         id: provenance.id,
       }
     }

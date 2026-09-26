@@ -7,7 +7,10 @@ import { Cross } from '#/components/icons'
 import type {
   EnergymapBuildingInfoMissingData,
   EnergymapBuildingInfoText,
+  EnergymapBuildingInfoSelectedEnergyConsumption,
 } from 'applets/energy/common/buildingInfo'
+
+import type { EnergymapBuildingInfoProvenanceSummaryResult } from 'applets/energy/common/buildingInfoProvenanceSummary'
 
 const VIEW_TRANSLATION_PREFIX = 'sidebar.building_info.provenance.view'
 
@@ -42,6 +45,8 @@ const MissingInfoText = ({
 
 export type BuildingInfoProvenanceViewProps = {
   missingData: EnergymapBuildingInfoMissingData | null
+  energyProvenance?: EnergymapBuildingInfoProvenanceSummaryResult | null
+  selectedEnergy?: EnergymapBuildingInfoSelectedEnergyConsumption
   locale: string
   regionId: string
   headingId: string
@@ -52,6 +57,8 @@ export type BuildingInfoProvenanceViewProps = {
 
 export const BuildingInfoProvenanceView = ({
   missingData,
+  energyProvenance,
+  selectedEnergy,
   locale,
   regionId,
   headingId,
@@ -124,6 +131,166 @@ export const BuildingInfoProvenanceView = ({
           language={locale}
         />
       </Button>
+    </Box>
+    {selectedEnergy?.metric != null &&
+      energyProvenance?.status === 'resolved' && (
+        <Box
+          data-testid="building-info-energy-evidence"
+          sx={{
+            mb: '2rem',
+            maxWidth: '42rem',
+            fontSize: '0.875rem',
+            lineHeight: 1.5,
+            overflowWrap: 'anywhere',
+          }}
+        >
+          <Box component="h3" sx={{ fontSize: '1rem', mt: 0 }}>
+            <MissingInfoText
+              text={selectedEnergy.metric.label}
+              locale={locale}
+            />
+          </Box>
+          {selectedEnergy.values.map((value) => (
+            <Box component="p" key={value.id} sx={{ my: '0.25rem' }}>
+              <MissingInfoText text={value.label} locale={locale} />
+              {' — '}
+              <MissingInfoText text={value.text} locale={locale} />{' '}
+              {value.unitKey && (
+                <TText
+                  keyName={value.unitKey}
+                  ns="energiakartta"
+                  language={locale}
+                />
+              )}
+            </Box>
+          ))}
+          <Box component="ul" sx={{ pl: '1.25rem' }}>
+            {energyProvenance.summary.sources.map((source) => (
+              <li key={source.id}>
+                <TText
+                  keyName={source.key}
+                  ns="energiakartta"
+                  language={locale}
+                />
+              </li>
+            ))}
+            {energyProvenance.summary.calculations.map((calculation) => (
+              <li key={calculation.id}>
+                <TText
+                  keyName={calculation.key}
+                  ns="energiakartta"
+                  language={locale}
+                />
+              </li>
+            ))}
+          </Box>
+          <Box
+            component="dl"
+            sx={{
+              m: 0,
+              '& dt': { mt: '0.75rem', fontWeight: 600 },
+              '& dd': { m: 0 },
+            }}
+          >
+            {energyProvenance.summary.inputs
+              .filter(
+                (input) =>
+                  input.selectedEvidenceItemIds.length > 0 &&
+                  input.calculationId == null &&
+                  (input.metadataIds?.length ?? 0) === 0
+              )
+              .map((input) => (
+                <React.Fragment key={input.id}>
+                  <dt>
+                    <TText
+                      keyName={input.labelKey}
+                      ns="energiakartta"
+                      language={locale}
+                    />
+                  </dt>
+                  {input.value != null && (
+                    <dd>
+                      {typeof input.value === 'number'
+                        ? new Intl.NumberFormat(locale, {
+                            maximumFractionDigits: 2,
+                          }).format(input.value)
+                        : input.value}
+                      {input.value != null && input.unit
+                        ? ` ${input.unit}`
+                        : null}
+                    </dd>
+                  )}
+                </React.Fragment>
+              ))}
+            {energyProvenance.summary.metadata.map((metadata) => (
+              <React.Fragment key={metadata.id}>
+                <dt>
+                  <TText
+                    keyName={metadata.key}
+                    ns="energiakartta"
+                    language={locale}
+                  />
+                </dt>
+                {metadata.value != null && (
+                  <dd>
+                    {metadata.id === 'certificateBasis' ? (
+                      <TText
+                        keyName="sidebar.building_info.panels.energy.certificate.context.standardized_calculation"
+                        ns="energiakartta"
+                        language={locale}
+                      />
+                    ) : metadata.id === 'certificateCompleteness' ? (
+                      <TText
+                        keyName={`sidebar.building_info.panels.energy.certificate.context.completeness_${metadata.value}`}
+                        ns="energiakartta"
+                        language={locale}
+                      />
+                    ) : (
+                      metadata.value
+                    )}
+                    {metadata.id === 'certificateHeatedArea' && (
+                      <>
+                        {' '}
+                        <TText
+                          keyName="sidebar.building_info.units.square_meters"
+                          ns="energiakartta"
+                          language={locale}
+                        />
+                      </>
+                    )}
+                  </dd>
+                )}
+              </React.Fragment>
+            ))}
+          </Box>
+          {energyProvenance.summary.sources.some(
+            ({ id }) => id === 'energyCertificateRegister'
+          ) && (
+            <Box component="p">
+              <TText
+                keyName="sidebar.building_info.panels.energy.certificate.note.historical_not_measured"
+                ns="energiakartta"
+                language={locale}
+              />
+            </Box>
+          )}
+        </Box>
+      )}
+    {energyProvenance?.status === 'contractFailure' && (
+      <Box component="p" role="status">
+        <TText
+          keyName="sidebar.building_info.missing_data.unavailable"
+          ns="energiakartta"
+          language={locale}
+        />
+      </Box>
+    )}
+    <Box component="h3" sx={{ fontSize: '1rem' }}>
+      <TText
+        keyName={`${VIEW_TRANSLATION_PREFIX}.missing`}
+        ns="energiakartta"
+        language={locale}
+      />
     </Box>
     {missingData != null && missingData.items.length > 0 ? (
       <Box

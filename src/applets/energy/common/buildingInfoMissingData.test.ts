@@ -6,6 +6,7 @@ import { parseEnergyCertificateConsumptionOutcome } from './energyCertificateCon
 import {
   createEnergymapBuildingInfoPanels,
   createEnergymapBuildingInfoPresentation,
+  getSelectedEnergyConsumption,
 } from './buildingInfo'
 import type { EnergymapSelectedBuilding } from './types'
 import type { EnergymapBuildingInfoText } from './buildingInfo'
@@ -81,14 +82,14 @@ const certificate = (overrides: Record<string, unknown> = {}) =>
     ...overrides,
   })
 
-it('records an accepted certificate envelope and keeps future ventilation reasons source-specific', () => {
+it('records effective certificate quantities and keeps future ventilation reasons source-specific', () => {
   const model = present({
     ...complete,
     distr_default_total: null,
     energy_certificate_consumption: certificate(),
   })
   expect(model.missingData?.inventory).toContainEqual({
-    id: 'energyConsumption.certificateConsumption',
+    id: 'energyConsumption.purchasedElectricity.annualTotal',
     status: 'available',
   })
   expect(
@@ -129,11 +130,6 @@ it('preserves null/empty semantics and records available and excluded inventory 
         id: 'waterHeating',
         status: 'excluded',
         basis: 'no-approved-separation-method',
-      },
-      {
-        id: 'energyConsumption.certificateConsumption',
-        status: 'excluded',
-        basis: 'complete-reference-energy',
       },
     ])
   )
@@ -494,16 +490,17 @@ it.each([
       }
     }
     if (expected !== 'unsupported-aahp') {
-      for (const metric of ['total', 'heating', 'electricity']) {
-        for (const quantity of ['annualTotal', 'perSquareMeter']) {
-          expect(
-            codes(gap(properties, `energyConsumption.${metric}.${quantity}`))
-          ).toContain(expected)
-        }
-      }
+      expect(
+        model.missingData!.items.some(
+          ({ id }) => id === 'energyConsumption.electricity.annualTotal'
+        )
+      ).toBe(false)
+      expect(
+        codes(gap(properties, 'energyConsumption.total.annualTotal'))
+      ).toContain('certificate-total')
       // Independent certificate quantities survive residential-reference exclusions.
       expect(model.missingData?.inventory).toContainEqual({
-        id: 'energyConsumption.certificateElectricity.annualTotal',
+        id: 'energyConsumption.purchasedElectricity.annualTotal',
         status: 'available',
       })
     }
@@ -674,20 +671,17 @@ it('enumerates all standard certificate gaps and both intensity operands without
     energy_certificate_consumption: certificate(),
   }
   const gaps = items(properties).filter((item) =>
-    item.id.includes('certificate')
+    /^energyConsumption\.(purchasedElectricity|districtHeat|districtCooling|fossilFuel|renewableFuel|total)\./.test(
+      item.id
+    )
   )
-  expect(gaps).toHaveLength(11) // four absent annuals, five intensities, complete annual + intensity
+  expect(gaps).toHaveLength(9) // four absent carriers and five intensities; retained reference total is available
   expect(gaps.some((item) => item.id.includes('Other'))).toBe(false)
   expect(
-    gap(properties, 'energyConsumption.certificateElectricity.annualTotal')
+    gap(properties, 'energyConsumption.purchasedElectricity.annualTotal')
   ).toBeUndefined()
   expect(
-    codes(
-      gap(
-        properties,
-        'energyConsumption.certificateDistrictHeat.perSquareMeter'
-      )
-    )
+    codes(gap(properties, 'energyConsumption.districtHeat.perSquareMeter'))
   ).toEqual(
     expect.arrayContaining(['certificate-carrier', 'certificate-area-absent'])
   )
@@ -697,7 +691,7 @@ it('enumerates all standard certificate gaps and both intensity operands without
         ...properties,
         energy_certificate_consumption: certificate({ heated_net_area_m2: 50 }),
       },
-      'energyConsumption.certificateElectricity.perSquareMeter'
+      'energyConsumption.purchasedElectricity.perSquareMeter'
     )
   ).toBeUndefined()
   expect(
@@ -709,7 +703,7 @@ it('enumerates all standard certificate gaps and both intensity operands without
             heated_net_area_m2: 0,
           }),
         },
-        'energyConsumption.certificateElectricity.perSquareMeter'
+        'energyConsumption.purchasedElectricity.perSquareMeter'
       )
     )
   ).toContain('certificate-area-invalid')
@@ -717,6 +711,132 @@ it('enumerates all standard certificate gaps and both intensity operands without
     items({ ...complete, energy_certificate_consumption: 'malformed' })
   ).toEqual([])
 })
+
+it.each([
+  ['oil', '02', '01'],
+  ['wood', '07', '01'],
+  ['elecb', '04', '01'],
+  ['delec', '04', '03'],
+])(
+  'keeps %s heating separate from certificate district-heat conversion diagnostics',
+  (prefix, heatingEnergySource, heatingMethod) => {
+    const model = present({
+      ...complete,
+      heating_energy_source: heatingEnergySource,
+      heating_method: heatingMethod,
+      [`${prefix}_default_heat`]: 75,
+      energy_certificate_consumption: certificate({
+        components: [
+          { carrier: 'electricity', annual_kwh: 2000 },
+          { carrier: 'district_heat', annual_kwh: 7000 },
+        ],
+      }),
+    })
+    const controls = model.panels!
+      .find((panel) => panel.id === 'energyConsumption')!
+      .sections.find((section) => section.id === 'estimatedConsumption')!
+      .consumptionControls!
+    expect(
+      getSelectedEnergyConsumption({
+        controls,
+        selectedSubmetricIds: ['heating'],
+      }).values.map(({ id, amount }) => ({ id, amount }))
+    ).toEqual([
+      { id: 'annualTotal', amount: 7500 },
+      { id: 'perSquareMeter', amount: 75 },
+    ])
+    expect(
+      getSelectedEnergyConsumption({
+        controls,
+        selectedSubmetricIds: ['districtHeat'],
+      }).values.map(({ id, amount }) => ({ id, amount }))
+    ).toEqual([{ id: 'annualTotal', amount: 7000 }])
+
+    const { items, inventory } = model.missingData!
+    const missingIntensity = items.find(
+      (item) => item.id === 'energyConsumption.districtHeat.perSquareMeter'
+    )
+    expect(missingIntensity?.evidence).toMatchObject({
+      source: 'energyCertificateRegister',
+      code: 'certificate-intensity',
+      dependencies: [
+        {
+          source: 'energyCertificateRegister',
+          field: 'certificateArea',
+          code: 'certificate-area-absent',
+        },
+      ],
+    })
+    expect(
+      inventory.filter((item) =>
+        /^energyConsumption\.(heating|districtHeat)\./.test(item.id)
+      )
+    ).toEqual([
+      { id: 'energyConsumption.heating.annualTotal', status: 'available' },
+      { id: 'energyConsumption.heating.perSquareMeter', status: 'available' },
+      { id: 'energyConsumption.districtHeat.annualTotal', status: 'available' },
+      { id: 'energyConsumption.districtHeat.perSquareMeter', status: 'missing' },
+    ])
+  }
+)
+
+it.each([75, null])(
+  'keeps compatible district-heat diagnostics aligned with effective controls (reference intensity %s)',
+  (referenceHeat) => {
+    const model = present({
+      ...complete,
+      distr_default_heat: referenceHeat,
+      distr_default_elec: null,
+      distr_default_total: null,
+      energy_certificate_consumption: certificate({
+        components: [
+          { carrier: 'electricity', annual_kwh: 2000 },
+          { carrier: 'district_heat', annual_kwh: 7000 },
+        ],
+      }),
+    })
+    const controls = model.panels!
+      .find((panel) => panel.id === 'energyConsumption')!
+      .sections.find((section) => section.id === 'estimatedConsumption')!
+      .consumptionControls!
+    const heatId = referenceHeat == null ? 'districtHeat' : 'heating'
+    expect(
+      controls.energySubmetrics
+        ?.filter(({ id }) => ['heating', 'districtHeat'].includes(id))
+        .map(({ id }) => id)
+    ).toEqual([heatId])
+    expect(
+      getSelectedEnergyConsumption({
+        controls,
+        selectedSubmetricIds: [heatId],
+      }).values.map(({ id, amount }) => ({ id, amount }))
+    ).toEqual(
+      referenceHeat == null
+        ? [{ id: 'annualTotal', amount: 7000 }]
+        : [
+            { id: 'annualTotal', amount: 7500 },
+            { id: 'perSquareMeter', amount: 75 },
+          ]
+    )
+    expect(
+      getSelectedEnergyConsumption({
+        controls,
+        selectedSubmetricIds: ['purchasedElectricity'],
+      }).values.map(({ id, amount }) => ({ id, amount }))
+    ).toEqual([{ id: 'annualTotal', amount: 2000 }])
+    expect(
+      model.missingData!.inventory.filter((item) =>
+        /^energyConsumption\.(heating|districtHeat)\./.test(item.id)
+      )
+    ).toEqual([
+      { id: `energyConsumption.${heatId}.annualTotal`, status: 'available' },
+      {
+        id: `energyConsumption.${heatId}.perSquareMeter`,
+        status: referenceHeat == null ? 'missing' : 'available',
+      },
+    ])
+  }
+)
 
 it.each([
   'electricity',
@@ -780,7 +900,7 @@ it('retains used optional slots and keeps unnamed rejected slots at total-level 
   const result = items(properties)
   expect(result).toContainEqual(
     expect.objectContaining({
-      id: 'energyConsumption.certificateOther1.perSquareMeter',
+      id: 'energyConsumption.other1.perSquareMeter',
       label: expect.objectContaining({
         parts: expect.arrayContaining([
           { type: 'plain', text: '<b>Source name</b>' },
@@ -794,7 +914,7 @@ it('retains used optional slots and keeps unnamed rejected slots at total-level 
     )
   ).toBe(false)
   expect(
-    gap(properties, 'energyConsumption.certificateTotal.annualTotal')?.evidence
+    gap(properties, 'energyConsumption.total.annualTotal')?.evidence
       .dependencies
   ).toBeUndefined()
 })
@@ -836,19 +956,25 @@ it('keeps the reported office certificate and class independently of unsupported
     )
   ).toBe(false)
   const metrics = present(properties).panels!.flatMap((panel) =>
-    panel.sections.flatMap((section) => section.metrics ?? [])
+    panel.sections.flatMap(
+      (section) =>
+        section.consumptionControls?.energySubmetrics?.map(
+          ({ metric }) => metric
+        ) ??
+        section.metrics ??
+        []
+    )
   )
   expect(
-    metrics.find((metric) => metric.id === 'certificateTotal')?.values[0].text
+    metrics.find((metric) => metric.id === 'total')?.values[0].text
   ).toEqual({ type: 'plain', text: '4,388,248' })
   expect(
-    metrics.find((metric) => metric.id === 'certificateFossilFuel')?.values[0]
-      .text
+    metrics.find((metric) => metric.id === 'fossilFuel')?.values[0].text
   ).toEqual({ type: 'plain', text: '0' })
   expect(gap(properties, 'buildingDetails.energyClass')).toBeUndefined()
   expect(
-    codes(gap(properties, 'energyConsumption.heating.annualTotal'))
-  ).toEqual(expect.arrayContaining(['unsupported-building', 'invalid']))
+    gap(properties, 'energyConsumption.heating.annualTotal')
+  ).toBeUndefined()
 })
 
 it('uses effective semantic availability independent of section IDs for F099', () => {
@@ -866,14 +992,14 @@ it('uses effective semantic availability independent of section IDs for F099', (
     prefix: 'distr',
     certificateOutcome: parseEnergyCertificateConsumptionOutcome(properties),
     effectiveAvailability: {
-      'energyConsumption.certificateConsumption': 'excluded',
+      'energyConsumption.total.annualTotal': 'excluded',
       'energyConsumption.heating.annualTotal': 'available',
     },
   })
   expect(
     result.items.some(
       (item) =>
-        item.id === 'energyConsumption.certificateConsumption' ||
+        item.id === 'energyConsumption.total.annualTotal' ||
         item.id === 'energyConsumption.heating.annualTotal'
     )
   ).toBe(false)
