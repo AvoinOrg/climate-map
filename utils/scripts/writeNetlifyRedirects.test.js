@@ -456,3 +456,110 @@ describe('writeNetlifyRedirects', () => {
     expect(redirects).not.toContain('.next')
   })
 })
+
+describe('configured Luonnonmetsakartat Netlify host', () => {
+  const host = 'luonnonmetsakarta.netlify.app'
+  const baseUrl = 'https://target.example.test'
+  const legacyTails = [
+    'admin/tuo',
+    'admin/taso/layer-1',
+    'admin/taso/layer-1/asetukset',
+    'admin/taso/layer-1/kuvat',
+  ]
+
+  it.each(['main,luonnonmetsakartat', 'luonnonmetsakartat'])(
+    'uses the unmodified manifest and ordered adapter rules for %s',
+    (compiledApplets) => {
+      expect(manifestAppletConf.luonnonmetsakartat.domains).toContain(host)
+      const standalone = compiledApplets === 'luonnonmetsakartat'
+      const redirects = generateNetlifyRedirects({
+        appletConf: manifestAppletConf,
+        baseUrl,
+        compiledApplets,
+        env: {},
+      })
+      const rules = parseGeneratedRules(redirects)
+      for (const protocol of ['https', 'http']) {
+        const domain = `${protocol}://${host}`
+        const cases = [
+          ['/api/layer', `${baseUrl}/api/layer`, '200!'],
+          ['/fi/api/layer', `${baseUrl}/api/luonnonmetsakartat/layer`, '200!'],
+          ...['assets', '_build', '_serverFn', 'files', 'lib'].map((prefix) => [
+            `/${prefix}/asset`,
+            `${baseUrl}/${prefix}/asset`,
+            '200!',
+          ]),
+          ...[
+            'admin/import',
+            'admin/layer/layer-1/settings',
+            ...legacyTails,
+          ].map((tail) => [
+            `/fi/luonnonmetsakartat/${tail}`,
+            standalone
+              ? `/fi/${tail}`
+              : `${baseUrl}/fi/luonnonmetsakartat/${tail}`,
+            standalone ? '301!' : '200!',
+          ]),
+        ]
+        if (standalone) {
+          cases.push(['/', '/fi', '301!'], ['/en/admin', '/fi/admin', '301!'])
+          for (const tail of ['admin', ...legacyTails]) {
+            cases.push([`/fi/${tail}`, `${baseUrl}/fi/${tail}`, '200!'])
+          }
+        } else {
+          for (const path of ['/', '/fi', '/fi/admin', '/en/admin']) {
+            expect(firstMatchingRule(redirects, `${domain}${path}`)).toBeNull()
+          }
+        }
+        for (const [path, resolvedTo, status] of cases) {
+          expect(
+            firstMatchingRule(redirects, `${domain}${path}`)
+          ).toMatchObject({ resolvedTo, status })
+        }
+        const ruleIndex = (from) =>
+          rules.findIndex((rule) => rule.from === `${domain}${from}`)
+        const pageIndex = ruleIndex('/fi/luonnonmetsakartat/*')
+        expect(pageIndex).toBeGreaterThan(-1)
+        for (const path of [
+          '/api/*',
+          '/fi/api/*',
+          '/assets/*',
+          '/_build/*',
+          '/_serverFn/*',
+          '/files/*',
+          '/lib/*',
+        ]) {
+          expect(ruleIndex(path)).toBeGreaterThan(-1)
+          expect(ruleIndex(path)).toBeLessThan(pageIndex)
+        }
+        if (standalone) {
+          expect(pageIndex).toBeLessThan(ruleIndex('/fi/*'))
+          expect(ruleIndex('/fi/*')).toBeLessThan(ruleIndex('/en/*'))
+        }
+      }
+      expect(
+        rules.filter(({ from, to }) =>
+          [from, to].some((value) =>
+            /\/(tuo|taso|asetukset|kuvat)(\/|$)/.test(value)
+          )
+        )
+      ).toEqual([])
+      expect(rules.at(-1)).toEqual({
+        from: '/*',
+        to: '/.netlify/functions/server',
+        status: '200',
+      })
+    }
+  )
+
+  it('emits no configured-host rules when the applet is unselected', () => {
+    const redirects = generateNetlifyRedirects({
+      appletConf: manifestAppletConf,
+      baseUrl,
+      compiledApplets: 'main,carbon',
+      env: {},
+    })
+    expect(redirects).not.toContain(host)
+    expect(redirects).not.toContain('luonnonmetsakartat.avoin.org')
+  })
+})

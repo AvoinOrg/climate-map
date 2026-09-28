@@ -143,7 +143,8 @@ export const handleApiProxyRequest = async ({
       headers: getForwardedResponseHeaders(upstreamResponse),
     })
   } catch (error) {
-    logger.error(`${baseUrlEnvName} proxy request failed`, error)
+    // Exceptions can contain credentials, request payloads and upstream URLs.
+    logger.error(`${baseUrlEnvName} proxy request failed`)
 
     return error instanceof TypeError
       ? createNoResponseError()

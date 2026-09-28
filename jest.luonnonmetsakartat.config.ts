@@ -9,6 +9,7 @@ const config: Config = {
     '<rootDir>/src/applets/luonnonmetsakartat/**/*.{test,spec}.{js,jsx,ts,tsx}',
     ...[
       'src/common/config/publicGeoServer.test.ts',
+      'src/common/server/apiProxy.test.ts',
       'src/components/Map/mapAuthTransformRequest.test.ts',
       'src/common/auth/client.test.tsx',
       'src/common/auth/normalize.test.ts',

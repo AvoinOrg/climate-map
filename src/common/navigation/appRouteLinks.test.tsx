@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+
 import {
   APP_ROUTE_KEYS,
   type AppRouteMetadata,
@@ -474,5 +477,132 @@ describe('appRouteLinks', () => {
         routeKey: APP_ROUTE_KEYS.CARBON_HOME,
       })
     ).toThrow(/Duplicate AppRouteKey "carbon.home"/)
+  })
+})
+
+// These fixtures are checked against the actual route declarations below. The
+// pruning suite separately promotes those same source files without losing metadata.
+const luonnonmetsakartatPages = [
+  {
+    file: 'route.tsx',
+    key: 'LUONNONMETSAKARTAT_HOME',
+    tail: '',
+    mainHref: '/fi/luonnonmetsakartat',
+    standaloneHref: '/fi',
+  },
+  {
+    file: 'admin/route.tsx',
+    key: 'LUONNONMETSAKARTAT_ADMIN',
+    tail: '/admin',
+    mainHref: '/fi/luonnonmetsakartat/admin',
+    standaloneHref: '/fi/admin',
+  },
+  {
+    file: 'admin/import.tsx',
+    key: 'LUONNONMETSAKARTAT_ADMIN_IMPORT',
+    tail: '/admin/import',
+    mainHref: '/fi/luonnonmetsakartat/admin/import',
+    standaloneHref: '/fi/admin/import',
+  },
+  {
+    file: 'admin/layer/$folayerIdSlug/route.tsx',
+    key: 'LUONNONMETSAKARTAT_ADMIN_FOLAYER',
+    tail: '/admin/layer/$folayerIdSlug',
+    mainHref: '/fi/luonnonmetsakartat/admin/layer/layer-1',
+    standaloneHref: '/fi/admin/layer/layer-1',
+  },
+  {
+    file: 'admin/layer/$folayerIdSlug/settings.tsx',
+    key: 'LUONNONMETSAKARTAT_ADMIN_FOLAYER_SETTINGS',
+    tail: '/admin/layer/$folayerIdSlug/settings',
+    mainHref: '/fi/luonnonmetsakartat/admin/layer/layer-1/settings',
+    standaloneHref: '/fi/admin/layer/layer-1/settings',
+  },
+  {
+    file: 'admin/layer/$folayerIdSlug/pictures.tsx',
+    key: 'LUONNONMETSAKARTAT_ADMIN_FOLAYER_PICTURES',
+    tail: '/admin/layer/$folayerIdSlug/pictures',
+    mainHref: '/fi/luonnonmetsakartat/admin/layer/layer-1/pictures',
+    standaloneHref: '/fi/admin/layer/layer-1/pictures',
+  },
+] as const
+
+describe('Luonnonmetsakartat route-key hrefs', () => {
+  it.each(luonnonmetsakartatPages)(
+    'binds $key fixtures to the actual $file declaration',
+    ({ file, key, tail }) => {
+      const source = readFileSync(
+        path.resolve(
+          __dirname,
+          '../../routes/$locale/_map/(applets)/luonnonmetsakartat',
+          file
+        ),
+        'utf8'
+      )
+      expect(source.match(/createFileRoute\(\s*'([^']+)'\s*\)/)?.[1]).toBe(
+        `/$locale/_map/(applets)/luonnonmetsakartat${tail}`
+      )
+      // Anchor to staticData (not a coincidental import or another route key).
+      expect(
+        source.match(
+          /staticData:\s*defineAppRouteStaticData\(\{\s*key:\s*APP_ROUTE_KEYS\.(\w+),/
+        )?.[1]
+      ).toBe(key)
+      expect(source).toContain("appletNamespace: 'luonnonmetsakartat'")
+      expect(source).toContain("variant: 'canonical'")
+    }
+  )
+
+  describe.each(['main', 'standalone'] as const)('%s', (mode) => {
+    const entries = collectAppRouteEntries(
+      Object.fromEntries(
+        luonnonmetsakartatPages.map(({ key, tail }) => [
+          key,
+          makeRoute({
+            id: key,
+            fullPath: `/$locale${mode === 'main' ? '/luonnonmetsakartat' : ''}${tail}`,
+            metadata: {
+              key: APP_ROUTE_KEYS[key],
+              appletNamespace: 'luonnonmetsakartat',
+              variant: 'canonical',
+            },
+          }),
+        ])
+      )
+    )
+
+    it.each(luonnonmetsakartatPages)(
+      'resolves $key and delegates params/search to TanStack',
+      ({ key, mainHref, standaloneHref }) => {
+        const router = makeRouter()
+        const routeParams = { locale: 'fi', folayerIdSlug: 'layer-1' }
+        const expectedHref = mode === 'main' ? mainHref : standaloneHref
+        expect(
+          resolveAppRouteHref({
+            router,
+            entries,
+            routeKey: APP_ROUTE_KEYS[key],
+            routeParams,
+          })
+        ).toBe(expectedHref)
+        const search = new URLSearchParams(
+          'tab=areas&tab=pictures&q=A%2BB%20C&empty='
+        )
+        resolveAppRouteHref({
+          router,
+          entries,
+          routeKey: APP_ROUTE_KEYS[key],
+          routeParams,
+          search,
+        })
+        expect(router.buildLocation).toHaveBeenLastCalledWith({
+          to: selectAppRouteEntry({ entries, routeKey: APP_ROUTE_KEYS[key] })
+            .to,
+          params: routeParams,
+          search: { tab: ['areas', 'pictures'], q: 'A+B C', empty: '' },
+        })
+        // This stub proves delegation; requestRouting tests prove redirect query bytes.
+      }
+    )
   })
 })

@@ -1,5 +1,13 @@
 import JSZip from 'jszip'
-import { beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals'
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from '@jest/globals'
 import { Blob as NodeBlob, File as NodeFile } from 'buffer'
 import { ReadableStream } from 'stream/web'
 import { TextDecoder, TextEncoder } from 'util'
@@ -12,6 +20,16 @@ import { processCalcQueryToReportData } from 'applets/carbon/common/utils'
 import { MOCK_SERVER_PLAN_ID } from 'applets/carbon/common/mockScenarios/ids'
 import { handleHiilikarttaDataProxyRequest } from './dataProxy'
 import { resetHiilikarttaMockApiForTests } from './mockDataProxy'
+
+// The mock dispatcher can return undefined for an unhandled path. All cases
+// here require a real HTTP response, including the live transport regressions.
+const requestProxyResponse = async (
+  options: Parameters<typeof handleHiilikarttaDataProxyRequest>[0]
+) => {
+  const response = await handleHiilikarttaDataProxyRequest(options)
+  if (!response) throw new Error('Expected a Carbon proxy response')
+  return response
+}
 
 const mockEnv = {
   HIILIKARTTA_MOCK_API_ENABLED: '1',
@@ -68,7 +86,9 @@ const createZippedPlanRequest = async ({
   const formData = new FormData()
   formData.append(
     'file',
-    new File([zipBuffer], 'file.zip', { type: 'application/zip' })
+    new File([new Uint8Array(zipBuffer)], 'file.zip', {
+      type: 'application/zip',
+    })
   )
 
   const request = new Request(url, {
@@ -106,6 +126,29 @@ const expectRawCalculationDataToProcess = (data: any) => {
 }
 
 describe('handleHiilikarttaDataProxyRequest', () => {
+  const originalGlobals = new Map(
+    [
+      'ReadableStream',
+      'TextDecoder',
+      'TextEncoder',
+      'MessageChannel',
+      'MessagePort',
+      'Blob',
+      'File',
+      'Headers',
+      'Request',
+      'Response',
+      'FormData',
+    ].map((name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)])
+  )
+
+  afterAll(() => {
+    for (const [name, descriptor] of originalGlobals) {
+      if (descriptor) Object.defineProperty(globalThis, name, descriptor)
+      else Reflect.deleteProperty(globalThis, name)
+    }
+  })
+
   beforeAll(() => {
     globalThis.ReadableStream =
       ReadableStream as unknown as typeof globalThis.ReadableStream
@@ -135,7 +178,7 @@ describe('handleHiilikarttaDataProxyRequest', () => {
   it('returns 500 without calling upstream when HIILIKARTTA_API_URL is missing', async () => {
     const fetchFn = jest.fn<typeof fetch>()
 
-    const response = await handleHiilikarttaDataProxyRequest({
+    const response = await requestProxyResponse({
       request: new Request('https://map.example.org/api/hiilikartta/plan'),
       deps: {
         env: {},
@@ -157,7 +200,7 @@ describe('handleHiilikarttaDataProxyRequest', () => {
         })
     )
 
-    const response = await handleHiilikarttaDataProxyRequest({
+    const response = await requestProxyResponse({
       request: new Request(
         'https://map.example.org/api/hiilikartta/calculation?id=calc-1&visible_id=local-1'
       ),
@@ -183,7 +226,7 @@ describe('handleHiilikarttaDataProxyRequest', () => {
         new Response(JSON.stringify({ status: 'queued' }), { status: 201 })
     )
 
-    const response = await handleHiilikarttaDataProxyRequest({
+    const response = await requestProxyResponse({
       request: new Request(
         'https://map.example.org/api/hiilikartta/plan?id=calc-1',
         {
@@ -223,7 +266,7 @@ describe('handleHiilikarttaDataProxyRequest', () => {
       throw new TypeError('fetch failed')
     })
 
-    const response = await handleHiilikarttaDataProxyRequest({
+    const response = await requestProxyResponse({
       request: new Request('https://map.example.org/api/hiilikartta/plan'),
       deps: {
         env: { HIILIKARTTA_API_URL: 'https://carbon.example.org/api' },
@@ -237,11 +280,54 @@ describe('handleHiilikarttaDataProxyRequest', () => {
     expect(logger.error).toHaveBeenCalled()
   })
 
+  it.each([TypeError, Error])(
+    'does not expose exception or request secrets for %p',
+    async (ErrorType) => {
+      const secret = 'synthetic-carbon-private-marker'
+      const error = Object.assign(new ErrorType(secret), {
+        name: secret,
+        stack: secret,
+        cause: new Error(secret),
+        token: secret,
+      })
+      const logger = { error: jest.fn() }
+      const fetchFn = jest.fn<typeof fetch>().mockRejectedValue(error)
+      const response = await requestProxyResponse({
+        request: new Request(
+          `https://map.example.org/api/hiilikartta/plan?token=${secret}`,
+          {
+            method: 'POST',
+            body: secret,
+            headers: { authorization: `Bearer ${secret}` },
+          }
+        ),
+        deps: {
+          env: { HIILIKARTTA_API_URL: `https://carbon.example.org/${secret}` },
+          fetchFn,
+          logger,
+        },
+      })
+      expect(response.status).toBe(500)
+      expect(await response.text()).toBe(
+        ErrorType === TypeError
+          ? 'No response from server'
+          : 'Request setup error'
+      )
+      expect(response.statusText).toBe('')
+      expect(Object.fromEntries(response.headers.entries())).toEqual({
+        'content-type': 'text/plain;charset=UTF-8',
+      })
+      expect(logger.error.mock.calls).toEqual([
+        ['HIILIKARTTA_API_URL proxy request failed'],
+      ])
+    }
+  )
+
   it('refuses mock API mode in production before proxying', async () => {
     const fetchFn = jest.fn<typeof fetch>()
 
     await expect(
-      handleHiilikarttaDataProxyRequest({
+      requestProxyResponse({
         request: new Request('https://map.example.org/api/hiilikartta/plan'),
         deps: {
           env: {
@@ -261,8 +347,10 @@ describe('handleHiilikarttaDataProxyRequest', () => {
   it('returns deterministic saved plan stats in mock mode without upstream config', async () => {
     const fetchFn = jest.fn<typeof fetch>()
 
-    const response = await handleHiilikarttaDataProxyRequest({
-      request: new Request('https://map.example.org/api/hiilikartta/user/plans'),
+    const response = await requestProxyResponse({
+      request: new Request(
+        'https://map.example.org/api/hiilikartta/user/plans'
+      ),
       deps: {
         env: mockEnv,
         fetchFn,
@@ -284,7 +372,7 @@ describe('handleHiilikarttaDataProxyRequest', () => {
   })
 
   it('fetches seeded mock plans and returns deterministic errors for missing ids', async () => {
-    const seededResponse = await handleHiilikarttaDataProxyRequest({
+    const seededResponse = await requestProxyResponse({
       request: new Request(
         'https://map.example.org/api/hiilikartta/plan?id=mock-plan-seeded'
       ),
@@ -307,13 +395,13 @@ describe('handleHiilikarttaDataProxyRequest', () => {
     expect(seededPlan.data.type).toBe('FeatureCollection')
     expectRawCalculationDataToProcess(seededPlan.report_data)
 
-    const missingIdResponse = await handleHiilikarttaDataProxyRequest({
+    const missingIdResponse = await requestProxyResponse({
       request: new Request('https://map.example.org/api/hiilikartta/plan'),
       deps: {
         env: mockEnv,
       },
     })
-    const unknownIdResponse = await handleHiilikarttaDataProxyRequest({
+    const unknownIdResponse = await requestProxyResponse({
       request: new Request(
         'https://map.example.org/api/hiilikartta/plan?id=unknown-plan'
       ),
@@ -333,7 +421,7 @@ describe('handleHiilikarttaDataProxyRequest', () => {
   })
 
   it('upserts uploaded zipped GeoJSON for plan saves and clears stale reports when data changes', async () => {
-    const response = await handleHiilikarttaDataProxyRequest({
+    const response = await requestProxyResponse({
       request: await createZippedPlanRequest({
         method: 'PUT',
         url: 'https://map.example.org/api/hiilikartta/plan?id=mock-plan-seeded&name=Updated%20mock%20plan&visible_id=updated-visible&forestry_scenario=3',
@@ -359,7 +447,7 @@ describe('handleHiilikarttaDataProxyRequest', () => {
       })
     )
 
-    const fetchResponse = await handleHiilikarttaDataProxyRequest({
+    const fetchResponse = await requestProxyResponse({
       request: new Request(
         'https://map.example.org/api/hiilikartta/plan?id=mock-plan-seeded'
       ),
@@ -375,7 +463,7 @@ describe('handleHiilikarttaDataProxyRequest', () => {
   })
 
   it('deletes known mock plans and returns deterministic 404 for deleted plans', async () => {
-    const deleteResponse = await handleHiilikarttaDataProxyRequest({
+    const deleteResponse = await requestProxyResponse({
       request: new Request(
         'https://map.example.org/api/hiilikartta/plan?id=mock-plan-seeded',
         { method: 'DELETE' }
@@ -391,7 +479,7 @@ describe('handleHiilikarttaDataProxyRequest', () => {
       id: 'mock-plan-seeded',
     })
 
-    const refetchResponse = await handleHiilikarttaDataProxyRequest({
+    const refetchResponse = await requestProxyResponse({
       request: new Request(
         'https://map.example.org/api/hiilikartta/plan?id=mock-plan-seeded'
       ),
@@ -399,7 +487,7 @@ describe('handleHiilikarttaDataProxyRequest', () => {
         env: mockEnv,
       },
     })
-    const unknownDeleteResponse = await handleHiilikarttaDataProxyRequest({
+    const unknownDeleteResponse = await requestProxyResponse({
       request: new Request(
         'https://map.example.org/api/hiilikartta/plan?id=mock-plan-seeded',
         { method: 'DELETE' }
@@ -414,7 +502,7 @@ describe('handleHiilikarttaDataProxyRequest', () => {
   })
 
   it('starts and fetches deterministic finished calculations from uploaded zipped GeoJSON', async () => {
-    const postResponse = await handleHiilikarttaDataProxyRequest({
+    const postResponse = await requestProxyResponse({
       request: await createZippedPlanRequest({
         method: 'POST',
         url: 'https://map.example.org/api/hiilikartta/calculation?id=calc-plan-1&name=Calculation%20mock%20plan&visible_id=calc-visible-1&forestry_scenario=2',
@@ -438,7 +526,7 @@ describe('handleHiilikarttaDataProxyRequest', () => {
       })
     )
 
-    const fetchResponse = await handleHiilikarttaDataProxyRequest({
+    const fetchResponse = await requestProxyResponse({
       request: new Request(
         'https://map.example.org/api/hiilikartta/calculation?id=calc-plan-1'
       ),
@@ -459,7 +547,7 @@ describe('handleHiilikarttaDataProxyRequest', () => {
   })
 
   it('returns deterministic external reports and error responses in mock mode', async () => {
-    const reportResponse = await handleHiilikarttaDataProxyRequest({
+    const reportResponse = await requestProxyResponse({
       request: new Request(
         'https://map.example.org/api/hiilikartta/plan/external?id=mock-external-report'
       ),
@@ -473,7 +561,7 @@ describe('handleHiilikarttaDataProxyRequest', () => {
     expect(report.name).toBe('Mock external carbon report')
     expectRawCalculationDataToProcess(report.report_data)
 
-    const errorResponse = await handleHiilikarttaDataProxyRequest({
+    const errorResponse = await requestProxyResponse({
       request: new Request(
         'https://map.example.org/api/hiilikartta/plan/external?id=mock-external-error'
       ),
@@ -481,7 +569,7 @@ describe('handleHiilikarttaDataProxyRequest', () => {
         env: mockEnv,
       },
     })
-    const unknownResponse = await handleHiilikarttaDataProxyRequest({
+    const unknownResponse = await requestProxyResponse({
       request: new Request(
         'https://map.example.org/api/hiilikartta/plan/external?id=unknown-external'
       ),

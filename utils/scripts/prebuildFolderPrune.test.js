@@ -348,6 +348,10 @@ describe('prebuildFolderPrune standalone route materialization', () => {
     root = makeTempProject()
     writeCommonFixture(root)
 
+    const realAppletPath = appletRoute('luonnonmetsakartat')
+    const sourceRoot = path.resolve(__dirname, '../..', realAppletPath)
+    fs.cpSync(sourceRoot, path.join(root, realAppletPath), { recursive: true })
+
     runPruneTopology({
       root,
       buildConfig: makeBuildConfig({
@@ -387,6 +391,18 @@ describe('prebuildFolderPrune standalone route materialization', () => {
       expect(
         read({ root, relativePath: standaloneRoute(relativePath) })
       ).toContain(`createFileRoute('${routeId}')`)
+      const original = fs.readFileSync(
+        path.join(sourceRoot, relativePath),
+        'utf8'
+      )
+      // Promotion changes only the route literal; keys, dynamic IDs, guards,
+      // components and metadata remain the actual production declarations.
+      expect(read({ root, relativePath: standaloneRoute(relativePath) })).toBe(
+        original.replace(
+          /createFileRoute\(\s*'[^']+'\s*\)/,
+          `createFileRoute('${routeId}')`
+        )
+      )
     }
 
     expect(
@@ -403,6 +419,62 @@ describe('prebuildFolderPrune standalone route materialization', () => {
       true
     )
     expect(exists({ root, relativePath: apiRoute('hiilikartta') })).toBe(false)
+  })
+
+  it('retains actual Luonnonmetsakartat page/API sources in a selected main build', () => {
+    root = makeTempProject()
+    writeCommonFixture(root)
+    const projectRoot = path.resolve(__dirname, '../..')
+    const pageRoot = appletRoute('luonnonmetsakartat')
+    const apiFile = apiRoute('luonnonmetsakartat', '$.ts')
+    fs.cpSync(path.join(projectRoot, pageRoot), path.join(root, pageRoot), {
+      recursive: true,
+    })
+    fs.copyFileSync(path.join(projectRoot, apiFile), path.join(root, apiFile))
+    const result = runPruneTopology({
+      root,
+      buildConfig: makeBuildConfig({
+        includesMain: true,
+        selected: ['luonnonmetsakartat'],
+      }),
+    })
+    expect(result.materialized.promotedFiles).toEqual([])
+    expect(exists({ root, relativePath: standaloneRoute() })).toBe(false)
+    expect(exists({ root, relativePath: mapRoute('index.tsx') })).toBe(true)
+    for (const relativePath of fs.readdirSync(
+      path.join(projectRoot, pageRoot),
+      { recursive: true }
+    )) {
+      if (!relativePath.endsWith('.tsx')) continue
+      expect(
+        read({ root, relativePath: path.join(pageRoot, relativePath) })
+      ).toBe(
+        fs.readFileSync(path.join(projectRoot, pageRoot, relativePath), 'utf8')
+      )
+    }
+    expect(read({ root, relativePath: apiFile })).toBe(
+      fs.readFileSync(path.join(projectRoot, apiFile), 'utf8')
+    )
+    expect(
+      exists({
+        root,
+        relativePath: path.join('src', 'applets', 'luonnonmetsakartat'),
+      })
+    ).toBe(true)
+    expect(exists({ root, relativePath: apiRoute('hiilikartta') })).toBe(false)
+    expect(exists({ root, relativePath: appletRoute('carbon') })).toBe(false)
+    expect(
+      exists({
+        root,
+        relativePath: appletRoute('luonnonmetsakartat', 'admin', 'tuo.tsx'),
+      })
+    ).toBe(false)
+    expect(
+      exists({
+        root,
+        relativePath: appletRoute('luonnonmetsakartat', 'admin', 'taso'),
+      })
+    ).toBe(false)
   })
 
   it('materializes Energiakartta from energy and does not promote the legacy folder', () => {

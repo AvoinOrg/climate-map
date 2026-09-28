@@ -1,5 +1,6 @@
 import {
   afterEach,
+  afterAll,
   beforeAll,
   beforeEach,
   describe,
@@ -214,6 +215,29 @@ const createMockTmsPath = ({
   )}@EPSG:900913@pbf/${z}/${x}/${y}.pbf`
 
 describe('handleLuonnonmetsakartatDataProxyRequest', () => {
+  const originalGlobals = new Map(
+    [
+      'ReadableStream',
+      'TextDecoder',
+      'TextEncoder',
+      'MessageChannel',
+      'MessagePort',
+      'Blob',
+      'File',
+      'Headers',
+      'Request',
+      'Response',
+      'FormData',
+    ].map((name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)])
+  )
+
+  afterAll(() => {
+    for (const [name, descriptor] of originalGlobals) {
+      if (descriptor) Object.defineProperty(globalThis, name, descriptor)
+      else Reflect.deleteProperty(globalThis, name)
+    }
+  })
+
   beforeAll(() => {
     globalThis.ReadableStream =
       ReadableStream as unknown as typeof globalThis.ReadableStream
@@ -295,8 +319,11 @@ describe('handleLuonnonmetsakartatDataProxyRequest', () => {
       'https://forests.example.org/api/layer/layer-1?include=stats'
     )
     expect(init?.method).toBe('GET')
+    expect(init).not.toHaveProperty('body')
     expect(headers.get('authorization')).toBe('Bearer token-1')
     expect(response.status).toBe(200)
+    expect(await response.json()).toEqual([{ id: 'layer-1' }])
+    expect(fetchFn).toHaveBeenCalledTimes(1)
   })
 
   it('proxies request bodies and allowlisted headers when mock mode is disabled', async () => {
@@ -341,7 +368,77 @@ describe('handleLuonnonmetsakartatDataProxyRequest', () => {
     expect(headers.get('x-user-agent')).toBe('browser-agent')
     expect(headers.has('cookie')).toBe(false)
     expect(response.status).toBe(202)
+    expect(await response.json()).toEqual({ status: 'queued' })
+    expect(fetchFn).toHaveBeenCalledTimes(1)
   })
+
+  it.each(['POST', 'PUT', 'DELETE'])(
+    'proxies live %s with its original payload and response',
+    async (method) => {
+      const multipart = new FormData()
+      multipart.append('name', 'Metsä')
+      multipart.append(
+        'zip_file',
+        new Blob([new Uint8Array([80, 75, 0, 255])]),
+        'layer.zip'
+      )
+      const request = new Request(
+        'https://map.example.org/api/luonnonmetsakartat/layer/layer-1?tag=a&tag=b&q=A%2BB%20C&empty=',
+        {
+          method,
+          body:
+            method === 'POST'
+              ? multipart
+              : method === 'PUT'
+                ? new Uint8Array([0, 255, 128])
+                : undefined,
+          headers: {
+            authorization: 'Bearer synthetic-token',
+            ...(method === 'PUT'
+              ? { 'content-type': 'application/octet-stream' }
+              : {}),
+          },
+        }
+      )
+      const bytes = await request.clone().arrayBuffer()
+      const status = method === 'DELETE' ? 204 : 201
+      const fetchFn = jest.fn<typeof fetch>().mockResolvedValue(
+        new Response(method === 'DELETE' ? null : 'saved', {
+          status,
+          headers: { 'cache-control': 'no-store' },
+        })
+      )
+      const response = await handleLuonnonmetsakartatDataProxyRequest({
+        request,
+        deps: {
+          env: {
+            LUONNONMETSAKARTAT_API_URL: 'https://forests.example.org/api/',
+            LUONNONMETSAKARTAT_MOCK_API_ENABLED: '0',
+          },
+          fetchFn,
+        },
+      })
+      expect(fetchFn).toHaveBeenCalledTimes(1)
+      expect(String(fetchFn.mock.calls[0][0])).toBe(
+        'https://forests.example.org/api/layer/layer-1?tag=a&tag=b&q=A%2BB%20C&empty='
+      )
+      const init = fetchFn.mock.calls[0][1]
+      expect(init?.method).toBe(method)
+      expect(new Uint8Array(init?.body as ArrayBuffer)).toEqual(
+        new Uint8Array(bytes)
+      )
+      expect((init?.headers as Headers).get('content-type')).toBe(
+        request.headers.get('content-type')
+      )
+      expect((init?.headers as Headers).get('authorization')).toBe(
+        'Bearer synthetic-token'
+      )
+      expect(response.status).toBe(status)
+      expect(response.headers.get('cache-control')).toBe('no-store')
+      if (method === 'DELETE') expect(response.body).toBeNull()
+      expect(await response.text()).toBe(method === 'DELETE' ? '' : 'saved')
+    }
+  )
 
   it('proxies GeoServer paths through the upstream API when mock mode is disabled', async () => {
     const fetchFn = jest.fn<typeof fetch>(

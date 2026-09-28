@@ -36,7 +36,7 @@ invoke runtime doctor with the failure and exact verification command (or ask
 the manager to delegate). For this feature:
 
 ```bash
-cd /workspace/codex-orch && PYTHONPATH=/workspace/codex-orch CODEX_ORCH_IN_CONTAINER=1 python3 -m codex_orch run-agent --project /workspace/project/.codex-orch/orch.toml --role runtime_doctor --feature F100.3-luonnonmetsakartat-import-replacement-tests
+cd /workspace/codex-orch && PYTHONPATH=/workspace/codex-orch CODEX_ORCH_IN_CONTAINER=1 python3 -m codex_orch run-agent --project /workspace/project/.codex-orch/orch.toml --role runtime_doctor --feature F100.4-luonnonmetsakartat-routing-proxy-tests
 ```
 
 Poll the same yielded shell session until it exits and its run has `exit.json`.
@@ -104,6 +104,72 @@ Historical standalone equivalents (also unsupported):
 - `/fi/admin/taso/mock-visible-layer`
 - `/fi/admin/taso/mock-visible-layer/asetukset`
 - `/fi/admin/taso/mock-visible-layer/kuvat`
+
+## F100.4 route expectations for F100.6
+
+The manifest and existing route metadata remain authoritative. `layer-1` is a
+unit-test ID; browser work must substitute its discovered ID. The navigation
+suite checks its fixtures against actual source route literals/staticData;
+the pruning suite promotes those actual files in temporary directories and
+checks metadata, parameters, guards and components are preserved.
+
+| `APP_ROUTE_KEYS` suffix after `LUONNONMETSAKARTAT_` | Main | Standalone |
+| --- | --- | --- |
+| `HOME` | `/fi/luonnonmetsakartat` | `/fi` |
+| `ADMIN` | `/fi/luonnonmetsakartat/admin` | `/fi/admin` |
+| `ADMIN_IMPORT` | `/fi/luonnonmetsakartat/admin/import` | `/fi/admin/import` |
+| `ADMIN_FOLAYER` | `/fi/luonnonmetsakartat/admin/layer/layer-1` | `/fi/admin/layer/layer-1` |
+| `ADMIN_FOLAYER_SETTINGS` | `/fi/luonnonmetsakartat/admin/layer/layer-1/settings` | `/fi/admin/layer/layer-1/settings` |
+| `ADMIN_FOLAYER_PICTURES` | `/fi/luonnonmetsakartat/admin/layer/layer-1/pictures` | `/fi/admin/layer/layer-1/pictures` |
+
+For every canonical page, missing/unsupported applet locale (`en` or `sv`)
+normalizes to `fi`. Standalone removes a duplicated `luonnonmetsakartat` prefix.
+The resulting URL passes normalization without another redirect. Redirect tests
+preserve `?tab=areas&tab=pictures&q=A%2BB%20C&empty=` byte-for-byte and preserve
+the request origin. Href tests prove params/search delegation to TanStack; their
+stub router does not verify TanStack's own serialization or page/guard behavior.
+
+For each unsupported tail `T` — exactly `admin/tuo`, `admin/taso/layer-1`,
+`admin/taso/layer-1/asetukset`, `admin/taso/layer-1/kuvat` — the following rules
+apply with the same search string preserved:
+
+| Input | Main `main,luonnonmetsakartat` | Standalone `luonnonmetsakartat` |
+| --- | --- | --- |
+| `/fi/luonnonmetsakartat/T` | Pass through | 308 to `/fi/T` |
+| `/luonnonmetsakartat/T` | 308 to `/fi/luonnonmetsakartat/T` | 308 to `/fi/T` |
+| `/en/luonnonmetsakartat/T` | 308 to `/fi/luonnonmetsakartat/T` | 308 to `/fi/T` |
+| `/fi/T` | Pass through as an unknown main-root-shaped path | Pass through |
+| `/T` | 308 to `/en/T` | 308 to `/fi/T` |
+| `/en/T` | Pass through under a supported main locale | 308 to `/fi/T` |
+
+No rule translates the Finnish tail to an English endpoint. Pass-through is
+normalization evidence, not rendered not-found evidence. F100.6 should check
+not-found behavior in the available runtime mode. Carbon's retained Finnish
+redirects and their ordering remain unchanged.
+
+The configured `luonnonmetsakarta.netlify.app` spelling is intentional test
+input, not a typo to fix. Hostname does not choose runtime mode: main `/`
+redirects to `/en`, standalone `/` to `/fi`. Main `/fi/admin` does not gain an
+applet shortcut. Runtime decisions are 308; Netlify's separately tested adapter
+emits `301!` redirects and `200!` rewrites from the unmodified manifest, for both
+HTTP and HTTPS:
+
+- Main `/fi/luonnonmetsakartat/*` rewrites to the same canonical target path.
+  There are no applet-domain root, `/fi`, or `/fi/admin` shortcut rules.
+- Standalone `/fi/luonnonmetsakartat/*` redirects to `/fi/:splat`;
+  `/fi/*` rewrites to the target `/fi/:splat`. Root redirects to `/fi`, and
+  `/en/*` redirects to `/fi/:splat`.
+- `/api/*` preserves its path; `/fi/api/*` targets
+  `/api/luonnonmetsakartat/:splat`. API and static rules precede page rules;
+  server fallback stays last. Generic matches carry legacy tails unchanged.
+- No applet-domain rules are emitted when Luonnonmetsakartat is unselected.
+
+These rule tests prove generated targets/order, not deployed CDN behavior.
+Both build modes are deterministic tests with explicit selections; use the
+existing doctor-verified main runtime for no-start smoke. Delegate any needed
+runtime diagnosis/setup/configuration/recovery to runtime doctor. F100.6 may
+exercise live proxy mode only where the existing server permits it; default
+transport tests never use a real upstream or credentials.
 
 ## Mock Query Params
 
@@ -190,8 +256,9 @@ claimed audited. Reconcile them if an allowed source is supplied.
 stale. The historical path lists above are not positive test expectations.
 `appletConf.json` currently has
 `legacySubpathRedirects: []`. Do not restore those redirects. The configured
-host spelling is `luonnonmetsakarta.netlify.app`. F100.4/F100.6 own the remaining
-route evidence and final runbook reconciliation.
+host spelling is `luonnonmetsakarta.netlify.app`. F100.4 protects the route and
+transport contracts below; F100.6 owns live available-mode checks and final
+runbook reconciliation.
 
 ```bash
 yarn test:luonnonmetsakartat --listTests --json
@@ -200,10 +267,11 @@ yarn test:luonnonmetsakartat
 
 `jest.luonnonmetsakartat.config.ts` inherits the existing Jest configuration. It
 selects every `*.test.*` / `*.spec.*` JS/JSX/TS/TSX suite below
-`src/applets/luonnonmetsakartat/` plus 23 literal shared suites. The allowlist is
+`src/applets/luonnonmetsakartat/` plus 24 literal shared suites. The allowlist is
 intentional: shared auth, map-request authorization, GeoServer config,
-routing/build selection and smoke/fixture infrastructure contain multi-applet
-assertions and run intact.
+routing/build selection, shared API transport and smoke/fixture infrastructure
+contain multi-applet assertions and run intact. `src/common/server/apiProxy.test.ts`
+is included because the applet live wrapper delegates to that exact helper.
 Carbon/Energy applet suites and `__tests__/visual/carbonMockSmoke.test.js` are
 excluded. No positional path filters or live credentials are required.
 
@@ -253,11 +321,11 @@ and applet store; it cannot prove a backend or rendered page contract.
 | I06 | Encoding failures | common/folayerShapefile.test.ts: real UTF-8 Finnish/mojibake and invalid-byte variant; both control suites: real dialog confirm/cancel; replacement page: cancellation sends nothing | parser/UI | added-and-verified / F100.3 | Pair identity errors block; ID name/municipality/region errors warn. Literal Ã and unsupported characters are heuristic, not comprehensive encoding detection. | I-J / I-focused pass |
 | I07 | Both indexing modes and optional columns | common/folayerShapefile.test.ts: detection/saved mapping/optional values; both controls: selection/clearing and locked replacement strategy; import page exact payload | parser/UI | added-and-verified / F100.3 | Required mappings must exist. Optional missing mappings are cleared/detected; descriptions/areas are not value-validated. A06/A08 retain HTTP serialization ownership. | I-J / I-focused pass |
 | I08 | Replacement preserve/delete choice and handoff | pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.replacement.test.tsx: both strategies, default false/toggle true/back false, exact bytes, confirmation/cancellation, reset, no-file save and FileReader races; components/FolayerShapefile.races.test.tsx | UI | added-and-verified / F100.3 | No fallback to unvalidated bytes. M05 remains mock semantics; L02 remains live geometry reconciliation; G04 remains general settings behavior. | I-J / I-focused pass |
-| R01 | Canonical main/standalone/locale contracts | shared src/common/routing/{publicRoutes,requestRouting,appletSelectionContract,routeMetadata}.test.ts; src/common/navigation/appRouteLinks.test.tsx; utils/scripts/{appletBuildConfig,prebuildFolderPrune}.test.js | unit | partial / F100.4 | Applet-specific regression audit | Existing suites pass J-baseline / J-final; stated gap pending |
-| R02 | Configured host and removed legacy paths | shared utils/scripts/writeNetlifyRedirects.test.js: no Luonnonmetsakartat legacy redirects; publicRoutes.test.ts | unit | partial / F100.4 | Exact host spelling and negative/pass-through behavior | Existing suites pass J-baseline / J-final; stated gap pending |
-| R03 | GET/POST/PUT/PATCH/DELETE forwarding | server/api/dataProxy.test.ts: live-proxy GET and PATCH | transport | partial / F100.4 | Remaining methods and shared proxy suite | Existing suites pass J-baseline / J-final; stated gap pending |
-| R04 | Query/header/body/status forwarding | server/api/dataProxy.test.ts: matching upstream path/query, allowlisted headers/body | transport | partial / F100.4 | Error/body/status and complete method matrix | Existing suites pass J-baseline / J-final; stated gap pending |
-| R05 | Missing backend config and secret-safe failures | server/api/dataProxy.test.ts: 500 without upstream config | transport | partial / F100.4 | Secret-safe failures and shared proxy errors | Existing suites pass J-baseline / J-final; stated gap pending |
+| R01 | Canonical main/standalone/locale contracts | shared src/common/routing/{publicRoutes,requestRouting,appletSelectionContract,routeMetadata}.test.ts; src/common/navigation/appRouteLinks.test.tsx: six source-bound route keys in both modes; utils/scripts/{appletBuildConfig,prebuildFolderPrune}.test.js: actual source promotion/main retention | unit/build | added-and-verified / F100.4 | Stub href router proves delegation; no standalone running-build or page rendering claim | R-family / R-shared: pass |
+| R02 | Configured host and removed legacy paths | shared requestRouting.test.ts: configured host and all four unsupported tails in both modes; publicRoutes.test.ts: empty aliases/no translation; utils/scripts/writeNetlifyRedirects.test.js: literal manifest hostname, protocols, ordering, unselected omission | unit/build | added-and-verified / F100.4 | Generic locale/prefix normalization preserves legacy tails; deployed CDN and rendered not-found remain F100.6/live | R-family / R-shared: pass |
+| R03 | GET/POST/PUT/PATCH/DELETE forwarding | server/api/dataProxy.test.ts: all five live methods through real helper; dataProxy.route.test.ts: exact Start route, five wrapper identities and stubbed round-trip | transport | added-and-verified / F100.4 | Constructed HTTP objects and injected upstream only | R-family / R-shared: pass |
+| R04 | Query/header/body/status forwarding | shared src/common/server/apiProxy.test.ts: encoded/repeated/empty query, base path, header allowlists, multipart/binary/JSON bytes, DELETE with/without body, GET/HEAD, null 204/205/304, empty 200, HTTP error propagation | transport | added-and-verified / F100.4 | Stream failures after returning a response and real backend behavior remain outside this catch boundary | R-family / R-shared: pass |
+| R05 | Missing backend config and secret-safe failures | shared src/common/server/apiProxy.test.ts: absent/blank config, missing tail, fetch/setup/body-read failures, exact safe logger args/full local response; Carbon dataProxy.test.ts: TypeError/Error regressions | transport | fixed-and-verified / F100.4 | Fixed logging event only; upstream HTTP bodies intentionally propagate unchanged | R-family / R-shared: pass |
 | G01 | Public loading/layers/empty/dependency error | common/mockScenarios/scenarios.test.ts: public state; shared fixture registry/scenario metadata | seed/helper | pending F100.5 | Rendered states, not seeded-data assertions | Existing suites pass J-baseline / J-final; stated gap pending |
 | G02 | Unauthenticated/pending/missing-token/rejected/error/verified gate | Shared auth/client states; validation HTTP is A04 | client/seed | pending F100.5 | No editor controls on failed auth | Existing suites pass J-baseline / J-final; stated gap pending |
 | G03 | Admin empty/list/detail | common/mockScenarios/scenarios.test.ts: admin layer/area seeds | seed | pending F100.5 | Rendered navigation and detail | Existing suites pass J-baseline / J-final; stated gap pending |
@@ -469,3 +537,67 @@ intentionally. See `.dev/visual-regression/report/latest.json` for the local
 report. The broad baseline command ignores `--files`; its unrelated remainder
 was cancelled after the required old baselines were captured. No service was
 restarted and no screenshot/log artifact is committed.
+
+### F100.4 routing and transport verification (2026-09-28)
+
+Implementation started on `luonnonmetsakartat` at
+`d1adcb192e4aca3aa96c570fd7acf034f4127836`. Evidence is in ignored
+`.tmp/f100-4-coder-20260928/`; the feature's `coder-report.md` records the
+complete changed-file list, commands and limitations for local review/commit.
+The audit retained the existing selection/metadata/build matrices, ordered
+Carbon redirects, mock dispatch/production guards and WFS/TMS cases.
+
+| Evidence | Command / result |
+| --- | --- |
+| R-baseline | `yarn test:luonnonmetsakartat`: exit 0, 49 suites / 929 tests. |
+| R-discovery | `yarn test:luonnonmetsakartat --listTests --json`: exit 0; independent inventory confirms 27 applet + 24 literal shared = 51 suites. Only shared apiProxy and applet registration suites added; no prior suite removed or unrelated applet suite included. `python3 .tmp/f100-4-coder-20260928/verify-inventory.py` also confirms all nine required auth suites are selected and pass. |
+| R-family | `yarn test:luonnonmetsakartat`: exit 0, 51 suites / 1,012 tests / 0 snapshots (35.419 s), including shared auth regressions. Existing IndexedDB-unavailable console messages and Zustand mock logs remain; no test failures. `family-final.log`. |
+| R-shared | Exact command below: exit 0, 13 suites / 318 tests / 0 snapshots (3.347 s), including the entire Carbon proxy suite and Tolgee selection tests. `affected-final.log`. |
+| R-red | New shared proxy suite before the production fix: exit 1, 29 passing and 4 failing cases. Three failures exposed raw exception logging; one was an invalid-URL classification assumption corrected to the existing Jest realm behavior. After the fixed-event logging change, all 33 shared proxy tests pass. `proxy-red.log`, `second-targeted.log`, final full runs. |
+| R-types | `yarn start:typecheck` and `yarn exec tsc --project .tmp/f100-4-coder-20260928/tsconfig.tests.json`: both exit 0. The temporary project explicitly includes changed/new TS tests, Jest types, existing generated route declarations and required ambient declarations. The app tsconfig alone excludes tests. |
+| R-lint | Explicit changed-file ESLint command in coder report: exit 0, 0 errors / 9 existing Carbon `any` warnings (independently reproduced from HEAD using ESLint stdin). Full `yarn lint`: exit 0, 0 errors / 306 warnings. `git diff --check`: exit 0. |
+| R-smoke | Doctor run `20260928-172054-849508-runtime_doctor-F100.4-luonnonmetsakartat-routing-proxy-tests`: synchronous exit 0, `exit.json` read, report `RETRY_READY`, no runtime changes. Independent retry of the Docker command below: exit 0, `ok: true`, `xvfb-webgl`, eight existing steps passed, no console error reported. `smoke-retry.log`. |
+
+Run deterministic checks from `/workspace/project` in the agent namespace:
+
+```bash
+yarn test --runInBand --runTestsByPath \
+  src/common/routing/publicRoutes.test.ts \
+  src/common/routing/requestRouting.test.ts \
+  src/common/routing/appletSelectionContract.test.ts \
+  src/common/routing/routeMetadata.test.ts \
+  src/common/navigation/appRouteLinks.test.tsx \
+  src/common/navigation/tolgee/shared.test.ts \
+  utils/scripts/appletBuildConfig.test.js \
+  utils/scripts/prebuildFolderPrune.test.js \
+  utils/scripts/writeNetlifyRedirects.test.js \
+  src/common/server/apiProxy.test.ts \
+  src/applets/luonnonmetsakartat/server/api/dataProxy.test.ts \
+  src/applets/luonnonmetsakartat/server/api/dataProxy.route.test.ts \
+  src/applets/carbon/server/api/dataProxy.test.ts
+```
+
+The independent no-start retry used the doctor-verified app namespace:
+
+```bash
+docker compose -f /workspace/project/docker-compose.dev.yml \
+  --project-directory /workspace/project exec -T app sh -lc \
+  'cd /app && yarn luonnonmetsakartat:mock:smoke'
+```
+
+Only the shared catch logging boundary changed in production: it emits a fixed
+configuration-key event without raw exceptions or request/backend details.
+Public error responses, classification and header allowlists remain unchanged.
+Invalid native-URL errors cross the Jest VM realm and follow the existing
+non-`instanceof TypeError` branch there; injected TypeError and Error cases
+separately protect both response classifications. No general upstream-content
+scrubbing or post-response streaming-error handling was added.
+
+Test-only Carbon changes assert that its optional mock dispatcher returns an
+HTTP response and copy ZIP bytes into an ArrayBuffer-backed Uint8Array, allowing
+the full affected suite to typecheck. Both existing Undici wrapper suites now
+restore replaced global constructors. No rendered UI changes required visuals.
+F100.5 retains page/auth rendering ownership. F100.6 retains lifecycle cleanup,
+repeatability, strict console policy and rendered not-found checks; the existing
+smoke still writes local mock memory and does not prove real services, deployed
+Netlify rules or a running standalone artifact.

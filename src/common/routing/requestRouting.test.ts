@@ -1,5 +1,6 @@
 import {
   decideRequestRouting,
+  getRequestRoutingTargetUrl,
   REQUEST_ROUTING_SKIP_PREFIXES,
 } from './requestRouting'
 import { getAppletRouteSlugInfo } from './publicRoutes'
@@ -579,5 +580,102 @@ describe('request routing decisions', () => {
       })
     })
 
+  })
+})
+
+describe('Luonnonmetsakartat canonical and unsupported route normalization', () => {
+  const search = '?tab=areas&tab=pictures&q=A%2BB%20C&empty='
+  const host = 'luonnonmetsakarta.netlify.app'
+  const canonicalTails = [
+    '',
+    '/admin',
+    '/admin/import',
+    '/admin/layer/layer-1',
+    '/admin/layer/layer-1/settings',
+    '/admin/layer/layer-1/pictures',
+  ]
+  const unsupportedTails = [
+    '/admin/tuo',
+    '/admin/taso/layer-1',
+    '/admin/taso/layer-1/asetukset',
+    '/admin/taso/layer-1/kuvat',
+  ]
+
+  describe.each([
+    {
+      mode: 'main',
+      compiledApplets: ['main', 'luonnonmetsakartat'],
+      root: '/fi/luonnonmetsakartat',
+    },
+    {
+      mode: 'standalone',
+      compiledApplets: ['luonnonmetsakartat'],
+      root: '/fi',
+    },
+  ])('$mode', ({ mode, compiledApplets, root }) => {
+    const expectDecision = (path: string, target: string | null) => {
+      const requestUrl = url(`${path}${search}`, host)
+      const decision = decideRequestRouting({
+        url: requestUrl,
+        compiledApplets,
+      })
+      if (target === null) {
+        expect(decision).toEqual({ type: 'passThrough' })
+        return
+      }
+      expect(decision).toEqual({
+        type: 'redirect',
+        status: 308,
+        pathname: target,
+        search,
+      })
+      if (decision.type !== 'redirect') throw new Error('Expected redirect')
+      const targetUrl = getRequestRoutingTargetUrl(requestUrl, decision)
+      expect(targetUrl.toString()).toBe(`https://${host}${target}${search}`)
+      expect(decideRequestRouting({ url: targetUrl, compiledApplets })).toEqual(
+        { type: 'passThrough' }
+      )
+    }
+
+    it.each(canonicalTails)(
+      'normalizes canonical page %s with preserved search and no loop',
+      (tail) => {
+        expectDecision(`${root}${tail}`, null)
+        for (const prefix of ['', '/en', '/sv']) {
+          expectDecision(
+            `${prefix}/luonnonmetsakartat${tail}`,
+            `${root}${tail}`
+          )
+        }
+        if (mode === 'standalone') {
+          expectDecision(`/fi/luonnonmetsakartat${tail}`, `/fi${tail}`)
+          expectDecision(tail || '/', `/fi${tail}`)
+          expectDecision(`/en${tail}`, `/fi${tail}`)
+          expectDecision(`/sv${tail}`, `/fi${tail}`)
+        }
+      }
+    )
+
+    it.each(unsupportedTails)(
+      'preserves unsupported tail %s for not-found handling',
+      (tail) => {
+        // Passing normalization does not assert that a page exists or renders 404.
+        expectDecision(
+          `/fi/luonnonmetsakartat${tail}`,
+          mode === 'main' ? null : `/fi${tail}`
+        )
+        expectDecision(`/luonnonmetsakartat${tail}`, `${root}${tail}`)
+        expectDecision(`/en/luonnonmetsakartat${tail}`, `${root}${tail}`)
+        expectDecision(`/fi${tail}`, null)
+        expectDecision(tail, `${mode === 'main' ? '/en' : '/fi'}${tail}`)
+        expectDecision(`/en${tail}`, mode === 'main' ? null : `/fi${tail}`)
+      }
+    )
+
+    it('selects root behavior from compiled applets, even on the configured public host', () => {
+      expect(appletConf.luonnonmetsakartat.domains).toContain(host)
+      expectDecision('/', mode === 'main' ? '/en' : '/fi')
+      expectDecision('/fi/admin', null)
+    })
   })
 })

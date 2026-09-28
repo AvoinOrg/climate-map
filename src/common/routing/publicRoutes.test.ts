@@ -101,6 +101,40 @@ describe('public route manifest contract', () => {
     ).toEqual(['other', 'alueet'])
   })
 
+  it('keeps Luonnonmetsakartat Finnish-only with no legacy translations', () => {
+    expect(appletConf.luonnonmetsakartat.langs).toEqual(['fi'])
+    expect(appletConf.luonnonmetsakartat.publicRoute).toEqual({
+      slug: 'luonnonmetsakartat',
+      legacySlugs: [],
+      legacySubpathRedirects: [],
+    })
+    for (const tail of [
+      'admin/tuo',
+      'admin/taso/layer-1',
+      'admin/taso/layer-1/asetukset',
+      'admin/taso/layer-1/kuvat',
+    ]) {
+      for (const adapter of [
+        {
+          normalizeLegacyAppletSubpathSegments,
+          normalizeLegacyAppletRootSubpathSegments,
+        },
+        scriptRoutes,
+      ]) {
+        const input = {
+          namespace: 'luonnonmetsakartat',
+          segments: tail.split('/'),
+        }
+        expect(adapter.normalizeLegacyAppletSubpathSegments(input)).toEqual(
+          input.segments
+        )
+        expect(adapter.normalizeLegacyAppletRootSubpathSegments(input)).toEqual(
+          input.segments
+        )
+      }
+    }
+  })
+
   it('keeps the TypeScript and CommonJS adapters in parity', () => {
     expect(scriptRoutes.createPublicRouteContract).toBe(
       createPublicRouteContract
