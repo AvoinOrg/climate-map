@@ -33,6 +33,11 @@ export const useAdminFolayersQueryOptions = (): UseQueryOptions<
   return {
     queryKey: ['adminFolayers'],
     queryFn: async () => {
+      const headers = getRequiredBearerAuthHeader({
+        accessToken,
+        requestName: 'Luonnonmetsakartat admin folayer list',
+      })
+
       const existingFolayers = useAppletStore.getState().adminFolayerConfs
 
       for (const folayerId in existingFolayers) {
@@ -40,46 +45,52 @@ export const useAdminFolayersQueryOptions = (): UseQueryOptions<
         updateAdminFolayerConf(folayer.id, { state: FolayerConfState.Fetching })
       }
 
-      const response = await axios.get(`${API_URL}/layers`, {
-        headers: {
-          ...getRequiredBearerAuthHeader({
-            accessToken,
-            requestName: 'Luonnonmetsakartat admin folayer list',
-          }),
-        },
-      })
+      try {
+        const response = await axios.get(`${API_URL}/layers`, {
+          headers,
+        })
 
-      if (response.status === 200) {
-        const folayerConfs: AdminFolayerConf[] = (
-          response.data as AdminFolayerApiItem[]
-        ).map((folayer) => ({
-          id: folayer.id,
-          name: folayer.name,
-          description: folayer.description || '',
-          colorCode: folayer.color_code || '',
-          isVisible: !folayer.is_hidden,
-          state: FolayerConfState.Idle,
-          createdTs: folayer.created_ts,
-          updatedTs: folayer.updated_ts,
-          unsyncedChanges: false,
-          colOptions: folayer.col_options,
-        }))
+        if (response.status === 200) {
+          const folayerConfs: AdminFolayerConf[] = (
+            response.data as AdminFolayerApiItem[]
+          ).map((folayer) => ({
+            id: folayer.id,
+            name: folayer.name,
+            description: folayer.description || '',
+            colorCode: folayer.color_code || '',
+            isVisible: !folayer.is_hidden,
+            state: FolayerConfState.Idle,
+            createdTs: folayer.created_ts,
+            updatedTs: folayer.updated_ts,
+            unsyncedChanges: false,
+            colOptions: folayer.col_options,
+          }))
 
-        for (const folayerConf of folayerConfs) {
-          const existingFolayer =
-            useAppletStore.getState().adminFolayerConfs[folayerConf.id]
+          for (const folayerConf of folayerConfs) {
+            const existingFolayer =
+              useAppletStore.getState().adminFolayerConfs[folayerConf.id]
 
-          if (existingFolayer) {
-            updateAdminFolayerConf(folayerConf.id, folayerConf)
-          } else {
-            addAdminFolayerConf(folayerConf)
+            if (existingFolayer) {
+              updateAdminFolayerConf(folayerConf.id, folayerConf)
+            } else {
+              addAdminFolayerConf(folayerConf)
+            }
           }
+
+          return folayerConfs
         }
 
-        return folayerConfs
+        return []
+      } finally {
+        for (const folayer of Object.values(existingFolayers)) {
+          if (
+            useAppletStore.getState().adminFolayerConfs[folayer.id]?.state ===
+            FolayerConfState.Fetching
+          ) {
+            updateAdminFolayerConf(folayer.id, { state: folayer.state })
+          }
+        }
       }
-
-      return []
     },
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(attemptIndex * 1000, 3000),

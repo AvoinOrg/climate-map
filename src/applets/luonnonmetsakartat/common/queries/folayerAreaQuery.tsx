@@ -41,52 +41,61 @@ export const folayerAreaQuery = (
         })
       }
 
-      const response = await axios.get(url)
+      try {
+        const response = await axios.get(url)
 
-      if (response.status === 200) {
-        const features = (response.data.features ||
-          []) as FolayerAreaConf['data']['features']
+        if (response.status === 200) {
+          const features = (response.data.features ||
+            []) as FolayerAreaConf['data']['features']
 
-        for (const feature of features) {
-          feature.id = feature.properties.id || feature.id
-          const properties = feature.properties as unknown as Record<
-            string,
-            unknown
-          >
-          const pics = properties.pictures
-          if (typeof pics === 'string') {
-            try {
-              const parsed: unknown = JSON.parse(pics)
-              if (Array.isArray(parsed)) {
-                properties.pictures = parsed
+          for (const feature of features) {
+            feature.id = feature.properties.id || feature.id
+            const properties = feature.properties as unknown as Record<
+              string,
+              unknown
+            >
+            const pics = properties.pictures
+            if (typeof pics === 'string') {
+              try {
+                const parsed: unknown = JSON.parse(pics)
+                if (Array.isArray(parsed)) {
+                  properties.pictures = parsed
+                }
+              } catch {
+                // leave as-is if not valid JSON
               }
-            } catch {
-              // leave as-is if not valid JSON
             }
           }
-        }
-        // Extract area collection data
-        const areaObj: FolayerAreaConf = {
-          id: folayerId, // Using the same ID as the folayer
-          data: {
-            type: 'FeatureCollection',
-            features,
-          }, // Assuming features are in the response
-          state: FolayerConfState.Idle,
+          // Extract area collection data
+          const areaObj: FolayerAreaConf = {
+            id: folayerId, // Using the same ID as the folayer
+            data: {
+              type: 'FeatureCollection',
+              features,
+            }, // Assuming features are in the response
+            state: FolayerConfState.Idle,
+          }
+
+          // Handle the area collection separately
+          const existingCollection =
+            useAppletStore.getState().folayerAreaConfs[folayerId]
+
+          if (existingCollection) {
+            updateFolayerAreaConf(folayerId, areaObj)
+          }
+
+          return areaObj
         }
 
-        // Handle the area collection separately
-        const existingCollection =
-          useAppletStore.getState().folayerAreaConfs[folayerId]
-
-        if (existingCollection) {
-          updateFolayerAreaConf(folayerId, areaObj)
+        return null
+      } finally {
+        if (
+          useAppletStore.getState().folayerAreaConfs[folayerId]?.state ===
+          FolayerConfState.Fetching
+        ) {
+          updateFolayerAreaConf(folayerId, { state: FolayerConfState.Idle })
         }
-
-        return areaObj
       }
-
-      return null
     },
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(attemptIndex * 1000, 3000),

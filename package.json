@@ -19,6 +19,7 @@
     "start:auth-smoke": "node --import tsx utils/scripts/start-auth-contract-smoke.ts",
     "lint": "eslint .",
     "test": "jest",
+    "test:luonnonmetsakartat": "jest --config ./jest.luonnonmetsakartat.config.ts --runInBand",
     "test:watch": "jest --watch",
     "test:watch-changed": "jest --watch --onlyChanged",
     "visual:install": "npx playwright install chromium",

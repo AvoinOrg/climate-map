@@ -34,30 +34,36 @@ export const useAdminFolayerDeleteMutationOptions = (): UseMutationOptions<
 
   return {
     mutationFn: async ({ folayerConf }) => {
+      const headers = getRequiredBearerAuthHeader({
+        accessToken,
+        requestName: 'Luonnonmetsakartat folayer delete',
+      })
+
       // Update folayer state to show it's being deleted
       updateAdminFolayerConf(folayerConf.id, {
         ...folayerConf,
         state: FolayerConfState.Deleting,
       })
 
-      const deleteRes = await axios.delete(
-        `${API_URL}/layer/${folayerConf.id}`,
-        {
-          headers: {
-            ...getRequiredBearerAuthHeader({
-              accessToken,
-              requestName: 'Luonnonmetsakartat folayer delete',
-            }),
-          },
-        }
-      )
+      try {
+        const deleteRes = await axios.delete(
+          `${API_URL}/layer/${folayerConf.id}`,
+          { headers }
+        )
 
-      if (
-        deleteRes.status !== 200 &&
-        deleteRes.status !== 204 &&
-        deleteRes.status !== 404
-      ) {
-        throw new Error('Failed to delete the folayer')
+        if (
+          deleteRes.status !== 200 &&
+          deleteRes.status !== 204 &&
+          deleteRes.status !== 404
+        ) {
+          throw new Error('Failed to delete the folayer')
+        }
+      } catch (error) {
+        // Axios rejects 404 by default; an already absent layer is deleted.
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          return
+        }
+        throw error
       }
     },
     onError: (error, params) => {

@@ -39,6 +39,13 @@ export const useAdminFolayerPatchMutationOptions = (): UseMutationOptions<
 
   return {
     mutationFn: async (mutationData: MutationData) => {
+      if (
+        (mutationData.bulkImages?.length ?? 0) !==
+        (mutationData.bulkAreaIds?.length ?? 0)
+      ) {
+        throw new Error('Bulk images and area IDs must be aligned')
+      }
+
       const formData = new FormData()
 
       if (mutationData.rawShapefile) {
