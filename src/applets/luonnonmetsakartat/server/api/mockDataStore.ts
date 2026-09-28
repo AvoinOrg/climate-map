@@ -143,6 +143,10 @@ const resetStorage = () => {
 }
 
 export const resetLuonnonmetsakartatMockApiForTests = () => {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Mock API test reset is unavailable in production')
+  }
+
   resetStorage()
 }
 

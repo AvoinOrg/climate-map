@@ -1,8 +1,9 @@
 # Luonnonmetsakartat Mock Browser Runbook
 
 This runbook is for agent-driven Luonnonmetsakartat browser checks against the
-already-running app-container dev server. Do not start, stop, restart, or kill
-the shared dev server from this workflow.
+already-running app-container dev server. Use `runtime_doctor` for runtime
+diagnosis, setup, test-mode configuration, service lifecycle and recovery.
+No-start browser commands use the service verified by the doctor.
 
 ## Required Mock Env
 
@@ -30,8 +31,29 @@ docker compose -f /workspace/project/docker-compose.dev.yml --project-directory 
 
 The smoke script probes `http://127.0.0.1:6900` for reachability but remaps
 browser navigation to `http://localhost:6900` for reliable app-container
-hydration and clicks. If `:6900` is unreachable, stop and report that the main
-dev server is unavailable. Do not launch a replacement `yarn dev` process.
+hydration and clicks. If the runtime is unreachable or its mode is unsuitable,
+invoke runtime doctor with the failure and exact verification command (or ask
+the manager to delegate). For this feature:
+
+```bash
+cd /workspace/codex-orch && PYTHONPATH=/workspace/codex-orch CODEX_ORCH_IN_CONTAINER=1 python3 -m codex_orch run-agent --project /workspace/project/.codex-orch/orch.toml --role runtime_doctor --feature F100.2-luonnonmetsakartat-mock-contract-tests
+```
+
+Poll the same yielded shell session until it exits and its run has `exit.json`.
+Read the feature's `runtime-doctor-report.md`, retry the affected command after
+`RETRY_READY`, and hand the manager a remaining `RUNTIME_BLOCKED` prerequisite
+with the report's evidence. No-start means delegate runtime work; it does not
+restrict access to runtime doctor. For later features, use their feature ID.
+
+Jest normally runs from `/workspace/project`. Inside the mock-enabled app
+service, doctor verified this process-only environment isolation:
+
+```bash
+docker compose -f /workspace/project/docker-compose.dev.yml --project-directory /workspace/project exec -T app sh -lc 'cd /app && env -u PUBLIC_MOCK_AUTH_ENABLED -u PUBLIC_MOCK_AUTH_INITIAL_STATE -u PUBLIC_LUONNONMETSAKARTAT_MOCK_SCENARIOS_ENABLED -u LUONNONMETSAKARTAT_MOCK_API_ENABLED yarn test:luonnonmetsakartat'
+```
+
+This prevents browser mock-auth flags from overriding generic real-auth test
+fixtures. It leaves the app service flags unchanged and requires no `.env` edit.
 
 From the Codex agent or host namespace, do not probe `127.0.0.1:6900`; use the
 host-published `DEV_PORT` only for manual diagnostics outside this runbook.
@@ -109,22 +131,50 @@ before any create POST.
 
 ## Known Limitations
 
-- The mock API does not emulate production GeoServer/vector tiles beyond the
-  current mock API, WFS, and empty vector-tile endpoints.
-- Import fixture geometry is used for client parsing and validation. The mock
-  API creates deterministic mock areas rather than ingesting uploaded geometry.
-- The picture save smoke uses in-memory mock picture fixture state from the
-  `pictures-mapped` scenario, not a real OS directory picker.
-- Server-side mock API storage can persist for the life of the dev-server
-  process. Smoke flows parse created layer IDs dynamically and do not assume
-  `mock-created-layer-1`.
+- Imports create deterministic synthetic polygons/IDs/timestamps. ZIP bytes
+  are not interpreted or validated by the mock API. Client parser and option
+  handoff evidence belongs to F100.3, separate from these mock contracts.
+- Replacement PATCH validates `delete_areas_not_updated` for true/false/omitted
+  inputs and can change metadata/columns. Existing areas, geometry, IDs and
+  properties remain unchanged with an uninterpreted ZIP in every case. Flag
+  acceptance is not preserve-versus-delete reconciliation or real ingestion.
+- Pictures are serialized URL/filename metadata only. The mock neither stores
+  nor decodes uploaded bytes, fetches picture URLs, nor deletes objects.
+  Area PATCH `pictures` replaces the string; `'[]'` removes list metadata.
+  There is no separate picture-delete route. Attachment parses malformed or
+  non-array stored picture JSON as an empty list and filters non-string list
+  entries. URLs are deterministic, not unique object-storage identities.
+- The picture smoke uses the `pictures-mapped` in-memory fixture, not an OS
+  directory picker. Full visible matching/error behavior belongs to F100.5.
+- WFS projects simple centroid points from stored polygons. TMS returns empty
+  PBF responses; these do not verify production geometry, rendering, GeoServer
+  or PostGIS behavior.
+- Server mock storage and counters persist for the process lifetime. Direct
+  suites reset before/after each test, compare clean replays and use randomized
+  order. The exported test reset helper refuses production; private module
+  initialization remains safe for live-mode imports. There is no reset API.
+- Browser `mockReset` clears client Zustand/query state, not server memory.
+  Existing smoke discovers created IDs but still leaves mutations and tolerates
+  console errors. Delegate a required pristine server seed to runtime doctor.
+  F100.6 owns complete browser cleanup, repeatability and strict console checks.
+- Fixed verified/rejected tokens model HTTP decisions only. Runtime API,
+  scenario and auth guards refuse production enablement; that does not validate
+  real identity-provider roles or credentials. Default tests use constructed
+  Requests and stub transports, without live backend/storage/identity writes.
+- Blank optional layer metadata means omitted; explicitly blank optional
+  columns can remove options. Area strings retain empty values. `id_col` is
+  optional even for mock `id` indexing. These are the implemented mock parsing
+  contracts, not claims about production validation. Numeric layer timestamps
+  and ISO area timestamps use deterministic counters; composite picture/layer
+  PATCH consumes separate mutation steps.
 
 ## F100 coverage audit and focused Jest entrypoint
 
 Audit started 2026-09-28 at `01b95e89aaaee417da233e4a06307e50b60a2f63`.
-Existing assertions are retained; client transport tests have a different oracle
-from the server mock lifecycle and do not replace it. No actual duplication was
-found that warrants removing a suite.
+Client transport tests have a different oracle from the server mock lifecycle
+and do not replace it. The F100.1 audit found no redundant client suite. F100.2
+relocates HTTP/store-only wrapper assertions with the explicit mapping below,
+while retaining wrapper/WFS/TMS integration coverage.
 
 The separate local verification plan referenced by the parent was not found in
 current project documentation (root README, this runbook, fixture README,
@@ -184,14 +234,14 @@ and applet store; it cannot prove a backend or rendered page contract.
 | A10 | Aligned picture files/area IDs and invalid pairs | common/queries/adminFolayerPatchMutation.test.tsx: repeated images/IDs aligned; empty/absent arrays; five invalid-pair cases | client | added-and-verified / F100.1 | Order, bytes and repeated IDs verified; UI matching remains G05 | J-final: pass |
 | A11 | Delete, callback order, rollback, already absent | common/queries/adminFolayerDeleteMutation.test.tsx: callback awaited, 200/204, resolved/rejected 404, rollback, no token | client | added-and-verified / F100.1 | Axios 404 is idempotent success; other rejections remain errors; UI confirmation remains G07 | J-final: pass |
 | A12 | Cache invalidation/refetch and failure isolation | common/queries/adminFolayerPatchMutation.test.tsx: settings/ZIP/pictures cache matrix × neither/public-conf/public-areas; rejected-status cases | client | added-and-verified / F100.1 | Real active observers and public HTTP readback; area refresh callbacks are isolated query fixtures; unrelated keys unaffected | J-final: pass |
-| M01 | Reset/seed isolation | common/mockScenarios/reset.test.ts; scenarios.test.ts; server/api/dataProxy.test.ts: resettable cloned seed | mock/helper | partial / F100.2 | Direct store and proxy contracts | Existing suites pass J-baseline / J-final; stated gap pending |
-| M02 | Anonymous visible/editor hidden filtering | server/api/dataProxy.test.ts: public/admin lists and WFS visibility/auth | mock | partial / F100.2 | Direct seams without duplicating wrapper dispatch | Existing suites pass J-baseline / J-final; stated gap pending |
-| M03 | Validation states and protected operations | server/api/dataProxy.test.ts: validates verified/rejected/missing/unknown auth | mock | partial / F100.2 | Direct mock contract audit | Existing suites pass J-baseline / J-final; stated gap pending |
-| M04 | Mock create/read/update/delete | server/api/dataProxy.test.ts: detail, multipart create, metadata PATCH, delete | mock | partial / F100.2 | Direct seam lifecycle | Existing suites pass J-baseline / J-final; stated gap pending |
-| M05 | Mock replacement semantics and limits | server/api/dataProxy.test.ts: preserves areas with raw update zip | mock | partial / F100.2 | Validate represented semantics; never imply geometry reconciliation | Existing suites pass J-baseline / J-final; stated gap pending |
-| M06 | Picture update/delete metadata | server/api/dataProxy.test.ts: bulk attachments and WFS readback | mock | partial / F100.2 | Direct update/delete metadata evidence | Existing suites pass J-baseline / J-final; stated gap pending |
-| M07 | Unsupported routes/methods | server/api/dataProxy.test.ts: deterministic errors, method-not-allowed | mock | partial / F100.2 | Complete direct proxy boundary | Existing suites pass J-baseline / J-final; stated gap pending |
-| M08 | Production guards for API/scenario/auth | server/api/dataProxy.test.ts: refuses production; common/mockScenarios/config.test.ts; shared src/common/auth/mock.test.ts and src/runtime/api/userinfo.test.ts | mock/unit | partial / F100.2 | Audit all guard entrypoints | Existing suites pass J-baseline / J-final; stated gap pending |
+| M01 | Reset/seed isolation | server/api/mockDataStore.test.ts: `seeds stable visible, hidden and empty layers`, `creates fresh seed factories`, `clones create and update column inputs`, `replays a mixed lifecycle after reset`; existing client reset/scenario/bootstrap suites retained | store/helper | added-and-verified / F100.2 | Whole nested state, both counters, mutation-result clones and failure replay; client reset does not reset server memory | M-J / M-order pass |
+| M02 | Anonymous visible/editor hidden filtering | server/api/mockDataProxy.test.ts: `projects anonymous visible layers and editor hidden/admin metadata, following visibility changes`; retained dataProxy WFS visibility/auth and dispatch cases | HTTP/integration | added-and-verified / F100.2 | Public projection excludes admin fields and embedded areas; detail remains editor-only | M-J pass |
+| M03 | Validation states and protected operations | server/api/mockDataProxy.test.ts: `validates %s authorization`, `protected %s / denies %s before parsing or mutation`; store failure matrix | HTTP/store | added-and-verified / F100.2 | Six mutation forms, malformed/unknown credentials, no public fallback; full-state and future ID/timestamp equality | M-J / M-order pass |
+| M04 | Mock create/read/update/delete | server/api/mockDataProxy.test.ts: `creates and reads %s columns`, `preserves omitted metadata and columns`, `patches editable area strings`, `deletes layer and area data`; store lifecycle/edit cases | HTTP/store | added-and-verified / F100.2 | Synthetic areas, protected fields, clone boundaries, cleanup and exact 404s; no live ingestion | M-J pass |
+| M05 | Mock replacement semantics and limits | server/api/mockDataProxy.test.ts: `preserves seeded areas with an uninterpreted ZIP when delete_areas_not_updated is %s`, `rejects malformed PATCH %s atomically` | HTTP | added-and-verified / F100.2 | True/false/omitted, blank-as-omitted and malformed flags; complete areas unchanged, no geometry reconciliation | M-J pass |
+| M06 | Picture update/delete metadata | server/api/mockDataProxy.test.ts: `attaches ordered filename URL metadata, then replaces and removes the picture list without storage operations`, `rejects %s picture batch`; store append/recovery cases; dataProxy WFS removal readback | HTTP/store/integration | added-and-verified / F100.2 | Ordered repeated targets, seed retention, malformed pairs, valid+unknown atomicity; no binary/storage operations | M-J pass |
+| M07 | Unsupported routes/methods | server/api/mockDataProxy.test.ts: `returns 405 for $method $path`, deterministic not-found/path matrices, unsupported GeoServer cases, malformed percent encoding and valid encoded counterpart; retained wrapper TMS/WFS errors | HTTP/integration | added-and-verified / F100.2 | Malformed path escape now deterministic JSON 400; no route-policy changes | M-J pass |
+| M08 | Production guards for API/scenario/auth | mockDataProxy runtime enablement; dataProxy protected-write/default-env guard; common/mockScenarios/config.test.ts runtime getter; shared src/common/auth/mock.test.ts config/getter and src/runtime/api/userinfo.test.ts endpoint; store production reset refusal | guard/unit | added-and-verified / F100.2 | Truthy matrix, explicit/default env, disabled production branch, no token/config/fetch access on refusal, unchanged store/counters | M-J pass |
 | I01 | Valid ZIP parsing and column detection | helper utils/scripts/visual/luonnonmetsakartat-mock-smoke.test.js: parses valid fixture | helper | partial / F100.3 | UI detection vs parser evidence | Existing suites pass J-baseline / J-final; stated gap pending |
 | I02 | Missing shapefile parts and malformed ZIP | No direct test | unit/UI | pending F100.3 | Tiny deterministic fixtures | Pending child; no run claim |
 | I03 | Duplicate ID | helper smoke test: duplicate-ID fixture exposes duplicates | helper | partial / F100.3 | Actual client validation before POST | Existing suites pass J-baseline / J-final; stated gap pending |
@@ -283,3 +333,78 @@ The existing `FolayerFeatureProperties` type intersects numeric and string
 boundary cast for realistic API timestamps; this feature does not migrate that
 public type or timestamp units. No packages, lockfiles, env definitions,
 translations, route policy or retry policy were changed.
+
+### F100.2 assertion relocation audit
+
+Audit made against `5c37d17ba811a01b3871047a452534426b70e405` before removing
+wrapper assertions. Direct replacements passed first (196 cases). The original
+27-case `server/api/dataProxy.test.ts` mixed HTTP/store contracts with wrapper
+integration. The following mapping accounts for each removed case and its unique
+assertions. `HTTP` means `server/api/mockDataProxy.test.ts`; `store` means
+`server/api/mockDataStore.test.ts`. Names below identify the actual test cases
+or parameterized case prefixes.
+
+| Original `dataProxy.test.ts` case | Assertions retained in direct replacement |
+| --- | --- |
+| `does not fall back to public layers for rejected or unknown auth` | HTTP `validates %s authorization and never downgrades an authenticated list request`: 401/403 and exact denial/role bodies; adds empty, non-bearer and malformed credentials. |
+| `validates verified, rejected, missing, and unknown mock admin auth` | Same HTTP matrix: validate 200 and both roles true; rejected 403, missing/unknown 401 and both roles false. |
+| `serves admin layer detail and deterministic layer id errors` | HTTP `projects anonymous visible layers and editor hidden/admin metadata, following visibility changes` compares detail to admin list; `returns deterministic %s %s errors without mutation` asserts missing ID 400 and unknown ID 404 with exact JSON. |
+| `requires verified admin auth for mock layer mutations without changing state` | HTTP `protected %s / denies %s before parsing or mutation with status %s and unchanged counters`: all six protected mutation forms, denial bodies, whole-state equality and clean replay of future ID/timestamps. |
+| `creates deterministic mock layers from multipart import fields and resets them` | HTTP `creates and reads %s columns with synthetic areas, without interpreting or requiring ZIP bytes`: 201, exact trimmed admin DTO/columns/default description, list/detail readback and synthetic IDs; store `creates deterministic synthetic areas, preserves omitted metadata, and deletes without reusing IDs` retains exact layer/area timestamps and area names; store `replays a mixed lifecycle after reset, restoring deleted seed data and both counters` proves repeatability. |
+| `patches layer metadata and preserves areas when a raw update zip is present` | HTTP `preserves seeded areas with an uninterpreted ZIP when delete_areas_not_updated is %s`: exact metadata, all columns, original creation timestamp, mutation timestamp and unchanged whole area collection for true/false/omitted flags; malformed flag atomicity is separate. |
+| `attaches deterministic picture URLs to mock areas from bulk image fields` | HTTP `attaches ordered filename URL metadata, then replaces and removes the picture list without storage operations`: encoded URLs, attachment area timestamp and separate layer timestamp, repeated and distinct targets, subset/removal readback. Store `appends ordered picture metadata for repeated targets and clones attachment results` also proves seeded entries and untargeted area preservation. |
+| `returns deterministic errors for invalid or unknown bulk picture targets` | HTTP `rejects %s picture batch before metadata, pictures or counters change`: exact mismatch 400 and unknown-area 404 plus malformed values and valid+unknown batch atomicity. |
+| `deletes mock layers and their area data with deterministic not-found behavior` | HTTP `deletes layer and area data with deterministic repeated-delete and detail errors`: success body, area/detail removal, list absence, repeated delete 404; unknown delete covered by error matrix. Store deletion case proves other layers unchanged and ID non-reuse. |
+| `patches editable area properties while preserving protected feature data` | HTTP `patches editable area strings while preserving protected fields, geometry and neighbors` and corresponding store edit case: editable fields and exact server timestamp, protected ID/creation/layer/area, full unchanged geometry and readback; adds empty strings, pictures, attempted geometry/update-time overrides and neighbors. |
+| `returns deterministic not-found responses for unknown layer and area mutations` | HTTP deterministic error matrix: exact missing layer vs area bodies for metadata PATCH and both area failure types; adds whole-state and counter assertions. Store failure matrix also retains tagged outcomes. |
+| `returns method-not-allowed errors for out-of-scope mock mutations` | HTTP `returns 405 for $method $path before authorization`: POST `/layers` plus every unsupported standard verb on admin/layer/area routes, exact error and no state/counter change. |
+| `keeps resettable mock seed data stable and returns cloned areas` | Store `seeds stable visible, hidden and empty layers with polygon and picture data` keeps all concrete IDs/timestamps, area attributes, picture serialization, first polygon point and empty collection; `creates fresh seed factories and clones every nested getter boundary` and reset/replay add nested clone and counter isolation. |
+
+The anonymous wrapper case retains dispatch without upstream config/auth/fetch;
+its full DTO/exclusion assertions now live in the HTTP projection case. The
+verified wrapper case retains authenticated dispatch/no-fetch; full hidden-layer
+column metadata is in the same HTTP projection case. All four non-mock transport
+cases remain intact for F100.4. WFS seed centroids, empty collections, created-ID
+mapping, mutation readback, auth/hidden filtering and error cases remain because
+they prove wrapper/GeoServer integration. The picture WFS case additionally
+reads back removal via area PATCH `pictures='[]'`. Empty TMS GET/HEAD, content
+type and wrong-method checks remain. Existing client scenario/reset/bootstrap
+cases remain unchanged; their cache/state contracts do not replace server reset.
+
+### F100.2 execution evidence — 2026-09-28
+
+Commands ran from `/workspace/project` unless the namespace is specified.
+Ignored artifacts are under `.tmp/f100-2-coder-20260928/`; the complete expanded
+commands and protected-file evidence are in the feature's `coder-report.md`.
+
+| Reference | Command/check | Observed result |
+| --- | --- | --- |
+| M-baseline | `yarn test:luonnonmetsakartat --listTests --json`; `yarn test:luonnonmetsakartat` | Exit 0; 40 suites, 615 tests, zero snapshots; 4.900 s. Logs `discovery-baseline.log`, `jest-baseline.log`. |
+| M-regression | `yarn test:luonnonmetsakartat --runTestsByPath src/applets/luonnonmetsakartat/server/api/mockDataStore.test.ts src/applets/luonnonmetsakartat/server/api/mockDataProxy.test.ts` | Before fixes: exit 1, 190 pass/6 fail. Five malformed path encodings threw URIError; production test reset did not refuse. After the two narrow fixes: exit 0, 196/196 cases, 2 suites. Logs `direct-before-fix.log`, `direct-after-fix.log`. |
+| M-discovery | `yarn test:luonnonmetsakartat --listTests --json` | Exit 0; independent filesystem/allowlist comparison finds 19 applet + unchanged 23 shared = 42 suites. Exactly the two new suites were added; no baseline suite removed. Logs `discovery-final.log`, `inventory-and-preservation.log`. |
+| M-J | `yarn test:luonnonmetsakartat` | Exit 0; 42 suites, 834 tests, zero snapshots; 11.202 s. Includes affected wrapper/scenario/reset/bootstrap/shared auth/userinfo tests. Log `jest-final.log`. |
+| M-order | `yarn test:luonnonmetsakartat --runTestsByPath src/applets/luonnonmetsakartat/server/api/mockDataStore.test.ts src/applets/luonnonmetsakartat/server/api/mockDataProxy.test.ts --randomize --seed=1002 --showSeed` | Exit 0; seed 1002, 2 suites, 196 tests, zero snapshots; 1.536 s. Log `jest-randomized.log`. |
+| M-types | `yarn start:typecheck`; `yarn exec tsc --project .tmp/f100-2-coder-20260928/tsconfig.tests.json --noEmit` | Both exit 0. First excludes tests; the temporary config separately includes all six changed/new test files and existing declaration shims. Logs `typecheck.log`, `test-types-final.log`. |
+| M-lint | Changed-file ESLint; `yarn lint`; `git diff --check` | All exit 0. Changed files: zero errors, one existing unused `getFolayerCentroidSourceLayer` warning in mockDataProxy.ts, independently reproduced from HEAD via ESLint stdin. Full lint: zero errors, 309 warnings. Logs `lint-changed-final.log`, `lint-proxy-head.log`, `lint-full.log`, `diff-check.log`. |
+| M-doctor | Runtime doctor command above, `/workspace/codex-orch` | Exit 0 and `exit.json` confirmed for run `20260928-150513-397959-runtime_doctor-F100.2-luonnonmetsakartat-mock-contract-tests`; verdict `RETRY_READY`. No repair/restart/configuration change. |
+| M-smoke | `docker compose -f /workspace/project/docker-compose.dev.yml --project-directory /workspace/project exec -T app sh -lc 'cd /app && yarn luonnonmetsakartat:mock:smoke'` after RETRY_READY | Exit 0, `ok: true`, `xvfb-webgl`; all eight existing steps passed. Preflight 127.0.0.1:6900, browser localhost:6900 inside app container. Exactly one non-fatal browser console error reported; script did not expose its message. Log `smoke.log`. |
+
+The final net increase is 219 cases, with 13 wrapper-only cases relocated and
+196 direct cases added plus stronger shared/wrapper guard matrices. No new
+framework, shared test harness, package/script/allowlist or environment-variable
+change was needed. The only production edits are path-escape validation (catch
+URIError only, retain encoded route matching/single field decode) and production
+refusal in the exported test reset helper. Six failing regressions preceded
+those fixes. Narrow test-file type checking also caught and resolved Jest tuple
+inference and geometry narrowing issues; no public domain-type change was made.
+
+The original four non-mock transport bodies and six WFS/TMS bodies were compared
+unchanged with the baseline; the seventh WFS integration case was extended for
+picture removal. All four unrelated protected files retain their original
+content hashes and unstaged/untracked status. No files were staged or committed.
+
+No rendered UI changed, so no additional visual fixture checks were needed.
+The passing smoke leaves server-memory mutations and has a tolerated console
+error; it does not complete F100.6 cleanup/strict-console acceptance. It is also
+not real GeoServer/PostGIS/object-storage/Zitadel acceptance. Later checks that
+need a pristine server seed must delegate that runtime work to the doctor.

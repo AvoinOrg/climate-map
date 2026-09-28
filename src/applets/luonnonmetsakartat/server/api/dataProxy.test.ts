@@ -1,4 +1,5 @@
 import {
+  afterEach,
   beforeAll,
   beforeEach,
   describe,
@@ -109,76 +110,22 @@ const createLayerFormData = (
   return formData
 }
 
-const createPatchFormData = (
-  overrides: {
-    areaCol?: string
-    bulkAreaIds?: string[]
-    bulkImageNames?: string[]
-    colorCode?: string
-    deleteAreasNotUpdated?: boolean
-    descriptionCol?: string
-    idCol?: string
-    indexingStrategy?: string
-    isHidden?: boolean
-    municipalityCol?: string
-    name?: string
-    nameCol?: string
-    regionCol?: string
-    zipFile?: boolean
-  } = {}
-) => {
+const createPatchFormData = ({
+  bulkAreaIds,
+  bulkImageNames,
+}: {
+  bulkAreaIds: string[]
+  bulkImageNames: string[]
+}) => {
   const formData = new FormData()
-
-  if (overrides.zipFile) {
-    appendMockZipFile(formData)
-  }
-
-  if (overrides.deleteAreasNotUpdated !== undefined) {
-    formData.append(
-      'delete_areas_not_updated',
-      String(overrides.deleteAreasNotUpdated)
-    )
-  }
-
-  if (overrides.name !== undefined) {
-    formData.append('name', overrides.name)
-  }
-
-  if (overrides.isHidden !== undefined) {
-    formData.append('is_hidden', String(overrides.isHidden))
-  }
-
-  if (overrides.colorCode !== undefined) {
-    formData.append('color_code', overrides.colorCode)
-  }
-
-  if (overrides.indexingStrategy !== undefined) {
-    formData.append('indexing_strategy', overrides.indexingStrategy)
-    formData.append('name_col', overrides.nameCol ?? 'patched_name')
-    formData.append(
-      'municipality_col',
-      overrides.municipalityCol ?? 'patched_municipality'
-    )
-    formData.append('region_col', overrides.regionCol ?? 'patched_region')
-    formData.append(
-      'description_col',
-      overrides.descriptionCol ?? 'patched_description'
-    )
-    formData.append('area_col', overrides.areaCol ?? 'patched_area')
-    formData.append('id_col', overrides.idCol ?? 'patched_id')
-  }
-
-  overrides.bulkImageNames?.forEach((fileName) => {
+  bulkImageNames.forEach((fileName) => {
     formData.append(
       'bulk_images',
       new Blob([`contents:${fileName}`], { type: 'image/jpeg' }),
       fileName
     )
   })
-  overrides.bulkAreaIds?.forEach((areaId) => {
-    formData.append('bulk_area_ids', areaId)
-  })
-
+  bulkAreaIds.forEach((areaId) => formData.append('bulk_area_ids', areaId))
   return formData
 }
 
@@ -291,6 +238,11 @@ describe('handleLuonnonmetsakartatDataProxyRequest', () => {
   })
 
   beforeEach(() => {
+    resetLuonnonmetsakartatMockApiForTests()
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
     resetLuonnonmetsakartatMockApiForTests()
   })
 
@@ -421,28 +373,100 @@ describe('handleLuonnonmetsakartatDataProxyRequest', () => {
     expect(response.status).toBe(200)
   })
 
-  it('refuses mock API mode in production before proxying', async () => {
-    const fetchFn = jest.fn<typeof fetch>()
+  it.each(['1', 'true', 'yes', 'on', ' TrUe '])(
+    'refuses production mock API %s before protected mutation or proxy access',
+    async (flag) => {
+      const fetchFn = jest.fn<typeof fetch>(async () => {
+        throw new Error('Unexpected upstream access')
+      })
+      const before = getLuonnonmetsakartatMockLayers()
+      await expect(
+        handleLuonnonmetsakartatDataProxyRequest({
+          request: createMockApiRequest({
+            path: '/layer',
+            method: 'POST',
+            body: createLayerFormData(),
+          }),
+          deps: {
+            env: {
+              LUONNONMETSAKARTAT_MOCK_API_ENABLED: flag,
+              LUONNONMETSAKARTAT_API_URL: 'https://forests.example.org/api',
+              NODE_ENV: 'production',
+            },
+            fetchFn,
+          },
+        })
+      ).rejects.toThrow(
+        'Luonnonmetsakartat mock API cannot be enabled when NODE_ENV=production'
+      )
+      expect(getLuonnonmetsakartatMockLayers()).toEqual(before)
+      const createNext = async () => {
+        const response = await handleLuonnonmetsakartatDataProxyRequest({
+          request: createMockApiRequest({
+            path: '/layer',
+            method: 'POST',
+            body: createLayerFormData(),
+          }),
+          deps: { env: mockEnv, fetchFn },
+        })
+        expect(response.status).toBe(201)
+        return {
+          dto: await readJson(response),
+          state: getLuonnonmetsakartatMockLayers(),
+        }
+      }
+      const afterRefusal = await createNext()
+      resetLuonnonmetsakartatMockApiForTests()
+      expect(await createNext()).toEqual(afterRefusal)
+      expect(fetchFn).not.toHaveBeenCalled()
+    }
+  )
 
+  it('guards the default production process environment before mock or live dispatch', async () => {
+    const fetchFn = jest.fn<typeof fetch>(async () => {
+      throw new Error('Unexpected upstream access')
+    })
+    const before = getLuonnonmetsakartatMockLayers()
+    jest.replaceProperty(process, 'env', {
+      ...process.env,
+      NODE_ENV: 'production',
+      LUONNONMETSAKARTAT_MOCK_API_ENABLED: ' ON ',
+    })
     await expect(
       handleLuonnonmetsakartatDataProxyRequest({
-        request: new Request(
-          'https://map.example.org/api/luonnonmetsakartat/layers'
-        ),
+        request: createMockApiRequest({ path: '/layers', token: null }),
+        deps: { fetchFn },
+      })
+    ).rejects.toThrow(
+      'Luonnonmetsakartat mock API cannot be enabled when NODE_ENV=production'
+    )
+    expect(getLuonnonmetsakartatMockLayers()).toEqual(before)
+    expect(fetchFn).not.toHaveBeenCalled()
+  })
+
+  it.each([undefined, '', '0', 'false', 'off', 'no', 'unknown'])(
+    'uses the live proxy boundary in production when mock flag is %s',
+    async (flag) => {
+      const fetchFn = jest.fn<typeof fetch>(async () => {
+        throw new Error('Unexpected upstream access')
+      })
+      const response = await handleLuonnonmetsakartatDataProxyRequest({
+        request: createMockApiRequest({ path: '/layers', token: null }),
         deps: {
           env: {
-            LUONNONMETSAKARTAT_MOCK_API_ENABLED: 'yes',
-            LUONNONMETSAKARTAT_API_URL: 'https://forests.example.org/api',
             NODE_ENV: 'production',
+            LUONNONMETSAKARTAT_MOCK_API_ENABLED: flag,
           },
           fetchFn,
         },
       })
-    ).rejects.toThrow(
-      'Luonnonmetsakartat mock API cannot be enabled when NODE_ENV=production. Unset LUONNONMETSAKARTAT_MOCK_API_ENABLED.'
-    )
-    expect(fetchFn).not.toHaveBeenCalled()
-  })
+      expect(response.status).toBe(500)
+      expect(await response.text()).toBe(
+        'LUONNONMETSAKARTAT_API_URL is not configured'
+      )
+      expect(fetchFn).not.toHaveBeenCalled()
+    }
+  )
 
   it('serves public mock layers without upstream config or auth', async () => {
     const fetchFn = jest.fn<typeof fetch>()
@@ -463,17 +487,6 @@ describe('handleLuonnonmetsakartatDataProxyRequest', () => {
       'mock-visible-layer',
       'mock-empty-layer',
     ])
-    expect(data.some((layer) => layer.id === 'mock-hidden-layer')).toBe(false)
-    expect(data[0]).toEqual(
-      expect.objectContaining({
-        id: 'mock-visible-layer',
-        color_code: '#2f855a',
-        created_ts: 1_735_689_600,
-        updated_ts: 1_735_776_000,
-      })
-    )
-    expect(data[0]).not.toHaveProperty('is_hidden')
-    expect(data[0]).not.toHaveProperty('col_options')
     expect(fetchFn).not.toHaveBeenCalled()
   })
 
@@ -661,6 +674,30 @@ describe('handleLuonnonmetsakartatDataProxyRequest', () => {
     ).toEqual([
       'https://example.org/mock/uploads/mock-visible-layer/mock-visible-area-no-picture/1-wfs%20upload.jpg',
     ])
+    const removePictures = await handleLuonnonmetsakartatDataProxyRequest({
+      request: createMockApiRequest({
+        path: '/layer/mock-visible-layer/area/mock-visible-area-no-picture',
+        method: 'PATCH',
+        body: createAreaPatchFormData({ pictures: '[]' }),
+      }),
+      deps: { env: mockEnv },
+    })
+    expect(removePictures.status).toBe(200)
+    const afterRemoval = await handleLuonnonmetsakartatDataProxyRequest({
+      request: createMockApiRequest({
+        path: createMockWfsPath(),
+        token: null,
+      }),
+      deps: { env: mockEnv },
+    })
+    expect(afterRemoval.status).toBe(200)
+    const removed = await readJson<MockWfsFeatureCollection>(afterRemoval)
+    expect(
+      removed.features.find(
+        (feature) => feature.properties.id === 'mock-visible-area-no-picture'
+      )?.properties.pictures
+    ).toBe('[]')
+
   })
 
   it('applies mock WFS visibility and auth rules', async () => {
@@ -834,692 +871,18 @@ describe('handleLuonnonmetsakartatDataProxyRequest', () => {
     })
   })
 
-  it('serves admin mock layers including hidden layers and col_options', async () => {
+  it('dispatches verified mock requests without upstream access', async () => {
+    const fetchFn = jest.fn<typeof fetch>(async () => {
+      throw new Error('Unexpected upstream access')
+    })
     const response = await handleLuonnonmetsakartatDataProxyRequest({
-      request: new Request(
-        'https://map.example.org/api/luonnonmetsakartat/layers',
-        {
-          headers: {
-            Authorization: `bearer ${MOCK_AUTH_ACCESS_TOKEN}`,
-          },
-        }
-      ),
-      deps: {
-        env: mockEnv,
-      },
-    })
-    const data = await readJson<MockLayerApiItem[]>(response)
-
-    expect(response.status).toBe(200)
-    expect(data.map((layer) => layer.id)).toEqual([
-      'mock-visible-layer',
-      'mock-hidden-layer',
-      'mock-empty-layer',
-    ])
-    expect(data.find((layer) => layer.id === 'mock-hidden-layer')).toEqual(
-      expect.objectContaining({
-        is_hidden: true,
-        col_options: expect.objectContaining({
-          indexingStrategy: 'id',
-          nameCol: 'name',
-          municipalityCol: 'municipality',
-        }),
-      })
-    )
-    expect(data.every((layer) => layer.col_options != null)).toBe(true)
-  })
-
-  it('does not fall back to public layers for rejected or unknown auth', async () => {
-    const rejectedResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: new Request(
-        'https://map.example.org/api/luonnonmetsakartat/layers',
-        {
-          headers: createAuthHeaders(MOCK_AUTH_REJECTED_ACCESS_TOKEN),
-        }
-      ),
-      deps: {
-        env: mockEnv,
-      },
-    })
-    const unknownResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: new Request(
-        'https://map.example.org/api/luonnonmetsakartat/layers',
-        {
-          headers: createAuthHeaders('unknown-token'),
-        }
-      ),
-      deps: {
-        env: mockEnv,
-      },
-    })
-
-    expect(rejectedResponse.status).toBe(403)
-    expect(await readJson(rejectedResponse)).toEqual({
-      error: 'Mock admin access rejected',
-      is_editor: false,
-      is_admin: false,
-    })
-    expect(unknownResponse.status).toBe(401)
-    expect(await readJson(unknownResponse)).toEqual({
-      error: 'Mock admin authorization required',
-      is_editor: false,
-      is_admin: false,
-    })
-  })
-
-  it('validates verified, rejected, missing, and unknown mock admin auth', async () => {
-    const verifiedResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: new Request(
-        'https://map.example.org/api/luonnonmetsakartat/admin/validate',
-        {
-          headers: createAuthHeaders(MOCK_AUTH_ACCESS_TOKEN),
-        }
-      ),
-      deps: {
-        env: mockEnv,
-      },
-    })
-    const rejectedResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: new Request(
-        'https://map.example.org/api/luonnonmetsakartat/admin/validate',
-        {
-          headers: createAuthHeaders(MOCK_AUTH_REJECTED_ACCESS_TOKEN),
-        }
-      ),
-      deps: {
-        env: mockEnv,
-      },
-    })
-    const missingResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: new Request(
-        'https://map.example.org/api/luonnonmetsakartat/admin/validate'
-      ),
-      deps: {
-        env: mockEnv,
-      },
-    })
-    const unknownResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: new Request(
-        'https://map.example.org/api/luonnonmetsakartat/admin/validate',
-        {
-          headers: createAuthHeaders('unknown-token'),
-        }
-      ),
-      deps: {
-        env: mockEnv,
-      },
-    })
-
-    expect(verifiedResponse.status).toBe(200)
-    expect(await readJson(verifiedResponse)).toEqual({
-      is_editor: true,
-      is_admin: true,
-    })
-    expect(rejectedResponse.status).toBe(403)
-    expect(await readJson(rejectedResponse)).toEqual({
-      error: 'Mock admin access rejected',
-      is_editor: false,
-      is_admin: false,
-    })
-    expect(missingResponse.status).toBe(401)
-    expect(await readJson(missingResponse)).toEqual({
-      error: 'Mock admin authorization required',
-      is_editor: false,
-      is_admin: false,
-    })
-    expect(unknownResponse.status).toBe(401)
-  })
-
-  it('serves admin layer detail and deterministic layer id errors', async () => {
-    const knownResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: new Request(
-        'https://map.example.org/api/luonnonmetsakartat/layer/mock-visible-layer',
-        {
-          headers: createAuthHeaders(MOCK_AUTH_ACCESS_TOKEN),
-        }
-      ),
-      deps: {
-        env: mockEnv,
-      },
-    })
-    const unknownResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: new Request(
-        'https://map.example.org/api/luonnonmetsakartat/layer/unknown-layer',
-        {
-          headers: createAuthHeaders(MOCK_AUTH_ACCESS_TOKEN),
-        }
-      ),
-      deps: {
-        env: mockEnv,
-      },
-    })
-    const missingIdResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: new Request(
-        'https://map.example.org/api/luonnonmetsakartat/layer',
-        {
-          headers: createAuthHeaders(MOCK_AUTH_ACCESS_TOKEN),
-        }
-      ),
-      deps: {
-        env: mockEnv,
-      },
-    })
-
-    expect(knownResponse.status).toBe(200)
-    expect(await readJson(knownResponse)).toEqual(
-      expect.objectContaining({
-        id: 'mock-visible-layer',
-        name: 'Mock visible forest layer',
-        color_code: '#2f855a',
-        is_hidden: false,
-        created_ts: 1_735_689_600,
-        updated_ts: 1_735_776_000,
-        col_options: expect.objectContaining({
-          areaCol: 'area_ha',
-        }),
-      })
-    )
-    expect(unknownResponse.status).toBe(404)
-    expect(await readJson(unknownResponse)).toEqual({
-      error: 'Mock layer not found',
-    })
-    expect(missingIdResponse.status).toBe(400)
-    expect(await readJson(missingIdResponse)).toEqual({
-      error: 'Missing required layer id',
-    })
-  })
-
-  it('requires verified admin auth for mock layer mutations without changing state', async () => {
-    const missingAuthResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: createMockApiRequest({
-        body: createLayerFormData(),
-        method: 'POST',
-        path: '/layer',
-        token: null,
-      }),
-      deps: {
-        env: mockEnv,
-      },
-    })
-    const rejectedAuthResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: createMockApiRequest({
-        method: 'DELETE',
-        path: '/layer/mock-visible-layer',
-        token: MOCK_AUTH_REJECTED_ACCESS_TOKEN,
-      }),
-      deps: {
-        env: mockEnv,
-      },
-    })
-
-    expect(missingAuthResponse.status).toBe(401)
-    expect(await readJson(missingAuthResponse)).toEqual({
-      error: 'Mock admin authorization required',
-      is_editor: false,
-      is_admin: false,
-    })
-    expect(rejectedAuthResponse.status).toBe(403)
-    expect(await readJson(rejectedAuthResponse)).toEqual({
-      error: 'Mock admin access rejected',
-      is_editor: false,
-      is_admin: false,
-    })
-    expect(getLuonnonmetsakartatMockLayers().map((layer) => layer.id)).toEqual([
-      'mock-visible-layer',
-      'mock-hidden-layer',
-      'mock-empty-layer',
-    ])
-  })
-
-  it('creates deterministic mock layers from multipart import fields and resets them', async () => {
-    const createResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: createMockApiRequest({
-        body: createLayerFormData({
-          colorCode: '#abcdef',
-          isHidden: true,
-          name: 'Uploaded forests',
-        }),
-        method: 'POST',
-        path: '/layer',
-      }),
-      deps: {
-        env: mockEnv,
-      },
-    })
-    const createdLayer = await readJson<MockLayerApiItem>(createResponse)
-
-    expect(createResponse.status).toBe(201)
-    expect(createdLayer).toEqual(
-      expect.objectContaining({
-        id: 'mock-created-layer-1',
-        name: 'Uploaded forests',
-        description: '',
-        color_code: '#abcdef',
-        is_hidden: true,
-        created_ts: 1_735_779_660,
-        updated_ts: 1_735_779_660,
-        col_options: {
-          indexingStrategy: 'name_municipality',
-          idCol: 'external_id',
-          nameCol: 'forest_name',
-          municipalityCol: 'municipality_name',
-          regionCol: 'region_name',
-          descriptionCol: 'forest_description',
-          areaCol: 'area_hectares',
-        },
-      })
-    )
-
-    const listResponse = await handleLuonnonmetsakartatDataProxyRequest({
       request: createMockApiRequest({ path: '/layers' }),
-      deps: {
-        env: mockEnv,
-      },
+      deps: { env: mockEnv, fetchFn },
     })
-    const layerIds = (await readJson<MockLayerApiItem[]>(listResponse)).map(
-      (layer) => layer.id
-    )
-    const detailResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: createMockApiRequest({ path: '/layer/mock-created-layer-1' }),
-      deps: {
-        env: mockEnv,
-      },
-    })
-    const createdAreas =
-      getLuonnonmetsakartatMockLayerAreas('mock-created-layer-1')
-
-    expect(layerIds).toEqual([
-      'mock-visible-layer',
-      'mock-hidden-layer',
-      'mock-empty-layer',
-      'mock-created-layer-1',
-    ])
-    expect(detailResponse.status).toBe(200)
-    expect(await readJson<MockLayerApiItem>(detailResponse)).toEqual(
-      createdLayer
-    )
-    expect(createdAreas?.features.map((feature) => feature.id)).toEqual([
-      'mock-created-layer-1-area-1',
-      'mock-created-layer-1-area-2',
-    ])
-    expect(createdAreas?.features[0].properties).toEqual(
-      expect.objectContaining({
-        id: 'mock-created-layer-1-area-1',
-        layer_id: 'mock-created-layer-1',
-        name: 'Uploaded forests mock area 1',
-        created_ts: '2025-02-01T00:01:00.000Z',
-        updated_ts: '2025-02-01T00:01:00.000Z',
-      })
-    )
-
-    resetLuonnonmetsakartatMockApiForTests()
-
-    const recreatedResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: createMockApiRequest({
-        body: createLayerFormData({
-          colorCode: '#abcdef',
-          isHidden: true,
-          name: 'Uploaded forests',
-        }),
-        method: 'POST',
-        path: '/layer',
-      }),
-      deps: {
-        env: mockEnv,
-      },
-    })
-
-    expect(await readJson<MockLayerApiItem>(recreatedResponse)).toEqual(
-      createdLayer
-    )
-  })
-
-  it('patches layer metadata and preserves areas when a raw update zip is present', async () => {
-    const beforePatch =
-      getLuonnonmetsakartatMockLayerAreas('mock-visible-layer')
-    const patchResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: createMockApiRequest({
-        body: createPatchFormData({
-          colorCode: '#654321',
-          deleteAreasNotUpdated: true,
-          indexingStrategy: 'id',
-          isHidden: true,
-          name: 'Patched forests',
-          zipFile: true,
-        }),
-        method: 'PATCH',
-        path: '/layer/mock-visible-layer',
-      }),
-      deps: {
-        env: mockEnv,
-      },
-    })
-    const patchedLayer = await readJson<MockLayerApiItem>(patchResponse)
-    const afterPatch = getLuonnonmetsakartatMockLayerAreas('mock-visible-layer')
-
-    expect(patchResponse.status).toBe(200)
-    expect(patchedLayer).toEqual(
-      expect.objectContaining({
-        id: 'mock-visible-layer',
-        name: 'Patched forests',
-        color_code: '#654321',
-        is_hidden: true,
-        created_ts: 1_735_689_600,
-        updated_ts: 1_735_779_660,
-        col_options: {
-          indexingStrategy: 'id',
-          idCol: 'patched_id',
-          nameCol: 'patched_name',
-          municipalityCol: 'patched_municipality',
-          regionCol: 'patched_region',
-          descriptionCol: 'patched_description',
-          areaCol: 'patched_area',
-        },
-      })
-    )
-    expect(afterPatch).toEqual(beforePatch)
-  })
-
-  it('attaches deterministic picture URLs to mock areas from bulk image fields', async () => {
-    const patchResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: createMockApiRequest({
-        body: createPatchFormData({
-          bulkAreaIds: ['mock-visible-area-no-picture'],
-          bulkImageNames: ['ridge new.jpg'],
-        }),
-        method: 'PATCH',
-        path: '/layer/mock-visible-layer',
-      }),
-      deps: {
-        env: mockEnv,
-      },
-    })
-    const patchedLayer = await readJson<MockLayerApiItem>(patchResponse)
-    const areas = getLuonnonmetsakartatMockLayerAreas('mock-visible-layer')
-    const updatedFeature = areas?.features.find(
-      (feature) => feature.id === 'mock-visible-area-no-picture'
-    )
-
-    expect(patchResponse.status).toBe(200)
-    expect(patchedLayer.updated_ts).toBe(1_735_779_720)
-    expect(updatedFeature?.properties.updated_ts).toBe(
-      '2025-02-01T00:01:00.000Z'
-    )
-    expect(JSON.parse(updatedFeature?.properties.pictures ?? '[]')).toEqual([
-      'https://example.org/mock/uploads/mock-visible-layer/mock-visible-area-no-picture/1-ridge%20new.jpg',
-    ])
-  })
-
-  it('returns deterministic errors for invalid or unknown bulk picture targets', async () => {
-    const mismatchedResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: createMockApiRequest({
-        body: createPatchFormData({
-          bulkImageNames: ['missing-area-id.jpg'],
-        }),
-        method: 'PATCH',
-        path: '/layer/mock-visible-layer',
-      }),
-      deps: {
-        env: mockEnv,
-      },
-    })
-    const unknownAreaResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: createMockApiRequest({
-        body: createPatchFormData({
-          bulkAreaIds: ['unknown-area'],
-          bulkImageNames: ['unknown-area.jpg'],
-        }),
-        method: 'PATCH',
-        path: '/layer/mock-visible-layer',
-      }),
-      deps: {
-        env: mockEnv,
-      },
-    })
-
-    expect(mismatchedResponse.status).toBe(400)
-    expect(await readJson(mismatchedResponse)).toEqual({
-      error: 'bulk_images and bulk_area_ids must be aligned',
-    })
-    expect(unknownAreaResponse.status).toBe(404)
-    expect(await readJson(unknownAreaResponse)).toEqual({
-      error: 'Mock area not found',
-    })
+    expect(response.status).toBe(200)
     expect(
-      getLuonnonmetsakartatMockLayerAreas('mock-visible-layer')?.features.find(
-        (feature) => feature.id === 'mock-visible-area-no-picture'
-      )?.properties.pictures
-    ).toBeUndefined()
-  })
-
-  it('deletes mock layers and their area data with deterministic not-found behavior', async () => {
-    await handleLuonnonmetsakartatDataProxyRequest({
-      request: createMockApiRequest({
-        body: createLayerFormData({ name: 'Layer to delete' }),
-        method: 'POST',
-        path: '/layer',
-      }),
-      deps: {
-        env: mockEnv,
-      },
-    })
-
-    const deleteResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: createMockApiRequest({
-        method: 'DELETE',
-        path: '/layer/mock-created-layer-1',
-      }),
-      deps: {
-        env: mockEnv,
-      },
-    })
-    const deletedDetailResponse = await handleLuonnonmetsakartatDataProxyRequest(
-      {
-        request: createMockApiRequest({ path: '/layer/mock-created-layer-1' }),
-        deps: {
-          env: mockEnv,
-        },
-      }
-    )
-    const unknownDeleteResponse = await handleLuonnonmetsakartatDataProxyRequest(
-      {
-        request: createMockApiRequest({
-          method: 'DELETE',
-          path: '/layer/unknown-layer',
-        }),
-        deps: {
-          env: mockEnv,
-        },
-      }
-    )
-
-    expect(deleteResponse.status).toBe(200)
-    expect(await readJson(deleteResponse)).toEqual({
-      id: 'mock-created-layer-1',
-      deleted: true,
-    })
-    expect(getLuonnonmetsakartatMockLayerAreas('mock-created-layer-1')).toBeNull()
-    expect(deletedDetailResponse.status).toBe(404)
-    expect(unknownDeleteResponse.status).toBe(404)
-    expect(await readJson(unknownDeleteResponse)).toEqual({
-      error: 'Mock layer not found',
-    })
-  })
-
-  it('patches editable area properties while preserving protected feature data', async () => {
-    const beforePatch = getLuonnonmetsakartatMockLayerAreas(
-      'mock-visible-layer'
-    )?.features.find((feature) => feature.id === 'mock-visible-area-picture')
-    const originalGeometry = beforePatch?.geometry
-    const areaPatchResponse = await handleLuonnonmetsakartatDataProxyRequest({
-      request: createMockApiRequest({
-        body: createAreaPatchFormData({
-          name: 'Edited Ridge Forest',
-          description: 'Edited description',
-          municipality: 'Helsinki',
-          region: 'Edited region',
-          id: 'attempted-id-change',
-          area_ha: '999',
-          created_ts: '1900-01-01T00:00:00.000Z',
-          layer_id: 'attempted-layer-change',
-        }),
-        method: 'PATCH',
-        path: '/layer/mock-visible-layer/area/mock-visible-area-picture',
-      }),
-      deps: {
-        env: mockEnv,
-      },
-    })
-    const updatedFeature = await readJson<FolayerFeature>(areaPatchResponse)
-    const storedFeature = getLuonnonmetsakartatMockLayerAreas(
-      'mock-visible-layer'
-    )?.features.find((feature) => feature.id === 'mock-visible-area-picture')
-
-    expect(areaPatchResponse.status).toBe(200)
-    expect(updatedFeature.properties).toEqual(
-      expect.objectContaining({
-        id: 'mock-visible-area-picture',
-        name: 'Edited Ridge Forest',
-        description: 'Edited description',
-        municipality: 'Helsinki',
-        region: 'Edited region',
-        area_ha: 12.34,
-        created_ts: '2025-01-01T00:00:00.000Z',
-        layer_id: 'mock-visible-layer',
-        updated_ts: '2025-02-01T00:01:00.000Z',
-      })
-    )
-    expect(updatedFeature.geometry).toEqual(originalGeometry)
-    expect(storedFeature).toEqual(updatedFeature)
-  })
-
-  it('returns deterministic not-found responses for unknown layer and area mutations', async () => {
-    const unknownLayerPatchResponse =
-      await handleLuonnonmetsakartatDataProxyRequest({
-        request: createMockApiRequest({
-          body: createPatchFormData({ name: 'Unknown' }),
-          method: 'PATCH',
-          path: '/layer/unknown-layer',
-        }),
-        deps: {
-          env: mockEnv,
-        },
-      })
-    const unknownAreaLayerResponse =
-      await handleLuonnonmetsakartatDataProxyRequest({
-        request: createMockApiRequest({
-          body: createAreaPatchFormData({ name: 'Unknown' }),
-          method: 'PATCH',
-          path: '/layer/unknown-layer/area/mock-visible-area-picture',
-        }),
-        deps: {
-          env: mockEnv,
-        },
-      })
-    const unknownFeatureResponse =
-      await handleLuonnonmetsakartatDataProxyRequest({
-        request: createMockApiRequest({
-          body: createAreaPatchFormData({ name: 'Unknown' }),
-          method: 'PATCH',
-          path: '/layer/mock-visible-layer/area/unknown-area',
-        }),
-        deps: {
-          env: mockEnv,
-        },
-      })
-
-    expect(unknownLayerPatchResponse.status).toBe(404)
-    expect(await readJson(unknownLayerPatchResponse)).toEqual({
-      error: 'Mock layer not found',
-    })
-    expect(unknownAreaLayerResponse.status).toBe(404)
-    expect(await readJson(unknownAreaLayerResponse)).toEqual({
-      error: 'Mock layer not found',
-    })
-    expect(unknownFeatureResponse.status).toBe(404)
-    expect(await readJson(unknownFeatureResponse)).toEqual({
-      error: 'Mock area not found',
-    })
-  })
-
-  it('returns method-not-allowed errors for out-of-scope mock mutations', async () => {
-    const response = await handleLuonnonmetsakartatDataProxyRequest({
-      request: new Request(
-        'https://map.example.org/api/luonnonmetsakartat/layers',
-        {
-          method: 'POST',
-        }
-      ),
-      deps: {
-        env: mockEnv,
-      },
-    })
-
-    expect(response.status).toBe(405)
-    expect(await readJson(response)).toEqual({ error: 'Method not allowed' })
-  })
-
-  it('keeps resettable mock seed data stable and returns cloned areas', () => {
-    const layers = getLuonnonmetsakartatMockLayers()
-
-    expect(layers.map((layer) => [layer.id, layer.created_ts])).toEqual([
-      ['mock-visible-layer', 1_735_689_600],
-      ['mock-hidden-layer', 1_735_689_660],
-      ['mock-empty-layer', 1_735_689_720],
-    ])
-
-    layers[0].name = 'Mutated through test clone'
-    layers[0].areas.features[0].properties.name = 'Mutated area clone'
-
-    expect(getLuonnonmetsakartatMockLayers()[0]).toEqual(
-      expect.objectContaining({
-        id: 'mock-visible-layer',
-        name: 'Mock visible forest layer',
-      })
-    )
-
-    resetLuonnonmetsakartatMockApiForTests()
-
-    const visibleAreas =
-      getLuonnonmetsakartatMockLayerAreas('mock-visible-layer')
-    const withPictures = visibleAreas?.features.find(
-      (feature) => feature.properties.id === 'mock-visible-area-picture'
-    )
-    const withoutPictures = visibleAreas?.features.find(
-      (feature) => feature.properties.id === 'mock-visible-area-no-picture'
-    )
-
-    expect(visibleAreas?.features).toHaveLength(2)
-    expect(withPictures?.properties).toEqual(
-      expect.objectContaining({
-        id: 'mock-visible-area-picture',
-        name: 'Mock Ridge Forest',
-        municipality: 'Espoo',
-        region: 'Uusimaa',
-        description: 'Old spruce stand with a small wetland edge.',
-        date: '2025-05-10',
-        area_ha: 12.34,
-        layer_id: 'mock-visible-layer',
-      })
-    )
-    expect(JSON.parse(withPictures?.properties.pictures ?? '[]')).toEqual([
-      'https://example.org/mock/forest-ridge-1.jpg',
-      'https://example.org/mock/forest-ridge-2.jpg',
-    ])
-    expect(withPictures?.geometry.type).toBe('Polygon')
-    expect(withPictures?.geometry.coordinates[0][0]).toEqual([24.85, 60.22])
-    expect(withoutPictures?.properties).toEqual(
-      expect.objectContaining({
-        id: 'mock-visible-area-no-picture',
-        municipality: 'Lohja',
-        region: 'Uusimaa',
-        date: '2024-09-18',
-        area_ha: 7.89,
-      })
-    )
-    expect(withoutPictures?.properties.pictures).toBeUndefined()
-    expect(
-      getLuonnonmetsakartatMockLayerAreas('mock-empty-layer')?.features
-    ).toEqual([])
+      (await readJson<MockLayerApiItem[]>(response)).map((layer) => layer.id)
+    ).toEqual(['mock-visible-layer', 'mock-hidden-layer', 'mock-empty-layer'])
+    expect(fetchFn).not.toHaveBeenCalled()
   })
 })

@@ -254,19 +254,66 @@ describe('handleUserinfoRequest', () => {
     }
   )
 
-  it('rejects clearly when mock auth is enabled in production', async () => {
+  it('rejects production mock auth before token, configuration or transport access', async () => {
+    const getAccessToken = jest.fn<AccessTokenGetter>(async () => {
+      throw new Error('Unexpected token access')
+    })
+    const getAuthEnv = jest.fn(() => {
+      throw new Error('Unexpected auth configuration access')
+    })
+    const fetchFn = jest.fn<typeof fetch>(async () => {
+      throw new Error('Unexpected network access')
+    })
     await expect(
       handleUserinfoRequest({
         request: new Request('https://map.example.org/api/userinfo'),
         deps: {
-          env: {
-            PUBLIC_MOCK_AUTH_ENABLED: '1',
-            NODE_ENV: 'production',
-          },
-          getAccessToken: jest.fn<AccessTokenGetter>(),
+          env: { PUBLIC_MOCK_AUTH_ENABLED: '1', NODE_ENV: 'production' },
+          getAccessToken,
+          getAuthEnv,
+          fetchFn,
         },
       })
     ).rejects.toThrow('Mock auth cannot be enabled when NODE_ENV=production')
+    expect(getAccessToken).not.toHaveBeenCalled()
+    expect(getAuthEnv).not.toHaveBeenCalled()
+    expect(fetchFn).not.toHaveBeenCalled()
+  })
+
+  it('does not enable production mock auth from URL, cookie or initial state when the flag is disabled', async () => {
+    const getAccessToken = createAccessTokenGetter(
+      createTokenError('NoSession')
+    )
+    const getAuthEnv = jest.fn(() => {
+      throw new Error('Unexpected auth configuration access')
+    })
+    const fetchFn = jest.fn<typeof fetch>(async () => {
+      throw new Error('Unexpected network access')
+    })
+    const request = new Request(
+      'https://map.example.org/api/userinfo?mockAuth=authenticated',
+      {
+        headers: { cookie: `${MOCK_AUTH_COOKIE_NAME}=authenticated` },
+      }
+    )
+    const response = await handleUserinfoRequest({
+      request,
+      deps: {
+        env: {
+          PUBLIC_MOCK_AUTH_ENABLED: '0',
+          PUBLIC_MOCK_AUTH_INITIAL_STATE: 'authenticated',
+          NODE_ENV: 'production',
+        },
+        getAccessToken,
+        getAuthEnv,
+        fetchFn,
+      },
+    })
+    expect(response.status).toBe(401)
+    expect(await response.text()).toBe('')
+    expect(getAccessToken).toHaveBeenCalledWith({ request })
+    expect(getAuthEnv).not.toHaveBeenCalled()
+    expect(fetchFn).not.toHaveBeenCalled()
   })
 
   it('returns 401 for missing sessions without calling Zitadel', async () => {

@@ -1,3 +1,4 @@
+import { afterEach, jest } from '@jest/globals'
 import {
   LUONNONMETSAKARTAT_MOCK_SCENARIOS_ENABLED_ENV,
   MOCK_LUONNONMETSAKARTAT_STATE_QUERY_PARAM,
@@ -7,6 +8,10 @@ import {
 } from './config'
 
 describe('Luonnonmetsakartat mock scenario config', () => {
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
   it('exports the canonical public flag and query parameter names', () => {
     expect(LUONNONMETSAKARTAT_MOCK_SCENARIOS_ENABLED_ENV).toBe(
       'PUBLIC_LUONNONMETSAKARTAT_MOCK_SCENARIOS_ENABLED'
@@ -41,23 +46,44 @@ describe('Luonnonmetsakartat mock scenario config', () => {
     }
   )
 
-  it('refuses enabled mock scenarios in production', () => {
-    expect(() =>
-      assertLuonnonmetsakartatMockScenariosAllowed({
-        PUBLIC_LUONNONMETSAKARTAT_MOCK_SCENARIOS_ENABLED: 'yes',
+  it.each(['1', 'true', 'yes', 'on', ' TrUe '])(
+    'refuses production scenarios through the runtime getter for %s',
+    (flag) => {
+      const env = {
+        PUBLIC_LUONNONMETSAKARTAT_MOCK_SCENARIOS_ENABLED: flag,
         NODE_ENV: 'production',
-      })
-    ).toThrow(
-      'Luonnonmetsakartat mock scenarios cannot be enabled when NODE_ENV=production. Unset PUBLIC_LUONNONMETSAKARTAT_MOCK_SCENARIOS_ENABLED.'
-    )
-  })
+      }
+      expect(() => isLuonnonmetsakartatMockScenariosEnabled(env)).toThrow(
+        'mock scenarios cannot be enabled when NODE_ENV=production'
+      )
+      expect(() => assertLuonnonmetsakartatMockScenariosAllowed(env)).toThrow(
+        'mock scenarios cannot be enabled when NODE_ENV=production'
+      )
+    }
+  )
 
-  it('allows production when the scenario flag is disabled', () => {
-    expect(() =>
-      assertLuonnonmetsakartatMockScenariosAllowed({
-        PUBLIC_LUONNONMETSAKARTAT_MOCK_SCENARIOS_ENABLED: '0',
-        NODE_ENV: 'production',
-      })
-    ).not.toThrow()
+  it.each([undefined, '', '0', 'false', 'off', 'no', 'unknown'])(
+    'keeps production scenarios disabled for %s',
+    (flag) => {
+      expect(
+        isLuonnonmetsakartatMockScenariosEnabled({
+          PUBLIC_LUONNONMETSAKARTAT_MOCK_SCENARIOS_ENABLED: flag,
+          NODE_ENV: 'production',
+        })
+      ).toBe(false)
+    }
+  )
+
+  it('guards the runtime getter with the default process environment', () => {
+    jest.replaceProperty(process, 'env', {
+      ...process.env,
+      NODE_ENV: 'production',
+      PUBLIC_LUONNONMETSAKARTAT_MOCK_SCENARIOS_ENABLED: ' ON ',
+    })
+    expect(() => isLuonnonmetsakartatMockScenariosEnabled()).toThrow(
+      'mock scenarios cannot be enabled when NODE_ENV=production'
+    )
+    process.env.PUBLIC_LUONNONMETSAKARTAT_MOCK_SCENARIOS_ENABLED = '0'
+    expect(isLuonnonmetsakartatMockScenariosEnabled()).toBe(false)
   })
 })

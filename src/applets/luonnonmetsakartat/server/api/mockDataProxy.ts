@@ -1122,6 +1122,17 @@ export const handleLuonnonmetsakartatMockApiRequest = async ({
     return jsonErrorResponse('Mock proxy path is missing', 404)
   }
 
+  // Validate escapes before individual route fields are decoded. Keep the
+  // encoded path for routing so encoded separators cannot introduce routes.
+  try {
+    decodeURIComponent(mockPath)
+  } catch (error) {
+    if (error instanceof URIError) {
+      return jsonErrorResponse('Malformed mock URL encoding', 400)
+    }
+    throw error
+  }
+
   const authStatus = getMockAuthStatus(request)
 
   if (mockPath.startsWith('/geoserver/')) {

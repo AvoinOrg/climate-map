@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals'
+import { afterEach, describe, expect, it, jest } from '@jest/globals'
 
 import {
   DEFAULT_MOCK_AUTH_STATE,
@@ -11,6 +11,7 @@ import {
   createMockAuthSession,
   createMockUserInfo,
   isAuthenticatedMockAuthState,
+  isMockAuthEnabled,
   parseMockAuthState,
   resolveMockAuthConfig,
   resolveRequestMockAuthState,
@@ -18,13 +19,7 @@ import {
   type MockAuthState,
 } from './mock'
 
-const createRequest = ({
-  cookie,
-  url,
-}: {
-  cookie?: string
-  url: string
-}) =>
+const createRequest = ({ cookie, url }: { cookie?: string; url: string }) =>
   ({
     headers: {
       get: (name: string) =>
@@ -34,6 +29,10 @@ const createRequest = ({
   }) as unknown as Request
 
 describe('mock auth helpers', () => {
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
   it.each<[string | null | undefined, MockAuthState]>([
     ['authenticated', 'authenticated'],
     ['auth', 'authenticated'],
@@ -110,13 +109,52 @@ describe('mock auth helpers', () => {
     })
   })
 
-  it('refuses enabled mock auth in production', () => {
-    expect(() =>
-      resolveMockAuthConfig({
-        PUBLIC_MOCK_AUTH_ENABLED: '1',
-        NODE_ENV: 'production',
-      })
-    ).toThrow('Mock auth cannot be enabled when NODE_ENV=production')
+  it.each(['1', 'true', 'yes', 'on', ' TrUe '])(
+    'enables %s in tests but refuses production through runtime auth config/getter',
+    (flag) => {
+      expect(
+        resolveMockAuthConfig({
+          PUBLIC_MOCK_AUTH_ENABLED: flag,
+          NODE_ENV: 'test',
+        }).enabled
+      ).toBe(true)
+      const env = { PUBLIC_MOCK_AUTH_ENABLED: flag, NODE_ENV: 'production' }
+      expect(() => resolveMockAuthConfig(env)).toThrow(
+        'Mock auth cannot be enabled when NODE_ENV=production'
+      )
+      expect(() => isMockAuthEnabled(env)).toThrow(
+        'Mock auth cannot be enabled when NODE_ENV=production'
+      )
+    }
+  )
+
+  it.each([undefined, '', '0', 'false', 'no', 'off', 'unknown'])(
+    'keeps production auth disabled for %s even with an authenticated initial state',
+    (flag) => {
+      expect(
+        resolveMockAuthConfig({
+          PUBLIC_MOCK_AUTH_ENABLED: flag,
+          PUBLIC_MOCK_AUTH_INITIAL_STATE: 'authenticated',
+          NODE_ENV: 'production',
+        })
+      ).toEqual({ enabled: false, initialState: 'authenticated' })
+    }
+  )
+
+  it('guards auth configuration using the default process environment', () => {
+    jest.replaceProperty(process, 'env', {
+      ...process.env,
+      NODE_ENV: 'production',
+      PUBLIC_MOCK_AUTH_ENABLED: ' ON ',
+    })
+    expect(() => resolveMockAuthConfig()).toThrow(
+      'Mock auth cannot be enabled when NODE_ENV=production'
+    )
+    expect(() => isMockAuthEnabled()).toThrow(
+      'Mock auth cannot be enabled when NODE_ENV=production'
+    )
+    process.env.PUBLIC_MOCK_AUTH_ENABLED = '0'
+    expect(resolveMockAuthConfig().enabled).toBe(false)
   })
 
   it('resolves request state with URL over cookie over env precedence', () => {
