@@ -30,10 +30,7 @@ import SwitchWithLabel from '#/components/common/SwitchWithLabel'
 import { useSidebarActivityLoader } from '#/common/hooks/ui/useSidebarActivityLoader'
 import BigMenuButton from '#/components/common/BigMenuButton'
 import TText from '#/components/common/TText'
-import {
-  useAppParams,
-  useAppRouter,
-} from '#/common/navigation/navigation'
+import { useAppParams, useAppRouter } from '#/common/navigation/navigation'
 
 import {
   FolayerConfState,
@@ -302,6 +299,13 @@ const LuonnonmetsakartatAdminLayerFolayerSettingsPage = () => {
     useState<boolean>(false)
   const shpRef = useRef<FolayerUpdateShpRef>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const fileReadVersion = useRef(0)
+  useEffect(
+    () => () => {
+      fileReadVersion.current += 1
+    },
+    []
+  )
   const params = useAppParams<{ folayerIdSlug: string }>()
   const router = useAppRouter()
   const buildAppRouteHref = useAppRouteHrefBuilder()
@@ -325,39 +329,31 @@ const LuonnonmetsakartatAdminLayerFolayerSettingsPage = () => {
   const localAdminFolayerDeleteMutation = useMutation(
     useAdminFolayerDeleteMutationOptions()
   )
-  const isFolayerReady =
-    adminFolayerConf?.state === FolayerConfState.Idle
+  const isFolayerReady = adminFolayerConf?.state === FolayerConfState.Idle
   const isSaving =
     adminFolayerConf?.state === FolayerConfState.Saving ||
     localAdminFolayerPatchMutation.isPending
 
-  const handleFileInput = async (e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) {
-      return
-    }
-
-    const f = e.target.files[0]
+  const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const version = ++fileReadVersion.current
     const reader = new window.FileReader()
-    reader.readAsArrayBuffer(f)
-
-    const newArrayBuffers: ArrayBuffer[] = []
-
-    reader.onloadend = async () => {
-      if (reader.result != null) {
-        setFileName(f.name)
-        if (typeof reader.result !== 'string') {
-          const ext = f.name.split('.').pop()?.toLowerCase()
-          if (ext === 'zip' || ext === 'shp') {
-            setFileType('shp')
-            newArrayBuffers.push(reader.result)
-          }
-          setArrayBuffers(newArrayBuffers)
-        } else {
-          console.error('reader.result is a string, not an ArrayBuffer')
-        }
-      }
-      e.target.value = ''
+    setFileName(file.name)
+    setFileType('shp')
+    setArrayBuffers(undefined)
+    setIsUpdateValid(false)
+    reader.onloadend = () => {
+      if (fileReadVersion.current !== version) return
+      // Empty input deliberately follows the same visible parse-failure path.
+      setArrayBuffers([
+        reader.result instanceof ArrayBuffer
+          ? reader.result
+          : new ArrayBuffer(0),
+      ])
     }
+    reader.readAsArrayBuffer(file)
+    e.target.value = ''
   }
 
   useEffect(() => {
@@ -429,29 +425,30 @@ const LuonnonmetsakartatAdminLayerFolayerSettingsPage = () => {
     event.nativeEvent.stopImmediatePropagation()
 
     if (adminFolayerConf) {
-      // Gather shapefile colOptions and confirm validity
+      const version = fileReadVersion.current
+      // A selected replacement must have current, validated values.
       const shpValues = await new Promise<FolayerUpdateValues>((resolve) => {
         if (!shpRef.current) return resolve(null)
         shpRef.current.getValues((vals) => resolve(vals))
       })
 
-      // Build payload, include raw shapefile, deleteAreasNotUpdated, and pictures when provided
+      if (version !== fileReadVersion.current || (fileName && !shpValues))
+        return
+
+      // Only the validated child result supplies replacement bytes and columns.
       const payload: FolayerPatchPayload = {
         ...adminFolayerConf,
       }
-      if (fileType && arrayBuffers?.length) {
-        if (shpValues && shpValues.colOptions) {
-          payload.colOptions = shpValues.colOptions
-        }
-        payload.rawShapefile = shpValues?.rawShapefile || arrayBuffers[0]
+      if (fileName && shpValues) {
+        payload.colOptions = shpValues.colOptions
+        payload.rawShapefile = shpValues.rawShapefile
         payload.deleteAreasNotUpdated = deleteAreasNotUpdated
       }
+      setIsLoading(true)
       localAdminFolayerPatchMutation.mutate(payload, {
         onSuccess: resetUpdateFileState,
       })
     }
-
-    setIsLoading(true)
   }
 
   const handleDeleteClick = async () => {
@@ -481,7 +478,7 @@ const LuonnonmetsakartatAdminLayerFolayerSettingsPage = () => {
     }
   }
 
-  const hasSelectedUpdate = fileType === 'shp' && Boolean(arrayBuffers?.length)
+  const hasSelectedUpdate = Boolean(fileName)
   const isSaveDisabledByUpdate = hasSelectedUpdate && !isUpdateValid
   const isSaveDisabled = isSaveDisabledByUpdate || isSaving
   const isDeleting = adminFolayerConf?.state === FolayerConfState.Deleting
@@ -515,9 +512,7 @@ const LuonnonmetsakartatAdminLayerFolayerSettingsPage = () => {
                 ns={'luonnonmetsakartat'}
               />
             </IconWithText>
-            <Box
-              sx={settingsPanelSx}
-            >
+            <Box sx={settingsPanelSx}>
               <TextFieldWithLabel
                 label={t('sidebar.admin.folayer.settings.name.header')}
                 value={nameDraft}
@@ -557,9 +552,7 @@ const LuonnonmetsakartatAdminLayerFolayerSettingsPage = () => {
               </SwitchWithLabel>
             </Box>
             {/* Import/update shapefile */}
-            <Box
-              sx={settingsPanelSx}
-            >
+            <Box sx={settingsPanelSx}>
               <BigMenuButton
                 variant="outlined"
                 component="label"

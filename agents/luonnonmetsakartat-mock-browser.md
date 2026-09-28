@@ -36,7 +36,7 @@ invoke runtime doctor with the failure and exact verification command (or ask
 the manager to delegate). For this feature:
 
 ```bash
-cd /workspace/codex-orch && PYTHONPATH=/workspace/codex-orch CODEX_ORCH_IN_CONTAINER=1 python3 -m codex_orch run-agent --project /workspace/project/.codex-orch/orch.toml --role runtime_doctor --feature F100.2-luonnonmetsakartat-mock-contract-tests
+cd /workspace/codex-orch && PYTHONPATH=/workspace/codex-orch CODEX_ORCH_IN_CONTAINER=1 python3 -m codex_orch run-agent --project /workspace/project/.codex-orch/orch.toml --role runtime_doctor --feature F100.3-luonnonmetsakartat-import-replacement-tests
 ```
 
 Poll the same yielded shell session until it exits and its run has `exit.json`.
@@ -122,9 +122,12 @@ Committed shapefile ZIP fixtures:
 
 - `test-data/luonnonmetsakartat/valid-layer.zip`
 - `test-data/luonnonmetsakartat/duplicate-id-layer.zip`
+- `test-data/luonnonmetsakartat/duplicate-name-municipality-layer.zip`
+- `test-data/luonnonmetsakartat/finnish-layer.zip`
+- `test-data/luonnonmetsakartat/mojibake-layer.zip`
 
-The fixture manifest is
-`test-data/luonnonmetsakartat/README.md`. The valid fixture should auto-detect
+The [fixture manifest](../test-data/luonnonmetsakartat/README.md) documents
+exact rows, deterministic regeneration and encoding limitations. The valid fixture should auto-detect
 `id`, `nimi`, `kunta`, `maakunta`, `kuvaus`, and `pinta_ala`. The duplicate
 fixture should stay on the import route and trigger duplicate-ID validation
 before any create POST.
@@ -133,7 +136,7 @@ before any create POST.
 
 - Imports create deterministic synthetic polygons/IDs/timestamps. ZIP bytes
   are not interpreted or validated by the mock API. Client parser and option
-  handoff evidence belongs to F100.3, separate from these mock contracts.
+  handoff evidence is covered by F100.3 (I01–I08), separate from these mock contracts.
 - Replacement PATCH validates `delete_areas_not_updated` for true/false/omitted
   inputs and can change metadata/columns. Existing areas, geometry, IDs and
   properties remain unchanged with an uninterpreted ZIP in every case. Flag
@@ -242,14 +245,14 @@ and applet store; it cannot prove a backend or rendered page contract.
 | M06 | Picture update/delete metadata | server/api/mockDataProxy.test.ts: `attaches ordered filename URL metadata, then replaces and removes the picture list without storage operations`, `rejects %s picture batch`; store append/recovery cases; dataProxy WFS removal readback | HTTP/store/integration | added-and-verified / F100.2 | Ordered repeated targets, seed retention, malformed pairs, valid+unknown atomicity; no binary/storage operations | M-J pass |
 | M07 | Unsupported routes/methods | server/api/mockDataProxy.test.ts: `returns 405 for $method $path`, deterministic not-found/path matrices, unsupported GeoServer cases, malformed percent encoding and valid encoded counterpart; retained wrapper TMS/WFS errors | HTTP/integration | added-and-verified / F100.2 | Malformed path escape now deterministic JSON 400; no route-policy changes | M-J pass |
 | M08 | Production guards for API/scenario/auth | mockDataProxy runtime enablement; dataProxy protected-write/default-env guard; common/mockScenarios/config.test.ts runtime getter; shared src/common/auth/mock.test.ts config/getter and src/runtime/api/userinfo.test.ts endpoint; store production reset refusal | guard/unit | added-and-verified / F100.2 | Truthy matrix, explicit/default env, disabled production branch, no token/config/fetch access on refusal, unchanged store/counters | M-J pass |
-| I01 | Valid ZIP parsing and column detection | helper utils/scripts/visual/luonnonmetsakartat-mock-smoke.test.js: parses valid fixture | helper | partial / F100.3 | UI detection vs parser evidence | Existing suites pass J-baseline / J-final; stated gap pending |
-| I02 | Missing shapefile parts and malformed ZIP | No direct test | unit/UI | pending F100.3 | Tiny deterministic fixtures | Pending child; no run claim |
-| I03 | Duplicate ID | helper smoke test: duplicate-ID fixture exposes duplicates | helper | partial / F100.3 | Actual client validation before POST | Existing suites pass J-baseline / J-final; stated gap pending |
-| I04 | Duplicate name + municipality | No direct test | unit/UI | pending F100.3 | Fixture and validation | Pending child; no run claim |
-| I05 | Blank/invalid identifiers and strings | No direct test | unit/UI | pending F100.3 | Explicit validation cases | Pending child; no run claim |
-| I06 | Encoding failures | No direct test | unit/UI | pending F100.3 | Deterministic failure fixture | Pending child; no run claim |
-| I07 | Both indexing modes and optional columns | Existing tiny fixture manifest; transport belongs to A06/A08 | unit/UI | pending F100.3 | Selection/detection/validation | Existing suites pass J-baseline / J-final; stated gap pending |
-| I08 | Replacement preserve/delete choice and handoff | No UI test | UI | pending F100.3 | Settings-to-mutation integration | Pending child; no run claim |
+| I01 | Valid ZIP parsing and column detection | common/folayerShapefile.test.ts: `parses two real WGS84 polygons`, `detects case-insensitively`; components/FolayerImportShp.test.tsx and FolayerUpdateShp.test.tsx: detected/manual columns | parser/UI | added-and-verified / F100.3 | First-feature columns; homogeneous multi-collection merge only. Existing two smoke-helper parser cases retained. | I-J / I-focused pass |
+| I02 | Missing shapefile parts and malformed ZIP | common/folayerShapefile.test.ts: `rejects %s safely`, `missing DBF`, `tolerates missing %s`, empty collection; both controls: failure/recovery; both pages: no mutation on parse failure | parser/UI | added-and-verified / F100.3 | SHP required by parser; DBF omission blocks selectors; SHX/PRJ/CPG tolerated for these fixtures, not arbitrary projections/encodings. | I-J / I-focused pass |
+| I03 | Duplicate ID | common/folayerShapefile.test.ts: numeric/string/zero/prototype IDs; both controls: duplicate-ID rejection; import page `does not create from %s`; settings `never patches hard invalid %s` | parser/UI | added-and-verified / F100.3 | Hard duplicates precede warnings. Browser now observes visible notification and zero create requests, without a console-error success signal. | I-J / I-focused / I-browser pass |
+| I04 | Duplicate name + municipality | common/folayerShapefile.test.ts: real duplicate-pair fixture and tuple-label collision; both controls and both page suites block the pair before mutation | parser/UI | added-and-verified / F100.3 | Unique IDs isolate pair duplication; strategy contrast covered. F100.6 consumes duplicate-name-municipality-layer.zip for browser coverage. | I-J / I-focused pass |
+| I05 | Blank/invalid identifiers and strings | common/folayerShapefile.test.ts: `does not invent an ID format rule`, `characterizes permissive string value handling`, required columns, deduplication and unsupported alphabet; control clearing/ref guards | policy/UI | added-and-verified / F100.3 | Present-column blank/null/non-string values remain permissive; IDs stringify, zero counts, null skips, no trimming/case folding. These are frontend limits, not backend acceptance. | I-J / I-focused pass |
+| I06 | Encoding failures | common/folayerShapefile.test.ts: real UTF-8 Finnish/mojibake and invalid-byte variant; both control suites: real dialog confirm/cancel; replacement page: cancellation sends nothing | parser/UI | added-and-verified / F100.3 | Pair identity errors block; ID name/municipality/region errors warn. Literal Ã and unsupported characters are heuristic, not comprehensive encoding detection. | I-J / I-focused pass |
+| I07 | Both indexing modes and optional columns | common/folayerShapefile.test.ts: detection/saved mapping/optional values; both controls: selection/clearing and locked replacement strategy; import page exact payload | parser/UI | added-and-verified / F100.3 | Required mappings must exist. Optional missing mappings are cleared/detected; descriptions/areas are not value-validated. A06/A08 retain HTTP serialization ownership. | I-J / I-focused pass |
+| I08 | Replacement preserve/delete choice and handoff | pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.replacement.test.tsx: both strategies, default false/toggle true/back false, exact bytes, confirmation/cancellation, reset, no-file save and FileReader races; components/FolayerShapefile.races.test.tsx | UI | added-and-verified / F100.3 | No fallback to unvalidated bytes. M05 remains mock semantics; L02 remains live geometry reconciliation; G04 remains general settings behavior. | I-J / I-focused pass |
 | R01 | Canonical main/standalone/locale contracts | shared src/common/routing/{publicRoutes,requestRouting,appletSelectionContract,routeMetadata}.test.ts; src/common/navigation/appRouteLinks.test.tsx; utils/scripts/{appletBuildConfig,prebuildFolderPrune}.test.js | unit | partial / F100.4 | Applet-specific regression audit | Existing suites pass J-baseline / J-final; stated gap pending |
 | R02 | Configured host and removed legacy paths | shared utils/scripts/writeNetlifyRedirects.test.js: no Luonnonmetsakartat legacy redirects; publicRoutes.test.ts | unit | partial / F100.4 | Exact host spelling and negative/pass-through behavior | Existing suites pass J-baseline / J-final; stated gap pending |
 | R03 | GET/POST/PUT/PATCH/DELETE forwarding | server/api/dataProxy.test.ts: live-proxy GET and PATCH | transport | partial / F100.4 | Remaining methods and shared proxy suite | Existing suites pass J-baseline / J-final; stated gap pending |
@@ -408,3 +411,61 @@ The passing smoke leaves server-memory mutations and has a tolerated console
 error; it does not complete F100.6 cleanup/strict-console acceptance. It is also
 not real GeoServer/PostGIS/object-storage/Zitadel acceptance. Later checks that
 need a pristine server seed must delegate that runtime work to the doctor.
+
+
+### F100.3 import/replacement verification (2026-09-28)
+
+- **I-baseline:** existing `common/utils.test.ts` and helper
+  `utils/scripts/visual/luonnonmetsakartat-mock-smoke.test.js`: 2 suites / 11 tests.
+  All existing map tests, smoke CLI/preflight tests and the two parser assertions
+  remain; the new domain suite owns the expanded matrix.
+- **I-J:** `yarn test:luonnonmetsakartat`: 49 suites / 929 tests passed.
+  `--listTests --json` discovers all seven new applet suites and the unchanged
+  23 shared allowlist entries; no package-script/config addition was needed.
+- **I-focused:** the seven suites below: 7 suites / 95 tests passed.
+- **I-shared:** shared DropDownSelectWithLabel, DropDownSelectInset,
+  TextFieldWithLabel and Button tests: 4 suites / 34 tests passed.
+- **I-browser:** doctor run `20260928-160735-809807-runtime_doctor-F100.3-luonnonmetsakartat-import-replacement-tests`
+  exited 0 with `RETRY_READY`, requiring no repair. The subsequent app-container
+  `yarn luonnonmetsakartat:mock:smoke` passed all 8 steps with `xvfb-webgl` and
+  no reported console errors. Its duplicate-ID check registers a POST observer
+  before Accept, waits for the visible persistent notification, and asserts zero
+  create requests. Full lifecycle cleanup/strict global console policy is F100.6.
+
+Exact focused command (from the project root):
+
+```sh
+yarn test:luonnonmetsakartat --runTestsByPath src/applets/luonnonmetsakartat/common/folayerShapefile.test.ts src/applets/luonnonmetsakartat/common/shpjsCompat.test.ts src/applets/luonnonmetsakartat/components/FolayerImportShp.test.tsx src/applets/luonnonmetsakartat/components/FolayerUpdateShp.test.tsx src/applets/luonnonmetsakartat/components/FolayerShapefile.races.test.tsx src/applets/luonnonmetsakartat/pages/admin/import/LuonnonmetsakartatAdminImportPage.test.tsx src/applets/luonnonmetsakartat/pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.replacement.test.tsx
+```
+
+The shared hook owns parse lifetime and warning confirmation; the pure
+`common/folayerShapefile.ts` owns parser, detection and validation. Deferred
+parser tests are limited to races; ordinary UI/page tests use actual ZIP bytes,
+selectors, real FileReader, the real confirmation dialog/store and QueryClient,
+with stubbed mutation functions and a visible notification adapter. No default
+test uses a live service. Both pages clear prior upload state before reading;
+old parse/read/confirmation results cannot submit a later file's bytes.
+
+The new feedback uses Finnish Tolgee keys written via `tolgee-api-upsert`:
+`sidebar.admin.create.error_invalid_shapefile` and `error_missing_columns`.
+Existing `confirm_invalid_chars` and `error_invalid_chars_or_encoding` now show
+problematic values instead of directing users to console errors. Exports were
+refreshed with the download script; no downloaded JSON was manually edited.
+
+F100.5 can reuse these seams without repeating the validation matrix. F100.6
+should use the stable duplicate-pair fixture and visible error/request oracle.
+Real backend ingestion, ID/pair geometry matching, preserve/delete effects and
+cleanup remain opt-in live acceptance (L02), with disposable IDs and explicit
+authorization. Neither a passing parser nor the mock proves those operations.
+
+Final F100.3 verification also passed `yarn start:typecheck` and a temporary
+TypeScript project including all seven new test suites (normal tsconfig excludes
+tests). Changed-file lint has zero errors and only two pre-existing map utility
+`any` warnings; full `yarn lint` has zero errors / 306 existing warnings.
+The component-fixture check selected all eight import-control states and passed
+16 desktop/mobile captures. Existing five states matched their before baselines;
+the three new unparsed/parse-error states were inspected and initialized
+intentionally. See `.dev/visual-regression/report/latest.json` for the local
+report. The broad baseline command ignores `--files`; its unrelated remainder
+was cancelled after the required old baselines were captured. No service was
+restarted and no screenshot/log artifact is committed.

@@ -377,7 +377,10 @@ const createAutoFileChooserUpload = ({ page, fixturePath }) => {
     },
     isHandled: () => handled,
     waitForAutoUpload: async (timeoutMs = 500) => {
-      await Promise.race([uploadPromise.catch(() => undefined), delay(timeoutMs)])
+      await Promise.race([
+        uploadPromise.catch(() => undefined),
+        delay(timeoutMs),
+      ])
       return handled
     },
     waitForSettled: () => (handled ? uploadPromise : Promise.resolve()),
@@ -428,30 +431,6 @@ const clickButtonByName = async ({ page, name, timeoutMs }) => {
   return button
 }
 
-const waitForNoResponse = async ({
-  page,
-  method,
-  pathPart,
-  status,
-  timeoutMs = 2500,
-}) => {
-  try {
-    await waitForApiResponse({
-      page,
-      method,
-      pathPart,
-      status,
-      timeoutMs,
-    })
-  } catch {
-    return
-  }
-
-  throw new Error(
-    `Unexpected ${method.toUpperCase()} ${pathPart} response with status ${status}`
-  )
-}
-
 const runPublicRouteSmoke = async ({ page, baseUrl, timeoutMs }) => {
   await gotoAndAssertOk({
     page,
@@ -488,7 +467,10 @@ const runAdminRouteSmoke = async ({
     timeoutMs,
   })
   await assertMockBootstrapAvailable({ page, timeoutMs })
-  await assertPathname({ page, expectedPathname: '/fi/luonnonmetsakartat/admin' })
+  await assertPathname({
+    page,
+    expectedPathname: '/fi/luonnonmetsakartat/admin',
+  })
   await waitForVisible({
     locator: page.getByRole('link', { name: `Open ${MOCK_LAYER_NAME}` }),
     timeoutMs,
@@ -561,8 +543,7 @@ const runValidImportSmoke = async ({
 
   await page.waitForURL(
     (url) =>
-      url.pathname ===
-      `/fi/luonnonmetsakartat/admin/layer/${createdLayerId}`,
+      url.pathname === `/fi/luonnonmetsakartat/admin/layer/${createdLayerId}`,
     { timeout: timeoutMs }
   )
 
@@ -570,7 +551,6 @@ const runValidImportSmoke = async ({
 }
 
 const runDuplicateImportSmoke = async ({
-  issueCollector,
   page,
   baseUrl,
   sourceLiterals,
@@ -609,29 +589,36 @@ const runDuplicateImportSmoke = async ({
     timeoutMs,
   })
 
-  await clickButtonByName({
-    page,
-    name: 'Accept imported forest layer',
-    timeoutMs,
-  })
-
-  await waitForNoResponse({
-    page,
-    method: 'POST',
-    pathPart: '/api/luonnonmetsakartat/layer',
-    status: 201,
-  })
-  await assertPathname({
-    page,
-    expectedPathname: '/fi/luonnonmetsakartat/admin/import',
-  })
-
-  const duplicateIdConsoleError = issueCollector
-    .getConsoleErrors()
-    .some((message) => message.includes('IDs are not unique:'))
-
-  if (!duplicateIdConsoleError) {
-    throw new Error('Duplicate-ID validation console signal was not observed')
+  const createRequests = []
+  const observeCreate = (request) => {
+    if (
+      request.method() === 'POST' &&
+      new URL(request.url()).pathname === '/api/luonnonmetsakartat/layer'
+    ) {
+      createRequests.push(request.url())
+    }
+  }
+  page.on('request', observeCreate)
+  try {
+    await clickButtonByName({
+      page,
+      name: 'Accept imported forest layer',
+      timeoutMs,
+    })
+    await page
+      .getByRole('alert')
+      .filter({
+        hasText: 'Datassa on kohteita, joilla on sama ID: lm-duplicate-1',
+      })
+      .waitFor({ state: 'visible', timeout: timeoutMs })
+    await assertPathname({
+      page,
+      expectedPathname: '/fi/luonnonmetsakartat/admin/import',
+    })
+    if (createRequests.length)
+      throw new Error('Duplicate-ID input sent a create request')
+  } finally {
+    page.off('request', observeCreate)
   }
 }
 

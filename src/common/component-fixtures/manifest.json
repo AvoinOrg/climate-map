@@ -492,11 +492,31 @@
     "locale": "fi",
     "description": "Natural forest admin import action and code-record selector states for F047 remigration coverage.",
     "sourceGlobs": [
+      "src/applets/luonnonmetsakartat/components/FolayerImportShp.tsx",
+      "src/applets/luonnonmetsakartat/components/FolayerUpdateShp.tsx",
+      "src/applets/luonnonmetsakartat/common/useFolayerShapefile.ts",
       "src/applets/luonnonmetsakartat/components/FolayerImportActionsRow.tsx",
       "src/applets/luonnonmetsakartat/components/FolayerImportCodeRecordSelect.tsx",
       "src/common/component-fixtures/fixtures/LuonnonmetsakartatFolayerImportControlsFixture.tsx"
     ],
     "states": [
+      {
+        "id": "import-unparsed",
+        "label": "Import before parsing",
+        "description": "No columns or enabled accept action before parsing completes."
+      },
+      {
+        "id": "import-parse-error",
+        "label": "Import parse error",
+        "waitFor": "role=alert",
+        "description": "A real malformed ZIP produces visible feedback and disabled accept."
+      },
+      {
+        "id": "replacement-parse-error",
+        "label": "Replacement parse error",
+        "waitFor": "role=alert",
+        "description": "A real malformed replacement ZIP produces visible feedback."
+      },
       {
         "id": "accept-enabled",
         "label": "Accept enabled",

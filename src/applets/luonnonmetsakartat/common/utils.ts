@@ -1,5 +1,4 @@
 import type { GeoJSONSource } from 'maplibre-gl'
-import type { FeatureCollection } from 'geojson'
 
 import {
   ExtendedStyleSpecification,
@@ -471,7 +470,7 @@ export const createFolayerConf = async ({
                   options: {
                     center: features[0].geometry.coordinates as [
                       number,
-                      number
+                      number,
                     ],
                     zoom: zoom + 0.5, // Add a slight zoom buffer
                   },
@@ -515,82 +514,9 @@ export const createFolayerConf = async ({
   return layerConf
 }
 
-// Folayer data helpers (moved from common/validation.ts)
-const invalidCharRegex = /[^a-zA-Z0-9\u00e5\u00e4\u00f6\u00c5\u00c4\u00d6\s-]/
-const encodingErrorRegex = /\u00c3/
-
-export interface FolayerDataColumnValidation {
-  invalidChars: string[]
-  encodingErrors: string[]
-}
-
-// Validate a single column's string values and return unique lists of issues
-export const folayerDataValidateColumnValues = (
-  geojson: FeatureCollection | undefined,
-  colName?: string
-): FolayerDataColumnValidation => {
-  if (!geojson || !colName) return { invalidChars: [], encodingErrors: [] }
-
-  const invalidChars: string[] = []
-  const encodingErrors: string[] = []
-
-  for (const feature of geojson.features) {
-    const value = (feature.properties as any)?.[colName]
-    if (typeof value === 'string') {
-      if (invalidCharRegex.test(value)) invalidChars.push(value)
-      if (encodingErrorRegex.test(value)) encodingErrors.push(value)
-    }
-  }
-
-  return {
-    invalidChars: [...new Set(invalidChars)],
-    encodingErrors: [...new Set(encodingErrors)],
-  }
-}
-
-// Return all duplicate "name - municipality" pairs
-export const folayerDataFindDuplicateNameMunicipalityPairs = (
-  geojson: FeatureCollection | undefined,
-  nameCol?: string,
-  municipalityCol?: string
-): string[] => {
-  if (!geojson || !nameCol || !municipalityCol) return []
-
-  const counts: Record<string, number> = {}
-
-  for (const feature of geojson.features) {
-    const props = feature.properties as any
-    const name = props?.[nameCol]
-    const municipality = props?.[municipalityCol]
-    if (name && municipality) {
-      const label = `${name} - ${municipality}`
-      counts[label] = (counts[label] || 0) + 1
-    }
-  }
-
-  return Object.entries(counts)
-    .filter(([, count]) => count > 1)
-    .map(([label]) => label)
-}
-
-// Return all duplicate IDs as strings
-export const folayerDataFindDuplicateIds = (
-  geojson: FeatureCollection | undefined,
-  idCol?: string
-): string[] => {
-  if (!geojson || !idCol) return []
-
-  const counts: Record<string, number> = {}
-
-  for (const feature of geojson.features) {
-    const id = (feature.properties as any)?.[idCol]
-    if (id != null) {
-      const key = String(id)
-      counts[key] = (counts[key] || 0) + 1
-    }
-  }
-
-  return Object.entries(counts)
-    .filter(([, count]) => count > 1)
-    .map(([id]) => id)
-}
+export {
+  folayerDataValidateColumnValues,
+  folayerDataFindDuplicateIds,
+  folayerDataFindDuplicateNameMunicipalityPairs,
+  type FolayerDataColumnValidation,
+} from 'applets/luonnonmetsakartat/common/folayerShapefile'

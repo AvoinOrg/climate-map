@@ -22,6 +22,13 @@ const LuonnonmetsakartatAdminImportPage = () => {
   const [, setIsLoading] = useSidebarActivityLoader()
   const isInitializingRef = useRef(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const fileReadVersion = useRef(0)
+  useEffect(
+    () => () => {
+      fileReadVersion.current += 1
+    },
+    []
+  )
   const router = useAppRouter()
   const buildAppRouteHref = useAppRouteHrefBuilder()
   const { t } = useTranslate('luonnonmetsakartat')
@@ -113,36 +120,25 @@ const LuonnonmetsakartatAdminImportPage = () => {
     setIsLoading,
   ])
 
-  const handleFileInput = async (e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) {
-      return
-    }
-
-    const f = e.target.files[0]
+  const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const version = ++fileReadVersion.current
     const reader = new window.FileReader()
-    reader.readAsArrayBuffer(f)
-
-    const newArrayBuffers: ArrayBuffer[] = []
-
-    reader.onloadend = async () => {
-      // TODO: add error handling. An error message popup if file is invalid?
-      if (reader.result != null) {
-        setFileName(f.name)
-        if (typeof reader.result !== 'string') {
-          if (f.name.split('.').pop() === 'zip') {
-            setFileType('shp')
-            newArrayBuffers.push(reader.result)
-          } else if (f.name.split('.').pop() === 'shp') {
-            setFileType('shp')
-            newArrayBuffers.push(reader.result)
-          }
-          setArrayBuffers(newArrayBuffers)
-        } else {
-          console.error('reader.result is a string, not an ArrayBuffer')
-        }
-      }
-      e.target.value = ''
+    setFileName(file.name)
+    setFileType('shp')
+    setArrayBuffers(undefined)
+    reader.onloadend = () => {
+      if (fileReadVersion.current !== version) return
+      // Empty input deliberately follows the same visible parse-failure path.
+      setArrayBuffers([
+        reader.result instanceof ArrayBuffer
+          ? reader.result
+          : new ArrayBuffer(0),
+      ])
     }
+    reader.readAsArrayBuffer(file)
+    e.target.value = ''
   }
 
   const handleFinish = async ({

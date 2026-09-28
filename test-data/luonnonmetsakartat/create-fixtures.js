@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /* eslint-disable @typescript-eslint/no-require-imports */
 
+const fs = require('fs')
 const path = require('path')
 const AdmZip = require('adm-zip')
 
@@ -80,6 +81,33 @@ const fixtures = [
     ],
   },
 ]
+
+// Additional fixtures reuse the same two tiny WGS84 polygons.
+fixtures.push(
+  {
+    fileName: 'duplicate-name-municipality-layer.zip',
+    rows: fixtures[0].rows.map((row) => ({
+      ...row,
+      nimi: 'Shared Forest',
+      kunta: 'Espoo',
+    })),
+  },
+  {
+    fileName: 'finnish-layer.zip',
+    rows: fixtures[0].rows.map((row, index) => ({
+      ...row,
+      nimi: index === 0 ? 'Mäntymäki' : 'Öljymäki',
+      kunta: 'Hämeenlinna',
+    })),
+  },
+  {
+    fileName: 'mojibake-layer.zip',
+    rows: fixtures[0].rows.map((row, index) => ({
+      ...row,
+      nimi: index === 0 ? 'MÃ¤ntymäki' : row.nimi,
+    })),
+  }
+)
 
 const fields = [
   { name: 'id', type: 'C', length: 32 },
@@ -195,8 +223,10 @@ const buildShpAndShx = (rows) => {
   }
 }
 
-const writeAsciiPadded = ({ buffer, length, offset, value, align = 'left' }) => {
-  const raw = Buffer.from(String(value ?? ''), 'ascii')
+const writePadded = ({ buffer, length, offset, value, align = 'left' }) => {
+  const raw = Buffer.isBuffer(value)
+    ? value
+    : Buffer.from(String(value ?? ''), 'utf8')
   const target = Buffer.alloc(length, 0x20)
 
   if (align === 'right') {
@@ -208,9 +238,10 @@ const writeAsciiPadded = ({ buffer, length, offset, value, align = 'left' }) => 
   target.copy(buffer, offset)
 }
 
-const buildDbf = (rows) => {
-  const headerLength = 32 + fields.length * 32 + 1
-  const recordLength = 1 + fields.reduce((sum, field) => sum + field.length, 0)
+const buildDbf = ({ rows, selectedFields = fields }) => {
+  const headerLength = 32 + selectedFields.length * 32 + 1
+  const recordLength =
+    1 + selectedFields.reduce((sum, field) => sum + field.length, 0)
   const buffer = Buffer.alloc(headerLength + rows.length * recordLength + 1, 0)
 
   buffer.writeUInt8(0x03, 0)
@@ -221,7 +252,7 @@ const buildDbf = (rows) => {
   buffer.writeUInt16LE(headerLength, 8)
   buffer.writeUInt16LE(recordLength, 10)
 
-  fields.forEach((field, index) => {
+  selectedFields.forEach((field, index) => {
     const offset = 32 + index * 32
     Buffer.from(field.name, 'ascii').copy(buffer, offset, 0, 10)
     buffer.write(field.type, offset + 11, 1, 'ascii')
@@ -235,13 +266,13 @@ const buildDbf = (rows) => {
     buffer.writeUInt8(0x20, offset)
     offset += 1
 
-    fields.forEach((field) => {
+    selectedFields.forEach((field) => {
       const rawValue = row[field.name]
       const value =
         field.type === 'N' && typeof rawValue === 'number'
           ? rawValue.toFixed(field.decimals ?? 0)
           : rawValue
-      writeAsciiPadded({
+      writePadded({
         buffer,
         length: field.length,
         offset,
@@ -257,10 +288,10 @@ const buildDbf = (rows) => {
   return buffer
 }
 
-const writeFixture = ({ fileName, rows }) => {
+const buildFixture = ({ fileName, rows, selectedFields }) => {
   const baseName = path.basename(fileName, '.zip')
   const { shp, shx } = buildShpAndShx(rows)
-  const dbf = buildDbf(rows)
+  const dbf = buildDbf({ rows, selectedFields })
   const zip = new AdmZip()
 
   zip.addFile(`${baseName}.shp`, shp)
@@ -268,11 +299,28 @@ const writeFixture = ({ fileName, rows }) => {
   zip.addFile(`${baseName}.dbf`, dbf)
   zip.addFile(`${baseName}.prj`, Buffer.from(WGS84_PRJ, 'ascii'))
   zip.addFile(`${baseName}.cpg`, Buffer.from('UTF-8\n', 'ascii'))
-  zip.writeZip(path.join(__dirname, fileName))
+  for (const entry of zip.getEntries()) {
+    // ZIP stores local calendar fields; keep identical bytes in every timezone.
+    entry.header.time = new Date(2026, 6, 1, 19, 5, 52)
+    entry.attr = 2175008768
+  }
+  return zip.toBuffer()
 }
 
-fixtures.forEach(writeFixture)
+const generateFixtures = (outputDir = __dirname) => {
+  fs.mkdirSync(outputDir, { recursive: true })
+  for (const fixture of fixtures) {
+    fs.writeFileSync(
+      path.join(outputDir, fixture.fileName),
+      buildFixture(fixture)
+    )
+  }
+}
 
-console.log(
-  `Wrote ${fixtures.map((fixture) => fixture.fileName).join(', ')} to ${__dirname}`
-)
+module.exports = { fixtures, fields, buildFixture, generateFixtures }
+
+if (require.main === module) {
+  const outputDir = process.argv[2] || __dirname
+  generateFixtures(outputDir)
+  console.log(`Wrote ${fixtures.length} fixtures to ${outputDir}`)
+}
