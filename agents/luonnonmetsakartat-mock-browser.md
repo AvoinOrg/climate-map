@@ -330,8 +330,8 @@ and applet store; it cannot prove a backend or rendered page contract.
 | G02 | Unauthenticated/pending/missing-token/rejected/error/verified gate | pages/admin/LuonnonmetsakartatAdminGate.test.tsx: `closes incomplete auth`, `waits for verification`, `waits for token resolution`, `never renders a previously verified child`, `rejects an absent user identity`; LuonnonmetsakartatAdminAccess.test.tsx: `closes actual detail settings/pictures links` | rendered/integration | added-and-verified / F100.5.1 | Real auth context, gate, verification query, QueryClient, store and admin pages; auth provider input/HTTP controlled. Transient child layout effects are checked. No live identity-provider claim. | G-family / G-order pass |
 | G03 | Admin empty/list/detail | pages/admin/LuonnonmetsakartatAdminPage.test.tsx: `loads verified admin records`; pages/admin/layer/folayer/LuonnonmetsakartatAdminLayerFolayerPage.test.tsx: `loads the actual detail`, `loads the new route ID`, `settles map initialization`, `shows a bounded area-dependency error`, `finishes list area preload across actual detail navigation`, `settles a populated list refresh after list → detail → list → detail navigation under the same gate` | rendered/integration | added-and-verified / F100.5.1 | Actual rows, runtime and SearchTable; upload/toggle/detail/settings/pictures navigation. Thin navigation adapter uses real href resolver and switches list/detail children under the same gate. Deferred area preloads and populated list refreshes finish after navigation, with Idle store/query state and usable detail links. No settings/picture edits or real geometry assertions. | G-family / G-order / G-visual / G-refresh pass |
 | G04 | Settings clean/dirty/saving/error | pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.test.tsx: clean controls, real keyboard color/visibility edits, debounced/immediate name saves, pending guards, server result, failure/retry, timer/loader cleanup and seeded Saving compatibility | rendered/integration | fixed-and-verified / F100.5.2 | Real page, patch hook, QueryClient, stores and notifications; controlled HTTP. Retains replacement suite. No live persistence claim. | S-focused / S-family / S-order / S-live / S-visual pass |
-| G05 | Pictures empty/matched/unmatched/save/error | common/mockScenarios/scenarios.test.ts: picture variants | seed | pending F100.5 | Mapping interactions; transport is A10 | Existing suites pass J-baseline / J-final; stated gap pending |
-| G06 | Area edit UI | Existing smoke lacks full lifecycle edit | UI | pending F100.5 | Accessible controls and save/error | Pending child; no run claim |
+| G05 | Pictures empty/matched/unmatched/save/error | pages/admin/layer/folayer/pictures/LuonnonmetsakartatAdminLayerFolayerPicturesPage.test.tsx: `maps, changes and clears folders`, `submits the exact changed mapping`, `allows partial saves`, `retains files and manual mapping after failure`, `replaces the directory`; empty/no-area/not-ready cases | rendered/integration | fixed-and-verified / F100.5.3 | Actual page, input, comboboxes, virtual lists, patch hook, scaffold progress, stores and notifications. Repeated IDs/exclusions, pending guards, failure recovery and ordinary reset; no storage claim. | P-focused / P-family / P-order / P-live pass |
+| G06 | Area edit UI | components/AreaModalAdmin.test.tsx: `edits store-selected metadata`, `retains the dirty area draft`, `reflects externally removed saved pictures after real area-query refreshes` | rendered/integration | fixed-and-verified / F100.5.3 | Actual editor/gallery, metadata fields, area patch hook, query normalization, stores and notifications. Gallery accepts serialized PATCH pictures. Removal evidence is external refreshed metadata; no saved-picture delete control exists. | P-focused / P-family / P-order pass; P-visual: 16 unchanged, 2 expected disabled-state differences |
 | G07 | Destructive confirmation | pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.test.tsx: keyboard delete, real cancel/reopen/confirm, selected second-layer request, pending Save guard, deferred real map cleanup/navigation, failure with unsaved name/visibility and retry | rendered/integration | fixed-and-verified / F100.5.2 | Real dialog/delete hook/applet/UI stores/group ID and map bookkeeping with null WebGL instance. Preserves unrelated records, areas, groups and subscriptions. No GPU/upstream cleanup claim. | S-focused / S-family / S-order / S-live pass |
 | G08 | No retry/remount loops or editing exposure on rejection | pages/admin/LuonnonmetsakartatAdminGate.test.tsx: `settles denial/error`, `ignores obsolete validation`, `ignores an obsolete success after logout`, `bounds StrictMode`, `does not trust stale store verification`, `redirects a rejected nested page`; LuonnonmetsakartatAdminAccess.test.tsx: `revokes private rows`, `does not restore privileged data`, `discards queued %s after revocation`, `discards an admin installation already resolving its style`; LuonnonmetsakartatAdminLayerFolayerPage.test.tsx: `settles a populated list refresh` | rendered/integration | fixed-and-verified / F100.5.1 | Real verification, no seeded status or mocked hook. One deliberate verification per ordinary mount; same-gate return navigation adds no verification or list loop; StrictMode attempts are bounded. Applet-scoped revocation cancels query work/removes privileged data and popup ownership; queued additions recheck hook ownership at execution and after style resolution, with no transient installation. Browser lifecycle expansion remains F100.6. | G-family / G-order / G-refresh pass |
 | B01 | Public visible/hidden and auth gates | Existing smoke visits seeded routes | browser | partial / F100.6 | Anonymous hidden exclusion and logged-out/rejected/verified assertions | Current smoke passes (B-runtime-retry); remaining gap pending |
@@ -349,6 +349,98 @@ and applet store; it cannot prove a backend or rendered page contract.
 | H01 | Layer/style/config and map-request auth regressions | common/{constants,geoServer,utils}.test.ts; layers/forestUseDeclarations.test.ts; shared publicGeoServer.test.ts and src/components/Map/mapAuthTransformRequest.test.ts | unit | existing / F100.1 | Applet `common/utils.ts` marks admin vector sources `useAccessToken`, the map store embeds that request metadata, and `MapHandler` installs this transform; the shared suite proves bearer attachment, missing-token stale-source handling, public requests, and configured GeoServer matching | J-baseline / J-final pass for original evidence; J-review-final includes map auth |
 | H02 | Fixture/scenario/bootstrap safety | common/mockScenarios/LuonnonmetsakartatMockScenarioBootstrap.test.tsx; shared registry, route guards, visual scenarios/impactMap | helper | existing / F100.1 | Helper lifecycle/production guards are not page rendering | Existing suites pass J-baseline / J-final; stated gap pending |
 | H03 | Focused command, checks, runbook | Initial 39-suite inventory plus current 40-suite reviewer-pass inventory; execution evidence below | verification | added-and-verified / F100.1 | Final family reconciliation F100.6 | J-review-discovery, J-review-final, T, L and B-runtime-retry pass |
+
+### F100.5.3 area/picture evidence and F100.6 handoff
+
+The two new suites add **11 behavioral cases**. They reuse `pages/pageTestSupport.tsx`
+and scenario File/data factories through the small `components/areaPictureTestSupport.tsx`
+extension. The real editor is explicitly loaded past the access helper's popup stub.
+Real QueryClients, applet/UI/map stores, Base UI controls, virtual lists, notifications,
+area/layer mutations and the sidebar progress overlay are exercised. Only HTTP,
+auth input, translations, browser measurement and mutation retry timing are controlled.
+`jest.config.ts` adds narrow ESM transformation for `react-photo-album` and
+`yet-another-react-lightbox`; gallery assertions inspect the real accessible Photo album.
+Owned responses settle before clients/DOM/stores are cleared; unexpected network and
+console errors fail tests, including errors caught by application code. Picture tests
+control animation timers and preserve real microtask scheduling. No default test needs
+a service, credential or network connection.
+
+- `AreaModalAdmin.test.tsx` — `edits store-selected metadata…` proves current values,
+  accessible name editing, exact selected layer/feature mutation variables, deferred
+  progress, unchanged committed data while pending, server-confirmed metadata and
+  preserved neighbors/gallery. `retains the dirty area draft…` proves real failure
+  notification, retained description and dirty Save, then successful retry.
+  `reflects externally removed saved pictures…` performs actual area-query refreshes
+  from JSON-string metadata, checks the retained thumbnail, then the absent gallery.
+- `LuonnonmetsakartatAdminLayerFolayerPicturesPage.test.tsx` — eight cases cover
+  empty/no-area/missing/not-ready readiness; actual hidden directory input selection;
+  image-only filtering; automatic and unmatched rows; manual target changes, search
+  with no options and recovery; explicit clear (including automatic-match suppression);
+  all-cleared readiness; exact File identities and ordered repeated area IDs; partial
+  saves with unmatched/cleared exclusions; visible pending progress; success/reset;
+  failure retention and changed-subset recovery; directory replacement excluding old files.
+
+Minimal fixes: area fields and Save, and picture directory/mapping/Save controls now
+honor pending state. Metadata PATCH responses can contain serialized picture arrays;
+the editor now reads both that format and GET-normalized arrays, filtering non-strings.
+No domain type migration, API behavior, translation or shared control change was needed.
+Against the original implementations, both repeated-save regressions observe two PATCH
+calls instead of one (`original-pending-regressions.log`); the fixed versions send one.
+The original metadata-save gallery regression also reproduced disappearing thumbnails
+(`area-gallery-regression.log`).
+The fixture remains the existing nine-state fixture. It covers area loading/gallery;
+actual page checks supplement it for picture pending/reset orchestration.
+
+**Control audit / removal boundary:** area metadata fields use
+`sidebar.admin.area.{name,description,municipality,region}.header`; Save uses
+`sidebar.admin.folayer.settings.save`, Close is `Close admin area modal`. The album
+opens the existing lightbox. There is no saved-picture delete editor. Picture comboboxes
+are named `sidebar.admin.folayer.settings.picture.select_area: <folder>` and their
+clear buttons append ` clear` under key-only test translations. The upload label owns
+the actual hidden, multiple, `image/*`, directory input. Clearing explicitly excludes
+that folder even if its name auto-matches. One mapped folder suffices for Save while
+other folders remain unmatched. Submission uses the layer PATCH with the route-selected
+layer ID and aligned image/area arrays; metadata edits use the area PATCH.
+
+Complementary removal evidence remains **A09/A10/M06**, not UI delete interactions:
+`adminFolayerAreaPatchMutation.test.tsx` / `sends empty picture metadata to remove
+pictures and uses feature ID for unnamed response`; `adminFolayerPatchMutation.test.tsx`
+/ `keeps repeated image and area-ID fields aligned, including several pictures for
+one area`; `server/api/mockDataProxy.test.ts` / `attaches ordered filename URL metadata,
+then replaces and removes the picture list without storage operations`, plus
+`mockDataStore.test.ts` picture cases and `dataProxy.test.ts` WFS removal readback.
+
+Verification on 2026-09-29, logs in `.tmp/f100-5-3-coder/`:
+
+| Evidence | Command / scope | Result |
+| --- | --- | --- |
+| P-discovery | `yarn test:luonnonmetsakartat --listTests --json` | Exit 0; 59 suites; both new suites discovered. `discovery.json`. |
+| P-focused | `yarn test:luonnonmetsakartat --runTestsByPath` with the two suites above | Exit 0; 2 suites / 11 tests, no snapshots. `targeted-final.log`. |
+| P-family | `yarn test:luonnonmetsakartat` | Exit 0; 59 suites / 1,085 tests, no snapshots. `family.log`. |
+| P-order | Two new suites plus settings, access and detail with `--randomize --seed=100503 --showSeed` | Exit 0; 5 suites / 41 tests. `order.log`. |
+| P-shared | Base `yarn test --runInBand --runTestsByPath`: Button, TextFieldWithLabel, TextFieldMultilineWithLabel, MultiSelectAutocomplete, SidebarLoadingBlock, SidebarRoot, auth/client, navigation/appRouteLinks and both new suites | Exit 0; 10 suites / 130 tests. `shared-base.log`. |
+| P-types | `yarn start:typecheck`; `yarn exec tsc --project .tmp/f100-5-3-coder/tsconfig.tests.json --noEmit` | Both exit 0. Dedicated test config includes new suites/helper and required ambient/route declarations. `typecheck.log`, `test-typecheck-final.log`. |
+| P-lint | Explicit changed-file ESLint; `yarn lint`; `git diff --check` | Exit 0; changed files zero warnings; full lint zero errors / 296 pre-existing warnings outside changed files. |
+| P-runtime | Doctor run `20260929-103738-817040-runtime_doctor-F100.5.3-luonnonmetsakartat-area-picture-tests` | Exit 0; `exit.json` read; `RETRY_READY`; no repair/restart/configuration change. |
+| P-smoke | App container: `yarn luonnonmetsakartat:mock:smoke` after doctor readiness | Exit 0; all eight existing steps; `ok: true`, `xvfb-webgl`. `smoke.log`. |
+| P-visual | App container: `yarn visual:after-edit -- --no-start --scenario-set component-fixtures` with the three edited implementations, before and after | Existing baselines; final 18 captures: 16 unchanged, 2 expected loading-state differences (disabled fields/Save), inspected on desktop/mobile. Runner exit 1 means these deliberate differences, not an unreported pass. `visual-before.json`, `visual-after.json`. Initial pre-edit capture had one transient HMR navigation error; final run captured that state successfully. |
+| P-live | App container: `xvfb-run -a node .tmp/f100-5-3-coder/live-pictures.cjs --no-start` | Exit 0; 1440×900 and 390×844: actual directory selection, one held PATCH, disabled inputs/mappings/Save, visible progress, ordinary reset and reselection. Zero page/console errors. Controlled response, no persisted-upload claim. `live-pictures.log`, `pictures-{pending,reset}-{1440,390}.png`. |
+
+G01/G02/G03/G08 retain F100.5.1's completed evidence; G04/G07 retain F100.5.2's.
+All their referenced suites remain present and pass P-family (settings/access/detail
+also pass P-order). Together with G05/G06, all G01–G08 now have completed owned
+rendered evidence; no earlier-child ownership gap was found.
+
+**F100.6 still owns B01–B09**, especially B05/B06 area/picture persistence readback,
+run-specific created layers, finally cleanup, strict repeatability, applicable route
+modes and final family/runbook reconciliation. Ordinary-mode successful picture saves
+clear the directory and mappings; `pictures-mapped`/`pictures-unmatched` scenarios
+intentionally reseed on remount, so do not use their post-save files as ordinary reset
+evidence. The current smoke still has eight steps and saves scenario-seeded mapped
+pictures: it does not establish the new mapping/edit/failure interactions, unmatched
+readback or lifecycle cleanup. The new gallery test is refreshed metadata evidence,
+not a delete click. No real object storage, identity-provider, geometry persistence or
+live-backend claim is added. Earlier child sections below are historical run records.
 
 ### F100.5.2 settings/deletion evidence
 

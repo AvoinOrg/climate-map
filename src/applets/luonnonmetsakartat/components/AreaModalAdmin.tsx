@@ -113,7 +113,16 @@ const AreaModalAdminContent = ({
   )
 
   const pictures: string[] = useMemo(() => {
-    const rawPictures = feature?.properties?.pictures as unknown
+    let rawPictures = feature?.properties?.pictures as unknown
+    // GET collections normalize pictures, while metadata PATCH responses may
+    // still contain the backend's JSON string. Preserve the saved gallery.
+    if (typeof rawPictures === 'string') {
+      try {
+        rawPictures = JSON.parse(rawPictures)
+      } catch {
+        return []
+      }
+    }
 
     return Array.isArray(rawPictures)
       ? rawPictures.filter((picture): picture is string =>
@@ -221,7 +230,7 @@ const AreaModalAdminContent = ({
   }
 
   const handleSaveClick = () => {
-    if (!feature) {
+    if (!feature || isUpdating) {
       return
     }
 
@@ -327,6 +336,7 @@ const AreaModalAdminContent = ({
             <TextFieldWithLabel
               label={t('sidebar.admin.area.name.header')}
               placeholder={t('sidebar.admin.area.name.placeholder')}
+              disabled={isUpdating}
               value={name}
               onChange={(event) => handleNameChange(event.target.value)}
               sx={{ mb: 2, textTransform: 'uppercase' }}
@@ -336,6 +346,7 @@ const AreaModalAdminContent = ({
             <TextFieldWithLabel
               label={t('sidebar.admin.area.region.header')}
               placeholder={t('sidebar.admin.area.region.placeholder')}
+              disabled={isUpdating}
               value={region}
               onChange={(event) => handleRegionChange(event.target.value)}
               sx={{ mb: 2 }}
@@ -344,6 +355,7 @@ const AreaModalAdminContent = ({
             <TextFieldWithLabel
               label={t('sidebar.admin.area.municipality.header')}
               placeholder={t('sidebar.admin.area.municipality.placeholder')}
+              disabled={isUpdating}
               value={municipality}
               onChange={(event) => handleMunicipalityChange(event.target.value)}
               sx={{ mb: 2 }}
@@ -352,6 +364,7 @@ const AreaModalAdminContent = ({
             <TextFieldMultilineWithLabel
               label={t('sidebar.admin.area.description.header')}
               placeholder={t('sidebar.admin.area.description.placeholder')}
+              disabled={isUpdating}
               value={description}
               onChange={(event) => handleDescriptionChange(event.target.value)}
               minRows={6}
@@ -434,6 +447,7 @@ const AreaModalAdminContent = ({
               variant="text"
               color="neutral"
               aria-label={t('sidebar.admin.folayer.settings.save')}
+              disabled={isUpdating}
               onClick={handleSaveClick}
               startIcon={<SaveOutlined />}
               sx={{

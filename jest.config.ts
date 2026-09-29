@@ -34,7 +34,7 @@ const config: Config = {
       },
     ],
   },
-  transformIgnorePatterns: ['/node_modules/(?!lodash-es|better-auth/)'],
+  transformIgnorePatterns: ['/node_modules/(?!lodash-es|better-auth/|react-photo-album/|yet-another-react-lightbox/)'],
 }
 
 export default config

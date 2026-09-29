@@ -236,6 +236,7 @@ export type FolayerImportPicturesFixtureState = {
 }
 
 interface FolayerImportPicturesProps {
+  disabled?: boolean
   folayerId: string
   onValidationChange?: (isValid: boolean) => void
   fixtureState?: FolayerImportPicturesFixtureState
@@ -293,6 +294,7 @@ const FolderNameTooltip = ({
 )
 
 type AreaSingleSelectComboboxProps = {
+  disabled?: boolean
   value: AreaOption | null
   options: AreaOption[]
   onChange: (value: AreaOption | null) => void
@@ -306,6 +308,7 @@ type AreaSingleSelectComboboxProps = {
 }
 
 const AreaSingleSelectCombobox = ({
+  disabled = false,
   value,
   options,
   onChange,
@@ -327,7 +330,7 @@ const AreaSingleSelectCombobox = ({
   const [inputValue, setInputValue] = useState(
     defaultInputValue ?? value?.label ?? ''
   )
-  const resolvedOpen = openIsControlled ? open : uncontrolledOpen
+  const resolvedOpen = !disabled && (openIsControlled ? open : uncontrolledOpen)
   const filteredOptions = useMemo(() => {
     const inputMatchesSelectedValue =
       value && normalize(inputValue) === normalize(value.label)
@@ -346,11 +349,11 @@ const AreaSingleSelectCombobox = ({
 
   const setResolvedOpen = useCallback(
     (nextOpen: boolean) => {
-      if (!openIsControlled) {
+      if (!disabled && !openIsControlled) {
         setUncontrolledOpen(nextOpen)
       }
     },
-    [openIsControlled]
+    [disabled, openIsControlled]
   )
 
   const handleClear = (event: React.MouseEvent<HTMLElement>) => {
@@ -462,6 +465,7 @@ const AreaSingleSelectCombobox = ({
       ]}
     >
       <BaseCombobox.Root<AreaOption>
+        disabled={disabled}
         modal={false}
         items={options}
         filteredItems={filteredOptions}
@@ -595,6 +599,7 @@ const AreaSingleSelectCombobox = ({
           />
           {value && (
             <IconButton
+              disabled={disabled}
               data-slot="clear-button"
               type="button"
               size="small"
@@ -701,7 +706,7 @@ const AreaSingleSelectCombobox = ({
 const FolayerImportPictures = forwardRef<
   FolayerImportPicturesRef,
   FolayerImportPicturesProps
->(({ folayerId, onValidationChange, fixtureState }, ref) => {
+>(({ folayerId, onValidationChange, fixtureState, disabled = false }, ref) => {
   const { t } = useTranslate('luonnonmetsakartat')
   const theme = useTheme<AppTheme>()
   const isMobile = useMediaQuery(theme.breakpoints.down('desktop'))
@@ -877,6 +882,7 @@ const FolayerImportPictures = forwardRef<
   }))
 
   const handleFolderInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return
     const fList = e.target.files
     if (!fList) return
     const arr = Array.from(fList)
@@ -958,6 +964,7 @@ const FolayerImportPictures = forwardRef<
           {count}
         </Box>
         <AreaSingleSelectCombobox
+          disabled={disabled}
           options={areaOptionsAll}
           value={currentValue}
           placeholder={selectAreaText}
@@ -982,6 +989,7 @@ const FolayerImportPictures = forwardRef<
   return (
     <Box sx={{ minWidth: 0 }}>
       <BigMenuButton
+        disabled={disabled}
         variant="outlined"
         component="label"
         sx={uploadButtonSx}
@@ -998,6 +1006,7 @@ const FolayerImportPictures = forwardRef<
           hidden
           multiple
           {...directoryInputAttributes}
+          disabled={disabled}
           type="file"
           accept="image/*"
           onChange={handleFolderInput}

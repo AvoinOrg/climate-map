@@ -132,7 +132,7 @@ const LuonnonmetsakartatAdminLayerFolayerPicturesPage = () => {
     event.stopPropagation()
     event.nativeEvent.stopImmediatePropagation()
 
-    if (adminFolayerConf) {
+    if (adminFolayerConf && !localAdminFolayerPatchMutation.isPending) {
       const picValues = await new Promise<FolayerImportPicturesValues | null>(
         (resolve) => {
           if (!picturesRef.current) return resolve(null)
@@ -184,6 +184,7 @@ const LuonnonmetsakartatAdminLayerFolayerPicturesPage = () => {
             <FolayerImportPictures
               key={`${componentKey}-${mockScenarioState ?? 'normal'}`}
               folayerId={adminFolayerConf.id}
+              disabled={localAdminFolayerPatchMutation.isPending}
               ref={picturesRef}
               onValidationChange={setIsReadyToSave}
               fixtureState={pictureFixtureState}
@@ -198,6 +199,7 @@ const LuonnonmetsakartatAdminLayerFolayerPicturesPage = () => {
             variant="text"
             color="neutral"
             aria-label={t('sidebar.admin.folayer.pictures.save')}
+            disabled={localAdminFolayerPatchMutation.isPending}
             onClick={handleSaveClick}
             startIcon={
               <SaveOutlined sx={{ width: '1.25rem', height: '1.25rem' }} />
