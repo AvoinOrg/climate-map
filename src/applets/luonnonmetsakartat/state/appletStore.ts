@@ -1,10 +1,5 @@
 import { create } from 'zustand'
-import {
-  persist,
-  createJSONStorage,
-  subscribeWithSelector,
-  devtools,
-} from 'zustand/middleware'
+import { subscribeWithSelector, devtools } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
 import { commonDevtools } from '#/common/store/shared-devtools'
@@ -35,6 +30,7 @@ type Vars = {
   adminFolayerConfs: AdminFolayerConfMap
   folayerAreaConfs: FolayerAreaConfMap
   adminVerificationStatus: AdminVerificationStatus
+  adminAccessGeneration: number
 }
 
 type Actions = {
@@ -83,6 +79,7 @@ export const useAppletStore = create<State>()(
           adminFolayerConfs: {} as AdminFolayerConfMap,
           folayerAreaConfs: {} as FolayerAreaConfMap,
           adminVerificationStatus: AdminVerificationStatus.NoUser,
+          adminAccessGeneration: 0,
         }
 
         const actions = {

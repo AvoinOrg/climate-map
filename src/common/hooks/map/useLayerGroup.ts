@@ -30,15 +30,30 @@ export const useLayerGroup = (
   const doesLayerGroupExist = useDoesLayerGroupExist(layerGroupId)
   const isLayerGroupVisible = useIsLayerGroupVisible(layerGroupId)
 
+  // Async initialization can finish after a route/gate has unmounted. Never
+  // install a group (or start another read) for an obsolete hook lifetime.
+  const lifetime = useRef({ active: true })
+
   const isUpdating = useRef(false)
   const initCompleted = useRef(false)
   const enableQueued = useRef(false)
   const layerConfRef = useRef<LayerConf | null>(null)
   const confVersionRef = useRef<string | number | undefined>(confVersion)
 
+  useEffect(() => {
+    const current = { active: true }
+    lifetime.current = current
+    isUpdating.current = false
+    enableQueued.current = false
+    return () => {
+      current.active = false
+    }
+  }, [])
+
   const [uiQueued, setUiQueued] = useState(false)
 
   const resolveLayerConf = useCallback(async () => {
+    const current = lifetime.current
     if (layerConfRef.current) {
       return layerConfRef.current
     }
@@ -49,14 +64,15 @@ export const useLayerGroup = (
     } else {
       conf = layerConf
     }
-    layerConfRef.current = conf
+    if (current.active) layerConfRef.current = conf
     return conf
   }, [layerConf])
 
   const runInitActions = useCallback(async () => {
+    const current = lifetime.current
     if (initActions && !initCompleted.current) {
       await initActions()
-      initCompleted.current = true
+      if (current.active) initCompleted.current = true
     }
   }, [initActions])
 
@@ -68,7 +84,67 @@ export const useLayerGroup = (
       return 'processing'
     }
     return 'hidden'
-  }, [layerGroupId, isLayerGroupVisible, uiQueued])
+  }, [isLayerGroupVisible, uiQueued])
+
+  const setEnabled = useCallback(
+    async (shouldBeEnabled: boolean) => {
+      const current = lifetime.current
+      if (!current.active) return
+      if (isUpdating.current) {
+        enableQueued.current = shouldBeEnabled
+        setUiQueued(shouldBeEnabled)
+        return
+      }
+      isUpdating.current = true
+
+      try {
+        if (shouldBeEnabled) {
+          await runInitActions()
+          if (!current.active) return
+
+          const group = useMapStore.getState()._layerGroups[layerGroupId]
+          if (group) {
+            if (group.isHidden) {
+              await enableLayerGroup(layerGroupId, {})
+            }
+          } else {
+            const conf = await resolveLayerConf()
+            if (!current.active) return
+            await addLayerGroup(layerGroupId, {
+              layerConf: conf,
+              isCurrent: () => current.active,
+            })
+          }
+        } else {
+          const group = useMapStore.getState()._layerGroups[layerGroupId]
+
+          if (group && !group.isHidden) {
+            await disableLayerGroup(layerGroupId)
+          }
+        }
+      } catch (error) {
+        if (!current.active) return
+        console.error(
+          `Failed to set enabled state for layer group ${layerGroupId}`,
+          error
+        )
+      } finally {
+        if (current.active) {
+          isUpdating.current = false
+          setUiQueued(false)
+          enableQueued.current = false
+        }
+      }
+    },
+    [
+      runInitActions,
+      resolveLayerConf,
+      addLayerGroup,
+      enableLayerGroup,
+      disableLayerGroup,
+      layerGroupId,
+    ]
+  )
 
   // Invalidate and recreate the layer group when confVersion changes
   useEffect(() => {
@@ -77,12 +153,14 @@ export const useLayerGroup = (
     confVersionRef.current = confVersion
 
     const recreate = async () => {
+      const current = lifetime.current
       try {
         const group = useMapStore.getState()._layerGroups[layerGroupId]
         const wasVisible = !!group && !group.isHidden
         if (group) {
           await removeLayerGroup(layerGroupId)
         }
+        if (!current.active) return
         // clear cached conf so the next add uses latest configuration
         layerConfRef.current = null
         // If the group was visible, re-enable to recreate immediately
@@ -98,87 +176,41 @@ export const useLayerGroup = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [confVersion, layerGroupId, removeLayerGroup])
 
-  // Effect for preloading
-
-  const setEnabled = useCallback(
-    async (shouldBeEnabled: boolean) => {
-      if (isUpdating.current) {
-        enableQueued.current = shouldBeEnabled
-        setUiQueued(shouldBeEnabled)
-        return
-      }
-      isUpdating.current = true
-
-      try {
-        if (shouldBeEnabled) {
-          await runInitActions()
-
-          const group = useMapStore.getState()._layerGroups[layerGroupId]
-          if (group) {
-            if (group.isHidden) {
-              await enableLayerGroup(layerGroupId, {})
-            }
-          } else {
-            const conf = await resolveLayerConf()
-            await addLayerGroup(layerGroupId, {
-              layerConf: conf,
-            })
-          }
-        } else {
-          const group = useMapStore.getState()._layerGroups[layerGroupId]
-
-          if (group && !group.isHidden) {
-            await disableLayerGroup(layerGroupId)
-          }
-        }
-      } catch (error) {
-        console.error(
-          `Failed to set enabled state for layer group ${layerGroupId}`,
-          error
-        )
-      } finally {
-        isUpdating.current = false
-        setUiQueued(false)
-        enableQueued.current = false
-      }
-    },
-    [
-      runInitActions,
-      resolveLayerConf,
-      addLayerGroup,
-      enableLayerGroup,
-      disableLayerGroup,
-      layerGroupId,
-    ]
-  )
-
   useEffect(() => {
     if (!preload || doesLayerGroupExist) {
       return
     }
 
     const preloadLayer = async () => {
+      const current = lifetime.current
+      if (!current.active) return
       if (isUpdating.current) return
       isUpdating.current = true
 
       try {
         await runInitActions()
+        if (!current.active) return
         const conf = await resolveLayerConf()
+        if (!current.active) return
 
         // Check again inside async function in case initActions added the layer
         if (!useMapStore.getState()._layerGroups[layerGroupId]) {
           await addLayerGroup(layerGroupId, {
             layerConf: conf,
             isHidden: true,
+            isCurrent: () => current.active,
           })
         }
       } catch (error) {
+        if (!current.active) return
         console.error(`Failed to preload layer group ${layerGroupId}`, error)
       } finally {
-        isUpdating.current = false
-        if (enableQueued.current) {
-          enableQueued.current = false
-          setEnabled(true)
+        if (current.active) {
+          isUpdating.current = false
+          if (enableQueued.current) {
+            enableQueued.current = false
+            setEnabled(true)
+          }
         }
       }
     }
@@ -191,6 +223,7 @@ export const useLayerGroup = (
     resolveLayerConf,
     addLayerGroup,
     layerGroupId,
+    setEnabled,
   ])
 
   return [layerGroupStatus, setEnabled]

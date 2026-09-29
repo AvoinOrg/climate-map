@@ -259,6 +259,8 @@ export interface SerializableLayerGroupAddOptions extends BaseLayerGroupAddOptio
 export interface LayerGroupAddOptions extends BaseLayerGroupAddOptions {
   layerConf?: LayerConf
   persist?: false
+  // Recheck ownership when queued work starts and after resolving its style.
+  isCurrent?: () => boolean
 }
 
 export interface LayerGroupAddOptionsWithOrderLevel extends BaseLayerGroupAddOptions {

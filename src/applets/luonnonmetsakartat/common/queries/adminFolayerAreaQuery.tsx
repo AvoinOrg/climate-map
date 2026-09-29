@@ -17,6 +17,13 @@ export const useAdminFolayerAreaQueryOptions = (
   return {
     queryKey: ['adminFolayerAreas', folayerId],
     queryFn: async () => {
+      const generation = useAppletStore.getState().adminAccessGeneration
+      const isCurrent = () =>
+        generation === useAppletStore.getState().adminAccessGeneration
+      // List rows preload these collections for detail/settings/pictures. Let
+      // the read finish when its last observer unmounts during navigation.
+      // Revocation cancels the query explicitly and invalidates this generation,
+      // so even a late transport response cannot publish privileged data.
       const url = buildFolayerWfsUrl({ centroidSourceLayer })
       if (!url) {
         return null
@@ -29,8 +36,7 @@ export const useAdminFolayerAreaQueryOptions = (
 
       const updateFolayerAreaConf =
         useAppletStore.getState().updateFolayerAreaConf
-      const addFolayerAreaConf =
-        useAppletStore.getState().addFolayerAreaConf
+      const addFolayerAreaConf = useAppletStore.getState().addFolayerAreaConf
       const existingCollection =
         useAppletStore.getState().folayerAreaConfs[folayerId]
 
@@ -54,6 +60,8 @@ export const useAdminFolayerAreaQueryOptions = (
         const response = await axios.get(url, {
           headers,
         })
+
+        if (!isCurrent()) return null
 
         if (response.status === 200) {
           const features = (response.data.features ||
@@ -101,8 +109,9 @@ export const useAdminFolayerAreaQueryOptions = (
         return null
       } finally {
         if (
+          isCurrent() &&
           useAppletStore.getState().folayerAreaConfs[folayerId]?.state ===
-          FolayerConfState.Fetching
+            FolayerConfState.Fetching
         ) {
           updateFolayerAreaConf(folayerId, { state: FolayerConfState.Idle })
         }

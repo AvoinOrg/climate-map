@@ -20,7 +20,11 @@ export const useAdminFolayerQueryOptions = (
 
   return {
     queryKey: ['adminFolayer', folayerId],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
+      const generation = useAppletStore.getState().adminAccessGeneration
+      const isCurrent = () =>
+        !signal.aborted &&
+        generation === useAppletStore.getState().adminAccessGeneration
       const headers = getRequiredBearerAuthHeader({
         accessToken,
         requestName: 'Luonnonmetsakartat admin folayer detail',
@@ -39,7 +43,10 @@ export const useAdminFolayerQueryOptions = (
       try {
         const response = await axios.get(`${API_URL}/layer/${folayerId}`, {
           headers,
+          signal,
         })
+
+        if (!isCurrent()) return null
 
         if (response.status === 200) {
           // Map API response to AdminFolayerConf
@@ -72,8 +79,9 @@ export const useAdminFolayerQueryOptions = (
         return null
       } finally {
         if (
+          isCurrent() &&
           useAppletStore.getState().adminFolayerConfs[folayerId]?.state ===
-          FolayerConfState.Fetching
+            FolayerConfState.Fetching
         ) {
           updateAdminFolayerConf(folayerId, { state: FolayerConfState.Idle })
         }

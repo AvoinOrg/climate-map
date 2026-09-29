@@ -14,14 +14,14 @@ import { FolayerConf } from 'applets/luonnonmetsakartat/common/types'
 export const useFolayer = (
   folayerId: string,
   options: { preload?: boolean } = {}
-): [LayerGroupStatus, (shouldBeEnabled: boolean) => void] => {
+): [LayerGroupStatus, (shouldBeEnabled: boolean) => void, boolean] => {
   const { preload = false } = options
   const folayerConf = useAppletStore((state) => state.folayerConfs[folayerId])
   const folayerAreaConf = useAppletStore(
     (state) => state.folayerAreaConfs[folayerId]
   )
 
-  const { refetch: areasRefetch } = useQuery({
+  const { refetch: areasRefetch, isError } = useQuery({
     ...folayerAreaQuery(folayerId),
     enabled: false,
   })
@@ -32,26 +32,27 @@ export const useFolayer = (
       promises.push(areasRefetch())
     }
     await Promise.all(promises)
-  }, [folayerConf, folayerAreaConf, areasRefetch])
+  }, [folayerAreaConf, areasRefetch])
 
   const getLayerConf = useCallback(async () => {
-    let conf: FolayerConf | null | undefined = folayerConf
+    const conf: FolayerConf | null | undefined = folayerConf
     return createFolayerConf({
       folayerId: conf.id,
       folayerName: conf.name,
       colorCode: conf.colorCode,
       isAdmin: false,
     })
-  }, [folayerId, folayerConf])
+  }, [folayerConf])
 
   const layerGroupId = getFolayerGroupId(folayerId, false)
 
   // Bump when color or updated timestamp changes
   const confVersion = `${folayerConf?.updatedTs ?? ''}-public`
 
-  return useLayerGroup(layerGroupId, getLayerConf, {
+  const [status, setEnabled] = useLayerGroup(layerGroupId, getLayerConf, {
     preload,
     initActions,
     confVersion,
   })
+  return [status, setEnabled, isError]
 }

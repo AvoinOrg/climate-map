@@ -18,21 +18,31 @@ export const useAdminVerificationQueryOptions = (): UseQueryOptions<
 
   return {
     queryKey: ['adminVerificationQuery', session?.user?.id],
-    queryFn: async () => {
-      setAdminVerificationStatus(AdminVerificationStatus.Pending)
+    queryFn: async ({ signal }) => {
+      const generation = useAppletStore.getState().adminAccessGeneration
+      const publish = (status: AdminVerificationStatus) => {
+        if (
+          !signal.aborted &&
+          generation === useAppletStore.getState().adminAccessGeneration
+        ) {
+          setAdminVerificationStatus(status)
+        }
+      }
+      publish(AdminVerificationStatus.Pending)
 
       if (session?.user?.id == null) {
-        setAdminVerificationStatus(AdminVerificationStatus.NoUser)
+        publish(AdminVerificationStatus.NoUser)
         return Promise.resolve(false)
       }
 
       if (!accessToken) {
-        setAdminVerificationStatus(AdminVerificationStatus.Errored)
+        publish(AdminVerificationStatus.Errored)
         return null
       }
 
       try {
         const response = await axios.get(`${API_URL}/admin/validate`, {
+          signal,
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${accessToken}`,
@@ -44,27 +54,27 @@ export const useAdminVerificationQueryOptions = (): UseQueryOptions<
             response.data?.is_editor === true ||
             response.data?.is_admin === true
           ) {
-            setAdminVerificationStatus(AdminVerificationStatus.Verified)
+            publish(AdminVerificationStatus.Verified)
             return true
           }
 
-          setAdminVerificationStatus(AdminVerificationStatus.Rejected)
+          publish(AdminVerificationStatus.Rejected)
           return false
         }
 
-        setAdminVerificationStatus(AdminVerificationStatus.Errored)
+        publish(AdminVerificationStatus.Errored)
         return null
       } catch (error) {
         if (axios.isAxiosError(error)) {
           if (error.response?.status === 403) {
-            setAdminVerificationStatus(AdminVerificationStatus.Rejected)
+            publish(AdminVerificationStatus.Rejected)
             error.name = 'AuthorizationError'
             return false
           }
         }
 
         // Any other error
-        setAdminVerificationStatus(AdminVerificationStatus.Errored)
+        publish(AdminVerificationStatus.Errored)
         return null
       }
     },

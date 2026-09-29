@@ -33,6 +33,12 @@ export const useAdminFolayersQueryOptions = (): UseQueryOptions<
   return {
     queryKey: ['adminFolayers'],
     queryFn: async () => {
+      const generation = useAppletStore.getState().adminAccessGeneration
+      const isCurrent = () =>
+        generation === useAppletStore.getState().adminAccessGeneration
+      // Finish refreshes across list/detail navigation so existing records do
+      // not stay Fetching when the list loses its last observer. Revocation
+      // explicitly cancels/removes the query and invalidates this generation.
       const headers = getRequiredBearerAuthHeader({
         accessToken,
         requestName: 'Luonnonmetsakartat admin folayer list',
@@ -49,6 +55,8 @@ export const useAdminFolayersQueryOptions = (): UseQueryOptions<
         const response = await axios.get(`${API_URL}/layers`, {
           headers,
         })
+
+        if (!isCurrent()) return []
 
         if (response.status === 200) {
           const folayerConfs: AdminFolayerConf[] = (
@@ -84,8 +92,9 @@ export const useAdminFolayersQueryOptions = (): UseQueryOptions<
       } finally {
         for (const folayer of Object.values(existingFolayers)) {
           if (
+            isCurrent() &&
             useAppletStore.getState().adminFolayerConfs[folayer.id]?.state ===
-            FolayerConfState.Fetching
+              FolayerConfState.Fetching
           ) {
             updateAdminFolayerConf(folayer.id, { state: folayer.state })
           }

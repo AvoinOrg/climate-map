@@ -25,6 +25,7 @@ const LuonnonmetsakartatHomePage = () => {
     refetch: folayerRefetch,
     isLoading,
     isFetched,
+    isError,
   } = useQuery({
     ...folayersQuery(),
     enabled: false,
@@ -50,6 +51,14 @@ const LuonnonmetsakartatHomePage = () => {
             <LoadingSpinner />
           </Box>
         )}
+        {isError && (
+          <Box role="alert" sx={{ mt: 3 }}>
+            <TText
+              ns="luonnonmetsakartat"
+              keyName="sidebar.admin.folayer.error_fetching"
+            />
+          </Box>
+        )}
         {!isLoading && folayerConfsArray.length > 0 && (
           <Box
             sx={{
@@ -67,6 +76,7 @@ const LuonnonmetsakartatHomePage = () => {
         )}
         {(isFetched || isMockScenarioQueryActive) &&
           !isLoading &&
+          !isError &&
           folayerConfsArray.length === 0 && (
             <Box
               sx={{
@@ -93,10 +103,7 @@ const LuonnonmetsakartatHomePage = () => {
                   overflowWrap: 'break-word',
                 }}
               >
-                <TText
-                  ns="luonnonmetsakartat"
-                  keyName="sidebar.main.no_data"
-                />
+                <TText ns="luonnonmetsakartat" keyName="sidebar.main.no_data" />
               </Box>
             </Box>
           )}

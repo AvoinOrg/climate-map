@@ -386,6 +386,9 @@ export const createMapLayerSlice: (
         layerGroupId: string,
         options: LayerGroupAddOptions | SerializableLayerGroupAddOptions
       ) => {
+        // The caller can unmount while this operation waits for map readiness.
+        if (options && 'isCurrent' in options && options.isCurrent?.() === false)
+          return
         const {
           _addStyle,
           _persistingLayerGroupAddOptions,
@@ -438,6 +441,8 @@ export const createMapLayerSlice: (
 
           if (opts.layerConf) {
             await _addStyle(layerGroupId, opts as LayerGroupAddOptionsWithConf)
+
+            if ('isCurrent' in opts && opts.isCurrent?.() === false) return
 
             // Add event listener for source data changes
 
@@ -867,6 +872,7 @@ export const createMapLayerSlice: (
       const _map = useMapInstanceStore.getState()._map
 
       const style = await resolveMbStyle(options.layerConf.style)
+      if (options.isCurrent && !options.isCurrent()) return
 
       let layerInsertId: string | null = null
 
@@ -1294,7 +1300,7 @@ export const createMapLayerSlice: (
           //   }
 
           // add the group to state after the first layer is added, in case other layers are dependant on the group configs
-          await set((state) => {
+          set((state) => {
             state._layerGroups[id] = layerGroup
           })
 

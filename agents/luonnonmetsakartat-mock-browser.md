@@ -326,14 +326,14 @@ and applet store; it cannot prove a backend or rendered page contract.
 | R03 | GET/POST/PUT/PATCH/DELETE forwarding | server/api/dataProxy.test.ts: all five live methods through real helper; dataProxy.route.test.ts: exact Start route, five wrapper identities and stubbed round-trip | transport | added-and-verified / F100.4 | Constructed HTTP objects and injected upstream only | R-family / R-shared: pass |
 | R04 | Query/header/body/status forwarding | shared src/common/server/apiProxy.test.ts: encoded/repeated/empty query, base path, header allowlists, multipart/binary/JSON bytes, DELETE with/without body, GET/HEAD, null 204/205/304, empty 200, HTTP error propagation | transport | added-and-verified / F100.4 | Stream failures after returning a response and real backend behavior remain outside this catch boundary | R-family / R-shared: pass |
 | R05 | Missing backend config and secret-safe failures | shared src/common/server/apiProxy.test.ts: absent/blank config, missing tail, fetch/setup/body-read failures, exact safe logger args/full local response; Carbon dataProxy.test.ts: TypeError/Error regressions | transport | fixed-and-verified / F100.4 | Fixed logging event only; upstream HTTP bodies intentionally propagate unchanged | R-family / R-shared: pass |
-| G01 | Public loading/layers/empty/dependency error | common/mockScenarios/scenarios.test.ts: public state; shared fixture registry/scenario metadata | seed/helper | pending F100.5 | Rendered states, not seeded-data assertions | Existing suites pass J-baseline / J-final; stated gap pending |
-| G02 | Unauthenticated/pending/missing-token/rejected/error/verified gate | Shared auth/client states; validation HTTP is A04 | client/seed | pending F100.5 | No editor controls on failed auth | Existing suites pass J-baseline / J-final; stated gap pending |
-| G03 | Admin empty/list/detail | common/mockScenarios/scenarios.test.ts: admin layer/area seeds | seed | pending F100.5 | Rendered navigation and detail | Existing suites pass J-baseline / J-final; stated gap pending |
+| G01 | Public loading/layers/empty/dependency error | pages/LuonnonmetsakartatHomePage.test.tsx: `loads anonymous rows`, `shows an empty success`, `renders failed list feedback`, `renders area dependency failure`, `keeps a usable row with missing GeoServer config`, `retains public rows on failed refresh` | rendered/integration | added-and-verified / F100.5.1 | Real page/row/hook/query/store; controlled map operations and HTTP. Missing GeoServer config safely leaves an empty map style with no error banner; no live map claim. | G-family / G-order / G-browser pass |
+| G02 | Unauthenticated/pending/missing-token/rejected/error/verified gate | pages/admin/LuonnonmetsakartatAdminGate.test.tsx: `closes incomplete auth`, `waits for verification`, `waits for token resolution`, `never renders a previously verified child`, `rejects an absent user identity`; LuonnonmetsakartatAdminAccess.test.tsx: `closes actual detail settings/pictures links` | rendered/integration | added-and-verified / F100.5.1 | Real auth context, gate, verification query, QueryClient, store and admin pages; auth provider input/HTTP controlled. Transient child layout effects are checked. No live identity-provider claim. | G-family / G-order pass |
+| G03 | Admin empty/list/detail | pages/admin/LuonnonmetsakartatAdminPage.test.tsx: `loads verified admin records`; pages/admin/layer/folayer/LuonnonmetsakartatAdminLayerFolayerPage.test.tsx: `loads the actual detail`, `loads the new route ID`, `settles map initialization`, `shows a bounded area-dependency error`, `finishes list area preload across actual detail navigation`, `settles a populated list refresh after list → detail → list → detail navigation under the same gate` | rendered/integration | added-and-verified / F100.5.1 | Actual rows, runtime and SearchTable; upload/toggle/detail/settings/pictures navigation. Thin navigation adapter uses real href resolver and switches list/detail children under the same gate. Deferred area preloads and populated list refreshes finish after navigation, with Idle store/query state and usable detail links. No settings/picture edits or real geometry assertions. | G-family / G-order / G-visual / G-refresh pass |
 | G04 | Settings clean/dirty/saving/error | common/mockScenarios/scenarios.test.ts: settings variants | seed | pending F100.5 | Interactions and observable save/error | Existing suites pass J-baseline / J-final; stated gap pending |
 | G05 | Pictures empty/matched/unmatched/save/error | common/mockScenarios/scenarios.test.ts: picture variants | seed | pending F100.5 | Mapping interactions; transport is A10 | Existing suites pass J-baseline / J-final; stated gap pending |
 | G06 | Area edit UI | Existing smoke lacks full lifecycle edit | UI | pending F100.5 | Accessible controls and save/error | Pending child; no run claim |
 | G07 | Destructive confirmation | No direct rendering test | UI | pending F100.5 | Confirm/cancel behavior | Pending child; no run claim |
-| G08 | No retry/remount loops or editing exposure on rejection | Shared auth token resolution tests only | UI | pending F100.5 | Real gate/query integration | Existing suites pass J-baseline / J-final; stated gap pending |
+| G08 | No retry/remount loops or editing exposure on rejection | pages/admin/LuonnonmetsakartatAdminGate.test.tsx: `settles denial/error`, `ignores obsolete validation`, `ignores an obsolete success after logout`, `bounds StrictMode`, `does not trust stale store verification`, `redirects a rejected nested page`; LuonnonmetsakartatAdminAccess.test.tsx: `revokes private rows`, `does not restore privileged data`, `discards queued %s after revocation`, `discards an admin installation already resolving its style`; LuonnonmetsakartatAdminLayerFolayerPage.test.tsx: `settles a populated list refresh` | rendered/integration | fixed-and-verified / F100.5.1 | Real verification, no seeded status or mocked hook. One deliberate verification per ordinary mount; same-gate return navigation adds no verification or list loop; StrictMode attempts are bounded. Applet-scoped revocation cancels query work/removes privileged data and popup ownership; queued additions recheck hook ownership at execution and after style resolution, with no transient installation. Browser lifecycle expansion remains F100.6. | G-family / G-order / G-refresh pass |
 | B01 | Public visible/hidden and auth gates | Existing smoke visits seeded routes | browser | partial / F100.6 | Anonymous hidden exclusion and logged-out/rejected/verified assertions | Current smoke passes (B-runtime-retry); remaining gap pending |
 | B02 | Valid import and both duplicate-key rejections before POST | Existing smoke imports valid ZIP and rejects duplicate ID | browser | partial / F100.6 | Duplicate pair and complete lifecycle | Current smoke passes (B-runtime-retry); remaining gap pending |
 | B03 | Admin detail/settings/pictures navigation | Existing smoke visits those routes | browser | partial / F100.6 | One created-layer navigation flow | Current smoke passes (B-runtime-retry); remaining gap pending |
@@ -349,6 +349,105 @@ and applet store; it cannot prove a backend or rendered page contract.
 | H01 | Layer/style/config and map-request auth regressions | common/{constants,geoServer,utils}.test.ts; layers/forestUseDeclarations.test.ts; shared publicGeoServer.test.ts and src/components/Map/mapAuthTransformRequest.test.ts | unit | existing / F100.1 | Applet `common/utils.ts` marks admin vector sources `useAccessToken`, the map store embeds that request metadata, and `MapHandler` installs this transform; the shared suite proves bearer attachment, missing-token stale-source handling, public requests, and configured GeoServer matching | J-baseline / J-final pass for original evidence; J-review-final includes map auth |
 | H02 | Fixture/scenario/bootstrap safety | common/mockScenarios/LuonnonmetsakartatMockScenarioBootstrap.test.tsx; shared registry, route guards, visual scenarios/impactMap | helper | existing / F100.1 | Helper lifecycle/production guards are not page rendering | Existing suites pass J-baseline / J-final; stated gap pending |
 | H03 | Focused command, checks, runbook | Initial 39-suite inventory plus current 40-suite reviewer-pass inventory; execution evidence below | verification | added-and-verified / F100.1 | Final family reconciliation F100.6 | J-review-discovery, J-review-final, T, L and B-runtime-retry pass |
+
+### F100.5.1 auth/read-page evidence and A05 handoff
+
+A05's deferred access-cleanup work is covered by
+`pages/admin/LuonnonmetsakartatAdminAccess.test.tsx`: `revokes private rows,
+areas, selection and external popup before entering the public page` and
+`does not restore privileged data or map groups from late %s reads`,
+`discards queued %s after revocation and public navigation` (list preload and
+detail enable), and `discards an admin installation already resolving its
+style when access is revoked`. The queue cases restore the real addLayerGroup,
+function queue executor and style installer, with a null WebGL instance. They
+observe store publications as well as terminal state: no transient admin group,
+subscription or popup survives revocation; unrelated queued work and anonymous
+layer installation still succeed. Verification and admin reads populate the actual store before logout; the
+same layer then receives a distinct anonymous area response without resetting
+test state. Hidden records, admin selections, popup ownership and late
+list/detail/area results cannot cross that transition. Unrelated selected
+features, queries, map groups and public metadata survive. A05's original
+URL/normalization matrix remains unchanged.
+
+The five new suites use `pages/pageTestSupport.tsx`, not the query or shapefile
+helpers with broader mocks. Real AuthSessionContext/useAuthSession,
+QueryClient, applet/UI/map stores, page components, rows, applet hooks,
+useLayerGroup/useExclusiveLayerGroups, loading/messages and SearchTable are
+retained. HTTP and WebGL operations are controlled; the navigation adapter
+materializes route-key/parameter hrefs through the production resolver.
+Sidebar chrome and popup editor contents are bounded adapters; the actual
+MapPopupHandler proves popup ownership/removal, not area editing.
+Unexpected HTTP/fetch and console errors fail tests. Teardown unmounts portals,
+cancels/clears clients and restores stores, environment, title, storage,
+spies, timers and real map-to-applet subscriptions. No scenario query flags or seeded verification status are
+used as authorization evidence.
+
+The gate now checks its current session/token attempt before rendering a
+protected child. Revocation clears applet admin queries/data, selections and
+popups; aborted/obsolete results cannot publish store changes. One ordinary
+mounted gate deliberately validates once, including a same-client remount;
+terminal status updates and unrelated rerenders do not retry. A fresh-client
+mount also validates even when real earlier verification left a stale global
+status. Raw bearer tokens remain outside cache keys and applet state. Detail
+runtime instances are keyed by route layer ID and restore the prior title on
+unmount; useful metadata/navigation does not wait for map visibility.
+
+Admin area preloads and list refreshes deliberately do not consume React
+Query's observer abort signal: list-to-detail navigation may remove every
+observer. The same request completes for the new page instead of leaving an
+area placeholder or existing layer metadata in Fetching. Access revocation still explicitly cancels/removes the query and
+increments the access generation; a late HTTP response cannot repopulate the
+store. The transport can finish after revocation, but its result is discarded.
+The actual link-driven list/detail regression verifies the rendered area,
+Idle state, one request and settled query after navigation. The additional
+`settles a populated list refresh after list → detail → list → detail navigation
+under the same gate` regression holds the second list response while opening
+an existing layer again. It failed with Fetching before the fix; now metadata
+and the query settle, the heading/areas/settings/pictures links render, and
+rerenders leave exactly two list reads and one verification. The access
+generation stays unchanged across that navigation; logout/rejection/late-result
+regressions continue to verify the separate revocation boundary.
+
+Evidence on 2026-09-28 (full command paths/logs in the feature coder report):
+
+| Reference | Check | Observed result |
+| --- | --- | --- |
+| G-baseline | `yarn test:luonnonmetsakartat --listTests --json`; `yarn test:luonnonmetsakartat` before edits | Exit 0; 51 suites / 1,012 tests. Existing query/scenario/bootstrap/fixture support audited. |
+| G-discovery | Same discovery command after implementation; independent filesystem + literal allowlist comparison | Exit 0; 56 suites = 32 applet + unchanged 24 shared. Exactly five new page suites; no lost, missing or unexpected suite. |
+| G-family | `yarn test:luonnonmetsakartat` | Exit 0; 56 suites / 1,062 tests / zero snapshots. |
+| G-order | Five new page suites with `--runTestsByPath ... --randomize --seed=10051 --showSeed` | Exit 0; 5 suites / 50 tests. Includes bounded retry clocks, StrictMode, fresh/same-client remounts and stale responses. |
+| G-shared | Base Jest with the eight planned shared auth/navigation/control paths plus geoserverJsonQuery and MapLayerButton/LayerMenuContent | Exit 0; 10 suites / 154 tests. |
+| G-types | `yarn start:typecheck`; `yarn exec tsc --project .codex-orch/features/F100.5.1-luonnonmetsakartat-auth-read-page-tests/coder-f1-artifacts/tsconfig.tests.json --noEmit` | Exit 0 for app and additional explicit page/helper/changed-query-test compilation. |
+| G-lint | Explicit changed-file `yarn exec eslint`; `yarn lint`; `git diff --check` | Exit 0; no new warnings. The two newly touched shared map files carry 35 existing warnings (HEAD comparison confirmed identical rule/message lists); full lint retains 0 errors / 296 warnings. |
+| G-runtime | Requested synchronous runtime-doctor command | Exit 0; run `20260928-195434-375431-runtime_doctor-F100.5.1-luonnonmetsakartat-auth-read-page-tests`, `exit.json` checked, `RETRY_READY`. No runtime repair/restart/config change. |
+| G-browser | Independent app-container `yarn luonnonmetsakartat:mock:smoke` retry, existing no-start script | Exit 0; all eight steps pass, `xvfb-webgl`, preflight 127.0.0.1:6900 and browser localhost:6900. No reported console error. |
+| G-visual | App-container `yarn visual:baseline -- --no-start --scenario-set luonnonmetsakartat-mocks` before production edits; `yarn visual:luonnonmetsakartat-mocks --files=<gate,home,detail-runtime>` after | Exit 0; all 15 existing full-page scenarios / 30 desktop/mobile captures pass. Existing full-page fixtures cover these page changes; no new fixture registry/framework. |
+| G-error-visual | Ignored `.tmp/f10051/public-error-browser.cjs --no-start` using existing browserRuntime/context helpers and intercepted 503 list replies | Exit 0; desktop 1440×900 and mobile 390×844 each show the existing translated layer-fetch error after exactly four requests; no page errors. Screenshots inspected. |
+| G-refresh | Review F1 permanent populated-list navigation case, then detail/access/query suites | Before fix: exit 1, expected Idle but received Fetching. After fix: exit 0, 3 suites / 46 tests. No copied pages or mocked verification; existing late-list/detail/area revocation cases retained. |
+| G-refresh-browser | Ignored `.dev/f10051-f1/list-refresh-browser.cjs --no-start`, desktop/mobile, existing mock runtime | Exit 0; actual return navigation revalidates and changes access generation (11 → 15 → 19), so it clears existing records. Releasing held reads restores detail/areas/editing links without page/console errors. This is browser navigation evidence only; G-refresh supplies the exact same-gate delayed-refresh proof. |
+| G-review-regressions | Both original reviewer Jest reproductions, plus four permanent queue/style/list-detail cases in the existing suites | Reviewer reproductions fail before / pass after. New queue and list/detail regressions fail before / pass after; queued work cannot install even transiently, anonymous/unrelated work still installs. |
+| G-live-revision | Ignored `.dev/visual-regression/f10051-coder-revision/{queued-admin,list-detail}-browser.cjs --no-start` in the doctor-verified app container | Exit 0; real delayed IndexedDB hydration → verified detail → logout → public navigation leaves no admin group/layer/rendered feature; slow WFS list → detail and reload render areas. Actual settings/pictures destinations render their clean controls. No page errors or scenario-seeded verification. |
+
+The F1 revision reran discovery/family, randomized pages, shared checks, types,
+lint, smoke and all 30 existing visual comparisons. Exact logs and the
+before/after navigation regression are in the feature
+`coder-f1-artifacts/` folder; existing visual baselines were retained. Its live
+probe records the runtime's generation changes explicitly and does not claim
+they exercise the same-gate regression.
+
+The screenshot comparisons protect existing page layout and scenario-preview
+compatibility; they do not prove authorization. The query-driven component
+tests provide that evidence. The additional public-error browser check uses
+controlled HTTP and is not a new standard lifecycle runner. Missing GeoServer
+configuration is safe but cannot display a working map. The revision probes
+exercise actual WebGL installation with the mock API, not real GeoServer/PostGIS,
+identity or object-storage behavior. Settings and pictures Save buttons are
+intentionally absent in clean states; destination checks assert the name input
+and picture-folder control, without changing or saving data. Live services remain
+separate integration checks. G04–G07 remain with F100.5.2/F100.5.3; browser lifecycle and final
+runbook reconciliation remain F100.6. Preserve the doctor's verified service:
+the live mock flags differ from checked-out `.env`; delegate any recreation or
+recovery to runtime_doctor rather than restarting from the disabled file values.
 
 ### F100.1 execution evidence
 

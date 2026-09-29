@@ -24,18 +24,12 @@ export const useAdminFolayer = (
     (state) => state.folayerAreaConfs[folayerId]
   )
 
-  const {
-    refetch: folayerRefetch,
-    isError: isFolayerError,
-  } = useQuery({
+  const { refetch: folayerRefetch, isError: isFolayerError } = useQuery({
     ...useAdminFolayerQueryOptions(folayerId),
     enabled: false,
   })
 
-  const {
-    refetch: areasRefetch,
-    isError: isAreasError,
-  } = useQuery({
+  const { refetch: areasRefetch, isError: isAreasError } = useQuery({
     ...useAdminFolayerAreaQueryOptions(folayerId),
     enabled: false,
   })
@@ -52,7 +46,8 @@ export const useAdminFolayer = (
   }, [adminFolayerConf, folayerAreaConf, folayerRefetch, areasRefetch])
 
   const getLayerConf = useCallback(async () => {
-    let conf: AdminFolayerConf | null | undefined = adminFolayerConf
+    let conf: AdminFolayerConf | null | undefined =
+      useAppletStore.getState().adminFolayerConfs[folayerId]
     if (!conf) {
       const { data } = await folayerRefetch()
       conf = data
@@ -66,7 +61,7 @@ export const useAdminFolayer = (
       colorCode: conf.colorCode,
       isAdmin: true,
     })
-  }, [folayerId, adminFolayerConf, folayerRefetch])
+  }, [folayerId, folayerRefetch])
 
   const layerGroupId = getFolayerGroupId(folayerId, true)
 

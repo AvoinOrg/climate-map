@@ -68,6 +68,7 @@ it.each([
       expect(axios.get).toHaveBeenCalledWith(
         '/api/luonnonmetsakartat/admin/validate',
         {
+          signal: expect.any(AbortSignal),
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: 'Bearer opaque-token',

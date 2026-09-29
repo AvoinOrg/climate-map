@@ -153,6 +153,7 @@ describe.each(['list', 'detail'] as const)('admin %s', (kind) => {
           : '/api/luonnonmetsakartat/layer/layer-a',
         {
           headers: { Authorization: 'Bearer opaque-token' },
+          ...(kind === 'detail' ? { signal: expect.any(AbortSignal) } : {}),
         }
       )
       expect(useAppletStore.getState().adminFolayerConfs).toEqual({
