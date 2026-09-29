@@ -4,6 +4,8 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type ComponentProps,
+  type FieldsetHTMLAttributes,
   type MouseEvent,
   type SyntheticEvent,
 } from 'react'
@@ -56,6 +58,9 @@ type FolayerUpdateValues = {
   rawShapefile: ArrayBuffer
 } | null
 
+type SettingsFieldsetProps = ComponentProps<typeof Box> &
+  FieldsetHTMLAttributes<HTMLFieldSetElement>
+
 const settingsRootSx = {
   display: 'flex',
   flexDirection: 'column',
@@ -73,6 +78,10 @@ const settingsSidebarOuterSx = {
 } as const
 
 const settingsContentSx = {
+  border: 0,
+  m: 0,
+  px: 0,
+  pt: 0,
   display: 'flex',
   flexDirection: 'column',
   gap: {
@@ -300,13 +309,13 @@ const LuonnonmetsakartatAdminLayerFolayerSettingsPage = () => {
   const shpRef = useRef<FolayerUpdateShpRef>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const fileReadVersion = useRef(0)
+  const params = useAppParams<{ folayerIdSlug: string }>()
   useEffect(
     () => () => {
       fileReadVersion.current += 1
     },
-    []
+    [params.folayerIdSlug]
   )
-  const params = useAppParams<{ folayerIdSlug: string }>()
   const router = useAppRouter()
   const buildAppRouteHref = useAppRouteHrefBuilder()
   const { t } = useTranslate('luonnonmetsakartat')
@@ -333,6 +342,10 @@ const LuonnonmetsakartatAdminLayerFolayerSettingsPage = () => {
   const isSaving =
     adminFolayerConf?.state === FolayerConfState.Saving ||
     localAdminFolayerPatchMutation.isPending
+  const isDeleting =
+    adminFolayerConf?.state === FolayerConfState.Deleting ||
+    localAdminFolayerDeleteMutation.isPending
+  const isBusy = isSaving || isDeleting
 
   const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -357,16 +370,19 @@ const LuonnonmetsakartatAdminLayerFolayerSettingsPage = () => {
   }
 
   useEffect(() => {
-    if (!localAdminFolayerPatchMutation.isPending) {
-      setIsLoading(false)
-    } else {
-      setIsLoading(true)
-    }
-  }, [localAdminFolayerPatchMutation.isPending, setIsLoading])
+    setIsLoading(
+      localAdminFolayerPatchMutation.isPending ||
+        localAdminFolayerDeleteMutation.isPending
+    )
+  }, [
+    localAdminFolayerPatchMutation.isPending,
+    localAdminFolayerDeleteMutation.isPending,
+    setIsLoading,
+  ])
 
   useEffect(() => {
     setNameDraft(adminFolayerConf?.name ?? '')
-  }, [adminFolayerConf?.name])
+  }, [adminFolayerConf?.name, params.folayerIdSlug])
 
   const commitNameChange = useMemo(
     () =>
@@ -424,8 +440,9 @@ const LuonnonmetsakartatAdminLayerFolayerSettingsPage = () => {
     event.stopPropagation()
     event.nativeEvent.stopImmediatePropagation()
 
-    if (adminFolayerConf) {
+    if (adminFolayerConf && !isBusy) {
       const version = fileReadVersion.current
+      commitNameChange.flush()
       // A selected replacement must have current, validated values.
       const shpValues = await new Promise<FolayerUpdateValues>((resolve) => {
         if (!shpRef.current) return resolve(null)
@@ -435,16 +452,19 @@ const LuonnonmetsakartatAdminLayerFolayerSettingsPage = () => {
       if (version !== fileReadVersion.current || (fileName && !shpValues))
         return
 
+      const currentConf =
+        useAppletStore.getState().adminFolayerConfs[params.folayerIdSlug]
+      if (!currentConf || currentConf.state !== FolayerConfState.Idle) return
+
       // Only the validated child result supplies replacement bytes and columns.
       const payload: FolayerPatchPayload = {
-        ...adminFolayerConf,
+        ...currentConf,
       }
       if (fileName && shpValues) {
         payload.colOptions = shpValues.colOptions
         payload.rawShapefile = shpValues.rawShapefile
         payload.deleteAreasNotUpdated = deleteAreasNotUpdated
       }
-      setIsLoading(true)
       localAdminFolayerPatchMutation.mutate(payload, {
         onSuccess: resetUpdateFileState,
       })
@@ -452,13 +472,18 @@ const LuonnonmetsakartatAdminLayerFolayerSettingsPage = () => {
   }
 
   const handleDeleteClick = async () => {
-    if (adminFolayerConf) {
+    if (adminFolayerConf && !isBusy) {
+      const version = fileReadVersion.current
       const handleDeleteConfirm = async () => {
-        setIsLoading(true)
+        if (version !== fileReadVersion.current) return
+        commitNameChange.flush()
+        const currentConf =
+          useAppletStore.getState().adminFolayerConfs[params.folayerIdSlug]
+        if (!currentConf || currentConf.state !== FolayerConfState.Idle) return
         localAdminFolayerDeleteMutation.mutate({
-          folayerConf: adminFolayerConf,
+          folayerConf: currentConf,
           callbackFn: async () => {
-            await removeLayerGroup(getFolayerGroupId(adminFolayerConf.id, true))
+            await removeLayerGroup(getFolayerGroupId(currentConf.id, true))
             router.push(
               buildAppRouteHref({
                 routeKey: APP_ROUTE_KEYS.LUONNONMETSAKARTAT_ADMIN,
@@ -480,8 +505,7 @@ const LuonnonmetsakartatAdminLayerFolayerSettingsPage = () => {
 
   const hasSelectedUpdate = Boolean(fileName)
   const isSaveDisabledByUpdate = hasSelectedUpdate && !isUpdateValid
-  const isSaveDisabled = isSaveDisabledByUpdate || isSaving
-  const isDeleting = adminFolayerConf?.state === FolayerConfState.Deleting
+  const isSaveDisabled = isSaveDisabledByUpdate || isBusy
   const shouldShowSaveFooter = Boolean(
     adminFolayerConf && (adminFolayerConf.unsyncedChanges || fileName)
   )
@@ -497,12 +521,19 @@ const LuonnonmetsakartatAdminLayerFolayerSettingsPage = () => {
           </Box>
         )}
         {isFolayerReady && adminFolayerConf && (
-          <Box sx={settingsContentSx}>
+          <Box
+            {...({
+              component: 'fieldset',
+              disabled: isBusy,
+            } as SettingsFieldsetProps)}
+            sx={settingsContentSx}
+          >
             <IconWithText
               sx={deleteActionSx}
               icon={<Delete />}
               isIconOnRight={true}
               onClick={handleDeleteClick}
+              disabled={isBusy}
               iconSx={deleteActionIconSx}
               textSx={deleteActionTextSx}
               ariaLabel={t('sidebar.admin.folayer.settings.delete')}
