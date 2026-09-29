@@ -7,7 +7,9 @@ import { useAppletStore } from 'applets/luonnonmetsakartat/state/appletStore'
 import { useAdminFolayer } from 'applets/luonnonmetsakartat/common/hooks/useAdminFolayer'
 import { getFolayerGroupId } from 'applets/luonnonmetsakartat/common/utils'
 import { useExclusiveLayerGroups } from '#/common/hooks/map/useExclusiveLayerGroups'
-import { useAppParams } from '#/common/navigation/navigation'
+import { useAppParams, useAppPathname } from '#/common/navigation/navigation'
+import { useAppRouteHrefBuilder } from '#/common/navigation/appRouteLinks'
+import { APP_ROUTE_KEYS } from '#/common/routing/routeMetadata'
 
 const FolayerRuntime = ({
   children,
@@ -63,6 +65,22 @@ const LuonnonmetsakartatAdminLayerFolayerRuntime = ({
   children: React.ReactNode
 }) => {
   const { folayerIdSlug } = useAppParams<{ folayerIdSlug: string }>()
+  const pathname = useAppPathname()
+  const buildAppRouteHref = useAppRouteHrefBuilder()
+  if (!folayerIdSlug) return null
+
+  const layerPath = buildAppRouteHref({
+    routeKey: APP_ROUTE_KEYS.LUONNONMETSAKARTAT_ADMIN_FOLAYER,
+    routeParams: { folayerIdSlug },
+  }).replace(/\/$/, '')
+
+  // Navigation publishes its destination before replacing the old outlet.
+  // The admin gate can remount that outlet when it adds the landing sidebar.
+  // Do not restart the outgoing layer's queries/map after deletion or departure.
+  if (pathname !== layerPath && !pathname.startsWith(`${layerPath}/`)) {
+    return null
+  }
+
   return (
     <FolayerRuntime key={folayerIdSlug} folayerId={folayerIdSlug}>
       {children}

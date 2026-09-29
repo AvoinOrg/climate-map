@@ -1,111 +1,278 @@
-# Luonnonmetsakartat Mock Browser Runbook
+# Luonnonmetsakartat mock lifecycle runbook
 
-This runbook is for agent-driven Luonnonmetsakartat browser checks against the
-already-running app-container dev server. Use `runtime_doctor` for runtime
-diagnosis, setup, test-mode configuration, service lifecycle and recovery.
-No-start browser commands use the service verified by the doctor.
+The stable `yarn luonnonmetsakartat:mock:smoke` command uses the existing
+Playwright/Xvfb/WebGL harness against a doctor-verified **TanStack Start** dev
+server. It never starts/restarts a service. One run uses real application
+controls and frontend queries to import, edit, read back and delete its own
+layer in the in-memory HTTP API. This is not real-stack acceptance.
 
-## Required Mock Env
+## Prerequisites and runtime delegation
 
-The dev server must already be running with:
+Run deterministic checks from `/workspace/project` with installed dependencies.
+The browser requires installed Playwright Chromium (`yarn visual:install`),
+Xvfb and working WebGL/SwiftShader. Delegate diagnosis, installation/setup,
+test-environment changes, service lifecycle and recovery to `runtime_doctor`.
+The current app container is already configured with:
 
 ```bash
 PUBLIC_COMPILED_APPLETS=main,luonnonmetsakartat
 PUBLIC_MOCK_AUTH_ENABLED=1
 PUBLIC_MOCK_AUTH_INITIAL_STATE=authenticated
-LUONNONMETSAKARTAT_MOCK_API_ENABLED=1
 PUBLIC_LUONNONMETSAKARTAT_MOCK_SCENARIOS_ENABLED=1
+LUONNONMETSAKARTAT_MOCK_API_ENABLED=1
 ```
 
-Existing production guards reject mock auth/API/scenario flags when
-`NODE_ENV=production`.
+Standalone uses `PUBLIC_COMPILED_APPLETS=luonnonmetsakartat` instead. The runner
+reads the effective process selection/flags inside that container and verifies
+canonical navigation; hostname does not select a mode. It refuses an unselected
+or ambiguous build, missing mock flags, production, or a non-loopback write
+target before any mutation. Production guards independently prohibit API,
+scenario and auth enablement. The smoke chooses explicit authenticated,
+unauthenticated and rejected identities; it does not depend on the initial auth
+state or load a real account's storage state.
 
-## Dev-Server Rule
+The current server's internal port is **6900**, not the stale Next.js/3000
+values in historical orchestration context. Run the browser in `/app` inside
+the Compose `app` service. Preflight uses `127.0.0.1:6900`; Chromium navigation
+uses `localhost:6900`. Do not interpret agent-container loopback as the app.
+Ordinary repository `.env` defaults are not the configured service's flags.
 
-Run browser smoke and visual commands inside the project `app` container so
-`http://127.0.0.1:6900` points at the app-container dev server:
+Invoke the doctor with the observed failure and intended verification command:
 
 ```bash
-docker compose -f /workspace/project/docker-compose.dev.yml --project-directory /workspace/project exec app sh -lc 'cd /app && yarn luonnonmetsakartat:mock:smoke'
+cd /workspace/codex-orch && PYTHONPATH=/workspace/codex-orch CODEX_ORCH_IN_CONTAINER=1 python3 -m codex_orch run-agent --project /workspace/project/.codex-orch/orch.toml --role runtime_doctor --feature F100.6-luonnonmetsakartat-lifecycle-smoke-runbook
 ```
 
-The smoke script probes `http://127.0.0.1:6900` for reachability but remaps
-browser navigation to `http://localhost:6900` for reliable app-container
-hydration and clicks. If the runtime is unreachable or its mode is unsuitable,
-invoke runtime doctor with the failure and exact verification command (or ask
-the manager to delegate). For this feature:
+The command is synchronous. Poll the same yielded shell session to exit, read
+that run's `exit.json`, then the feature's `runtime-doctor-report.md`. Retry the
+affected check after `RETRY_READY`. Send a remaining `RUNTIME_BLOCKED` issue to
+the manager with the report's exact URL/mode/flag/browser evidence while
+finishing independent deterministic checks. No-start means runtime work is
+delegated. It does not prohibit doctor access. For later work use its feature ID.
+A restart must never stand in for owned smoke cleanup or repeatability evidence.
+
+## Exact verification commands
+
+Run in `/workspace/project`, with ordinary test-process environment:
 
 ```bash
-cd /workspace/codex-orch && PYTHONPATH=/workspace/codex-orch CODEX_ORCH_IN_CONTAINER=1 python3 -m codex_orch run-agent --project /workspace/project/.codex-orch/orch.toml --role runtime_doctor --feature F100.4-luonnonmetsakartat-routing-proxy-tests
+yarn test:luonnonmetsakartat --listTests --json
+yarn test:luonnonmetsakartat --runTestsByPath utils/scripts/visual/luonnonmetsakartat-mock-smoke.test.js
+yarn test:luonnonmetsakartat
+yarn start:typecheck
+yarn exec eslint src/applets/luonnonmetsakartat/pages/admin/layer/folayer/LuonnonmetsakartatAdminLayerFolayerPage.test.tsx src/applets/luonnonmetsakartat/common/hooks/useAdminFolayer.ts src/applets/luonnonmetsakartat/pages/admin/layer/folayer/LuonnonmetsakartatAdminLayerFolayerRuntime.tsx src/applets/luonnonmetsakartat/pages/admin/LuonnonmetsakartatAdminAccess.test.tsx src/applets/luonnonmetsakartat/pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.test.tsx utils/scripts/visual/luonnonmetsakartat-mock-smoke.js utils/scripts/visual/luonnonmetsakartat-smoke-lifecycle.js utils/scripts/visual/luonnonmetsakartat-mock-smoke.test.js
+yarn lint
+git diff --check
 ```
 
-Poll the same yielded shell session until it exits and its run has `exit.json`.
-Read the feature's `runtime-doctor-report.md`, retry the affected command after
-`RETRY_READY`, and hand the manager a remaining `RUNTIME_BLOCKED` prerequisite
-with the report's evidence. No-start means delegate runtime work; it does not
-restrict access to runtime doctor. For later features, use their feature ID.
+The deletion regressions can be isolated with:
 
-Jest normally runs from `/workspace/project`. Inside the mock-enabled app
-service, doctor verified this process-only environment isolation:
+```bash
+yarn test:luonnonmetsakartat --runTestsByPath src/applets/luonnonmetsakartat/pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.test.tsx
+```
+
+App typecheck excludes tests. To reproduce the explicit changed-test typecheck:
+
+```bash
+mkdir -p .tmp
+cat > .tmp/f1006-correction-test-tsconfig.json <<'JSON'
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "types": ["node", "vite/client", "jest", "@testing-library/jest-dom"]
+  },
+  "include": [
+    "../src/**/*.d.ts",
+    "../src/applets/luonnonmetsakartat/pages/admin/layer/folayer/LuonnonmetsakartatAdminLayerFolayerPage.test.tsx",
+    "../src/applets/luonnonmetsakartat/pages/admin/LuonnonmetsakartatAdminAccess.test.tsx",
+    "../src/applets/luonnonmetsakartat/pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.test.tsx"
+  ],
+  "exclude": ["../node_modules"]
+}
+JSON
+yarn exec tsc --project .tmp/f1006-correction-test-tsconfig.json
+```
+
+Affected shared routing/auth/proxy/build checks, including the other applet's
+existing shared-proxy regression, can also be run explicitly:
+
+```bash
+yarn test --runInBand --runTestsByPath \
+  src/common/navigation/appRouteLinks.test.tsx \
+  src/common/routing/publicRoutes.test.ts \
+  src/common/routing/requestRouting.test.ts \
+  src/common/routing/appletSelectionContract.test.ts \
+  src/common/routing/routeMetadata.test.ts \
+  src/common/auth/client.test.tsx \
+  src/common/auth/mock.test.ts \
+  src/runtime/api/userinfo.test.ts \
+  src/common/server/apiProxy.test.ts \
+  utils/scripts/appletBuildConfig.test.js \
+  utils/scripts/prebuildFolderPrune.test.js \
+  utils/scripts/writeNetlifyRedirects.test.js \
+  src/applets/carbon/server/api/dataProxy.test.ts
+```
+
+If Jest must run inside the mock-enabled app container, isolate only that test
+process from its inherited browser flags (do not edit the service environment):
 
 ```bash
 docker compose -f /workspace/project/docker-compose.dev.yml --project-directory /workspace/project exec -T app sh -lc 'cd /app && env -u PUBLIC_MOCK_AUTH_ENABLED -u PUBLIC_MOCK_AUTH_INITIAL_STATE -u PUBLIC_LUONNONMETSAKARTAT_MOCK_SCENARIOS_ENABLED -u LUONNONMETSAKARTAT_MOCK_API_ENABLED yarn test:luonnonmetsakartat'
 ```
 
-This prevents browser mock-auth flags from overriding generic real-auth test
-fixtures. It leaves the app service flags unchanged and requires no `.env` edit.
-
-From the Codex agent or host namespace, do not probe `127.0.0.1:6900`; use the
-host-published `DEV_PORT` only for manual diagnostics outside this runbook.
-
-## Commands
+After doctor readiness, run this command **twice, separately, with no source
+edits, service reset/restart or configuration change between runs**:
 
 ```bash
-yarn luonnonmetsakartat:mock:smoke
-yarn visual:luonnonmetsakartat-mocks
-node utils/scripts/visual/luonnonmetsakartat-mock-smoke.js --help
+docker compose -f /workspace/project/docker-compose.dev.yml --project-directory /workspace/project exec -T app sh -lc 'cd /app && yarn luonnonmetsakartat:mock:smoke'
 ```
 
-Both smoke and visual commands are no-start flows and expect the stable dev
-server to already exist.
+Both must exit 0 with distinct `runId`, `liveMode`, discovered `createdIds`,
+exactly one create attempt, preserved baseline count, and verified cleanup with
+no unresolved IDs. Success is printed only after issue collection and all
+context/browser closes. Then demonstrate failure cleanup using the same runner:
 
-## Main-App URLs
+```bash
+docker compose -f /workspace/project/docker-compose.dev.yml --project-directory /workspace/project exec -T app sh -lc 'cd /app && yarn luonnonmetsakartat:mock:smoke --fail-after-import'
+```
 
-Canonical main-app paths:
+This must exit **1** with the deliberate post-import primary error, the created
+ID and `cleanup.verified: true`, matching attempted/absent IDs and no unresolved
+IDs. Zero is a failed diagnostic. Cleanup errors are also a failed diagnostic,
+not the intended outcome. Follow with another ordinary passing run. Helper
+regressions inject DELETE/readback/close failures without harming the runtime.
 
-- `/fi/luonnonmetsakartat`
-- `/fi/luonnonmetsakartat/admin`
-- `/fi/luonnonmetsakartat/admin/import`
-- `/fi/luonnonmetsakartat/admin/layer/mock-visible-layer`
-- `/fi/luonnonmetsakartat/admin/layer/mock-visible-layer/settings`
-- `/fi/luonnonmetsakartat/admin/layer/mock-visible-layer/pictures`
+For CLI options: `node utils/scripts/visual/luonnonmetsakartat-mock-smoke.js --help`.
+A runner/docs-only change requires no visual comparison. F100.6's deletion
+query fix uses the existing full-page mock scenarios, including settings and
+admin rows (the isolated component-fixture set has no settings-page fixture):
 
-Historical paths (unsupported; `legacySubpathRedirects` is empty):
+```bash
+docker compose -f /workspace/project/docker-compose.dev.yml --project-directory /workspace/project exec -T app sh -lc 'cd /app && yarn visual:after-edit -- --no-start --scenario-set luonnonmetsakartat-mocks src/applets/luonnonmetsakartat/common/hooks/useAdminFolayer.ts src/applets/luonnonmetsakartat/pages/admin/layer/folayer/LuonnonmetsakartatAdminLayerFolayerRuntime.tsx'
+```
 
-- `/fi/luonnonmetsakartat/admin/tuo`
-- `/fi/luonnonmetsakartat/admin/taso/mock-visible-layer`
-- `/fi/luonnonmetsakartat/admin/taso/mock-visible-layer/asetukset`
-- `/fi/luonnonmetsakartat/admin/taso/mock-visible-layer/kuvat`
+These seeded screenshots check rendering only. They cannot establish persistence;
+the unseeded lifecycle above supplies that evidence.
 
-## Standalone URLs
+## What the lifecycle proves
 
-Standalone Luonnonmetsakartat builds omit the applet slug:
+The script uses one uniquely named layer and discovered layer/area IDs. It:
 
-- `/fi`
-- `/fi/admin`
-- `/fi/admin/import`
-- `/fi/admin/layer/mock-visible-layer`
-- `/fi/admin/layer/mock-visible-layer/settings`
-- `/fi/admin/layer/mock-visible-layer/pictures`
+1. Reads and renders visible layers anonymously with no Authorization header;
+   exercises real logged-out, rejected (validate 403) and authorized gates.
+2. Parses the duplicate-ID and duplicate-pair ZIPs, explicitly selecting pair
+   indexing for the latter. Specific visible errors and unchanged route precede
+   route exit; every POST attempt is counted, including aborted/failed requests.
+3. Imports `valid-layer.zip`, detects columns, follows the returned ID to detail,
+   reloads through real detail/WFS queries, and proves hidden exclusion using a
+   fresh anonymous public context.
+4. Uses actual detail links to settings and pictures. It saves a run-specific
+   name, keyboard hue edit and visible/hidden/visible transitions, checks exact
+   submitted fields, reloads controls from GET, and checks fresh public reads.
+5. Opens SearchTable's discovered area, edits its description and saves. Fresh
+   WFS and a reopened editor retain that ID/value; another area is unchanged.
+6. Supplies raw PNG File inputs through the directory input's normal change
+   path. Automatic matching, unmatched warning/counts, manual assignment and
+   clear occur in real controls. Partial save excludes the unmatched file and
+   aligns two filenames with repeated area IDs. WFS then returns those filenames
+   on the correct area, and its real gallery consumes normalized metadata.
+7. Probes locale normalization/search preservation and all four removed Finnish
+   tails in the available mode. An authorized admin gate lets the unknown
+   child render its actual not-found outlet; no tail is translated/restored.
+8. Cancels deletion (zero DELETE), reopens/confirms (one DELETE), then verifies
+   fresh authenticated/public list absence and the exact detail 404.
 
-Historical standalone equivalents (also unsupported):
+The small adjacent lifecycle helper provides ownership, FormData observation,
+strict diagnostics and failure aggregation to this same runner and Jest suite.
+There is no second browser harness. Chromium omits `postDataBuffer()` for file
+multipart requests; an init script observes original native
+`XMLHttpRequest.send(FormData)` entries and passes the **same body unchanged**.
+A binding correlates page/method/URL with independent network requests, survives
+navigation, and fails on missing evidence. It does not intercept/mutate API
+responses, seed mappings or install successful query/store state.
 
-- `/fi/admin/tuo`
-- `/fi/admin/taso/mock-visible-layer`
-- `/fi/admin/taso/mock-visible-layer/asetukset`
-- `/fi/admin/taso/mock-visible-layer/kuvat`
+Only after returned metadata is checked, the runner fulfills exact owned
+`https://example.org/mock/uploads/<layer>/<area>/<index>-<filename>` image URLs
+and their exact `?width=200&resize=cover&quality=80&dpr=2` variants with tiny PNG
+bytes. Layer/area/create/PATCH/WFS responses always come from the server.
 
-## F100.4 route expectations for F100.6
+## Ownership, storage and failure behavior
+
+Names contain timestamp plus UUID. The runner captures the authenticated layer
+baseline before mutations, registers returned IDs before navigation assertions,
+and observes creates for every context through teardown. Lost-response recovery
+matches **exact run-owned names absent from the baseline**, including rename
+variants and unexpected negative-test creates. Prefix matches, fixed IDs, list
+order and “all additions since baseline” are never ownership proof.
+
+Finally cleanup waits for observable completion with a bounded deadline, attempts
+all owned IDs independently, accepts only the mock's exact already-absent 404,
+and checks authenticated detail/list absence plus anonymous absence. It compares
+all unrelated baseline layer records and membership; concurrent unrelated changes
+are reported, never deleted. An owned ID renamed externally is left for review.
+Aborted/incomplete creates have ambiguous server acceptance and fail cleanup
+certification even if an early list is empty. Failure output identifies exact
+owned names/IDs, attempted/absent/unresolved IDs and unresolved creates. Primary,
+cleanup/readback, console/page and independent close failures are aggregated;
+none is replaced by a later exception. Do not manually delete by a smoke prefix.
+Use the report's ownership evidence and involve the manager/doctor if recovery
+requires runtime intervention.
+
+Server mock state/counters persist for the process lifetime. `mockReset=1` clears
+client Zustand and query state only. It is **not** a server reset. Unit tests may
+use the guarded store reset with before/after isolation; browser runs do not.
+
+Visual fixture scenarios are a different tool: `yarn visual:luonnonmetsakartat-mocks`
+uses `mockReset=1&mockLuonnonmetsakartatState=<state>` and may prefill layer/query/
+verification/mapping state. They retain their original semantics. Lifecycle URLs
+omit both parameters and set only `mockAuth` when selecting an identity. A seeded
+screen or successful mutation response alone is never persistence evidence.
+
+## Strict browser diagnostics
+
+Every page error and every unexpected console **error** fails, including unknown
+sources, all applet/application errors, and late errors during cleanup/close.
+Duplicate validation must not console.error. One narrowly checked third-party
+background-tile transport diagnostic is tolerated as described below.
+
+Expected denial/not-found diagnostics are Chromium-generated negative HTTP
+resource messages after the corresponding response **and UI assertion** pass:
+
+- GET `/api/luonnonmetsakartat/admin/validate`, status 403, phase
+  `rejected admin gate`, exact message
+  `Failed to load resource: the server responded with a status of 403 (Forbidden)`.
+- GET the exact untranslated historical document URL including search, status
+  404, phase `canonical/locales/removed legacy routes (live main)` (or standalone),
+  exact message
+  `Failed to load resource: the server responded with a status of 404 (Not Found)`.
+
+Both require the same page, exact response URL, zero console arguments and
+resource location line/column 0. The same text from application console.error,
+another endpoint/status/phase, or an unasserted negative response fails. Tolerated
+entries are printed with source/message/phase rather than an unexplained count.
+
+A separate observed exception is the shared MML background raster service:
+GET same-origin `/api/map/core/mml/tms/<numeric-z>/<numeric-x>/<numeric-y>` with
+**exactly** `?layer=taustakartta`, status 500, and response body **exactly**
+`Tile upstream request failed`. It is accepted only in `area metadata UI edit
+and WFS readback` or `canonical/locales/removed legacy routes (live main)`
+(or standalone), on that same page/URL/phase, with zero console arguments,
+line/column 0 and exact browser message
+`Failed to load resource: the server responded with a status of 500 (Internal Server Error)`.
+The collector awaits body inspection before deciding. `API key not configured`,
+other bodies, statuses, methods, layers, queries, phases and application-issued
+console errors remain fatal. Unreadable response evidence also fails.
+
+This exception was added only after strict runs failed on z=8 and z=13 tiles
+and runtime doctor found `MML tile proxy request failed` / `UND_ERR_SOCKET` in
+service logs, without a mock API/runtime failure. `src/runtime/api/mmlTileProxy.ts`
+returns the checked body only from its upstream-fetch catch, distinct from
+missing configuration; the existing proxy suite covers the other branches.
+It does not exempt Luonnonmetsakartat TMS/WFS or prove background-map service
+availability. No tile response is fulfilled or rewritten by this smoke.
+
+## Routes and build modes
 
 The manifest and existing route metadata remain authoritative. `layer-1` is a
 unit-test ID; browser work must substitute its discovered ID. The navigation
@@ -143,8 +310,9 @@ apply with the same search string preserved:
 | `/en/T` | Pass through under a supported main locale | 308 to `/fi/T` |
 
 No rule translates the Finnish tail to an English endpoint. Pass-through is
-normalization evidence, not rendered not-found evidence. F100.6 should check
-not-found behavior in the available runtime mode. Carbon's retained Finnish
+normalization evidence, not rendered not-found evidence. The lifecycle checks
+rendered not-found behavior in the available runtime mode after the admin gate
+verifies; anonymous visitors still see the normal admin login hint. Carbon's retained Finnish
 redirects and their ordering remain unchanged.
 
 The configured `luonnonmetsakarta.netlify.app` spelling is intentional test
@@ -167,676 +335,273 @@ HTTP and HTTPS:
 These rule tests prove generated targets/order, not deployed CDN behavior.
 Both build modes are deterministic tests with explicit selections; use the
 existing doctor-verified main runtime for no-start smoke. Delegate any needed
-runtime diagnosis/setup/configuration/recovery to runtime doctor. F100.6 may
-exercise live proxy mode only where the existing server permits it; default
-transport tests never use a real upstream or credentials.
+runtime diagnosis/setup/configuration/recovery to runtime doctor. Default
+transport tests never use a real upstream or credentials. Live proxy acceptance
+is a separate operator-authorized phase, not part of the mock smoke.
 
-## Mock Query Params
 
-Use these query params for seeded browser states:
+## Fixture and external limits
 
-- `mockReset=1`
-- `mockLuonnonmetsakartatState=<state>`
-- `mockAuth=authenticated`
+The [fixture manifest](../test-data/luonnonmetsakartat/README.md) lists all five
+small ZIPs and their deterministic generator. The lifecycle uses valid,
+duplicate-ID and duplicate-name/municipality archives; encoding/invalid archive
+and replacement matrices remain in focused Jest, not duplicated in Playwright.
 
-Common states are `public-layers`, `admin-layers`, `layer-detail`,
-`settings-clean`, and `pictures-mapped`.
+- Mock import creates synthetic polygons/areas/IDs/timestamps. It does not ingest
+  or validate ZIP geometry. WFS projects simple centroid points; TMS returns
+  empty PBFs. A passing map shell is not GeoServer/PostGIS rendering acceptance.
+- Replacement serializes both indexing strategies and preserve/delete flags;
+  the mock validates that flag but preserves existing areas/geometry with an
+  uninterpreted ZIP. Actual matching, replacement and deletion belong to L02.
+- Picture writes store ordered URL/filename metadata, not bytes. Area PATCH can
+  replace/remove serialized picture lists; no saved-picture delete editor exists.
+  A09/M06 test removal transport/store/WFS, G06 tests refreshed gallery removal.
+  Storage upload/decoding/deletion and real image-proxy behavior belong to L03.
+- Fixed verified/rejected mock identities prove frontend/HTTP gates, not real
+  Zitadel login, renewal or roles. No real user storage-state file is consumed.
+- I05/I06 characterize current frontend limits: present-column blank/null and
+  non-string values are not independently rejected; IDs stringify without
+  trimming/case folding, zero counts, null skips; pairs are case-sensitive and
+  skip falsy members. The alphabet/Ã warning is a heuristic, not comprehensive
+  encoding detection. Description and area values are not validated. Missing
+  SHX/PRJ/CPG may parse these tiny WGS84 fixtures; arbitrary CRS/CPG support is
+  not inferred. Mock acceptance is not production validation policy.
+- Main and standalone construction/normalization/pruning are deterministic tests.
+  The live smoke proves only its printed mode. Generated Netlify redirect/proxy
+  rules are tested, but a deployed CDN is not contacted.
 
-## Upload Fixtures
+Real GeoServer/PostGIS ingestion, replacement reconciliation, Zitadel and object
+storage/CDN acceptance remain a **separate opt-in operator-authorized phase**.
+The operator must supply the intended environment, credentials/roles and expected
+backend contract, record pre-existing state, use disposable IDs/names, read back
+through the deployed frontend/backend, and verify targeted cleanup afterward.
+Those prerequisites are absent from default commands. No default check writes
+to real/shared external services, and this feature reports no real-stack pass.
 
-Committed shapefile ZIP fixtures:
+## Coverage ledger and discovery boundary
 
-- `test-data/luonnonmetsakartat/valid-layer.zip`
-- `test-data/luonnonmetsakartat/duplicate-id-layer.zip`
-- `test-data/luonnonmetsakartat/duplicate-name-municipality-layer.zip`
-- `test-data/luonnonmetsakartat/finnish-layer.zip`
-- `test-data/luonnonmetsakartat/mojibake-layer.zip`
+`jest.luonnonmetsakartat.config.ts` automatically selects applet tests and 24
+literal shared suites (auth/map-request auth, GeoServer config, navigation/
+routing/build, API proxy and fixture/smoke infrastructure). Current inventory:
+35 applet + 24 shared = 59 suites. It includes full shared matrices; unrelated
+Carbon/Energy suites are excluded from this focused command. The explicit
+shared command above additionally reruns Carbon's shared-proxy regression.
 
-The [fixture manifest](../test-data/luonnonmetsakartat/README.md) documents
-exact rows, deterministic regeneration and encoding limitations. The valid fixture should auto-detect
-`id`, `nimi`, `kunta`, `maakunta`, `kuvaus`, and `pinta_ala`. The duplicate
-fixture should stay on the import route and trigger duplicate-ID validation
-before any create POST.
+Audit the discovered paths against filesystem inventory plus the literal
+allowlist after adding tests. Discovery is not execution. App tsconfig excludes
+TS tests; if TS tests change, also typecheck them with a temporary explicit test
+project. F100.6 prevents admin rows from preloading deleting or absent layer records,
+and prevents the outgoing detail runtime from remounting after its route has
+changed during the delete/navigation transition. Its changed TS page tests
+receive the explicit test typecheck recorded below.
 
-## Known Limitations
+The manager's 2026-09-29 scope clarification confirms that the complete approved
+local-verification scope is the processed F100 inbox request
+(`.codex-orch/feature-inbox/processed/20260928T103029Z-20260928-luonnonmetsakartat-complete-test-coverage.md`),
+the F100 parent short spec and architecture decision, and the direct child
+specs. The A/M/I/R/G/B/L ledger below reconciles that scope; H rows retain
+supporting shared coverage. The parent architecture explicitly directs children
+to record the absent separate “local verification plan” and map the explicit
+parent requirements. That source is absent from the permitted inputs/current
+checkout; no unseen source is certified. This is a recorded provenance limit,
+not an open frontend-test exemption or a pending scope decision. The September
+28 runtime-doctor clarification supersedes the old inbox's runtime prohibitions.
 
-- Imports create deterministic synthetic polygons/IDs/timestamps. ZIP bytes
-  are not interpreted or validated by the mock API. Client parser and option
-  handoff evidence is covered by F100.3 (I01–I08), separate from these mock contracts.
-- Replacement PATCH validates `delete_areas_not_updated` for true/false/omitted
-  inputs and can change metadata/columns. Existing areas, geometry, IDs and
-  properties remain unchanged with an uninterpreted ZIP in every case. Flag
-  acceptance is not preserve-versus-delete reconciliation or real ingestion.
-- Pictures are serialized URL/filename metadata only. The mock neither stores
-  nor decodes uploaded bytes, fetches picture URLs, nor deletes objects.
-  Area PATCH `pictures` replaces the string; `'[]'` removes list metadata.
-  There is no separate picture-delete route. Attachment parses malformed or
-  non-array stored picture JSON as an empty list and filters non-string list
-  entries. URLs are deterministic, not unique object-storage identities.
-- The picture smoke uses the `pictures-mapped` in-memory fixture, not an OS
-  directory picker. Full visible matching/error behavior belongs to F100.5.
-- WFS projects simple centroid points from stored polygons. TMS returns empty
-  PBF responses; these do not verify production geometry, rendering, GeoServer
-  or PostGIS behavior.
-- Server mock storage and counters persist for the process lifetime. Direct
-  suites reset before/after each test, compare clean replays and use randomized
-  order. The exported test reset helper refuses production; private module
-  initialization remains safe for live-mode imports. There is no reset API.
-- Browser `mockReset` clears client Zustand/query state, not server memory.
-  Existing smoke discovers created IDs but still leaves mutations and tolerates
-  console errors. Delegate a required pristine server seed to runtime doctor.
-  F100.6 owns complete browser cleanup, repeatability and strict console checks.
-- Fixed verified/rejected tokens model HTTP decisions only. Runtime API,
-  scenario and auth guards refuse production enablement; that does not validate
-  real identity-provider roles or credentials. Default tests use constructed
-  Requests and stub transports, without live backend/storage/identity writes.
-- Blank optional layer metadata means omitted; explicitly blank optional
-  columns can remove options. Area strings retain empty values. `id_col` is
-  optional even for mock `id` indexing. These are the implemented mock parsing
-  contracts, not claims about production validation. Numeric layer timestamps
-  and ISO area timestamps use deterministic counters; composite picture/layer
-  PATCH consumes separate mutation steps.
-
-## F100 coverage audit and focused Jest entrypoint
-
-Audit started 2026-09-28 at `01b95e89aaaee417da233e4a06307e50b60a2f63`.
-Client transport tests have a different oracle from the server mock lifecycle
-and do not replace it. The F100.1 audit found no redundant client suite. F100.2
-relocates HTTP/store-only wrapper assertions with the explicit mapping below,
-while retaining wrapper/WFS/TMS integration coverage.
-
-The separate local verification plan referenced by the parent was not found in
-current project documentation (root README, this runbook, fixture README,
-build docs, project context/skills and external-docs path hints). Older feature
-history, temporary chats and project-memory archives were not searched. The
-ledger retains every explicit parent requirement; unknown plan rows cannot be
-claimed audited. Reconcile them if an allowed source is supplied.
-
-**Route correction:** the previously documented Finnish “Legacy redirects” were
-stale. The historical path lists above are not positive test expectations.
-`appletConf.json` currently has
-`legacySubpathRedirects: []`. Do not restore those redirects. The configured
-host spelling is `luonnonmetsakarta.netlify.app`. F100.4 protects the route and
-transport contracts below; F100.6 owns live available-mode checks and final
-runbook reconciliation.
-
-```bash
-yarn test:luonnonmetsakartat --listTests --json
-yarn test:luonnonmetsakartat
-```
-
-`jest.luonnonmetsakartat.config.ts` inherits the existing Jest configuration. It
-selects every `*.test.*` / `*.spec.*` JS/JSX/TS/TSX suite below
-`src/applets/luonnonmetsakartat/` plus 24 literal shared suites. The allowlist is
-intentional: shared auth, map-request authorization, GeoServer config,
-routing/build selection, shared API transport and smoke/fixture infrastructure
-contain multi-applet assertions and run intact. `src/common/server/apiProxy.test.ts`
-is included because the applet live wrapper delegates to that exact helper.
-Carbon/Energy applet suites and `__tests__/visual/carbonMockSmoke.test.js` are
-excluded. No positional path filters or live credentials are required.
-
-Later children: colocated applet suites are discovered automatically. A suite
-outside that tree (such as a shared API proxy or route helper) needs a literal
-allowlist entry with a concrete dependency rationale. Rerun `--listTests --json`,
-check every literal exists, and compare its paths with a filesystem inventory of
-the applet suites plus the allowlist. Do not use `--passWithNoTests` or global
-test-name filtering. Listing a suite is not a passing test run.
-
-### Coverage ledger
-
-Paths in the evidence column are relative to `src/applets/luonnonmetsakartat/`
-unless marked shared or helper. Existing identifies pre-feature assertions;
-passing runs are recorded separately in the last column. Partial means useful
-evidence with the listed remaining gap. Pending child rows are not completion
-claims. Client evidence uses mocked HTTP with real QueryClient
-and applet store; it cannot prove a backend or rendered page contract.
+Paths below are relative to `src/applets/luonnonmetsakartat` unless marked shared
+or helper. The browser evidence is the existing runner in `utils/scripts/visual`;
+its helper cases are in `luonnonmetsakartat-mock-smoke.test.js`. F100.1–F100.5
+identify originating ownership; final verification references below supersede
+historical pass counts. L01–L03 are concrete external service boundaries, not
+missing frontend tests.
 
 | ID | Required behavior | Current test/case evidence | Level | Status / owner | Limitation or next evidence | Verification |
 | --- | --- | --- | --- | --- | --- | --- |
-| A01 | Anonymous list, normalization, public/admin separation | common/queries/folayerQueries.test.tsx: public layer list / anonymous transport and replaces obsolete records; retains public list on rejection | client | added-and-verified / F100.1 | Anonymous response projection omits admin fields; hidden-layer filtering remains M02 | J-final: pass |
-| A02 | Admin list/detail and query keys | common/queries/folayerQueries.test.tsx: admin list/detail / normalizes, defaults, suppresses detail, retains data and recovers | client | added-and-verified / F100.1 | Preserves public/admin timestamp-unit differences; no public detail endpoint | J-final: pass |
-| A03 | All protected operations fail closed without token | common/queries/authHeaders.test.ts plus each client suite: token undefined/empty fail-closed cases | client | added-and-verified / F100.1 | Real header helper, zero HTTP calls for every protected consumer; query state remains recoverable | J-final: pass |
-| A04 | Verification Pending/NoUser/Verified/Rejected/Errored | common/queries/adminVerificationQuery.test.tsx: settles without HTTP, strict roles, rejected status matrix, unexpected errors, user keys | client | added-and-verified / F100.1 | HTTP state/result/settlement evidence only; rendering/remount loops remain G02/G08 | J-final: pass |
-| A05 | Public/admin area URLs and missing config | common/queries/folayerGeoServerQueries.test.tsx: normalized URL, missing config, IDs/picture normalization, suppression and recovery | client | added-and-verified / F100.1 | Public/admin keys and headers differ; both still share area store; logout/UI cleanup remains F100.5 | J-final: pass |
-| A06 | Layer create, both indexing strategies and columns | common/queries/adminFolayerPostMutation.test.tsx: creates via each indexing strategy, optional fields, ZIP bytes, 200/201; rejected-status matrix | client | added-and-verified / F100.1 | Multipart transport and response store only; parser/ingestion excluded | J-final: pass |
-| A07 | Settings/visibility update | common/queries/adminFolayerPatchMutation.test.tsx: saves settings/inverts visibility, omits absent fields, failures | client | added-and-verified / F100.1 | Server response normalization and notification kinds; rendered settings remain G04 | J-final: pass |
-| A08 | Replacement preserve/delete payload | common/queries/adminFolayerPatchMutation.test.tsx: serializes each replacement strategy with true/false/undefined flag | client | added-and-verified / F100.1 | ZIP bytes/name/MIME verified; geometry reconciliation is L02 | J-final: pass |
-| A09 | Area edit | common/queries/adminFolayerAreaPatchMutation.test.tsx: own non-null properties, targeted merge, picture removal, failure matrix | client | added-and-verified / F100.1 | Empty strings retained, inherited/null/undefined omitted, geometry untouched; editable API type has no numeric fields | J-final: pass |
-| A10 | Aligned picture files/area IDs and invalid pairs | common/queries/adminFolayerPatchMutation.test.tsx: repeated images/IDs aligned; empty/absent arrays; five invalid-pair cases | client | added-and-verified / F100.1 | Order, bytes and repeated IDs verified; UI matching remains G05 | J-final: pass |
-| A11 | Delete, callback order, rollback, already absent | common/queries/adminFolayerDeleteMutation.test.tsx: callback awaited, 200/204, resolved/rejected 404, rollback, no token | client | added-and-verified / F100.1 | Axios 404 is idempotent success; other rejections remain errors; UI confirmation remains G07 | J-final: pass |
-| A12 | Cache invalidation/refetch and failure isolation | common/queries/adminFolayerPatchMutation.test.tsx: settings/ZIP/pictures cache matrix × neither/public-conf/public-areas; rejected-status cases | client | added-and-verified / F100.1 | Real active observers and public HTTP readback; area refresh callbacks are isolated query fixtures; unrelated keys unaffected | J-final: pass |
-| M01 | Reset/seed isolation | server/api/mockDataStore.test.ts: `seeds stable visible, hidden and empty layers`, `creates fresh seed factories`, `clones create and update column inputs`, `replays a mixed lifecycle after reset`; existing client reset/scenario/bootstrap suites retained | store/helper | added-and-verified / F100.2 | Whole nested state, both counters, mutation-result clones and failure replay; client reset does not reset server memory | M-J / M-order pass |
-| M02 | Anonymous visible/editor hidden filtering | server/api/mockDataProxy.test.ts: `projects anonymous visible layers and editor hidden/admin metadata, following visibility changes`; retained dataProxy WFS visibility/auth and dispatch cases | HTTP/integration | added-and-verified / F100.2 | Public projection excludes admin fields and embedded areas; detail remains editor-only | M-J pass |
-| M03 | Validation states and protected operations | server/api/mockDataProxy.test.ts: `validates %s authorization`, `protected %s / denies %s before parsing or mutation`; store failure matrix | HTTP/store | added-and-verified / F100.2 | Six mutation forms, malformed/unknown credentials, no public fallback; full-state and future ID/timestamp equality | M-J / M-order pass |
-| M04 | Mock create/read/update/delete | server/api/mockDataProxy.test.ts: `creates and reads %s columns`, `preserves omitted metadata and columns`, `patches editable area strings`, `deletes layer and area data`; store lifecycle/edit cases | HTTP/store | added-and-verified / F100.2 | Synthetic areas, protected fields, clone boundaries, cleanup and exact 404s; no live ingestion | M-J pass |
-| M05 | Mock replacement semantics and limits | server/api/mockDataProxy.test.ts: `preserves seeded areas with an uninterpreted ZIP when delete_areas_not_updated is %s`, `rejects malformed PATCH %s atomically` | HTTP | added-and-verified / F100.2 | True/false/omitted, blank-as-omitted and malformed flags; complete areas unchanged, no geometry reconciliation | M-J pass |
-| M06 | Picture update/delete metadata | server/api/mockDataProxy.test.ts: `attaches ordered filename URL metadata, then replaces and removes the picture list without storage operations`, `rejects %s picture batch`; store append/recovery cases; dataProxy WFS removal readback | HTTP/store/integration | added-and-verified / F100.2 | Ordered repeated targets, seed retention, malformed pairs, valid+unknown atomicity; no binary/storage operations | M-J pass |
-| M07 | Unsupported routes/methods | server/api/mockDataProxy.test.ts: `returns 405 for $method $path`, deterministic not-found/path matrices, unsupported GeoServer cases, malformed percent encoding and valid encoded counterpart; retained wrapper TMS/WFS errors | HTTP/integration | added-and-verified / F100.2 | Malformed path escape now deterministic JSON 400; no route-policy changes | M-J pass |
-| M08 | Production guards for API/scenario/auth | mockDataProxy runtime enablement; dataProxy protected-write/default-env guard; common/mockScenarios/config.test.ts runtime getter; shared src/common/auth/mock.test.ts config/getter and src/runtime/api/userinfo.test.ts endpoint; store production reset refusal | guard/unit | added-and-verified / F100.2 | Truthy matrix, explicit/default env, disabled production branch, no token/config/fetch access on refusal, unchanged store/counters | M-J pass |
-| I01 | Valid ZIP parsing and column detection | common/folayerShapefile.test.ts: `parses two real WGS84 polygons`, `detects case-insensitively`; components/FolayerImportShp.test.tsx and FolayerUpdateShp.test.tsx: detected/manual columns | parser/UI | added-and-verified / F100.3 | First-feature columns; homogeneous multi-collection merge only. Existing two smoke-helper parser cases retained. | I-J / I-focused pass |
-| I02 | Missing shapefile parts and malformed ZIP | common/folayerShapefile.test.ts: `rejects %s safely`, `missing DBF`, `tolerates missing %s`, empty collection; both controls: failure/recovery; both pages: no mutation on parse failure | parser/UI | added-and-verified / F100.3 | SHP required by parser; DBF omission blocks selectors; SHX/PRJ/CPG tolerated for these fixtures, not arbitrary projections/encodings. | I-J / I-focused pass |
-| I03 | Duplicate ID | common/folayerShapefile.test.ts: numeric/string/zero/prototype IDs; both controls: duplicate-ID rejection; import page `does not create from %s`; settings `never patches hard invalid %s` | parser/UI | added-and-verified / F100.3 | Hard duplicates precede warnings. Browser now observes visible notification and zero create requests, without a console-error success signal. | I-J / I-focused / I-browser pass |
-| I04 | Duplicate name + municipality | common/folayerShapefile.test.ts: real duplicate-pair fixture and tuple-label collision; both controls and both page suites block the pair before mutation | parser/UI | added-and-verified / F100.3 | Unique IDs isolate pair duplication; strategy contrast covered. F100.6 consumes duplicate-name-municipality-layer.zip for browser coverage. | I-J / I-focused pass |
-| I05 | Blank/invalid identifiers and strings | common/folayerShapefile.test.ts: `does not invent an ID format rule`, `characterizes permissive string value handling`, required columns, deduplication and unsupported alphabet; control clearing/ref guards | policy/UI | added-and-verified / F100.3 | Present-column blank/null/non-string values remain permissive; IDs stringify, zero counts, null skips, no trimming/case folding. These are frontend limits, not backend acceptance. | I-J / I-focused pass |
-| I06 | Encoding failures | common/folayerShapefile.test.ts: real UTF-8 Finnish/mojibake and invalid-byte variant; both control suites: real dialog confirm/cancel; replacement page: cancellation sends nothing | parser/UI | added-and-verified / F100.3 | Pair identity errors block; ID name/municipality/region errors warn. Literal Ã and unsupported characters are heuristic, not comprehensive encoding detection. | I-J / I-focused pass |
-| I07 | Both indexing modes and optional columns | common/folayerShapefile.test.ts: detection/saved mapping/optional values; both controls: selection/clearing and locked replacement strategy; import page exact payload | parser/UI | added-and-verified / F100.3 | Required mappings must exist. Optional missing mappings are cleared/detected; descriptions/areas are not value-validated. A06/A08 retain HTTP serialization ownership. | I-J / I-focused pass |
-| I08 | Replacement preserve/delete choice and handoff | pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.replacement.test.tsx: both strategies, default false/toggle true/back false, exact bytes, confirmation/cancellation, reset, no-file save and FileReader races; components/FolayerShapefile.races.test.tsx | UI | added-and-verified / F100.3 | No fallback to unvalidated bytes. M05 remains mock semantics; L02 remains live geometry reconciliation; G04 remains general settings behavior. | I-J / I-focused pass |
-| R01 | Canonical main/standalone/locale contracts | shared src/common/routing/{publicRoutes,requestRouting,appletSelectionContract,routeMetadata}.test.ts; src/common/navigation/appRouteLinks.test.tsx: six source-bound route keys in both modes; utils/scripts/{appletBuildConfig,prebuildFolderPrune}.test.js: actual source promotion/main retention | unit/build | added-and-verified / F100.4 | Stub href router proves delegation; no standalone running-build or page rendering claim | R-family / R-shared: pass |
-| R02 | Configured host and removed legacy paths | shared requestRouting.test.ts: configured host and all four unsupported tails in both modes; publicRoutes.test.ts: empty aliases/no translation; utils/scripts/writeNetlifyRedirects.test.js: literal manifest hostname, protocols, ordering, unselected omission | unit/build | added-and-verified / F100.4 | Generic locale/prefix normalization preserves legacy tails; deployed CDN and rendered not-found remain F100.6/live | R-family / R-shared: pass |
-| R03 | GET/POST/PUT/PATCH/DELETE forwarding | server/api/dataProxy.test.ts: all five live methods through real helper; dataProxy.route.test.ts: exact Start route, five wrapper identities and stubbed round-trip | transport | added-and-verified / F100.4 | Constructed HTTP objects and injected upstream only | R-family / R-shared: pass |
-| R04 | Query/header/body/status forwarding | shared src/common/server/apiProxy.test.ts: encoded/repeated/empty query, base path, header allowlists, multipart/binary/JSON bytes, DELETE with/without body, GET/HEAD, null 204/205/304, empty 200, HTTP error propagation | transport | added-and-verified / F100.4 | Stream failures after returning a response and real backend behavior remain outside this catch boundary | R-family / R-shared: pass |
-| R05 | Missing backend config and secret-safe failures | shared src/common/server/apiProxy.test.ts: absent/blank config, missing tail, fetch/setup/body-read failures, exact safe logger args/full local response; Carbon dataProxy.test.ts: TypeError/Error regressions | transport | fixed-and-verified / F100.4 | Fixed logging event only; upstream HTTP bodies intentionally propagate unchanged | R-family / R-shared: pass |
-| G01 | Public loading/layers/empty/dependency error | pages/LuonnonmetsakartatHomePage.test.tsx: `loads anonymous rows`, `shows an empty success`, `renders failed list feedback`, `renders area dependency failure`, `keeps a usable row with missing GeoServer config`, `retains public rows on failed refresh` | rendered/integration | added-and-verified / F100.5.1 | Real page/row/hook/query/store; controlled map operations and HTTP. Missing GeoServer config safely leaves an empty map style with no error banner; no live map claim. | G-family / G-order / G-browser pass |
-| G02 | Unauthenticated/pending/missing-token/rejected/error/verified gate | pages/admin/LuonnonmetsakartatAdminGate.test.tsx: `closes incomplete auth`, `waits for verification`, `waits for token resolution`, `never renders a previously verified child`, `rejects an absent user identity`; LuonnonmetsakartatAdminAccess.test.tsx: `closes actual detail settings/pictures links` | rendered/integration | added-and-verified / F100.5.1 | Real auth context, gate, verification query, QueryClient, store and admin pages; auth provider input/HTTP controlled. Transient child layout effects are checked. No live identity-provider claim. | G-family / G-order pass |
-| G03 | Admin empty/list/detail | pages/admin/LuonnonmetsakartatAdminPage.test.tsx: `loads verified admin records`; pages/admin/layer/folayer/LuonnonmetsakartatAdminLayerFolayerPage.test.tsx: `loads the actual detail`, `loads the new route ID`, `settles map initialization`, `shows a bounded area-dependency error`, `finishes list area preload across actual detail navigation`, `settles a populated list refresh after list → detail → list → detail navigation under the same gate` | rendered/integration | added-and-verified / F100.5.1 | Actual rows, runtime and SearchTable; upload/toggle/detail/settings/pictures navigation. Thin navigation adapter uses real href resolver and switches list/detail children under the same gate. Deferred area preloads and populated list refreshes finish after navigation, with Idle store/query state and usable detail links. No settings/picture edits or real geometry assertions. | G-family / G-order / G-visual / G-refresh pass |
-| G04 | Settings clean/dirty/saving/error | pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.test.tsx: clean controls, real keyboard color/visibility edits, debounced/immediate name saves, pending guards, server result, failure/retry, timer/loader cleanup and seeded Saving compatibility | rendered/integration | fixed-and-verified / F100.5.2 | Real page, patch hook, QueryClient, stores and notifications; controlled HTTP. Retains replacement suite. No live persistence claim. | S-focused / S-family / S-order / S-live / S-visual pass |
-| G05 | Pictures empty/matched/unmatched/save/error | pages/admin/layer/folayer/pictures/LuonnonmetsakartatAdminLayerFolayerPicturesPage.test.tsx: `maps, changes and clears folders`, `submits the exact changed mapping`, `allows partial saves`, `retains files and manual mapping after failure`, `replaces the directory`; empty/no-area/not-ready cases | rendered/integration | fixed-and-verified / F100.5.3 | Actual page, input, comboboxes, virtual lists, patch hook, scaffold progress, stores and notifications. Repeated IDs/exclusions, pending guards, failure recovery and ordinary reset; no storage claim. | P-focused / P-family / P-order / P-live pass |
-| G06 | Area edit UI | components/AreaModalAdmin.test.tsx: `edits store-selected metadata`, `retains the dirty area draft`, `reflects externally removed saved pictures after real area-query refreshes` | rendered/integration | fixed-and-verified / F100.5.3 | Actual editor/gallery, metadata fields, area patch hook, query normalization, stores and notifications. Gallery accepts serialized PATCH pictures. Removal evidence is external refreshed metadata; no saved-picture delete control exists. | P-focused / P-family / P-order pass; P-visual: 16 unchanged, 2 expected disabled-state differences |
-| G07 | Destructive confirmation | pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.test.tsx: keyboard delete, real cancel/reopen/confirm, selected second-layer request, pending Save guard, deferred real map cleanup/navigation, failure with unsaved name/visibility and retry | rendered/integration | fixed-and-verified / F100.5.2 | Real dialog/delete hook/applet/UI stores/group ID and map bookkeeping with null WebGL instance. Preserves unrelated records, areas, groups and subscriptions. No GPU/upstream cleanup claim. | S-focused / S-family / S-order / S-live pass |
-| G08 | No retry/remount loops or editing exposure on rejection | pages/admin/LuonnonmetsakartatAdminGate.test.tsx: `settles denial/error`, `ignores obsolete validation`, `ignores an obsolete success after logout`, `bounds StrictMode`, `does not trust stale store verification`, `redirects a rejected nested page`; LuonnonmetsakartatAdminAccess.test.tsx: `revokes private rows`, `does not restore privileged data`, `discards queued %s after revocation`, `discards an admin installation already resolving its style`; LuonnonmetsakartatAdminLayerFolayerPage.test.tsx: `settles a populated list refresh` | rendered/integration | fixed-and-verified / F100.5.1 | Real verification, no seeded status or mocked hook. One deliberate verification per ordinary mount; same-gate return navigation adds no verification or list loop; StrictMode attempts are bounded. Applet-scoped revocation cancels query work/removes privileged data and popup ownership; queued additions recheck hook ownership at execution and after style resolution, with no transient installation. Browser lifecycle expansion remains F100.6. | G-family / G-order / G-refresh pass |
-| B01 | Public visible/hidden and auth gates | Existing smoke visits seeded routes | browser | partial / F100.6 | Anonymous hidden exclusion and logged-out/rejected/verified assertions | Current smoke passes (B-runtime-retry); remaining gap pending |
-| B02 | Valid import and both duplicate-key rejections before POST | Existing smoke imports valid ZIP and rejects duplicate ID | browser | partial / F100.6 | Duplicate pair and complete lifecycle | Current smoke passes (B-runtime-retry); remaining gap pending |
-| B03 | Admin detail/settings/pictures navigation | Existing smoke visits those routes | browser | partial / F100.6 | One created-layer navigation flow | Current smoke passes (B-runtime-retry); remaining gap pending |
-| B04 | Name/color/visibility save with public readback | Existing smoke saves settings | browser | partial / F100.6 | Subsequent public visibility readback | Current smoke passes (B-runtime-retry); remaining gap pending |
-| B05 | Area metadata save/readback | No full smoke lifecycle | browser | pending F100.6 | One area edit/readback | Current smoke does not cover this row; pending child |
-| B06 | Pictures matched/unmatched/save/readback | Existing smoke saves seeded mapped pictures | browser | partial / F100.6 | Actual readback and unmatched behavior | Current smoke passes (B-runtime-retry); remaining gap pending |
-| B07 | Delete/absence and cleanup after failure | Existing smoke closes browser resources only | browser | pending F100.6 | Run-specific names, discovered IDs, finally cleanup | Current smoke does not cover this row; pending child |
-| B08 | Canonical/applicable legacy and runtime modes | helper smoke URL tests; shared route tests | helper | partial / F100.6 | Live available mode; removed legacy paths stay unsupported | Current main-mode canonical smoke passes; remaining gap pending |
-| B09 | Repeatability and strict page/console errors | helper no-start reachability tests; current smoke tolerates console errors | helper/browser | partial / F100.6 | Strict applet errors, precise third-party allowances, repeated run | Current smoke passes with one documented non-fatal console error; remaining gap pending |
+| A01 | Anonymous list, normalization, public/admin separation | common/queries/folayerQueries.test.tsx: public layer list / anonymous transport and replaces obsolete records; retains public list on rejection | client | added-and-verified / F100.1 | Anonymous response projection omits admin fields; hidden-layer filtering: M02/B01 | F-family |
+| A02 | Admin list/detail and query keys | common/queries/folayerQueries.test.tsx: admin list/detail / normalizes, defaults, suppresses detail, retains data and recovers | client | added-and-verified / F100.1 | Preserves public/admin timestamp-unit differences; no public detail endpoint | F-family |
+| A03 | All protected operations fail closed without token | common/queries/authHeaders.test.ts plus each client suite: token undefined/empty fail-closed cases | client | added-and-verified / F100.1 | Real header helper, zero HTTP calls for every protected consumer; query state remains recoverable | F-family |
+| A04 | Verification Pending/NoUser/Verified/Rejected/Errored | common/queries/adminVerificationQuery.test.tsx: settles without HTTP, strict roles, rejected status matrix, unexpected errors, user keys | client | added-and-verified / F100.1 | HTTP state/result/settlement evidence only; rendering/remount loops: G02/G08 | F-family |
+| A05 | Public/admin area URLs and missing config | common/queries/folayerGeoServerQueries.test.tsx: normalized URL, missing config, IDs/picture normalization, suppression and recovery | client | added-and-verified / F100.1 | Public/admin keys and headers differ; both still share area store; logout/UI cleanup: G02/G08 | F-family |
+| A06 | Layer create, both indexing strategies and columns | common/queries/adminFolayerPostMutation.test.tsx: creates via each indexing strategy, optional fields, ZIP bytes, 200/201; rejected-status matrix | client | added-and-verified / F100.1 | Multipart transport and response store only; parser/ingestion excluded | F-family |
+| A07 | Settings/visibility update | common/queries/adminFolayerPatchMutation.test.tsx: saves settings/inverts visibility, omits absent fields, failures | client | added-and-verified / F100.1 | Server response normalization and notification kinds; rendered settings: G04/B04 | F-family |
+| A08 | Replacement preserve/delete payload | common/queries/adminFolayerPatchMutation.test.tsx: serializes each replacement strategy with true/false/undefined flag | client | added-and-verified / F100.1 | ZIP bytes/name/MIME verified; geometry reconciliation is L02 | F-family |
+| A09 | Area edit | common/queries/adminFolayerAreaPatchMutation.test.tsx: own non-null properties, targeted merge, picture removal, failure matrix | client | added-and-verified / F100.1 | Empty strings retained, inherited/null/undefined omitted, geometry untouched; editable API type has no numeric fields | F-family |
+| A10 | Aligned picture files/area IDs and invalid pairs | common/queries/adminFolayerPatchMutation.test.tsx: repeated images/IDs aligned; empty/absent arrays; five invalid-pair cases | client | added-and-verified / F100.1 | Order, bytes and repeated IDs verified; UI matching: G05/B06 | F-family |
+| A11 | Delete, callback order, rollback, already absent | common/queries/adminFolayerDeleteMutation.test.tsx: callback awaited, 200/204, resolved/rejected 404, rollback, no token | client | added-and-verified / F100.1 | Axios 404 is idempotent success; other rejections remain errors; UI confirmation: G07/B07 | F-family |
+| A12 | Cache invalidation/refetch and failure isolation | common/queries/adminFolayerPatchMutation.test.tsx: settings/ZIP/pictures cache matrix × neither/public-conf/public-areas; rejected-status cases | client | added-and-verified / F100.1 | Real active observers and public HTTP readback; area refresh callbacks are isolated query fixtures; unrelated keys unaffected | F-family |
+| M01 | Reset/seed isolation | server/api/mockDataStore.test.ts: `seeds stable visible, hidden and empty layers`, `creates fresh seed factories`, `clones create and update column inputs`, `replays a mixed lifecycle after reset`; existing client reset/scenario/bootstrap suites retained | store/helper | added-and-verified / F100.2 | Whole nested state, both counters, mutation-result clones and failure replay; client reset does not reset server memory | F-family |
+| M02 | Anonymous visible/editor hidden filtering | server/api/mockDataProxy.test.ts: `projects anonymous visible layers and editor hidden/admin metadata, following visibility changes`; retained dataProxy WFS visibility/auth and dispatch cases | HTTP/integration | added-and-verified / F100.2 | Public projection excludes admin fields and embedded areas; detail remains editor-only | F-family |
+| M03 | Validation states and protected operations | server/api/mockDataProxy.test.ts: `validates %s authorization`, `protected %s / denies %s before parsing or mutation`; store failure matrix | HTTP/store | added-and-verified / F100.2 | Six mutation forms, malformed/unknown credentials, no public fallback; full-state and future ID/timestamp equality | F-family |
+| M04 | Mock create/read/update/delete | server/api/mockDataProxy.test.ts: `creates and reads %s columns`, `preserves omitted metadata and columns`, `patches editable area strings`, `deletes layer and area data`; store lifecycle/edit cases | HTTP/store | added-and-verified / F100.2 | Synthetic areas, protected fields, clone boundaries, cleanup and exact 404s; no live ingestion | F-family |
+| M05 | Mock replacement semantics and limits | server/api/mockDataProxy.test.ts: `preserves seeded areas with an uninterpreted ZIP when delete_areas_not_updated is %s`, `rejects malformed PATCH %s atomically` | HTTP | added-and-verified / F100.2 | True/false/omitted, blank-as-omitted and malformed flags; complete areas unchanged, no geometry reconciliation | F-family |
+| M06 | Picture update/delete metadata | server/api/mockDataProxy.test.ts: `attaches ordered filename URL metadata, then replaces and removes the picture list without storage operations`, `rejects %s picture batch`; store append/recovery cases; dataProxy WFS removal readback | HTTP/store/integration | added-and-verified / F100.2 | Ordered repeated targets, seed retention, malformed pairs, valid+unknown atomicity; no binary/storage operations | F-family |
+| M07 | Unsupported routes/methods | server/api/mockDataProxy.test.ts: `returns 405 for $method $path`, deterministic not-found/path matrices, unsupported GeoServer cases, malformed percent encoding and valid encoded counterpart; retained wrapper TMS/WFS errors | HTTP/integration | added-and-verified / F100.2 | Malformed path escape now deterministic JSON 400; no route-policy changes | F-family |
+| M08 | Production guards for API/scenario/auth | mockDataProxy runtime enablement; dataProxy protected-write/default-env guard; common/mockScenarios/config.test.ts runtime getter; shared src/common/auth/mock.test.ts config/getter and src/runtime/api/userinfo.test.ts endpoint; store production reset refusal | guard/unit | added-and-verified / F100.2 | Truthy matrix, explicit/default env, disabled production branch, no token/config/fetch access on refusal, unchanged store/counters | F-family |
+| I01 | Valid ZIP parsing and column detection | common/folayerShapefile.test.ts: `parses two real WGS84 polygons`, `detects case-insensitively`; components/FolayerImportShp.test.tsx and FolayerUpdateShp.test.tsx: detected/manual columns | parser/UI | added-and-verified / F100.3 | First-feature columns; homogeneous multi-collection merge only. Existing two smoke-helper parser cases retained. | F-family |
+| I02 | Missing shapefile parts and malformed ZIP | common/folayerShapefile.test.ts: `rejects %s safely`, `missing DBF`, `tolerates missing %s`, empty collection; both controls: failure/recovery; both pages: no mutation on parse failure | parser/UI | added-and-verified / F100.3 | SHP required by parser; DBF omission blocks selectors; SHX/PRJ/CPG tolerated for these fixtures, not arbitrary projections/encodings. | F-family |
+| I03 | Duplicate ID | common/folayerShapefile.test.ts: numeric/string/zero/prototype IDs; both controls: duplicate-ID rejection; import page `does not create from %s`; settings `never patches hard invalid %s` | parser/UI | added-and-verified / F100.3 | Hard duplicates precede warnings. Browser now observes visible notification and zero create requests, without a console-error success signal. | F-family |
+| I04 | Duplicate name + municipality | common/folayerShapefile.test.ts: real duplicate-pair fixture and tuple-label collision; both controls and both page suites block the pair before mutation | parser/UI | added-and-verified / F100.3 | Unique IDs isolate pair duplication; strategy contrast covered. F100.6 consumes duplicate-name-municipality-layer.zip for browser coverage. | F-family |
+| I05 | Blank/invalid identifiers and strings | common/folayerShapefile.test.ts: `does not invent an ID format rule`, `characterizes permissive string value handling`, required columns, deduplication and unsupported alphabet; control clearing/ref guards | policy/UI | added-and-verified / F100.3 | Present-column blank/null/non-string values remain permissive; IDs stringify, zero counts, null skips, no trimming/case folding. These are frontend limits, not backend acceptance. | F-family |
+| I06 | Encoding failures | common/folayerShapefile.test.ts: real UTF-8 Finnish/mojibake and invalid-byte variant; both control suites: real dialog confirm/cancel; replacement page: cancellation sends nothing | parser/UI | added-and-verified / F100.3 | Pair identity errors block; ID name/municipality/region errors warn. Literal Ã and unsupported characters are heuristic, not comprehensive encoding detection. | F-family |
+| I07 | Both indexing modes and optional columns | common/folayerShapefile.test.ts: detection/saved mapping/optional values; both controls: selection/clearing and locked replacement strategy; import page exact payload | parser/UI | added-and-verified / F100.3 | Required mappings must exist. Optional missing mappings are cleared/detected; descriptions/areas are not value-validated. A06/A08 retain HTTP serialization ownership. | F-family |
+| I08 | Replacement preserve/delete choice and handoff | pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.replacement.test.tsx: both strategies, default false/toggle true/back false, exact bytes, confirmation/cancellation, reset, no-file save and FileReader races; components/FolayerShapefile.races.test.tsx | UI | added-and-verified / F100.3 | No fallback to unvalidated bytes. M05 remains mock semantics; L02 remains live geometry reconciliation; G04 remains general settings behavior. | F-family |
+| R01 | Canonical main/standalone/locale contracts | shared src/common/routing/{publicRoutes,requestRouting,appletSelectionContract,routeMetadata}.test.ts; src/common/navigation/appRouteLinks.test.tsx: six source-bound route keys in both modes; utils/scripts/{appletBuildConfig,prebuildFolderPrune}.test.js: actual source promotion/main retention | unit/build | added-and-verified / F100.4 | Stub href router proves delegation; no standalone running-build or page rendering claim | F-family / F-shared |
+| R02 | Configured host and removed legacy paths | shared requestRouting.test.ts: configured host and all four unsupported tails in both modes; publicRoutes.test.ts: empty aliases/no translation; utils/scripts/writeNetlifyRedirects.test.js: literal manifest hostname, protocols, ordering, unselected omission | unit/build | added-and-verified / F100.4 | Generic locale/prefix normalization preserves legacy tails; rendered not-found: B08; deployed CDN remains separate live acceptance | F-family / F-shared |
+| R03 | GET/POST/PUT/PATCH/DELETE forwarding | server/api/dataProxy.test.ts: all five live methods through real helper; dataProxy.route.test.ts: exact Start route, five wrapper identities and stubbed round-trip | transport | added-and-verified / F100.4 | Constructed HTTP objects and injected upstream only | F-family / F-shared |
+| R04 | Query/header/body/status forwarding | shared src/common/server/apiProxy.test.ts: encoded/repeated/empty query, base path, header allowlists, multipart/binary/JSON bytes, DELETE with/without body, GET/HEAD, null 204/205/304, empty 200, HTTP error propagation | transport | added-and-verified / F100.4 | Stream failures after returning a response and real backend behavior remain outside this catch boundary | F-family / F-shared |
+| R05 | Missing backend config and secret-safe failures | shared src/common/server/apiProxy.test.ts: absent/blank config, missing tail, fetch/setup/body-read failures, exact safe logger args/full local response; Carbon dataProxy.test.ts: TypeError/Error regressions | transport | fixed-and-verified / F100.4 | Fixed logging event only; upstream HTTP bodies intentionally propagate unchanged | F-family / F-shared |
+| G01 | Public loading/layers/empty/dependency error | pages/LuonnonmetsakartatHomePage.test.tsx: `loads anonymous rows`, `shows an empty success`, `renders failed list feedback`, `renders area dependency failure`, `keeps a usable row with missing GeoServer config`, `retains public rows on failed refresh` | rendered/integration | added-and-verified / F100.5.1 | Real page/row/hook/query/store; controlled map operations and HTTP. Missing GeoServer config safely leaves an empty map style with no error banner; no live map claim. | F-family |
+| G02 | Unauthenticated/pending/missing-token/rejected/error/verified gate | pages/admin/LuonnonmetsakartatAdminGate.test.tsx: `closes incomplete auth`, `waits for verification`, `waits for token resolution`, `never renders a previously verified child`, `rejects an absent user identity`; LuonnonmetsakartatAdminAccess.test.tsx: `closes actual detail settings/pictures links` | rendered/integration | added-and-verified / F100.5.1 | Real auth context, gate, verification query, QueryClient, store and admin pages; auth provider input/HTTP controlled. Transient child layout effects are checked. No live identity-provider claim. | F-family |
+| G03 | Admin empty/list/detail | pages/admin/LuonnonmetsakartatAdminPage.test.tsx: `loads verified admin records`; pages/admin/layer/folayer/LuonnonmetsakartatAdminLayerFolayerPage.test.tsx: `loads the actual detail`, `loads the new route ID`, `settles map initialization`, `shows a bounded area-dependency error`, `finishes list area preload across actual detail navigation`, `settles a populated list refresh after list → detail → list → detail navigation under the same gate` | rendered/integration | added-and-verified / F100.5.1 | Actual rows, runtime and SearchTable; upload/toggle/detail/settings/pictures navigation. Thin navigation adapter uses real href resolver and switches list/detail children under the same gate. Deferred area preloads and populated list refreshes finish after navigation, with Idle store/query state and usable detail links. No settings/picture edits or real geometry assertions. | F-family |
+| G04 | Settings clean/dirty/saving/error | pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.test.tsx: clean controls, real keyboard color/visibility edits, debounced/immediate name saves, pending guards, server result, failure/retry, timer/loader cleanup and seeded Saving compatibility | rendered/integration | fixed-and-verified / F100.5.2 | Real page, patch hook, QueryClient, stores and notifications; controlled HTTP. Retains replacement suite. No live persistence claim. | F-family |
+| G05 | Pictures empty/matched/unmatched/save/error | pages/admin/layer/folayer/pictures/LuonnonmetsakartatAdminLayerFolayerPicturesPage.test.tsx: `maps, changes and clears folders`, `submits the exact changed mapping`, `allows partial saves`, `retains files and manual mapping after failure`, `replaces the directory`; empty/no-area/not-ready cases | rendered/integration | fixed-and-verified / F100.5.3 | Actual page, input, comboboxes, virtual lists, patch hook, scaffold progress, stores and notifications. Repeated IDs/exclusions, pending guards, failure recovery and ordinary reset; no storage claim. | F-family |
+| G06 | Area edit UI | components/AreaModalAdmin.test.tsx: `edits store-selected metadata`, `retains the dirty area draft`, `reflects externally removed saved pictures after real area-query refreshes` | rendered/integration | fixed-and-verified / F100.5.3 | Actual editor/gallery, metadata fields, area patch hook, query normalization, stores and notifications. Gallery accepts serialized PATCH pictures. Removal evidence is external refreshed metadata; no saved-picture delete control exists. | F-family |
+| G07 | Destructive confirmation | pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.test.tsx: keyboard delete, real cancel/reopen/confirm, selected second-layer request, pending Save guard, deferred real map cleanup/navigation, failure with unsaved name/visibility and retry; `does not preload a deleting or removed layer`, `resumes row preloading after a failed deletion`, `does not restart outgoing detail queries when the admin gate changes wrappers before the route outlet commits` | rendered/integration | fixed-and-verified / F100.5.2 + F100.6 | Real dialog/delete hook/applet/UI stores/group ID and map bookkeeping with null WebGL instance. Preserves unrelated records, areas, groups and subscriptions. Retains the actual admin row through deletion and the real gate wrapper/outlet transition: no detail/WFS reads or map recreation while deleting/absent, and preload resumes on failure rollback. No GPU/upstream cleanup claim. | F-family |
+| G08 | No retry/remount loops or editing exposure on rejection | pages/admin/LuonnonmetsakartatAdminGate.test.tsx: `settles denial/error`, `ignores obsolete validation`, `ignores an obsolete success after logout`, `bounds StrictMode`, `does not trust stale store verification`, `redirects a rejected nested page`; LuonnonmetsakartatAdminAccess.test.tsx: `revokes private rows`, `does not restore privileged data`, `discards queued %s after revocation`, `discards an admin installation already resolving its style`; LuonnonmetsakartatAdminLayerFolayerPage.test.tsx: `settles a populated list refresh` | rendered/integration | fixed-and-verified / F100.5.1 | Real verification, no seeded status or mocked hook. One deliberate verification per ordinary mount; same-gate return navigation adds no verification or list loop; StrictMode attempts are bounded. Applet-scoped revocation cancels query work/removes privileged data and popup ownership; queued additions recheck hook ownership at execution and after style resolution, with no transient installation. Browser lifecycle: B01–B09. | F-family |
+| B01 | Public visible/hidden and auth gates | smoke `public and anonymous admin gate`, `rejected admin gate`, `authorized admin gate/list`, hidden import/public readback | browser | automated / F100.6 | Fresh identities; real validate/list queries, zero protected calls while denied; no scenario bypass | F-browser |
+| B02 | Valid import and both duplicate-key failures before POST | smoke two duplicate phases plus `valid ZIP import and fresh hidden-layer readback`; helper real ZIP and all-attempt observer cases | browser/helper | automated / F100.6 | Pair fixture has unique IDs; explicit pair selection; visible validation plus zero requests through route exit; one valid create | F-browser / F-helpers |
+| B03 | One created layer: detail/settings/pictures navigation | smoke real detail links, discovered create ID, settings/pictures path assertions | browser | automated / F100.6 | Fresh HTTP detail/WFS plus consuming UI; no fixed seed ID | F-browser |
+| B04 | Name/color/visibility save with public readback | smoke `settings name/color/visibility and public persistence` | browser | automated / F100.6 | Real hue keyboard edit; exact submitted fields; reload GET/control readback; fresh anonymous contexts for visible/hidden/visible | F-browser |
+| B05 | Area metadata save/readback | smoke `area metadata UI edit and WFS readback` | browser | automated / F100.6 | SearchTable → real editor → area PATCH → fresh WFS → reopened editor; stable ID and unchanged neighbor | F-browser |
+| B06 | Picture matching/change/clear/save/readback | smoke `picture matching/change/clear/partial save and gallery readback`; helper native FormData observation | browser/helper | automated / F100.6 | Raw File inputs only; automatic match/unmatched warning/counts/manual assignment/clear; exact file/ID alignment and exclusion; WFS metadata and real gallery; image bytes alone fulfilled | F-browser / F-helpers |
+| B07 | Delete, absence, failure cleanup and ownership | smoke `UI delete confirmation and fresh absence`; `--fail-after-import`; helper `uses the runner orchestration`, `continues every owned cleanup`, `aggregates primary`, `recovers an accepted create` | browser/helper | automated / F100.6 | Cancel sends no DELETE; confirm sends one; G07 also covers the post-delete row/query race; authenticated list/detail absence, supplementary public read; exact-name recovery/baseline exclusion; unresolved transport/readback/close errors fail | F-browser / F-failure / F-helpers |
+| B08 | Canonical/locales/removed legacy/runtime modes | smoke `canonical/locales/removed legacy routes (live main)`; helper mode/routes; existing R01/R02 matrices | browser/unit | automated / F100.6 | Live available mode only; all four untranslated tails return document 404 and rendered not-found after admin gate verification; other mode construction only | F-browser / F-shared / F-helpers |
+| B09 | Repeatability and strict page/console errors | two uninterrupted lifecycle runs; helper strict collectors, exact resource-diagnostic cases, aborted/incomplete creates and independent teardown | browser/helper | automated / F100.6 | No server resets or broad console allowlist; accepted diagnostic rules below; success only after cleanup and resource close | F-browser / F-failure / F-helpers |
 | L01 | Real GeoServer/PostGIS ingestion | None in default tests | live | separate live/manual | Opt-in disposable IDs and cleanup | Excluded from defaults |
 | L02 | Real replacement reconciliation/deletion | Mock intentionally preserves geometry | live | separate live/manual | Opt-in real backend acceptance | Excluded from defaults |
 | L03 | Real object storage and identity provider | Shared tests stub identity transport; mock pictures use deterministic URLs | live | separate live/manual | No live credentials or shared-sandbox writes in defaults | Excluded from defaults |
-| H01 | Layer/style/config and map-request auth regressions | common/{constants,geoServer,utils}.test.ts; layers/forestUseDeclarations.test.ts; shared publicGeoServer.test.ts and src/components/Map/mapAuthTransformRequest.test.ts | unit | existing / F100.1 | Applet `common/utils.ts` marks admin vector sources `useAccessToken`, the map store embeds that request metadata, and `MapHandler` installs this transform; the shared suite proves bearer attachment, missing-token stale-source handling, public requests, and configured GeoServer matching | J-baseline / J-final pass for original evidence; J-review-final includes map auth |
-| H02 | Fixture/scenario/bootstrap safety | common/mockScenarios/LuonnonmetsakartatMockScenarioBootstrap.test.tsx; shared registry, route guards, visual scenarios/impactMap | helper | existing / F100.1 | Helper lifecycle/production guards are not page rendering | Existing suites pass J-baseline / J-final; stated gap pending |
-| H03 | Focused command, checks, runbook | Initial 39-suite inventory plus current 40-suite reviewer-pass inventory; execution evidence below | verification | added-and-verified / F100.1 | Final family reconciliation F100.6 | J-review-discovery, J-review-final, T, L and B-runtime-retry pass |
+| H01 | Layer/style/config and map-request auth regressions | common/{constants,geoServer,utils}.test.ts; layers/forestUseDeclarations.test.ts; shared publicGeoServer.test.ts and src/components/Map/mapAuthTransformRequest.test.ts | unit | existing / F100.1 | Applet `common/utils.ts` marks admin vector sources `useAccessToken`, the map store embeds that request metadata, and `MapHandler` installs this transform; the shared suite proves bearer attachment, missing-token stale-source handling, public requests, and configured GeoServer matching | F-family |
+| H02 | Fixture/scenario/bootstrap safety | common/mockScenarios/LuonnonmetsakartatMockScenarioBootstrap.test.tsx; shared registry, route guards, visual scenarios/impactMap | helper | existing / F100.1 | Helper lifecycle/production guards are not page rendering | F-family |
+| H03 | Focused command, checks, runbook | jest.luonnonmetsakartat.config.ts; exact inventory comparison; final command table below | verification | automated / F100.6 | 35 applet + 24 shared suites; no unrelated applet suites in focused command | F-discovery / F-family / F-types / F-lint |
 
-### F100.5.3 area/picture evidence and F100.6 handoff
+## Troubleshooting
 
-The two new suites add **11 behavioral cases**. They reuse `pages/pageTestSupport.tsx`
-and scenario File/data factories through the small `components/areaPictureTestSupport.tsx`
-extension. The real editor is explicitly loaded past the access helper's popup stub.
-Real QueryClients, applet/UI/map stores, Base UI controls, virtual lists, notifications,
-area/layer mutations and the sidebar progress overlay are exercised. Only HTTP,
-auth input, translations, browser measurement and mutation retry timing are controlled.
-`jest.config.ts` adds narrow ESM transformation for `react-photo-album` and
-`yet-another-react-lightbox`; gallery assertions inspect the real accessible Photo album.
-Owned responses settle before clients/DOM/stores are cleared; unexpected network and
-console errors fail tests, including errors caught by application code. Picture tests
-control animation timers and preserve real microtask scheduling. No default test needs
-a service, credential or network connection.
+- Unreachable port, missing flags/bootstrap, wrong mode, missing Chromium/Xvfb or
+  WebGL: invoke runtime doctor with the exact no-start command and output. Retry
+  after `RETRY_READY`; report a remaining `RUNTIME_BLOCKED` verdict accurately.
+  Do not recreate the service from ordinary `.env` defaults.
+- A visible validation mismatch, any negative create attempt, wrong submitted
+  fields, changed neighbor, failed readback or failed confirmation is a
+  deterministic runner/product contract failure. Investigate the named phase
+  and its owning test seam; a server reset or a looser assertion cannot fix it.
+- Cleanup failure is independent of the primary failure. Retain the run ID,
+  exact names/IDs, unresolved-create evidence and all aggregated errors. Hidden
+  public absence alone does not establish deletion. Never delete unrelated or
+  same-prefix layers to make the next run pass.
+- For unexpected console noise, retain its page/phase/source/message and relevant
+  response. Only the documented rules above are tolerated. Missing MML key is a
+  prerequisite error, not the known upstream socket exception; other MML phases
+  or responses remain failures and require diagnosis rather than a blanket filter.
+- Missing/changed ZIPs: use the existing fixture generator/manifest and parser
+  suite. Do not replace the tiny fixtures with real project data. UI translation
+  changes can require selector updates; do not weaken the validation oracle or
+  edit downloaded `i18n` JSON to force a pass.
+- Generic auth tests failing only inside the app container: use the process-only
+  `env -u ...` test command above. It leaves the running browser service intact.
 
-- `AreaModalAdmin.test.tsx` — `edits store-selected metadata…` proves current values,
-  accessible name editing, exact selected layer/feature mutation variables, deferred
-  progress, unchanged committed data while pending, server-confirmed metadata and
-  preserved neighbors/gallery. `retains the dirty area draft…` proves real failure
-  notification, retained description and dirty Save, then successful retry.
-  `reflects externally removed saved pictures…` performs actual area-query refreshes
-  from JSON-string metadata, checks the retained thumbnail, then the absent gallery.
-- `LuonnonmetsakartatAdminLayerFolayerPicturesPage.test.tsx` — eight cases cover
-  empty/no-area/missing/not-ready readiness; actual hidden directory input selection;
-  image-only filtering; automatic and unmatched rows; manual target changes, search
-  with no options and recovery; explicit clear (including automatic-match suppression);
-  all-cleared readiness; exact File identities and ordered repeated area IDs; partial
-  saves with unmatched/cleared exclusions; visible pending progress; success/reset;
-  failure retention and changed-subset recovery; directory replacement excluding old files.
+## Final verification — second corrective pass, 2026-09-29
 
-Minimal fixes: area fields and Save, and picture directory/mapping/Save controls now
-honor pending state. Metadata PATCH responses can contain serialized picture arrays;
-the editor now reads both that format and GET-normalized arrays, filtering non-strings.
-No domain type migration, API behavior, translation or shared control change was needed.
-Against the original implementations, both repeated-save regressions observe two PATCH
-calls instead of one (`original-pending-regressions.log`); the fixed versions send one.
-The original metadata-save gallery regression also reproduced disappearing thumbnails
-(`area-gallery-regression.log`).
-The fixture remains the existing nine-state fixture. It covers area loading/gallery;
-actual page checks supplement it for picture pending/reset orchestration.
+Verified worktree: branch `luonnonmetsakartat`, HEAD
+`1e3b353e2f8f2ad97743805092d67dcd8e18858c`, with the uncommitted F100.6
+changes. The manager owns the reviewed local commit. Artifacts below are under
+`.dev/visual-regression/f1006-correction-20260929/`.
+`verified-code.sha256` identifies the tested code, and `verified-source.sha256`
+identifies all ten feature files including documentation. Protected file hashes
+and unstaged/untracked Git state are preserved; no commit, push or deployment
+was performed in this pass.
 
-**Control audit / removal boundary:** area metadata fields use
-`sidebar.admin.area.{name,description,municipality,region}.header`; Save uses
-`sidebar.admin.folayer.settings.save`, Close is `Close admin area modal`. The album
-opens the existing lightbox. There is no saved-picture delete editor. Picture comboboxes
-are named `sidebar.admin.folayer.settings.picture.select_area: <folder>` and their
-clear buttons append ` clear` under key-only test translations. The upload label owns
-the actual hidden, multiple, `image/*`, directory input. Clearing explicitly excludes
-that folder even if its name auto-matches. One mapped folder suffices for Save while
-other folders remain unmatched. Submission uses the layer PATCH with the route-selected
-layer ID and aligned image/area arrays; metadata edits use the area PATCH.
+The earlier preload-only correction was incomplete. The real admin gate changes
+its wrapper when the destination pathname becomes the admin landing page, while
+the old detail/settings outlet can still be retained. That change remounts the
+outgoing detail runtime, whose mount effect enables its layer and restarts detail
+and WFS reads after deletion. The new G07 regression reproduces this transition
+with the real gate, settings, confirmation, mutation, map/query hooks and retained
+row. **Before the runtime fix it made exactly two unwanted GETs**, one detail and
+one WFS (`regression-before.log`).
 
-Complementary removal evidence remains **A09/A10/M06**, not UI delete interactions:
-`adminFolayerAreaPatchMutation.test.tsx` / `sends empty picture metadata to remove
-pictures and uses feature ID for unnamed response`; `adminFolayerPatchMutation.test.tsx`
-/ `keeps repeated image and area-ID fields aligned, including several pictures for
-one area`; `server/api/mockDataProxy.test.ts` / `attaches ordered filename URL metadata,
-then replaces and removes the picture list without storage operations`, plus
-`mockDataStore.test.ts` picture cases and `dataProxy.test.ts` WFS removal readback.
+The runtime now checks the current layer's canonical route, built through the
+existing app-route helper, before mounting its query/map lifetime. It accepts
+that layer's detail/settings/pictures subtree and does not mount an outgoing
+layer after navigation has left it. The earlier present/non-Deleting row-preload
+guard remains necessary. Failure rollback still resumes preloading. No shared
+navigation API, route policy, server store, timing delay or diagnostic exception
+changed. Existing detail/auth tests now supply their actual detail pathname
+alongside the route parameter; the empty-area navigation test awaits React's
+queued table update with async `act`. Their assertions remain intact.
 
-Verification on 2026-09-29, logs in `.tmp/f100-5-3-coder/`:
+| Evidence key | Exact command or selection above | Final result | Artifact |
+| --- | --- | --- | --- |
+| F-discovery | `yarn test:luonnonmetsakartat --listTests --json` | Exit 0; 35 applet + 24 shared = 59 suites, exact filesystem/config set equality | `discovery.json`, `discovery-audit.json` |
+| F-family | `yarn test:luonnonmetsakartat` | Exit 0; **59 suites / 1,122 tests**, no snapshots | `focused-jest.log`, `focused-jest.exit` |
+| F-helpers | Focused smoke-helper `--runTestsByPath` command | Exit 0; **1 suite / 42 tests** | `helpers-jest.log` |
+| F-shared | Explicit 13-path routing/auth/proxy/build selection above | Exit 0; **13 suites / 372 tests** | `shared-jest.log` |
+| F-types | `yarn start:typecheck`; explicit test-tsconfig command above | Both exit 0; app and all three changed TS tests plus their imports checked, no diagnostics | `typecheck.log`, `test-typecheck.log`, `test-tsconfig.json` |
+| F-lint | Explicit eight-file ESLint command; `yarn lint`; `git diff --check` | Exit 0; changed files clean; full lint **0 errors / 296 existing warnings** outside changed files | `changed-lint.log`, `full-lint.log`, `diff-check.log` |
+| F-visual | No-start two-path `visual:after-edit` command above | Exit 0; **30/30** desktop/mobile comparisons, zero differing pixels; no baseline changes | `visual-after.log`, `visual-report.json`, `visual-current/` |
+| F-delete | G07 page regressions plus observation-only tracing of the same runner | Trace exit 0; all 11 phases; **zero post-DELETE detail/WFS requests for the deleted ID** | `regression-before.log`, `affected-jest.log`, `smoke-traced.log`, `deletion-after.json`, `live-artifacts/context-2.zip` |
+| F-browser | Packaged no-start command twice consecutively | Both exit 0; all 11 phases, live main, one create each, baseline 3 preserved, cleanup verified | `smoke-repeat-1.log`, `smoke-repeat-2.log`, matching `.exit` files |
+| F-failure | Same runner with `--fail-after-import`, followed by ordinary command | Expected exit **1**, deliberate primary failure only, verified owned cleanup; subsequent ordinary run exit 0 | `smoke-injected.log`, `smoke-after-injection.log`, matching `.exit` files |
 
-| Evidence | Command / scope | Result |
-| --- | --- | --- |
-| P-discovery | `yarn test:luonnonmetsakartat --listTests --json` | Exit 0; 59 suites; both new suites discovered. `discovery.json`. |
-| P-focused | `yarn test:luonnonmetsakartat --runTestsByPath` with the two suites above | Exit 0; 2 suites / 11 tests, no snapshots. `targeted-final.log`. |
-| P-family | `yarn test:luonnonmetsakartat` | Exit 0; 59 suites / 1,085 tests, no snapshots. `family.log`. |
-| P-order | Two new suites plus settings, access and detail with `--randomize --seed=100503 --showSeed` | Exit 0; 5 suites / 41 tests. `order.log`. |
-| P-shared | Base `yarn test --runInBand --runTestsByPath`: Button, TextFieldWithLabel, TextFieldMultilineWithLabel, MultiSelectAutocomplete, SidebarLoadingBlock, SidebarRoot, auth/client, navigation/appRouteLinks and both new suites | Exit 0; 10 suites / 130 tests. `shared-base.log`. |
-| P-types | `yarn start:typecheck`; `yarn exec tsc --project .tmp/f100-5-3-coder/tsconfig.tests.json --noEmit` | Both exit 0. Dedicated test config includes new suites/helper and required ambient/route declarations. `typecheck.log`, `test-typecheck-final.log`. |
-| P-lint | Explicit changed-file ESLint; `yarn lint`; `git diff --check` | Exit 0; changed files zero warnings; full lint zero errors / 296 pre-existing warnings outside changed files. |
-| P-runtime | Doctor run `20260929-103738-817040-runtime_doctor-F100.5.3-luonnonmetsakartat-area-picture-tests` | Exit 0; `exit.json` read; `RETRY_READY`; no repair/restart/configuration change. |
-| P-smoke | App container: `yarn luonnonmetsakartat:mock:smoke` after doctor readiness | Exit 0; all eight existing steps; `ok: true`, `xvfb-webgl`. `smoke.log`. |
-| P-visual | App container: `yarn visual:after-edit -- --no-start --scenario-set component-fixtures` with the three edited implementations, before and after | Existing baselines; final 18 captures: 16 unchanged, 2 expected loading-state differences (disabled fields/Save), inspected on desktop/mobile. Runner exit 1 means these deliberate differences, not an unreported pass. `visual-before.json`, `visual-after.json`. Initial pre-edit capture had one transient HMR navigation error; final run captured that state successfully. |
-| P-live | App container: `xvfb-run -a node .tmp/f100-5-3-coder/live-pictures.cjs --no-start` | Exit 0; 1440×900 and 390×844: actual directory selection, one held PATCH, disabled inputs/mappings/Save, visible progress, ordinary reset and reselection. Zero page/console errors. Controlled response, no persisted-upload claim. `live-pictures.log`, `pictures-{pending,reset}-{1440,390}.png`. |
+The baseline passed 59 suites / 1,121 tests. The new gate-transition regression
+failed before the production fix, then passed with the affected settings,
+gate, access and deletion selection (4 suites / 63 tests, `affected-jest.log`).
+Final full-suite verification includes it, the existing rollback regression and
+the unchanged cleanup-failure/strict-diagnostic helper cases.
+Intermediate failures are retained: `focused-before-route-fixtures.log` records
+five existing detail fixtures with inconsistent URL/params;
+`focused-before-async-act.log` records the empty-table navigation's unawaited
+React microtask. Corrected detail tests passed 7/7 (`detail-jest.log`) before
+the final complete focused run. No console guard, timeout or behavioral assertion
+was relaxed. Intentional HTTP-negative tests still emit their expected logs.
 
-G01/G02/G03/G08 retain F100.5.1's completed evidence; G04/G07 retain F100.5.2's.
-All their referenced suites remain present and pass P-family (settings/access/detail
-also pass P-order). Together with G05/G06, all G01–G08 now have completed owned
-rendered evidence; no earlier-child ownership gap was found.
-
-**F100.6 still owns B01–B09**, especially B05/B06 area/picture persistence readback,
-run-specific created layers, finally cleanup, strict repeatability, applicable route
-modes and final family/runbook reconciliation. Ordinary-mode successful picture saves
-clear the directory and mappings; `pictures-mapped`/`pictures-unmatched` scenarios
-intentionally reseed on remount, so do not use their post-save files as ordinary reset
-evidence. The current smoke still has eight steps and saves scenario-seeded mapped
-pictures: it does not establish the new mapping/edit/failure interactions, unmatched
-readback or lifecycle cleanup. The new gallery test is refreshed metadata evidence,
-not a delete click. No real object storage, identity-provider, geometry persistence or
-live-backend claim is added. Earlier child sections below are historical run records.
-
-### F100.5.2 settings/deletion evidence
-
-G04/G07 use the actual settings page with the existing `pages/pageTestSupport.tsx`
-providers, real patch/delete option hooks (only retries disabled in tests), real
-`NotificationProvider` and `ConfirmationDialog`, and real sidebar-loader ownership.
-Network outcomes are deferred Axios responses; unexpected network and console
-errors remain guarded. Each expected mutation error is checked exactly before
-being consumed. Name tests advance fake timers inside `act`; clients, stores,
-portals, pending work, map instance/subscriptions, storage and timers are isolated.
-The deletion wrapper delays completion, then calls the real `removeLayerGroup`
-without WebGL. It proves selected group/subscription/joined-source cleanup and
-navigation ordering, plus preservation of unrelated records and area data.
-
-Regressions reproduced sending the previous name on immediate Save, discarding
-an edit accepted during a pending save, enabled Save during deletion, and a
-sidebar loader left active after delete rejection. The local page correction
-flushes debounced names and reads the latest selected record, invalidates stale
-work on route change, disables the existing form during operations, and derives
-loading from both pending mutations. Delete confirmation also flushes the name
-so request failure restores the current unsaved draft. Existing replacement
-validation, warning confirmation, file-version checks and success-only reset
-remain covered by the unchanged F100.3 suite. No translation or shared-control
-change was needed.
-
-Verification on 2026-09-29; logs/artifacts are ignored under
-`.tmp/F100.5.2-coder/`. Exact expanded commands are in this feature's coder report.
-
-| Reference | Command/check | Observed result |
-| --- | --- | --- |
-| S-discovery | `yarn test:luonnonmetsakartat --listTests --json` | Exit 0; 56 → 57 suites. Only the new settings suite was added; replacement and the same 24 allowlisted suites outside the applet remain. |
-| S-focused | `yarn test:luonnonmetsakartat --runTestsByPath` with new settings, replacement, patch and delete suites | Exit 0; 4 suites / 76 tests / 0 snapshots (12 new page cases). Baseline retained suites: 3 / 64, exit 0. |
-| S-family | `yarn test:luonnonmetsakartat` | Exit 0; 57 suites / 1,074 tests / 0 snapshots. An earlier concurrent verification run timed out one existing import test at 5 s; rerunning after the heavier checks finished passed without changing that test or timeout. |
-| S-order | New settings + replacement + admin list/detail suites, `--randomize --seed=10052 --runTestsByPath` | Exit 0; 4 suites / 34 tests / 0 snapshots. |
-| S-shared | Auth client, appRouteLinks, TextFieldWithLabel, ColorPickerWithPopover, SquishedSwitchWithLabel, IconWithText and Button suites | Exit 0; 7 suites / 90 tests / 0 snapshots. |
-| S-types | `yarn start:typecheck`; `yarn exec tsc --project .tmp/F100.5.2-coder/tsconfig.tests.json --noEmit` | Both exit 0. The ignored config explicitly includes the new test, Jest/jest-dom types and ambient/generated route declarations. |
-| S-lint | Explicit ESLint on both changed TSX files; `yarn lint`; `git diff --check` | All exit 0. Changed files: 0 warnings; full lint: 0 errors / 296 pre-existing warnings, matching the preceding ledger result. |
-| S-runtime | Runtime doctor run `20260929-094146-919737-runtime_doctor-F100.5.2-luonnonmetsakartat-settings-deletion-tests` | Exit 0 and `exit.json` checked; `RETRY_READY`, no repair/restart. Main + applet mock-auth/API/scenarios enabled. |
-| S-smoke | App container: `yarn luonnonmetsakartat:mock:smoke` | Exit 0; all eight existing steps, `ok: true`, `xvfb-webgl`; no reported console errors. Existing mock smoke, not the future browser lifecycle matrix. |
-| S-visual | App container: `yarn visual:baseline -- --no-start --scenario-set luonnonmetsakartat-mocks`, then `yarn visual:changed -- --no-start --scenario-set luonnonmetsakartat-mocks --files src/applets/luonnonmetsakartat/pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.tsx` | Both final commands exit 0; the runner selects all 15 scenarios / 30 desktop/mobile captures, including clean/unsynced/saving. First comparison caught an unnecessary seeded Saving overlay change; corrected before the final 30/30 pass. Reports: `visual-before.json`, `visual-after-first.json`, `visual-after.json`; standard images under `.dev/visual-regression/`. |
-| S-live | App container: `xvfb-run -a node .tmp/F100.5.2-coder/live-settings.cjs` | Exit 0, desktop/mobile: real pending controls disabled, current name submitted once, distinct fulfilled server result rendered, Delete cancellation leaves editing usable and sends no DELETE. No page/console errors. `live-settings.json`, `pending-{desktop,mobile}.png`, `recovered-{desktop,mobile}.png`. |
-
-The live check uses local mock scenarios and an intercepted PATCH, and does not
-write to live services. Baseline screenshots protect layout; Jest supplies the
-failure/retry and map-cleanup evidence. G05/G06 remain F100.5.3; B05–B09 and final
-runbook reconciliation remain F100.6. Public-cache synchronization, remote
-geometry/object storage, actual GPU resource deletion and map-cleanup callback
-failure after successful remote deletion are not newly claimed here.
-
-### F100.5.1 auth/read-page evidence and A05 handoff
-
-A05's deferred access-cleanup work is covered by
-`pages/admin/LuonnonmetsakartatAdminAccess.test.tsx`: `revokes private rows,
-areas, selection and external popup before entering the public page` and
-`does not restore privileged data or map groups from late %s reads`,
-`discards queued %s after revocation and public navigation` (list preload and
-detail enable), and `discards an admin installation already resolving its
-style when access is revoked`. The queue cases restore the real addLayerGroup,
-function queue executor and style installer, with a null WebGL instance. They
-observe store publications as well as terminal state: no transient admin group,
-subscription or popup survives revocation; unrelated queued work and anonymous
-layer installation still succeed. Verification and admin reads populate the actual store before logout; the
-same layer then receives a distinct anonymous area response without resetting
-test state. Hidden records, admin selections, popup ownership and late
-list/detail/area results cannot cross that transition. Unrelated selected
-features, queries, map groups and public metadata survive. A05's original
-URL/normalization matrix remains unchanged.
-
-The five new suites use `pages/pageTestSupport.tsx`, not the query or shapefile
-helpers with broader mocks. Real AuthSessionContext/useAuthSession,
-QueryClient, applet/UI/map stores, page components, rows, applet hooks,
-useLayerGroup/useExclusiveLayerGroups, loading/messages and SearchTable are
-retained. HTTP and WebGL operations are controlled; the navigation adapter
-materializes route-key/parameter hrefs through the production resolver.
-Sidebar chrome and popup editor contents are bounded adapters; the actual
-MapPopupHandler proves popup ownership/removal, not area editing.
-Unexpected HTTP/fetch and console errors fail tests. Teardown unmounts portals,
-cancels/clears clients and restores stores, environment, title, storage,
-spies, timers and real map-to-applet subscriptions. No scenario query flags or seeded verification status are
-used as authorization evidence.
-
-The gate now checks its current session/token attempt before rendering a
-protected child. Revocation clears applet admin queries/data, selections and
-popups; aborted/obsolete results cannot publish store changes. One ordinary
-mounted gate deliberately validates once, including a same-client remount;
-terminal status updates and unrelated rerenders do not retry. A fresh-client
-mount also validates even when real earlier verification left a stale global
-status. Raw bearer tokens remain outside cache keys and applet state. Detail
-runtime instances are keyed by route layer ID and restore the prior title on
-unmount; useful metadata/navigation does not wait for map visibility.
-
-Admin area preloads and list refreshes deliberately do not consume React
-Query's observer abort signal: list-to-detail navigation may remove every
-observer. The same request completes for the new page instead of leaving an
-area placeholder or existing layer metadata in Fetching. Access revocation still explicitly cancels/removes the query and
-increments the access generation; a late HTTP response cannot repopulate the
-store. The transport can finish after revocation, but its result is discarded.
-The actual link-driven list/detail regression verifies the rendered area,
-Idle state, one request and settled query after navigation. The additional
-`settles a populated list refresh after list → detail → list → detail navigation
-under the same gate` regression holds the second list response while opening
-an existing layer again. It failed with Fetching before the fix; now metadata
-and the query settle, the heading/areas/settings/pictures links render, and
-rerenders leave exactly two list reads and one verification. The access
-generation stays unchanged across that navigation; logout/rejection/late-result
-regressions continue to verify the separate revocation boundary.
-
-Evidence on 2026-09-28 (full command paths/logs in the feature coder report):
-
-| Reference | Check | Observed result |
-| --- | --- | --- |
-| G-baseline | `yarn test:luonnonmetsakartat --listTests --json`; `yarn test:luonnonmetsakartat` before edits | Exit 0; 51 suites / 1,012 tests. Existing query/scenario/bootstrap/fixture support audited. |
-| G-discovery | Same discovery command after implementation; independent filesystem + literal allowlist comparison | Exit 0; 56 suites = 32 applet + unchanged 24 shared. Exactly five new page suites; no lost, missing or unexpected suite. |
-| G-family | `yarn test:luonnonmetsakartat` | Exit 0; 56 suites / 1,062 tests / zero snapshots. |
-| G-order | Five new page suites with `--runTestsByPath ... --randomize --seed=10051 --showSeed` | Exit 0; 5 suites / 50 tests. Includes bounded retry clocks, StrictMode, fresh/same-client remounts and stale responses. |
-| G-shared | Base Jest with the eight planned shared auth/navigation/control paths plus geoserverJsonQuery and MapLayerButton/LayerMenuContent | Exit 0; 10 suites / 154 tests. |
-| G-types | `yarn start:typecheck`; `yarn exec tsc --project .codex-orch/features/F100.5.1-luonnonmetsakartat-auth-read-page-tests/coder-f1-artifacts/tsconfig.tests.json --noEmit` | Exit 0 for app and additional explicit page/helper/changed-query-test compilation. |
-| G-lint | Explicit changed-file `yarn exec eslint`; `yarn lint`; `git diff --check` | Exit 0; no new warnings. The two newly touched shared map files carry 35 existing warnings (HEAD comparison confirmed identical rule/message lists); full lint retains 0 errors / 296 warnings. |
-| G-runtime | Requested synchronous runtime-doctor command | Exit 0; run `20260928-195434-375431-runtime_doctor-F100.5.1-luonnonmetsakartat-auth-read-page-tests`, `exit.json` checked, `RETRY_READY`. No runtime repair/restart/config change. |
-| G-browser | Independent app-container `yarn luonnonmetsakartat:mock:smoke` retry, existing no-start script | Exit 0; all eight steps pass, `xvfb-webgl`, preflight 127.0.0.1:6900 and browser localhost:6900. No reported console error. |
-| G-visual | App-container `yarn visual:baseline -- --no-start --scenario-set luonnonmetsakartat-mocks` before production edits; `yarn visual:luonnonmetsakartat-mocks --files=<gate,home,detail-runtime>` after | Exit 0; all 15 existing full-page scenarios / 30 desktop/mobile captures pass. Existing full-page fixtures cover these page changes; no new fixture registry/framework. |
-| G-error-visual | Ignored `.tmp/f10051/public-error-browser.cjs --no-start` using existing browserRuntime/context helpers and intercepted 503 list replies | Exit 0; desktop 1440×900 and mobile 390×844 each show the existing translated layer-fetch error after exactly four requests; no page errors. Screenshots inspected. |
-| G-refresh | Review F1 permanent populated-list navigation case, then detail/access/query suites | Before fix: exit 1, expected Idle but received Fetching. After fix: exit 0, 3 suites / 46 tests. No copied pages or mocked verification; existing late-list/detail/area revocation cases retained. |
-| G-refresh-browser | Ignored `.dev/f10051-f1/list-refresh-browser.cjs --no-start`, desktop/mobile, existing mock runtime | Exit 0; actual return navigation revalidates and changes access generation (11 → 15 → 19), so it clears existing records. Releasing held reads restores detail/areas/editing links without page/console errors. This is browser navigation evidence only; G-refresh supplies the exact same-gate delayed-refresh proof. |
-| G-review-regressions | Both original reviewer Jest reproductions, plus four permanent queue/style/list-detail cases in the existing suites | Reviewer reproductions fail before / pass after. New queue and list/detail regressions fail before / pass after; queued work cannot install even transiently, anonymous/unrelated work still installs. |
-| G-live-revision | Ignored `.dev/visual-regression/f10051-coder-revision/{queued-admin,list-detail}-browser.cjs --no-start` in the doctor-verified app container | Exit 0; real delayed IndexedDB hydration → verified detail → logout → public navigation leaves no admin group/layer/rendered feature; slow WFS list → detail and reload render areas. Actual settings/pictures destinations render their clean controls. No page errors or scenario-seeded verification. |
-
-The F1 revision reran discovery/family, randomized pages, shared checks, types,
-lint, smoke and all 30 existing visual comparisons. Exact logs and the
-before/after navigation regression are in the feature
-`coder-f1-artifacts/` folder; existing visual baselines were retained. Its live
-probe records the runtime's generation changes explicitly and does not claim
-they exercise the same-gate regression.
-
-The screenshot comparisons protect existing page layout and scenario-preview
-compatibility; they do not prove authorization. The query-driven component
-tests provide that evidence. The additional public-error browser check uses
-controlled HTTP and is not a new standard lifecycle runner. Missing GeoServer
-configuration is safe but cannot display a working map. The revision probes
-exercise actual WebGL installation with the mock API, not real GeoServer/PostGIS,
-identity or object-storage behavior. Settings and pictures Save buttons are
-intentionally absent in clean states; destination checks assert the name input
-and picture-folder control, without changing or saving data. Live services remain
-separate integration checks. G04–G07 remain with F100.5.2/F100.5.3; browser lifecycle and final
-runbook reconciliation remain F100.6. Preserve the doctor's verified service:
-the live mock flags differ from checked-out `.env`; delegate any recreation or
-recovery to runtime_doctor rather than restarting from the disabled file values.
-
-### F100.1 execution evidence
-
-The audit was recorded before new behavioral tests. Evidence on 2026-09-28:
-
-| Reference | Command/check | Observed result |
-| --- | --- | --- |
-| J-baseline | `yarn test:luonnonmetsakartat` before new tests | Exit 0; 32 suites, 458 tests; 11.299 s. |
-| J-discovery | `yarn test:luonnonmetsakartat --listTests --json` | Exit 0; baseline 10 applet + 22 shared; final 17 applet + exactly the same 22 shared = 39. Independent filesystem comparison matched; every literal exists; no unrelated applet/smoke suites. |
-| J-final | `yarn test:luonnonmetsakartat` | Exit 0 twice after implementation: 39 suites, 606 tests, zero snapshots (10.260 s and final 11.841 s). Includes all 22 shared contracts; none of their primitives changed, so no redundant separate shared run. |
-| J-review-discovery | `yarn test:luonnonmetsakartat --listTests --json` after reviewer correction | Exit 0; 17 applet + 23 shared = 40 paths. Independent filesystem/allowlist comparison matched with no missing or unexpected paths; no Carbon/Energy applet suites or Carbon smoke selected. |
-| J-review-final | `yarn test:luonnonmetsakartat` after reviewer correction | Exit 0; 40 suites, 615 tests, zero snapshots; 12.227 s. Includes the newly selected nine-test shared map-auth transform suite. |
-| T | `yarn start:typecheck` | Exit 0 initially and again after the reviewer correction. Excludes test files. An additional temporary config including all query tests, the test helper and existing declaration shims also passed `yarn exec tsc --project .tmp/f100-1-coder-20260928/tsconfig.tests.json --noEmit`. |
-| L | Changed-file `yarn exec eslint` (explicit paths in coder report); `yarn lint` | Changed files: exit 0, no warnings; the reviewer-pass config lint also exited 0. Full lint exited 0 again after the correction with 0 errors and 309 existing warnings, all outside changed files. |
-| B-runtime | App-container smoke command above | Exit 1: `service "app" is not running`. Compose `ps app` returned no service. Shared `.env` has `DEV_PORT=6900` and mock auth/API/scenario flags all `0`; no flags changed and no smoke mutations attempted. |
-| B-runtime-retry | Runtime doctor, then the same app-container smoke command | Runtime-doctor run `20260928-141538-897850-runtime_doctor-F100.1-luonnonmetsakartat-api-contract-tests` exited 0 with `RETRY_READY` and made no runtime change because the existing feature-local mock runtime was healthy. The coder retry exited 0: all eight steps passed using `xvfb-webgl`; one documented non-fatal browser console error was observed. |
-
-The eight client suites contain 154 cases (including the six preserved WFS
-URL/configuration cases); the full command adds 148 net cases to the baseline.
-The WFS suite now uses the actual applet store/header helper, retaining its
-original behavioral assertions instead of keeping redundant mocked-helper calls.
-The local helper uses existing Testing Library/Jest, real QueryClient, real
-Zustand actions (through the repository's normal reset wrapper), and realistic
-Axios errors. It fails unexpected HTTP calls, restores state/mocks/env, and clears
-clients/unsubscribes observers. No external service calls or credentials are
-needed. The tiny in-memory ZIP bytes prove transport, not archive validity.
-
-Regressions were reproduced before fixes:
-
-- Admin list/detail and public/admin WFS left records `Fetching` after rejected
-  reads; missing admin tokens also changed state, and an omitted admin-list
-  record stayed busy after success. The initial read run failed 28 of 78 cases.
-  Early token checks and conditional `finally` state cleanup preserve data and
-  permit retry. The corrected 78-case run passed.
-- Five invalid picture-pair shapes silently dropped uploads and reported
-  success; Axios-rejected DELETE 404 failed despite existing resolved-404
-  acceptance; missing-token delete briefly entered `Deleting`. The initial
-  mutation run failed 8 of 76 cases. Length validation now rejects before HTTP,
-  delete checks auth before state work, and only Axios 404 is treated as already
-  absent. The corrected 76-case run passed.
-
-No rendered component changed, so visual screenshots were not required. Browser
-verification is available on the doctor-verified mock runtime: the exact
-no-start smoke passed after `RETRY_READY`. The runtime-doctor pass and this coder
-retry made no server lifecycle or environment change. The earlier stopped-service
-failure remains recorded as B-runtime historical evidence. The passing current
-smoke covers import/duplicate-ID/settings/seeded-picture behavior, not F100.6's
-complete cleanup/readback lifecycle and not real GeoServer, PostGIS, storage or
-identity-provider acceptance.
-
-The existing `FolayerFeatureProperties` type intersects numeric and string
-`created_ts`/`updated_ts` declarations. The local typed fixture documents a narrow
-boundary cast for realistic API timestamps; this feature does not migrate that
-public type or timestamp units. No packages, lockfiles, env definitions,
-translations, route policy or retry policy were changed.
-
-### F100.2 assertion relocation audit
-
-Audit made against `5c37d17ba811a01b3871047a452534426b70e405` before removing
-wrapper assertions. Direct replacements passed first (196 cases). The original
-27-case `server/api/dataProxy.test.ts` mixed HTTP/store contracts with wrapper
-integration. The following mapping accounts for each removed case and its unique
-assertions. `HTTP` means `server/api/mockDataProxy.test.ts`; `store` means
-`server/api/mockDataStore.test.ts`. Names below identify the actual test cases
-or parameterized case prefixes.
-
-| Original `dataProxy.test.ts` case | Assertions retained in direct replacement |
-| --- | --- |
-| `does not fall back to public layers for rejected or unknown auth` | HTTP `validates %s authorization and never downgrades an authenticated list request`: 401/403 and exact denial/role bodies; adds empty, non-bearer and malformed credentials. |
-| `validates verified, rejected, missing, and unknown mock admin auth` | Same HTTP matrix: validate 200 and both roles true; rejected 403, missing/unknown 401 and both roles false. |
-| `serves admin layer detail and deterministic layer id errors` | HTTP `projects anonymous visible layers and editor hidden/admin metadata, following visibility changes` compares detail to admin list; `returns deterministic %s %s errors without mutation` asserts missing ID 400 and unknown ID 404 with exact JSON. |
-| `requires verified admin auth for mock layer mutations without changing state` | HTTP `protected %s / denies %s before parsing or mutation with status %s and unchanged counters`: all six protected mutation forms, denial bodies, whole-state equality and clean replay of future ID/timestamps. |
-| `creates deterministic mock layers from multipart import fields and resets them` | HTTP `creates and reads %s columns with synthetic areas, without interpreting or requiring ZIP bytes`: 201, exact trimmed admin DTO/columns/default description, list/detail readback and synthetic IDs; store `creates deterministic synthetic areas, preserves omitted metadata, and deletes without reusing IDs` retains exact layer/area timestamps and area names; store `replays a mixed lifecycle after reset, restoring deleted seed data and both counters` proves repeatability. |
-| `patches layer metadata and preserves areas when a raw update zip is present` | HTTP `preserves seeded areas with an uninterpreted ZIP when delete_areas_not_updated is %s`: exact metadata, all columns, original creation timestamp, mutation timestamp and unchanged whole area collection for true/false/omitted flags; malformed flag atomicity is separate. |
-| `attaches deterministic picture URLs to mock areas from bulk image fields` | HTTP `attaches ordered filename URL metadata, then replaces and removes the picture list without storage operations`: encoded URLs, attachment area timestamp and separate layer timestamp, repeated and distinct targets, subset/removal readback. Store `appends ordered picture metadata for repeated targets and clones attachment results` also proves seeded entries and untargeted area preservation. |
-| `returns deterministic errors for invalid or unknown bulk picture targets` | HTTP `rejects %s picture batch before metadata, pictures or counters change`: exact mismatch 400 and unknown-area 404 plus malformed values and valid+unknown batch atomicity. |
-| `deletes mock layers and their area data with deterministic not-found behavior` | HTTP `deletes layer and area data with deterministic repeated-delete and detail errors`: success body, area/detail removal, list absence, repeated delete 404; unknown delete covered by error matrix. Store deletion case proves other layers unchanged and ID non-reuse. |
-| `patches editable area properties while preserving protected feature data` | HTTP `patches editable area strings while preserving protected fields, geometry and neighbors` and corresponding store edit case: editable fields and exact server timestamp, protected ID/creation/layer/area, full unchanged geometry and readback; adds empty strings, pictures, attempted geometry/update-time overrides and neighbors. |
-| `returns deterministic not-found responses for unknown layer and area mutations` | HTTP deterministic error matrix: exact missing layer vs area bodies for metadata PATCH and both area failure types; adds whole-state and counter assertions. Store failure matrix also retains tagged outcomes. |
-| `returns method-not-allowed errors for out-of-scope mock mutations` | HTTP `returns 405 for $method $path before authorization`: POST `/layers` plus every unsupported standard verb on admin/layer/area routes, exact error and no state/counter change. |
-| `keeps resettable mock seed data stable and returns cloned areas` | Store `seeds stable visible, hidden and empty layers with polygon and picture data` keeps all concrete IDs/timestamps, area attributes, picture serialization, first polygon point and empty collection; `creates fresh seed factories and clones every nested getter boundary` and reset/replay add nested clone and counter isolation. |
-
-The anonymous wrapper case retains dispatch without upstream config/auth/fetch;
-its full DTO/exclusion assertions now live in the HTTP projection case. The
-verified wrapper case retains authenticated dispatch/no-fetch; full hidden-layer
-column metadata is in the same HTTP projection case. All four non-mock transport
-cases remain intact for F100.4. WFS seed centroids, empty collections, created-ID
-mapping, mutation readback, auth/hidden filtering and error cases remain because
-they prove wrapper/GeoServer integration. The picture WFS case additionally
-reads back removal via area PATCH `pictures='[]'`. Empty TMS GET/HEAD, content
-type and wrong-method checks remain. Existing client scenario/reset/bootstrap
-cases remain unchanged; their cache/state contracts do not replace server reset.
-
-### F100.2 execution evidence — 2026-09-28
-
-Commands ran from `/workspace/project` unless the namespace is specified.
-Ignored artifacts are under `.tmp/f100-2-coder-20260928/`; the complete expanded
-commands and protected-file evidence are in the feature's `coder-report.md`.
-
-| Reference | Command/check | Observed result |
-| --- | --- | --- |
-| M-baseline | `yarn test:luonnonmetsakartat --listTests --json`; `yarn test:luonnonmetsakartat` | Exit 0; 40 suites, 615 tests, zero snapshots; 4.900 s. Logs `discovery-baseline.log`, `jest-baseline.log`. |
-| M-regression | `yarn test:luonnonmetsakartat --runTestsByPath src/applets/luonnonmetsakartat/server/api/mockDataStore.test.ts src/applets/luonnonmetsakartat/server/api/mockDataProxy.test.ts` | Before fixes: exit 1, 190 pass/6 fail. Five malformed path encodings threw URIError; production test reset did not refuse. After the two narrow fixes: exit 0, 196/196 cases, 2 suites. Logs `direct-before-fix.log`, `direct-after-fix.log`. |
-| M-discovery | `yarn test:luonnonmetsakartat --listTests --json` | Exit 0; independent filesystem/allowlist comparison finds 19 applet + unchanged 23 shared = 42 suites. Exactly the two new suites were added; no baseline suite removed. Logs `discovery-final.log`, `inventory-and-preservation.log`. |
-| M-J | `yarn test:luonnonmetsakartat` | Exit 0; 42 suites, 834 tests, zero snapshots; 11.202 s. Includes affected wrapper/scenario/reset/bootstrap/shared auth/userinfo tests. Log `jest-final.log`. |
-| M-order | `yarn test:luonnonmetsakartat --runTestsByPath src/applets/luonnonmetsakartat/server/api/mockDataStore.test.ts src/applets/luonnonmetsakartat/server/api/mockDataProxy.test.ts --randomize --seed=1002 --showSeed` | Exit 0; seed 1002, 2 suites, 196 tests, zero snapshots; 1.536 s. Log `jest-randomized.log`. |
-| M-types | `yarn start:typecheck`; `yarn exec tsc --project .tmp/f100-2-coder-20260928/tsconfig.tests.json --noEmit` | Both exit 0. First excludes tests; the temporary config separately includes all six changed/new test files and existing declaration shims. Logs `typecheck.log`, `test-types-final.log`. |
-| M-lint | Changed-file ESLint; `yarn lint`; `git diff --check` | All exit 0. Changed files: zero errors, one existing unused `getFolayerCentroidSourceLayer` warning in mockDataProxy.ts, independently reproduced from HEAD via ESLint stdin. Full lint: zero errors, 309 warnings. Logs `lint-changed-final.log`, `lint-proxy-head.log`, `lint-full.log`, `diff-check.log`. |
-| M-doctor | Runtime doctor command above, `/workspace/codex-orch` | Exit 0 and `exit.json` confirmed for run `20260928-150513-397959-runtime_doctor-F100.2-luonnonmetsakartat-mock-contract-tests`; verdict `RETRY_READY`. No repair/restart/configuration change. |
-| M-smoke | `docker compose -f /workspace/project/docker-compose.dev.yml --project-directory /workspace/project exec -T app sh -lc 'cd /app && yarn luonnonmetsakartat:mock:smoke'` after RETRY_READY | Exit 0, `ok: true`, `xvfb-webgl`; all eight existing steps passed. Preflight 127.0.0.1:6900, browser localhost:6900 inside app container. Exactly one non-fatal browser console error reported; script did not expose its message. Log `smoke.log`. |
-
-The final net increase is 219 cases, with 13 wrapper-only cases relocated and
-196 direct cases added plus stronger shared/wrapper guard matrices. No new
-framework, shared test harness, package/script/allowlist or environment-variable
-change was needed. The only production edits are path-escape validation (catch
-URIError only, retain encoded route matching/single field decode) and production
-refusal in the exported test reset helper. Six failing regressions preceded
-those fixes. Narrow test-file type checking also caught and resolved Jest tuple
-inference and geometry narrowing issues; no public domain-type change was made.
-
-The original four non-mock transport bodies and six WFS/TMS bodies were compared
-unchanged with the baseline; the seventh WFS integration case was extended for
-picture removal. All four unrelated protected files retain their original
-content hashes and unstaged/untracked status. No files were staged or committed.
-
-No rendered UI changed, so no additional visual fixture checks were needed.
-The passing smoke leaves server-memory mutations and has a tolerated console
-error; it does not complete F100.6 cleanup/strict-console acceptance. It is also
-not real GeoServer/PostGIS/object-storage/Zitadel acceptance. Later checks that
-need a pristine server seed must delegate that runtime work to the doctor.
-
-
-### F100.3 import/replacement verification (2026-09-28)
-
-- **I-baseline:** existing `common/utils.test.ts` and helper
-  `utils/scripts/visual/luonnonmetsakartat-mock-smoke.test.js`: 2 suites / 11 tests.
-  All existing map tests, smoke CLI/preflight tests and the two parser assertions
-  remain; the new domain suite owns the expanded matrix.
-- **I-J:** `yarn test:luonnonmetsakartat`: 49 suites / 929 tests passed.
-  `--listTests --json` discovers all seven new applet suites and the unchanged
-  23 shared allowlist entries; no package-script/config addition was needed.
-- **I-focused:** the seven suites below: 7 suites / 95 tests passed.
-- **I-shared:** shared DropDownSelectWithLabel, DropDownSelectInset,
-  TextFieldWithLabel and Button tests: 4 suites / 34 tests passed.
-- **I-browser:** doctor run `20260928-160735-809807-runtime_doctor-F100.3-luonnonmetsakartat-import-replacement-tests`
-  exited 0 with `RETRY_READY`, requiring no repair. The subsequent app-container
-  `yarn luonnonmetsakartat:mock:smoke` passed all 8 steps with `xvfb-webgl` and
-  no reported console errors. Its duplicate-ID check registers a POST observer
-  before Accept, waits for the visible persistent notification, and asserts zero
-  create requests. Full lifecycle cleanup/strict global console policy is F100.6.
-
-Exact focused command (from the project root):
-
-```sh
-yarn test:luonnonmetsakartat --runTestsByPath src/applets/luonnonmetsakartat/common/folayerShapefile.test.ts src/applets/luonnonmetsakartat/common/shpjsCompat.test.ts src/applets/luonnonmetsakartat/components/FolayerImportShp.test.tsx src/applets/luonnonmetsakartat/components/FolayerUpdateShp.test.tsx src/applets/luonnonmetsakartat/components/FolayerShapefile.races.test.tsx src/applets/luonnonmetsakartat/pages/admin/import/LuonnonmetsakartatAdminImportPage.test.tsx src/applets/luonnonmetsakartat/pages/admin/layer/folayer/settings/LuonnonmetsakartatAdminLayerFolayerSettingsPage.replacement.test.tsx
-```
-
-The shared hook owns parse lifetime and warning confirmation; the pure
-`common/folayerShapefile.ts` owns parser, detection and validation. Deferred
-parser tests are limited to races; ordinary UI/page tests use actual ZIP bytes,
-selectors, real FileReader, the real confirmation dialog/store and QueryClient,
-with stubbed mutation functions and a visible notification adapter. No default
-test uses a live service. Both pages clear prior upload state before reading;
-old parse/read/confirmation results cannot submit a later file's bytes.
-
-The new feedback uses Finnish Tolgee keys written via `tolgee-api-upsert`:
-`sidebar.admin.create.error_invalid_shapefile` and `error_missing_columns`.
-Existing `confirm_invalid_chars` and `error_invalid_chars_or_encoding` now show
-problematic values instead of directing users to console errors. Exports were
-refreshed with the download script; no downloaded JSON was manually edited.
-
-F100.5 can reuse these seams without repeating the validation matrix. F100.6
-should use the stable duplicate-pair fixture and visible error/request oracle.
-Real backend ingestion, ID/pair geometry matching, preserve/delete effects and
-cleanup remain opt-in live acceptance (L02), with disposable IDs and explicit
-authorization. Neither a passing parser nor the mock proves those operations.
-
-Final F100.3 verification also passed `yarn start:typecheck` and a temporary
-TypeScript project including all seven new test suites (normal tsconfig excludes
-tests). Changed-file lint has zero errors and only two pre-existing map utility
-`any` warnings; full `yarn lint` has zero errors / 306 existing warnings.
-The component-fixture check selected all eight import-control states and passed
-16 desktop/mobile captures. Existing five states matched their before baselines;
-the three new unparsed/parse-error states were inspected and initialized
-intentionally. See `.dev/visual-regression/report/latest.json` for the local
-report. The broad baseline command ignores `--files`; its unrelated remainder
-was cancelled after the required old baselines were captured. No service was
-restarted and no screenshot/log artifact is committed.
-
-### F100.4 routing and transport verification (2026-09-28)
-
-Implementation started on `luonnonmetsakartat` at
-`d1adcb192e4aca3aa96c570fd7acf034f4127836`. Evidence is in ignored
-`.tmp/f100-4-coder-20260928/`; the feature's `coder-report.md` records the
-complete changed-file list, commands and limitations for local review/commit.
-The audit retained the existing selection/metadata/build matrices, ordered
-Carbon redirects, mock dispatch/production guards and WFS/TMS cases.
-
-| Evidence | Command / result |
-| --- | --- |
-| R-baseline | `yarn test:luonnonmetsakartat`: exit 0, 49 suites / 929 tests. |
-| R-discovery | `yarn test:luonnonmetsakartat --listTests --json`: exit 0; independent inventory confirms 27 applet + 24 literal shared = 51 suites. Only shared apiProxy and applet registration suites added; no prior suite removed or unrelated applet suite included. `python3 .tmp/f100-4-coder-20260928/verify-inventory.py` also confirms all nine required auth suites are selected and pass. |
-| R-family | `yarn test:luonnonmetsakartat`: exit 0, 51 suites / 1,012 tests / 0 snapshots (35.419 s), including shared auth regressions. Existing IndexedDB-unavailable console messages and Zustand mock logs remain; no test failures. `family-final.log`. |
-| R-shared | Exact command below: exit 0, 13 suites / 318 tests / 0 snapshots (3.347 s), including the entire Carbon proxy suite and Tolgee selection tests. `affected-final.log`. |
-| R-red | New shared proxy suite before the production fix: exit 1, 29 passing and 4 failing cases. Three failures exposed raw exception logging; one was an invalid-URL classification assumption corrected to the existing Jest realm behavior. After the fixed-event logging change, all 33 shared proxy tests pass. `proxy-red.log`, `second-targeted.log`, final full runs. |
-| R-types | `yarn start:typecheck` and `yarn exec tsc --project .tmp/f100-4-coder-20260928/tsconfig.tests.json`: both exit 0. The temporary project explicitly includes changed/new TS tests, Jest types, existing generated route declarations and required ambient declarations. The app tsconfig alone excludes tests. |
-| R-lint | Explicit changed-file ESLint command in coder report: exit 0, 0 errors / 9 existing Carbon `any` warnings (independently reproduced from HEAD using ESLint stdin). Full `yarn lint`: exit 0, 0 errors / 306 warnings. `git diff --check`: exit 0. |
-| R-smoke | Doctor run `20260928-172054-849508-runtime_doctor-F100.4-luonnonmetsakartat-routing-proxy-tests`: synchronous exit 0, `exit.json` read, report `RETRY_READY`, no runtime changes. Independent retry of the Docker command below: exit 0, `ok: true`, `xvfb-webgl`, eight existing steps passed, no console error reported. `smoke-retry.log`. |
-
-Run deterministic checks from `/workspace/project` in the agent namespace:
+Trace command (the ordinary packaged command needs no preload):
 
 ```bash
-yarn test --runInBand --runTestsByPath \
-  src/common/routing/publicRoutes.test.ts \
-  src/common/routing/requestRouting.test.ts \
-  src/common/routing/appletSelectionContract.test.ts \
-  src/common/routing/routeMetadata.test.ts \
-  src/common/navigation/appRouteLinks.test.tsx \
-  src/common/navigation/tolgee/shared.test.ts \
-  utils/scripts/appletBuildConfig.test.js \
-  utils/scripts/prebuildFolderPrune.test.js \
-  utils/scripts/writeNetlifyRedirects.test.js \
-  src/common/server/apiProxy.test.ts \
-  src/applets/luonnonmetsakartat/server/api/dataProxy.test.ts \
-  src/applets/luonnonmetsakartat/server/api/dataProxy.route.test.ts \
-  src/applets/carbon/server/api/dataProxy.test.ts
+docker compose -f /workspace/project/docker-compose.dev.yml --project-directory /workspace/project exec -T app sh -lc 'cd /app && NODE_OPTIONS="--require=/app/.dev/visual-regression/f1006-correction-20260929/capture.cjs" yarn luonnonmetsakartat:mock:smoke'
 ```
 
-The independent no-start retry used the doctor-verified app namespace:
+The copied observation-only preload records Playwright traces/screenshots and
+request/response metadata. It adds no actions, fulfills no API requests and
+changes no assertions. `deletion-after.json` retains the DELETE 200 at
+`2026-09-29T13:53:48.876Z` and an empty `postDeleteDetailOrWfs` list. Inspected
+trace frames `settings-before-delete.jpg` and `admin-after-delete.jpg` show the
+settings surface and remaining baseline rows. Dialog controls and actions are
+also recorded in the trace snapshots and `trace-actions.json`.
 
-```bash
-docker compose -f /workspace/project/docker-compose.dev.yml \
-  --project-directory /workspace/project exec -T app sh -lc \
-  'cd /app && yarn luonnonmetsakartat:mock:smoke'
-```
+| Run | Run ID | Discovered layer | Result |
+| --- | --- | --- | --- |
+| Traced lifecycle | `1790689923478-63880152-f261-46cd-98db-fdf1af363146` | `mock-created-layer-1` | Exit 0; zero post-delete reads, verified cleanup |
+| Consecutive ordinary 1 | `1790690062828-8cf506a2-ef5b-406f-953c-b7d4e29ac062` | `mock-created-layer-2` | Exit 0; all 11 phases, verified cleanup |
+| Consecutive ordinary 2 | `1790690167755-e11b4848-7907-4983-8883-2a9bd9d32bbc` | `mock-created-layer-3` | Exit 0; all 11 phases, verified cleanup |
+| Injected post-import failure | `1790690286566-98f7da7d-eb71-42e6-b398-7c8696bdb306` | `mock-created-layer-4` | Expected exit 1; deliberate failure only, verified cleanup |
+| Ordinary after failure | `1790690345736-305396f8-0c98-4075-9151-62493334d00c` | `mock-created-layer-5` | Exit 0; all 11 phases, verified cleanup |
 
-Only the shared catch logging boundary changed in production: it emits a fixed
-configuration-key event without raw exceptions or request/backend details.
-Public error responses, classification and header allowlists remain unchanged.
-Invalid native-URL errors cross the Jest VM realm and follow the existing
-non-`instanceof TypeError` branch there; injected TypeError and Error cases
-separately protect both response classifications. No general upstream-content
-scrubbing or post-response streaming-error handling was added.
+All cleanup results have empty unresolved IDs/creates. Every ordinary run
+preserved the three authenticated baseline records. IDs above are observations,
+never runner constants. `browser-summary.json` retains their complete outputs.
+The two consecutive commands had no intervening source/configuration changes,
+reset or restart. Source/HMR iterations preceding this sequence are excluded
+from repeatability evidence. Test-fixture corrections later in the pass did
+not alter production or runner code.
 
-Test-only Carbon changes assert that its optional mock dispatcher returns an
-HTTP response and copy ZIP bytes into an ArrayBuffer-backed Uint8Array, allowing
-the full affected suite to typecheck. Both existing Undici wrapper suites now
-restore replaced global constructors. No rendered UI changes required visuals.
-F100.5 retains page/auth rendering ownership. F100.6 retains lifecycle cleanup,
-repeatability, strict console policy and rendered not-found checks; the existing
-smoke still writes local mock memory and does not prove real services, deployed
-Netlify rules or a running standalone artifact.
+Runtime doctor run
+`20260929-134704-636929-runtime_doctor-F100.6-luonnonmetsakartat-lifecycle-smoke-runbook`
+exited 0 with `RETRY_READY`; its `exit.json` and report were read and copied here.
+It changed no service/configuration/data. Its diagnostic smoke is not counted
+as this pass's feature verification. The container identity before/after remains
+`78f8360d3576e2d23b26e537a790395ffca2ad1a9f99ac4d6440c694f872cf8e`,
+started `2026-09-29T11:31:15.972700639Z`, restart count 0
+(`container-before.txt`, `container-repeat-after.txt`, `container-after.txt`).
+
+Every successful lifecycle logged only the seven documented intentional
+resource diagnostics: three admin-validation 403s and four legacy-document
+404s. No run in this corrective sequence required the MML exception. Historical
+MML failures and the review's post-delete failure remain failures; later passes
+do not reinterpret them. The deterministic regression and corrected live trace
+supply the deletion repair evidence. **Live mode: main.** Standalone has
+construction coverage only. No real-stack acceptance is claimed.
+
+The 56-row ledger reconciles the processed F100 request, parent architecture
+and direct child specs under the manager's 2026-09-29 scope clarification.
+L01–L03 remain the concrete external boundaries. The provenance statement
+certifies no unseen local-plan document and leaves no known frontend-owned row
+as an unresolved manual exemption.

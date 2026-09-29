@@ -8,6 +8,10 @@ Luonnonmetsakartat mock browser smoke.
 - `valid-layer.zip`: valid import fixture with two unique feature IDs.
 - `duplicate-id-layer.zip`: valid shapefile structure with duplicate `id`
   values, intended to trigger client-side duplicate-ID validation.
+- `duplicate-name-municipality-layer.zip`: duplicate `nimi` + `kunta` pairs
+  with distinct IDs; select `name_municipality` explicitly.
+- `finnish-layer.zip`: valid UTF-8 Finnish names and municipalities.
+- `mojibake-layer.zip`: deliberately damaged-looking text stored as valid UTF-8.
 - `create-fixtures.js`: deterministic generator for refreshing the committed
   ZIP files.
 
@@ -51,13 +55,16 @@ columns, allow a layer name to be entered, POST to
 
 Expected behavior: with the default `id` indexing strategy, the import UI should
 reject the upload before create, stay on the import route, and report duplicate
-IDs. A successful create POST is not expected for this fixture.
+IDs. **Zero create POST attempts** are allowed, including rejected, failed and
+aborted requests. The visible duplicate notification and remaining import route
+are the completion oracle; absence of a 201 during a delay is insufficient.
 
 `duplicate-name-municipality-layer.zip` reuses the valid fixture geometry and
 all other fields. Its two distinct IDs remain `lm-valid-1` and `lm-valid-2`;
 both rows have `nimi = Shared Forest`, `kunta = Espoo`. It parses successfully,
 blocks `name_municipality` indexing with `Shared Forest - Espoo`, and passes
-`id` indexing. This stable filename is intended for F100.6 browser smoke.
+`id` indexing. The lifecycle smoke selects pair indexing, observes that specific duplicate
+notification, and requires zero create POST attempts through route exit.
 Conversely, the duplicate-ID fixture passes pair indexing because its pairs differ.
 
 `finnish-layer.zip` reuses the valid fixture except for names `Mäntymäki` and
@@ -122,3 +129,24 @@ Replacement preserve/delete tests prove the selected flag and mutation handoff,
 not PostGIS/GeoServer reconciliation. Real ingestion, matching, projection,
 preserve/delete effects and cleanup remain separate opt-in live acceptance.
 Never substitute the large project-memory archive for these tiny fixtures.
+
+## Browser lifecycle input and readback
+
+See [the mock browser runbook](../../agents/luonnonmetsakartat-mock-browser.md)
+for prerequisites, the focused Jest command and the no-start lifecycle command.
+The lifecycle uses all three import/duplicate archives above without modifying
+them. It submits a unique run name, discovers the server's ID, and cleans only
+that invocation's layers even after an assertion failure. `mockReset` does not
+reset server memory.
+
+Do not expect `lm-valid-*` area IDs or fixture polygons in the mock readback:
+the mock does not ingest the ZIP. The runner discovers its synthetic area IDs
+from the real authorized frontend WFS request and uses them for metadata and
+pictures. Picture input consists of tiny PNG File objects, with ordinary
+`webkitRelativePath` and an input change event: two files in a folder named
+`<municipality>, <name>` and one deliberately unmatched file. No successful
+mapping or stored result is seeded. The real controls match, change and clear
+mapping before a partial save; filenames and target IDs are observed at native
+XHR.send(FormData) and correlated with real network requests. Only confirmed
+owned placeholder image URLs are fulfilled for gallery display. No object
+storage bytes or real geometry/identity service are verified.

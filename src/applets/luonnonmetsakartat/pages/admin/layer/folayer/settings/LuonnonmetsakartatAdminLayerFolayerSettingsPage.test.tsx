@@ -12,6 +12,9 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import axios from 'axios'
 import type { QueryClient } from '@tanstack/react-query'
 import SettingsPage from './LuonnonmetsakartatAdminLayerFolayerSettingsPage'
+import Runtime from '../LuonnonmetsakartatAdminLayerFolayerRuntime'
+import AdminGate from 'applets/luonnonmetsakartat/pages/admin/LuonnonmetsakartatAdminGate'
+import AdminFolayerItem from 'applets/luonnonmetsakartat/components/AdminFolayerItem'
 import ConfirmationDialog from '#/components/Notification/ConfirmationDialog'
 import NotificationProvider from '#/components/Notification/NotificationProvider'
 import { useAppletStore } from 'applets/luonnonmetsakartat/state/appletStore'
@@ -136,6 +139,7 @@ const setup = ({
   id = 'layer-a',
   state = FolayerConfState.Idle,
   dirty = false,
+  withRuntime = false,
 } = {}) => {
   const first = adminLayer('layer-a')
   const second = adminLayer('layer-b')
@@ -156,7 +160,16 @@ const setup = ({
   })
   const view = pages.render(
     <NotificationProvider>
-      <SettingsPage />
+      {withRuntime ? (
+        <>
+          <Runtime>
+            <SettingsPage />
+          </Runtime>
+          <AdminFolayerItem conf={adminLayer(id)} />
+        </>
+      ) : (
+        <SettingsPage />
+      )}
       <ConfirmationDialog />
     </NotificationProvider>
   )
@@ -508,6 +521,129 @@ describe('settings saves', () => {
 })
 
 describe('layer deletion', () => {
+  it('does not restart outgoing detail queries when the admin gate changes wrappers before the route outlet commits', async () => {
+    // The router publishes the destination pathname before replacing the old
+    // outlet. The real gate then wraps that retained outlet in the landing
+    // sidebar, remounting it after the DELETE has removed its data.
+    pages.http((url) => {
+      if (url.endsWith('/admin/validate')) return response({ is_editor: true })
+      if (url.endsWith('/layer/layer-a')) return response(savedLayer())
+      if (url.startsWith('https://wfs.test/'))
+        return response(areaData('layer-a').data)
+      throw new Error(`Unexpected URL ${url}`)
+    })
+    mockNavigation.setState({
+      pathname: `${adminPath}/layer/layer-a/settings`,
+      params: { folayerIdSlug: 'layer-a' },
+    })
+    const view = pages.render(
+      <NotificationProvider>
+        <AdminGate>
+          <Runtime>
+            <SettingsPage />
+          </Runtime>
+          <AdminFolayerItem conf={adminLayer('layer-a')} />
+        </AdminGate>
+        <ConfirmationDialog />
+      </NotificationProvider>
+    )
+    client = view.client
+    await waitFor(() => expect(nameInput()).toHaveValue('Completed server name'))
+    const groupId = getFolayerGroupId('layer-a', true)
+    await waitFor(() =>
+      expect(useMapStore.getState()._layerGroups[groupId]?.isHidden).toBe(false)
+    )
+    await waitFor(() => expect(client!.isFetching()).toBe(0))
+    expect(axios.get).toHaveBeenCalledWith(
+      expect.stringContaining('/admin/validate'),
+      expect.anything()
+    )
+    jest.mocked(axios.get).mockClear()
+    const add = jest.mocked(useMapStore.getState().addLayerGroup)
+    add.mockClear()
+    jest.mocked(axios.delete).mockResolvedValueOnce(response({}, 200))
+    await openDelete()
+    await respond('confirm')
+    await expectSettled()
+    expect(mockNavigation.getState().pathname).toBe(adminPath)
+    expect(screen.getByRole('complementary')).toContainElement(
+      screen.getByRole('link', { name: 'Open Forest layer-a' })
+    )
+    expect(axios.delete).toHaveBeenCalledTimes(1)
+    expect(axios.get).not.toHaveBeenCalled()
+    expect(add).not.toHaveBeenCalled()
+    expect(selected()).toBeUndefined()
+    expect(useAppletStore.getState().folayerAreaConfs['layer-a']).toBeUndefined()
+    expect(useMapStore.getState()._layerGroups[groupId]).toBeUndefined()
+  })
+
+  it('does not preload a deleting or removed layer while its last rendered admin row remains mounted', async () => {
+    // A route transition can commit its last list row before the parent list
+    // catches up with deletion. Keep the actual row and detail runtime mounted
+    // across that boundary, using the real delete mutation and map/query hooks.
+    setup({ withRuntime: true })
+    const groupId = getFolayerGroupId('layer-a', true)
+    await waitFor(() =>
+      expect(useMapStore.getState()._layerGroups[groupId]?.isHidden).toBe(false)
+    )
+    const add = jest.mocked(useMapStore.getState().addLayerGroup)
+    add.mockClear()
+    const request = controlled(response({}, 200))
+    jest.mocked(axios.delete).mockReturnValueOnce(request.promise)
+    await openDelete()
+    await respond('confirm')
+    await waitFor(() =>
+      expect(selected()).toMatchObject({ state: FolayerConfState.Deleting })
+    )
+    // A disappearing map group must not trigger the mounted row's preload,
+    // either during DELETE or after the successful removal of its records.
+    await act(async () => useMapStore.getState().removeLayerGroup(groupId))
+    expect(add).not.toHaveBeenCalled()
+    expect(axios.get).not.toHaveBeenCalled()
+    await act(async () => request.resolve(response({}, 200)))
+    await expectSettled()
+    expect(selected()).toBeUndefined()
+    expect(
+      useAppletStore.getState().folayerAreaConfs['layer-a']
+    ).toBeUndefined()
+    expect(mockRouter.push).toHaveBeenCalledWith(adminPath, { locale: false })
+    expect(
+      screen.getByRole('link', { name: 'Open Forest layer-a' })
+    ).toBeInTheDocument()
+    expect(axios.get).not.toHaveBeenCalled()
+    expect(add).not.toHaveBeenCalled()
+    expect(useMapStore.getState()._layerGroups[groupId]).toBeUndefined()
+    expect(selected('layer-b')).toEqual(adminLayer('layer-b'))
+    expect(useAppletStore.getState().folayerAreaConfs['layer-b']).toEqual(
+      areaData('layer-b')
+    )
+  })
+
+  it('resumes row preloading after a failed deletion restores the layer', async () => {
+    setup({ withRuntime: true })
+    const groupId = getFolayerGroupId('layer-a', true)
+    await waitFor(() =>
+      expect(useMapStore.getState()._layerGroups[groupId]?.isHidden).toBe(false)
+    )
+    const request = controlled(response({}, 200))
+    jest.mocked(axios.delete).mockReturnValueOnce(request.promise)
+    await openDelete()
+    await respond('confirm')
+    await act(async () => useMapStore.getState().removeLayerGroup(groupId))
+    expect(useMapStore.getState()._layerGroups[groupId]).toBeUndefined()
+    const error = httpError(503)
+    await act(async () => request.reject(error))
+    await expectSettled()
+    consumeExpectedError(error)
+    expect(selected().state).toBe(FolayerConfState.Idle)
+    await waitFor(() =>
+      expect(useMapStore.getState()._layerGroups[groupId]?.isHidden).toBe(true)
+    )
+    expect(nameInput()).toBeEnabled()
+    expect(axios.get).not.toHaveBeenCalled()
+    expect(mockRouter.push).not.toHaveBeenCalled()
+  })
+
   it('cancels the real confirmation, reopens, and waits for successful deletion and real map cleanup before navigating', async () => {
     const view = setup({ id: 'layer-b', dirty: true })
     const { ids, stops, remove } = seedGroups()

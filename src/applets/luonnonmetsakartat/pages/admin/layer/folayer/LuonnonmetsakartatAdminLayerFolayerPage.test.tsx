@@ -1,4 +1,5 @@
 import {
+  adminPath,
   areas,
   auth,
   flush,
@@ -54,6 +55,7 @@ it.each([true, false])(
         return response(withAreas ? areas('Protected area') : { features: [] })
       throw new Error(`Unhandled ${url}`)
     })
+    mockNavigation.setState({ pathname: `${adminPath}/layer/layer-a` })
     const view = pages.render(page)
     await waitFor(() =>
       expect(
@@ -95,7 +97,9 @@ it.each([true, false])(
         await screen.findByRole('button', { name: 'Protected area' })
       ).toBeInTheDocument()
     else expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
-    fireEvent.click(pictures)
+    await act(async () => {
+      fireEvent.click(pictures)
+    })
     expect(mockRouter.push).toHaveBeenCalledWith(
       '/fi/luonnonmetsakartat/admin/layer/layer-a/pictures'
     )
@@ -114,10 +118,16 @@ it('loads the new route ID without stale heading, areas, links or layer configur
     throw new Error(`Unhandled ${url}`)
   })
   const previousTitle = document.title
+  mockNavigation.setState({ pathname: `${adminPath}/layer/layer-a` })
   const view = pages.render(page)
   await screen.findByRole('heading', { name: 'Public forest' })
   await screen.findByRole('button', { name: 'First area' })
-  act(() => mockNavigation.setState({ params: { folayerIdSlug: 'layer-b' } }))
+  act(() =>
+    mockNavigation.setState({
+      pathname: `${adminPath}/layer/layer-b`,
+      params: { folayerIdSlug: 'layer-b' },
+    })
+  )
   expect(screen.queryByText('Public forest')).not.toBeInTheDocument()
   expect(screen.queryByText('First area')).not.toBeInTheDocument()
   expect(screen.getByRole('progressbar')).toBeInTheDocument()
@@ -161,6 +171,7 @@ it('settles map initialization through a StrictMode mount cycle', async () => {
     if (url.includes('/ows?')) return response(areas())
     throw new Error(`Unhandled ${url}`)
   })
+  mockNavigation.setState({ pathname: `${adminPath}/layer/layer-a` })
   pages.render(<React.StrictMode>{page}</React.StrictMode>)
   await screen.findByRole('heading', { name: 'Public forest' })
   await waitFor(() =>
@@ -184,6 +195,7 @@ it('shows a bounded area-dependency error while retaining loaded detail navigati
     }
     throw new Error(`Unhandled ${url}`)
   })
+  mockNavigation.setState({ pathname: `${adminPath}/layer/layer-a` })
   pages.render(page)
   await screen.findByRole('heading', { name: 'Public forest' })
   await waitFor(() => expect(areaCalls).toBe(1))

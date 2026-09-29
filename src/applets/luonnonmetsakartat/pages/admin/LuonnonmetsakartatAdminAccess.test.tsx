@@ -1,4 +1,5 @@
 import {
+  adminPath,
   areas,
   auth,
   deferred,
@@ -6,6 +7,7 @@ import {
   httpError,
   layer,
   loggedOut,
+  mockNavigation,
   response,
   setupPages,
 } from '../pageTestSupport'
@@ -197,6 +199,9 @@ it.each(['list', 'detail', 'areas'] as const)(
       }
       throw new Error(`Unhandled ${url}`)
     })
+    if (kind !== 'list') {
+      mockNavigation.setState({ pathname: `${adminPath}/layer/layer-a` })
+    }
     const view = pages.render(kind === 'list' ? list : detail)
     await waitFor(() => expect(pendingCalls).toBe(1))
     view.session(loggedOut)
@@ -236,6 +241,7 @@ it.each(['logout', 'missing-token', 'rejected', 'error'])(
       if (url.includes('/ows?')) return response(areas())
       throw new Error(`Unhandled ${url}`)
     })
+    mockNavigation.setState({ pathname: `${adminPath}/layer/layer-a` })
     const view = pages.render(detail)
     await screen.findByRole('link', {
       name: 'sidebar.admin.folayer.open_settings',
@@ -286,6 +292,9 @@ it.each(['list preload', 'detail enable'])(
       addLayerGroup: original.addLayerGroup,
       _addStyle: original._addStyle,
     })
+    if (surface === 'detail enable') {
+      mockNavigation.setState({ pathname: `${adminPath}/layer/layer-a` })
+    }
     const view = pages.render(
       <>
         {surface === 'list preload' ? list : detail}
@@ -381,6 +390,7 @@ it('discards an admin installation already resolving its style when access is re
     addLayerGroup: original.addLayerGroup,
     _addStyle: original._addStyle,
   })
+  mockNavigation.setState({ pathname: `${adminPath}/layer/layer-a` })
   const view = pages.render(
     <>
       {detail}

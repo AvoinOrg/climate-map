@@ -10,7 +10,10 @@ import { useAppletStore } from 'applets/luonnonmetsakartat/state/appletStore'
 import { useAdminFolayerQueryOptions } from '../queries/adminFolayerQuery'
 import { useAdminFolayerAreaQueryOptions } from '../queries/adminFolayerAreaQuery'
 import { getFolayerGroupId, createFolayerConf } from '../utils'
-import { AdminFolayerConf } from 'applets/luonnonmetsakartat/common/types'
+import {
+  AdminFolayerConf,
+  FolayerConfState,
+} from 'applets/luonnonmetsakartat/common/types'
 
 export const useAdminFolayer = (
   folayerId: string,
@@ -69,7 +72,12 @@ export const useAdminFolayer = (
   const confVersion = `${adminFolayerConf?.updatedTs ?? ''}-admin`
 
   const [status, setEnabled] = useLayerGroup(layerGroupId, getLayerConf, {
-    preload,
+    // A list row can outlive its record during delete/navigation. Removing the
+    // map group must not make that row recreate it or refetch the deleted data.
+    preload:
+      preload &&
+      !!adminFolayerConf &&
+      adminFolayerConf.state !== FolayerConfState.Deleting,
     initActions,
     confVersion,
   })
