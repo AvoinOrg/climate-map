@@ -85,6 +85,7 @@ const eslintConfig = defineConfig([
     files: [
       'utils/scripts/**/*.js',
       'utils/visual/**/*.js',
+      'utils/test/energyAreas/*.cjs',
       '__tests__/utils/scripts/**/*.js',
       '__tests__/visual/**/*.js',
     ],

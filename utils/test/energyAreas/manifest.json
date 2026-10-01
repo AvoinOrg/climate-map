@@ -1,0 +1,280 @@
+{
+  "center": [
+    24.94,
+    60.16
+  ],
+  "postalZoom": 11,
+  "municipalityBorderLongitude": 24.94,
+  "postalBounds": [
+    24.9,
+    60.12,
+    24.98,
+    60.2
+  ],
+  "tiles": [
+    {
+      "releaseId": "11111111-1111-4111-8111-111111111111",
+      "level": "region",
+      "z": 6,
+      "x": 36,
+      "y": 18,
+      "scheme": "xyz",
+      "row": 18,
+      "sourceLayer": "areas",
+      "file": "tiles/11111111-1111-4111-8111-111111111111/xyz/region/6-36-18.pbf"
+    },
+    {
+      "releaseId": "11111111-1111-4111-8111-111111111111",
+      "level": "region",
+      "z": 6,
+      "x": 36,
+      "y": 18,
+      "scheme": "tms",
+      "row": 45,
+      "sourceLayer": "fixture_region",
+      "file": "tiles/11111111-1111-4111-8111-111111111111/tms/region/6-36-45.pbf"
+    },
+    {
+      "releaseId": "11111111-1111-4111-8111-111111111111",
+      "level": "municipality",
+      "z": 8,
+      "x": 145,
+      "y": 74,
+      "scheme": "xyz",
+      "row": 74,
+      "sourceLayer": "areas",
+      "file": "tiles/11111111-1111-4111-8111-111111111111/xyz/municipality/8-145-74.pbf"
+    },
+    {
+      "releaseId": "11111111-1111-4111-8111-111111111111",
+      "level": "municipality",
+      "z": 8,
+      "x": 145,
+      "y": 74,
+      "scheme": "tms",
+      "row": 181,
+      "sourceLayer": "fixture_municipality",
+      "file": "tiles/11111111-1111-4111-8111-111111111111/tms/municipality/8-145-181.pbf"
+    },
+    {
+      "releaseId": "11111111-1111-4111-8111-111111111111",
+      "level": "postal_code",
+      "z": 11,
+      "x": 1166,
+      "y": 592,
+      "scheme": "xyz",
+      "row": 592,
+      "sourceLayer": "areas",
+      "file": "tiles/11111111-1111-4111-8111-111111111111/xyz/postal_code/11-1166-592.pbf"
+    },
+    {
+      "releaseId": "11111111-1111-4111-8111-111111111111",
+      "level": "postal_code",
+      "z": 11,
+      "x": 1166,
+      "y": 592,
+      "scheme": "tms",
+      "row": 1455,
+      "sourceLayer": "fixture_postal_code",
+      "file": "tiles/11111111-1111-4111-8111-111111111111/tms/postal_code/11-1166-1455.pbf"
+    },
+    {
+      "releaseId": "11111111-1111-4111-8111-111111111111",
+      "level": "postal_code",
+      "z": 11,
+      "x": 1165,
+      "y": 592,
+      "scheme": "xyz",
+      "row": 592,
+      "sourceLayer": "areas",
+      "file": "tiles/11111111-1111-4111-8111-111111111111/xyz/postal_code/11-1165-592.pbf"
+    },
+    {
+      "releaseId": "11111111-1111-4111-8111-111111111111",
+      "level": "postal_code",
+      "z": 11,
+      "x": 1165,
+      "y": 592,
+      "scheme": "tms",
+      "row": 1455,
+      "sourceLayer": "fixture_postal_code",
+      "file": "tiles/11111111-1111-4111-8111-111111111111/tms/postal_code/11-1165-1455.pbf"
+    },
+    {
+      "releaseId": "22222222-2222-4222-8222-222222222222",
+      "level": "region",
+      "z": 6,
+      "x": 36,
+      "y": 18,
+      "scheme": "xyz",
+      "row": 18,
+      "sourceLayer": "areas",
+      "file": "tiles/22222222-2222-4222-8222-222222222222/xyz/region/6-36-18.pbf"
+    },
+    {
+      "releaseId": "22222222-2222-4222-8222-222222222222",
+      "level": "region",
+      "z": 6,
+      "x": 36,
+      "y": 18,
+      "scheme": "tms",
+      "row": 45,
+      "sourceLayer": "fixture_region",
+      "file": "tiles/22222222-2222-4222-8222-222222222222/tms/region/6-36-45.pbf"
+    },
+    {
+      "releaseId": "22222222-2222-4222-8222-222222222222",
+      "level": "municipality",
+      "z": 8,
+      "x": 145,
+      "y": 74,
+      "scheme": "xyz",
+      "row": 74,
+      "sourceLayer": "areas",
+      "file": "tiles/22222222-2222-4222-8222-222222222222/xyz/municipality/8-145-74.pbf"
+    },
+    {
+      "releaseId": "22222222-2222-4222-8222-222222222222",
+      "level": "municipality",
+      "z": 8,
+      "x": 145,
+      "y": 74,
+      "scheme": "tms",
+      "row": 181,
+      "sourceLayer": "fixture_municipality",
+      "file": "tiles/22222222-2222-4222-8222-222222222222/tms/municipality/8-145-181.pbf"
+    },
+    {
+      "releaseId": "22222222-2222-4222-8222-222222222222",
+      "level": "postal_code",
+      "z": 11,
+      "x": 1166,
+      "y": 592,
+      "scheme": "xyz",
+      "row": 592,
+      "sourceLayer": "areas",
+      "file": "tiles/22222222-2222-4222-8222-222222222222/xyz/postal_code/11-1166-592.pbf"
+    },
+    {
+      "releaseId": "22222222-2222-4222-8222-222222222222",
+      "level": "postal_code",
+      "z": 11,
+      "x": 1166,
+      "y": 592,
+      "scheme": "tms",
+      "row": 1455,
+      "sourceLayer": "fixture_postal_code",
+      "file": "tiles/22222222-2222-4222-8222-222222222222/tms/postal_code/11-1166-1455.pbf"
+    },
+    {
+      "releaseId": "22222222-2222-4222-8222-222222222222",
+      "level": "postal_code",
+      "z": 11,
+      "x": 1165,
+      "y": 592,
+      "scheme": "xyz",
+      "row": 592,
+      "sourceLayer": "areas",
+      "file": "tiles/22222222-2222-4222-8222-222222222222/xyz/postal_code/11-1165-592.pbf"
+    },
+    {
+      "releaseId": "22222222-2222-4222-8222-222222222222",
+      "level": "postal_code",
+      "z": 11,
+      "x": 1165,
+      "y": 592,
+      "scheme": "tms",
+      "row": 1455,
+      "sourceLayer": "fixture_postal_code",
+      "file": "tiles/22222222-2222-4222-8222-222222222222/tms/postal_code/11-1165-1455.pbf"
+    },
+    {
+      "releaseId": "33333333-3333-4333-8333-333333333333",
+      "level": "region",
+      "z": 6,
+      "x": 36,
+      "y": 18,
+      "scheme": "xyz",
+      "row": 18,
+      "sourceLayer": "areas",
+      "file": "tiles/33333333-3333-4333-8333-333333333333/xyz/region/6-36-18.pbf"
+    },
+    {
+      "releaseId": "33333333-3333-4333-8333-333333333333",
+      "level": "region",
+      "z": 6,
+      "x": 36,
+      "y": 18,
+      "scheme": "tms",
+      "row": 45,
+      "sourceLayer": "fixture_region",
+      "file": "tiles/33333333-3333-4333-8333-333333333333/tms/region/6-36-45.pbf"
+    },
+    {
+      "releaseId": "33333333-3333-4333-8333-333333333333",
+      "level": "municipality",
+      "z": 8,
+      "x": 145,
+      "y": 74,
+      "scheme": "xyz",
+      "row": 74,
+      "sourceLayer": "areas",
+      "file": "tiles/33333333-3333-4333-8333-333333333333/xyz/municipality/8-145-74.pbf"
+    },
+    {
+      "releaseId": "33333333-3333-4333-8333-333333333333",
+      "level": "municipality",
+      "z": 8,
+      "x": 145,
+      "y": 74,
+      "scheme": "tms",
+      "row": 181,
+      "sourceLayer": "fixture_municipality",
+      "file": "tiles/33333333-3333-4333-8333-333333333333/tms/municipality/8-145-181.pbf"
+    },
+    {
+      "releaseId": "33333333-3333-4333-8333-333333333333",
+      "level": "postal_code",
+      "z": 11,
+      "x": 1166,
+      "y": 592,
+      "scheme": "xyz",
+      "row": 592,
+      "sourceLayer": "areas",
+      "file": "tiles/33333333-3333-4333-8333-333333333333/xyz/postal_code/11-1166-592.pbf"
+    },
+    {
+      "releaseId": "33333333-3333-4333-8333-333333333333",
+      "level": "postal_code",
+      "z": 11,
+      "x": 1166,
+      "y": 592,
+      "scheme": "tms",
+      "row": 1455,
+      "sourceLayer": "fixture_postal_code",
+      "file": "tiles/33333333-3333-4333-8333-333333333333/tms/postal_code/11-1166-1455.pbf"
+    },
+    {
+      "releaseId": "33333333-3333-4333-8333-333333333333",
+      "level": "postal_code",
+      "z": 11,
+      "x": 1165,
+      "y": 592,
+      "scheme": "xyz",
+      "row": 592,
+      "sourceLayer": "areas",
+      "file": "tiles/33333333-3333-4333-8333-333333333333/xyz/postal_code/11-1165-592.pbf"
+    },
+    {
+      "releaseId": "33333333-3333-4333-8333-333333333333",
+      "level": "postal_code",
+      "z": 11,
+      "x": 1165,
+      "y": 592,
+      "scheme": "tms",
+      "row": 1455,
+      "sourceLayer": "fixture_postal_code",
+      "file": "tiles/33333333-3333-4333-8333-333333333333/tms/postal_code/11-1165-1455.pbf"
+    }
+  ]
+}
