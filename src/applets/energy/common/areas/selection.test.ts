@@ -3,7 +3,11 @@ import dataset from '../../../../../utils/test/energyAreas/dataset.json'
 import { parseAreaMetadata } from './contract'
 import { resolveEnergyAreaApiConfig } from './config'
 import { createAreaSourceDescriptors } from 'applets/energy/layers/areaSource'
-import { projectAreaSelection, detailMatchesMetadata } from './selection'
+import {
+  projectAreaSelection,
+  detailMatchesMetadata,
+  createAreaSelection,
+} from './selection'
 
 const metadata = parseAreaMetadata(dataset.snapshots[0].metadata)
 const descriptors = createAreaSourceDescriptors({
@@ -100,4 +104,56 @@ it('prevents contradictory pinned provenance', () => {
     expect(
       detailMatchesMetadata({ metadata, detail: { ...detail, ...changed } })
     ).toBe(false)
+})
+
+it('accepts only validated internal scoped placeholders in the active descriptor and rejects fabricated identities', () => {
+  const descriptor = descriptors.find((item) => item.level === 'postal_code')!
+  const request = {
+    releaseId: metadata.release_id,
+    level: 'postal_code' as const,
+    areaCode: '00100',
+    municipalityCode: '009',
+  }
+  const placeholder = createAreaSelection({ descriptor, request })
+  expect(placeholder.properties).toBeUndefined()
+  expect(
+    projectAreaSelection({
+      features: [placeholder],
+      descriptors,
+      effective: 'postal_code',
+    })
+  ).toEqual(request)
+  expect(
+    projectAreaSelection({
+      features: [{ ...placeholder }],
+      descriptors,
+      effective: 'postal_code',
+    })
+  ).toBeUndefined()
+  expect(
+    projectAreaSelection({
+      features: [placeholder],
+      descriptors,
+      effective: 'municipality',
+    })
+  ).toBeUndefined()
+  expect(
+    projectAreaSelection({
+      features: [placeholder],
+      descriptors: [{ ...descriptor, releaseId: dataset.releaseIds[1] }],
+      effective: 'postal_code',
+    })
+  ).toBeUndefined()
+  expect(() =>
+    createAreaSelection({
+      descriptor,
+      request: { ...request, areaCode: '100' },
+    })
+  ).toThrow()
+  expect(() =>
+    createAreaSelection({
+      descriptor,
+      request: { ...request, releaseId: dataset.releaseIds[1] },
+    })
+  ).toThrow()
 })

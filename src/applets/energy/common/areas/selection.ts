@@ -5,7 +5,40 @@ import type {
 } from 'applets/energy/common/types/areas'
 import type { AreaSourceDescriptor } from 'applets/energy/layers/areaSource'
 import type { EffectiveGeography } from 'applets/energy/common/areas/mapModes'
-import { parseAreaTileProperties } from 'applets/energy/common/areas/contract'
+import {
+  parseAreaDetailRequest,
+  parseAreaTileProperties,
+} from 'applets/energy/common/areas/contract'
+import type { ExtendedMapGeoJSONFeature } from '#/common/types/map'
+
+const navigationRequests = new WeakMap<MapGeoJSONFeature, AreaDetailRequest>()
+
+// The shared store already supports identity-only vector placeholders. No
+// fabricated tile statistics, names, geometry or bounds accompany navigation.
+export const createAreaSelection = ({
+  request,
+  descriptor,
+}: {
+  request: AreaDetailRequest
+  descriptor: AreaSourceDescriptor
+}): MapGeoJSONFeature => {
+  const pinned = parseAreaDetailRequest(request)
+  if (
+    pinned.releaseId !== descriptor.releaseId ||
+    pinned.level !== descriptor.level
+  )
+    throw new Error('Incompatible area navigation generation')
+  const feature = {
+    source: descriptor.sourceId,
+    sourceLayer: descriptor.sourceLayer,
+    id: `${pinned.level}:${pinned.areaCode}`,
+    isPlaceholder: true,
+    // Also makes scope-only changes observable to the store's equality check.
+    areaDetailRequest: pinned,
+  } as unknown as ExtendedMapGeoJSONFeature
+  navigationRequests.set(feature, pinned)
+  return feature
+}
 
 // Shared selectedFeatures owns the identity. Tile IDs and clipped geometry are
 // never used to reconstruct codes or bounds. Whole-area clicks omit postal scope.
@@ -28,6 +61,17 @@ export const projectAreaSelection = ({
     )
       continue
     try {
+      const internal = navigationRequests.get(feature)
+      if (internal) {
+        const pinned = parseAreaDetailRequest(internal)
+        if (
+          pinned.releaseId === descriptor.releaseId &&
+          pinned.level === descriptor.level &&
+          feature.id === `${pinned.level}:${pinned.areaCode}`
+        )
+          requests.set(String(feature.id), pinned)
+        continue
+      }
       const properties = parseAreaTileProperties(feature.properties, {
         releaseId: descriptor.releaseId,
         level: descriptor.level,

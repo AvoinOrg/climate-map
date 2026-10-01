@@ -1,3 +1,4 @@
+import { ENERGYMAP_BUILDING_POLYGONS_LAYER_MIN_ZOOM } from 'applets/energy/layers/buildingSource'
 import { useTranslate } from '@tolgee/react'
 import { Box } from '#/common/style/theme'
 import TText from '#/components/common/TText'
@@ -12,6 +13,8 @@ import {
   type AreaGeographyMode,
   type AreaMetric,
 } from 'applets/energy/common/areas/mapModes'
+
+import EnergyAreaBackButton from 'applets/energy/components/EnergyAreaBackButton'
 
 const ns = 'energiakartta'
 const prefix = 'sidebar.area_map.'
@@ -50,6 +53,13 @@ const EnergyAreaControls = ({
       : runtime.status === 'loading'
         ? 'loading'
         : 'unavailable'
+  const unavailableKey =
+    !available &&
+    ['unsupported-contract', 'malformed-contract'].includes(
+      runtime.problem ?? ''
+    )
+      ? `error.${runtime.problem}`
+      : statusKey
   return (
     <Box
       data-testid="energy-area-controls"
@@ -61,6 +71,7 @@ const EnergyAreaControls = ({
         overflowWrap: 'anywhere',
       }}
     >
+      {(compact || !runtime.request) && <EnergyAreaBackButton />}
       <DropDownSelectWithLabel
         value={mode}
         label={t(`${prefix}geography`)}
@@ -70,17 +81,12 @@ const EnergyAreaControls = ({
           label: t(`${prefix}mode.${value}`),
         }))}
         onChange={(event) =>
-          useAppletStore
-            .getState()
-            .setGeographyMode(event.target.value as AreaGeographyMode)
+          runtime.selectMode(event.target.value as AreaGeographyMode)
         }
       />
       {(!available || runtime.refreshFailed) && (
         <Box role="status" sx={{ my: 1 }}>
-          <TText
-            ns={ns}
-            keyName={`${prefix}${!available && runtime.problem === 'unsupported-contract' ? 'error.unsupported-contract' : !available && runtime.problem === 'malformed-contract' ? 'error.malformed-contract' : statusKey}`}
-          />
+          <TText ns={ns} keyName={`${prefix}${unavailableKey}`} />
         </Box>
       )}
       {runtime.status !== 'loading' &&
@@ -95,11 +101,12 @@ const EnergyAreaControls = ({
             <TText ns={ns} keyName={`${prefix}refresh`} />
           </Button>
         )}
-      {mode === 'buildings' && zoom < 12 && (
-        <Box role="status" sx={{ my: 1 }}>
-          <TText ns={ns} keyName={`${prefix}zoom_buildings`} />
-        </Box>
-      )}
+      {mode === 'buildings' &&
+        zoom < ENERGYMAP_BUILDING_POLYGONS_LAYER_MIN_ZOOM && (
+          <Box role="status" sx={{ my: 1 }}>
+            <TText ns={ns} keyName={`${prefix}zoom_buildings`} />
+          </Box>
+        )}
       {effective !== 'buildings' && (
         <>
           <Box sx={{ my: 1 }}>
@@ -112,6 +119,19 @@ const EnergyAreaControls = ({
           {zoom < minzoom && (
             <Box role="status">
               <TText ns={ns} keyName={`${prefix}zoom_area`} />
+            </Box>
+          )}
+          {runtime.request?.municipalityCode && (
+            <Box
+              component="p"
+              sx={{ my: 1 }}
+              data-testid="energy-area-polygon-scope"
+            >
+              <TText
+                ns={ns}
+                keyName={`${prefix}polygon_scope`}
+                params={{ code: runtime.request.municipalityCode }}
+              />
             </Box>
           )}
           {compact && <EnergyAreaScope />}

@@ -1,9 +1,5 @@
-import type {
-  Map as MapLibreMap,
-  MapGeoJSONFeature,
-  LayerSpecification,
-  SourceSpecification,
-} from 'maplibre-gl'
+import { mockAreaMap } from '../../../../../utils/test/energyAreas/mapMock'
+import type { MapGeoJSONFeature } from 'maplibre-gl'
 import { useMapStore } from '#/common/store/mapStore'
 import { useMapInstanceStore } from '#/common/store/mapStore/mapInstanceStore'
 import { useAppletStore } from 'applets/energy/state/appletStore'
@@ -39,86 +35,14 @@ const config = resolveEnergyAreaApiConfig({
 const metadata = dataset.snapshots.map((snapshot) =>
   parseAreaMetadata(snapshot.metadata)
 )
-const mockMap = () => {
-  let zoom = 6
-  const sources = new Map<string, SourceSpecification>()
-  const layers = new Map<string, LayerSpecification>()
-  const listeners = new Map<string, Set<(event: never) => void>>()
-  const featureState = new Map<string, object>()
-  const map = {
-    getZoom: () => zoom,
-    getStyle: () => ({
-      version: 8,
-      sources: Object.fromEntries(sources),
-      layers: [...layers.values()],
-    }),
-    isStyleLoaded: () => true,
-    getSource: (id: string) => sources.get(id),
-    addSource: jest.fn((id: string, source: SourceSpecification) => {
-      sources.set(id, JSON.parse(JSON.stringify(source)))
-    }),
-    removeSource: (id: string) => {
-      sources.delete(id)
-    },
-    getLayer: (id: string) => layers.get(id),
-    addLayer: (layer: LayerSpecification) => {
-      layers.set(layer.id, JSON.parse(JSON.stringify(layer)))
-    },
-    removeLayer: (id: string) => {
-      layers.delete(id)
-    },
-    setLayerZoomRange: (id: string, minzoom: number, maxzoom: number) =>
-      Object.assign(layers.get(id)!, { minzoom, maxzoom }),
-    getLayoutProperty: (id: string, name: string) =>
-      (layers.get(id)?.layout as Record<string, unknown>)?.[name],
-    setLayoutProperty: (id: string, name: string, value: unknown) => {
-      const layer = layers.get(id)!
-      layer.layout = { ...layer.layout, [name]: value } as never
-    },
-    setPaintProperty: (id: string, name: string, value: unknown) => {
-      const layer = layers.get(id)!
-      layer.paint = { ...layer.paint, [name]: value } as never
-    },
-    setFeatureState: (target: object, value: object) => {
-      featureState.set(JSON.stringify(target), value)
-    },
-    removeFeatureState: (target: object) => {
-      featureState.delete(JSON.stringify(target))
-    },
-    refreshTiles: jest.fn(),
-    on: (name: string, ...args: unknown[]) => {
-      const listener = args.at(-1) as (event: never) => void
-      if (!listeners.has(name)) listeners.set(name, new Set())
-      listeners.get(name)!.add(listener)
-    },
-    off: (name: string, ...args: unknown[]) => {
-      listeners.get(name)?.delete(args.at(-1) as never)
-    },
-    once: () => {},
-    getCanvas: () => ({ style: {} }),
-  }
-  return {
-    map: map as unknown as MapLibreMap,
-    sources,
-    layers,
-    listeners,
-    featureState,
-    zoom: (value: number) => {
-      zoom = value
-      ;[...(listeners.get('zoom') ?? [])].forEach((fn) => fn({} as never))
-    },
-    fire: (name: string, event = {}) =>
-      [...(listeners.get(name) ?? [])].forEach((fn) => fn(event as never)),
-  }
-}
-let current: ReturnType<typeof mockMap>
+let current: ReturnType<typeof mockAreaMap>
 let runtime: EnergyAreaMapRuntime
 let generation: CommittedAreaGeneration | undefined
 let status: string
 let tileFailed = false
 const cancelDetails = jest.fn()
 beforeEach(() => {
-  current = mockMap()
+  current = mockAreaMap()
   useMapStore.setState({
     ...useMapStore.getInitialState(),
     mapContext: 'energy',
@@ -169,23 +93,21 @@ const hit = (
   } as MapGeoJSONFeature
 }
 it('registers three genuine descriptors, exact render ranges, manual overzoom, and preserves unrelated groups', async () => {
-  await useMapStore
-    .getState()
-    .addLayerGroup('other', {
-      layerConf: {
-        id: 'other',
-        style: {
-          version: 8,
-          sources: {
-            other: {
-              type: 'geojson',
-              data: { type: 'FeatureCollection', features: [] },
-            },
+  await useMapStore.getState().addLayerGroup('other', {
+    layerConf: {
+      id: 'other',
+      style: {
+        version: 8,
+        sources: {
+          other: {
+            type: 'geojson',
+            data: { type: 'FeatureCollection', features: [] },
           },
-          layers: [{ id: 'other-fill', source: 'other', type: 'fill' }],
         },
+        layers: [{ id: 'other-fill', source: 'other', type: 'fill' }],
       },
-    })
+    },
+  })
   await runtime.promote(metadata[0])
   expect(status).toBe('ready')
   expect(current.sources.size).toBe(4)
@@ -243,23 +165,19 @@ it('deduplicates fill/outline/tile fragments through real selection actions and 
   await runtime.promote(metadata[0])
   current.zoom(11)
   const feature = hit('postal_code', '00100')
-  useMapStore
-    .getState()
-    .setSelectedFeaturesByClick([
-      feature,
-      feature,
-      {
-        ...feature,
-        layer: {
-          ...feature.layer,
-          id: areaLayerIds(
-            generation!.descriptors.find(
-              (item) => item.level === 'postal_code'
-            )!
-          )[1],
-        },
+  useMapStore.getState().setSelectedFeaturesByClick([
+    feature,
+    feature,
+    {
+      ...feature,
+      layer: {
+        ...feature.layer,
+        id: areaLayerIds(
+          generation!.descriptors.find((item) => item.level === 'postal_code')!
+        )[1],
       },
-    ])
+    },
+  ])
   expect(useMapStore.getState().selectedFeatures).toHaveLength(1)
   expect(
     projectAreaSelection({

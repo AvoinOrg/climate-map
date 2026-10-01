@@ -1,11 +1,12 @@
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig, loadEnv, transformWithEsbuild } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import type { Plugin, ResolvedConfig } from 'vite'
 import {
   getStartPublicEnvDefines,
+  getStartPublicEnvModuleDefines,
   isStartDebugClientBuild,
   reportStartPublicEnvDiagnostics,
   type StartLoadedEnv,
@@ -15,10 +16,7 @@ const startMapLibreShim = fileURLToPath(
   new URL('./src/runtime/maplibre-gl.ts', import.meta.url)
 )
 const maplibreSymbolUtilsEsm = fileURLToPath(
-  new URL(
-    './node_modules/maplibre_symbol_utils/dist/index.js',
-    import.meta.url
-  )
+  new URL('./node_modules/maplibre_symbol_utils/dist/index.js', import.meta.url)
 )
 
 const getStartLoadedEnv = (mode: string): StartLoadedEnv => ({
@@ -99,6 +97,23 @@ export default defineConfig(({ mode }) => {
       ],
     },
     plugins: [
+      {
+        name: 'avoin-start-public-env-dev',
+        apply: 'serve',
+        enforce: 'post',
+        async transform(code, id) {
+          if (
+            this.environment.config.consumer !== 'client' ||
+            !/\.[cm]?[jt]sx?(?:\?|$)/.test(id) ||
+            !code.includes('process.env.PUBLIC_')
+          )
+            return
+          return transformWithEsbuild(code, id, {
+            define: getStartPublicEnvModuleDefines({ code, env }),
+            loader: 'js',
+          })
+        },
+      },
       tsconfigPaths({
         projects: ['./tsconfig.json'],
       }),

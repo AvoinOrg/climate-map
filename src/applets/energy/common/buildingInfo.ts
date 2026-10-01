@@ -1,4 +1,8 @@
 import {
+  HEATING_METHOD_CODES,
+  HEATING_ENERGY_SOURCE_CODES,
+} from 'applets/energy/common/buildingCodes'
+import {
   collectMissingBuildingInfo,
   type BuildingInfoMissingReason,
   type BuildingInfoFieldResolution,
@@ -356,28 +360,6 @@ const ENERGY_CERTIFICATE_RECOMMENDATIONS_PROPERTIES = {
 // Energy supports Finnish and English UI locales. Neither UI locale has an
 // English source, so both use Finnish first and Swedish only as a fallback.
 const ENERGY_CERTIFICATE_RECOMMENDATIONS_SOURCE_ORDER = ['fi', 'sv'] as const
-
-const HEATING_METHOD_CODES = [
-  '01',
-  '02',
-  '03',
-  '04',
-  '05',
-  '06',
-  '07',
-  '99',
-] as const
-
-const HEATING_ENERGY_SOURCE_CODES = [
-  '01',
-  '02',
-  '03',
-  '04',
-  '07',
-  '09',
-  '10',
-  '99',
-] as const
 
 const CURRENT_ENERGY_PROVENANCE_IDS = {
   total: {

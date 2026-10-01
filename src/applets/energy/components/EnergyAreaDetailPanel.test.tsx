@@ -41,6 +41,12 @@ const base = {
   request,
   detailLoading: false,
   close,
+  canGoBack: false,
+  back: jest.fn(),
+  navigateRelated: jest.fn(),
+  showWholePostalArea: jest.fn(),
+  showBuildings: jest.fn(),
+  selectMode: jest.fn(),
   retryDetail,
   refresh,
   retryTiles,
@@ -94,9 +100,9 @@ it.each(['fi', 'en'])(
     expect(screen.getByTestId('energy-area-detail')).not.toHaveTextContent(
       /sidebar\.|11111111|modeled|diagnostic/
     )
-    expect(screen.getByRole('list')).toHaveTextContent(
-      locale === 'fi' ? 'Ei saatavilla' : 'Unavailable'
-    )
+    expect(
+      screen.getByRole('list', { name: /legend|selite/ })
+    ).toHaveTextContent(locale === 'fi' ? 'Ei saatavilla' : 'Unavailable')
     fireEvent.click(
       screen.getByRole('button', {
         name: locale === 'fi' ? 'Sulje aluetiedot' : 'Close area details',
@@ -245,3 +251,96 @@ it('keeps the frozen all-building scope visible when the compact legend is close
       .closest('details')
   ).not.toHaveAttribute('open')
 })
+
+it.each(['fi', 'en'])(
+  'renders complete scale/category/sum details through Tolgee ICU (%s)',
+  async (locale) => {
+    mount({ locale, value: { detail } })
+    const panel = await screen.findByTestId('energy-area-detail')
+    expect(screen.getByTestId('energy-area-scale-2013')).toHaveTextContent(
+      locale === 'fi' ? '1 voimassa oleva' : '1 valid class'
+    )
+    expect(screen.getByTestId('energy-area-scale-2018')).toHaveTextContent(
+      locale === 'fi' ? '2 voimassa olevaa' : '2 valid classes'
+    )
+    for (const [key, amount, known, unknown] of [
+      ['floor_area', 408, 4, 1],
+      ['gross_floor_area', 457, 3, 2],
+      ['total_area', 546, 3, 2],
+      ['energy_certificate_heated_net_area', 276, 3, 2],
+    ] as const) {
+      const section = screen.getByTestId(`energy-area-metric-${key}`)
+      expect(section).toHaveTextContent(`${amount} m²`)
+      expect(section).toHaveTextContent(
+        locale === 'fi'
+          ? `${known} rakennuksen tiedot tunnetaan`
+          : `${known} buildings known`
+      )
+      expect(section).toHaveTextContent(
+        locale === 'fi'
+          ? `${unknown} rakennuksen ${unknown === 1 ? 'tieto puuttuu' : 'tiedot puuttuvat'}`
+          : `${unknown} ${unknown === 1 ? 'building' : 'buildings'} unknown`
+      )
+    }
+    expect(
+      screen.getByTestId('energy-area-metric-ventilation')
+    ).toHaveTextContent(locale === 'fi' ? 'Ei tietoa' : 'Unknown information')
+    expect(
+      screen.getByTestId('energy-area-metric-main_purpose')
+    ).toHaveTextContent(
+      locale === 'fi'
+        ? 'Luokka ilman tunnistettua nimeä'
+        : 'Unrecognized category'
+    )
+    expect(panel).not.toHaveTextContent(
+      /sidebar\.|0110|no_info|unknown_scale|11111111|modeled|SQL/
+    )
+  }
+)
+it.each(['fi', 'en'])(
+  'keeps full crosswalk while scoped, exposes whole-area/buildings/back actions (%s)',
+  async (locale) => {
+    const scopedRequest = { ...request, municipalityCode: '091' }
+    const scoped = {
+      ...detail,
+      building_count: 2,
+      scope: {
+        municipality_code: '091',
+        geometry: 'full_postal_area' as const,
+      },
+    }
+    mount({
+      locale,
+      value: { request: scopedRequest, detail: scoped, canGoBack: true },
+    })
+    expect(
+      await screen.findByTestId('energy-area-detail-scope')
+    ).toHaveTextContent('091')
+    expect(screen.getByTestId('energy-area-relations')).toHaveTextContent('005')
+    expect(screen.getByTestId('energy-area-relations')).toHaveTextContent('091')
+    fireEvent.click(
+      screen.getByRole('button', {
+        name:
+          locale === 'fi'
+            ? 'Näytä koko postinumeroalue'
+            : 'Show whole postal area',
+      })
+    )
+    expect(base.showWholePostalArea).toHaveBeenCalled()
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: locale === 'fi' ? 'Siirry rakennuksiin' : 'Explore buildings',
+      })
+    )
+    expect(base.showBuildings).toHaveBeenCalled()
+    fireEvent.click(
+      screen.getAllByRole('button', {
+        name:
+          locale === 'fi'
+            ? 'Takaisin edelliselle aluetasolle'
+            : 'Back to previous geography',
+      })[0]
+    )
+    expect(base.back).toHaveBeenCalled()
+  }
+)

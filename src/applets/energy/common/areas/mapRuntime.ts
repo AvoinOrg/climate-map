@@ -60,6 +60,7 @@ export class EnergyAreaMapRuntime {
       ) => void
       tileStatus: (failed: boolean) => void
       cancelDetails: () => void
+      invalidateNavigation?: (reason: 'level' | 'generation' | 'dispose') => void
     }
   ) {
     const { map } = options
@@ -149,6 +150,7 @@ export class EnergyAreaMapRuntime {
         )
           useMapStore.getState()._setGroupVisibility(descriptor.sourceId, false)
       }
+    this.options.invalidateNavigation?.('generation')
     this.clearSelection(true)
     this.unregisterTransport?.()
     this.unregisterTransport = undefined
@@ -219,7 +221,10 @@ export class EnergyAreaMapRuntime {
       zoom: map.getZoom(),
       available: !!this.committed,
     })
-    if (effective !== state.effectiveGeography) this.clearSelection(true)
+    if (effective !== state.effectiveGeography) {
+      this.options.invalidateNavigation?.('level')
+      this.clearSelection(true)
+    }
     if (
       effective !== state.effectiveGeography ||
       state.areaZoom !== map.getZoom()
@@ -366,6 +371,7 @@ export class EnergyAreaMapRuntime {
     map.off('styledata', this.onStyle)
     this.unsubscribe()
     this.mapUnsubscribe()
+    this.options.invalidateNavigation?.('dispose')
     this.clearSelection()
     const descriptors = this.committed?.descriptors ?? []
     this.committed = undefined

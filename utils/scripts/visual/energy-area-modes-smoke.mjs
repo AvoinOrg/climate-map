@@ -1,5 +1,7 @@
 // Test-only product-route verification. Fixtures require doctor-managed origin.
 import assert from 'node:assert/strict'
+import { checkEnergyAreaDetails } from './energy-area-details-checks.mjs'
+import { installEnergyBuildingFixtureRoutes } from '../../test/energyAreas/buildings.mjs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { createRequire } from 'node:module'
@@ -24,10 +26,15 @@ if (bootstrap.reexecuted) process.exit(bootstrap.exitCode)
 const baseUrl =
   process.argv.find((arg) => arg.startsWith('--base-url='))?.split('=')[1] ??
   'http://localhost:6900'
-const out = path.resolve('.dev/visual-regression/energy-area-modes')
+const details = process.argv.includes('--details')
+const onlyDetails = process.argv.includes('--details-only')
+const requestedLocale = process.argv.find(a => a.startsWith('--locale='))?.split('=')[1]
+const requestedViewport = process.argv.find(a => a.startsWith('--viewport='))?.split('=')[1]
+const out = path.resolve(details ? '.dev/visual-regression/energy-area-details-navigation' : '.dev/visual-regression/energy-area-modes')
 await fs.mkdir(out, { recursive: true })
 const noConfiguration = process.argv.includes('--no-area-configuration')
 const evidence = {
+  command: `node utils/scripts/visual/energy-area-modes-smoke.mjs ${process.argv.slice(2).join(' ')}`,
   fixtureBacked: !noConfiguration,
   routes: [],
   checks: [],
@@ -75,7 +82,7 @@ const copy = {
 const snapshot = async (page, name) => {
   const file = `${name}.png`
   await page.screenshot({ path: path.join(out, file), fullPage: true })
-  evidence.screenshots.push({ file, fixtureBacked: !noConfiguration })
+  evidence.screenshots.push({ file, fixtureBacked: !noConfiguration, timestamp: new Date().toISOString(), state: name, locale: name.match(/^(fi|en)-/)?.[1], viewport: page.viewportSize(), command: evidence.command })
 }
 const attach = async (page, available = true) => {
   await page.evaluate(async () => {
@@ -328,8 +335,8 @@ try {
   } else {
     for (const locale of process.argv.includes('--lifecycle-only')
       ? []
-      : ['en', 'fi'])
-      for (const viewportName of ['desktop', 'mobile']) {
+      : ['en', 'fi'].filter(locale => !requestedLocale || locale === requestedLocale))
+      for (const viewportName of ['desktop', 'mobile'].filter(name => !requestedViewport || name === requestedViewport)) {
         const viewport =
           viewportName === 'desktop'
             ? { width: 1440, height: 900 }
@@ -351,6 +358,7 @@ try {
               message: message.text(),
             })
         })
+        const buildingFixture = details ? await installEnergyBuildingFixtureRoutes({ target: context }) : undefined
         const fixture = createEnergyAreaFixture({ delivery: 'tms' })
         await installEnergyAreaFixtureRoutes({ target: context, fixture })
         const response = await page.goto(`${baseUrl}/${locale}/energy`, {
@@ -365,6 +373,11 @@ try {
           fixtureBacked: true,
         })
         await attach(page)
+        if (onlyDetails) {
+          await checkEnergyAreaDetails({ page, fixture, locale, viewportName, copy, move, choose, clickArea, snapshot, evidence, buildingFixture })
+          await context.close()
+          continue
+        }
         await page.getByTestId('energy-area-controls').first().waitFor()
         if (viewportName === 'mobile')
           await page.locator('.sidebar-toggle-button').click()
@@ -547,8 +560,10 @@ try {
             .filter((url) => url.includes('/postal_code/'))
             .every((url) => !url.includes('municipality_code=')),
         })
+        if (details) await checkEnergyAreaDetails({ page, fixture, locale, viewportName, copy, move, choose, clickArea, snapshot, evidence, buildingFixture })
         await context.close()
       }
+    if (!onlyDetails) {
     // Release, transport, contract and source lifecycle checks use a fresh route.
     const context = await browser.newContext({
       viewport: { width: 1440, height: 900 },
@@ -1162,6 +1177,7 @@ try {
       )
       await snapshot(page, `en-mobile-metadata-${scenario}-recovered`)
       await context.close()
+    }
     }
   }
   assert.deepEqual(evidence.pageErrors, [])

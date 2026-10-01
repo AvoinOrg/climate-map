@@ -1,3 +1,4 @@
+import EnergyAreaBackButton from 'applets/energy/components/EnergyAreaBackButton'
 import React from 'react'
 import EnergyAreaControls from 'applets/energy/components/EnergyAreaControls'
 import EnergyAreaDetailPanel from 'applets/energy/components/EnergyAreaDetailPanel'
@@ -1027,6 +1028,7 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
       {isBuildingInfoExpanded && buildingInfoPanels != null && (
         <IntoSidebarPanelExtensionPanelSlot panelId="main">
           <BuildingInfoTabPages
+            additionalControls={<EnergyAreaBackButton iconOnly />}
             key={`${selectedBuildingKey}:${buildingInfoTopology.signature}`}
             missingData={buildingInfoMissingData}
             locale={locale}

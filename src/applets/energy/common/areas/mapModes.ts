@@ -27,9 +27,9 @@ export const resolveAreaGeography = ({
 }): EffectiveGeography => {
   if (!available || mode === 'buildings') return 'buildings'
   if (mode !== 'automatic') return mode
-  if (zoom < 7) return 'region'
-  if (zoom < 10) return 'municipality'
-  if (zoom < 12) return 'postal_code'
+  if (zoom < AUTOMATIC_AREA_RANGES.region.maxzoom) return 'region'
+  if (zoom < AUTOMATIC_AREA_RANGES.municipality.maxzoom) return 'municipality'
+  if (zoom < AUTOMATIC_AREA_RANGES.postal_code.maxzoom) return 'postal_code'
   return 'buildings'
 }
 export const AREA_UNAVAILABLE_COLOR = '#BDBDBD'

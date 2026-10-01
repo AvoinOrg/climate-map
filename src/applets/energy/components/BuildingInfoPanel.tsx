@@ -93,6 +93,7 @@ type BuildingInfoActionLabels = {
 }
 
 type BuildingInfoTabPagesProps = {
+  additionalControls?: React.ReactNode
   missingData: EnergymapBuildingInfoMissingData | null
   locale: string
   topology: EnergymapBuildingInfoPanelTopology
@@ -3606,6 +3607,7 @@ const BuildingInfoProvenanceTrigger = ({
 )
 
 export const BuildingInfoTabPages = ({
+  additionalControls,
   missingData,
   locale,
   topology,
@@ -3869,6 +3871,7 @@ export const BuildingInfoTabPages = ({
             tabIcon={isBasicTab ? <TwoPanelIcon /> : <ThreePanelIcon />}
           >
             <SidebarPanelExtensionPageContainer
+              additionalControls={additionalControls}
               closeAriaLabel={ariaLabels.close}
               collapseAriaLabel={ariaLabels.collapse}
               onClose={onClose}

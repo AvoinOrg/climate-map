@@ -22,6 +22,7 @@ import {
   type AreaRuntimeStatus,
 } from 'applets/energy/common/areas/mapRuntime'
 import { AreaRuntimeContext } from 'applets/energy/common/areas/AreaRuntimeContext'
+import { EnergyAreaNavigation } from 'applets/energy/common/areas/navigation'
 
 const EnergyAreaRuntime = ({ children }: { children: React.ReactNode }) => {
   const config = React.useMemo(() => getEnergyAreaApiConfig(), [])
@@ -38,6 +39,9 @@ const EnergyAreaRuntime = ({ children }: { children: React.ReactNode }) => {
   const [generation, setGeneration] = React.useState<CommittedAreaGeneration>()
   const [status, setStatus] = React.useState<AreaRuntimeStatus>('loading')
   const [tileFailed, setTileFailed] = React.useState(false)
+  const [canGoBack, setCanGoBack] = React.useState(false)
+  const navigation = React.useRef<EnergyAreaNavigation | undefined>(undefined)
+  const committed = React.useRef<CommittedAreaGeneration | undefined>(undefined)
   const owner = React.useRef<EnergyAreaMapRuntime | undefined>(undefined)
   const lane = React.useRef({ pending: Promise.resolve() })
   const cancelDetails = React.useCallback(() => {
@@ -54,16 +58,27 @@ const EnergyAreaRuntime = ({ children }: { children: React.ReactNode }) => {
       config,
       lane: lane.current,
       publish: (next, nextStatus) => {
+        committed.current = next
         setGeneration(next)
         setStatus(nextStatus)
       },
       tileStatus: setTileFailed,
       cancelDetails,
+      invalidateNavigation: (reason) => navigation.current?.invalidate(reason),
+    })
+    navigation.current = new EnergyAreaNavigation({
+      map,
+      generation: () => committed.current,
+      cancelDetails,
+      changed: setCanGoBack,
     })
     owner.current = runtime
     setGeneration(undefined)
     setStatus('loading')
     return () => {
+      navigation.current?.dispose()
+      navigation.current = undefined
+      committed.current = undefined
       owner.current = undefined
       void runtime.dispose()
       if (config.ok)
@@ -120,6 +135,7 @@ const EnergyAreaRuntime = ({ children }: { children: React.ReactNode }) => {
     if (request) useUIStore.getState().setIsSidebarOpen(true)
   }, [request])
   const close = React.useCallback(() => {
+    navigation.current?.invalidate()
     useMapStore.getState().setSelectedFeatures([])
     useUIStore.getState().setIsSidebarOpen(true)
     cancelDetails()
@@ -147,6 +163,12 @@ const EnergyAreaRuntime = ({ children }: { children: React.ReactNode }) => {
           void detailQuery.refetch()
         },
         close,
+        canGoBack,
+        back: () => navigation.current?.back(),
+        navigateRelated: (target) => navigation.current?.navigateRelated(target),
+        showWholePostalArea: () => navigation.current?.showWholePostalArea(),
+        showBuildings: () => navigation.current?.showBuildings(),
+        selectMode: (nextMode) => navigation.current?.selectMode(nextMode),
       }}
     >
       {children}

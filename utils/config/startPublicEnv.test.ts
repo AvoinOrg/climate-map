@@ -1,6 +1,11 @@
+/** @jest-environment node */
+import { transform } from 'esbuild'
+import { runInNewContext } from 'node:vm'
+import { readFileSync } from 'node:fs'
 import {
   createStartPublicEnvDiagnosticReporter,
   getStartPublicEnvDefines,
+  getStartPublicEnvModuleDefines,
   isStartDebugClientBuild,
   isStartPublicEnvKey,
 } from './startPublicEnv'
@@ -40,8 +45,8 @@ describe('Start public environment exposure', () => {
 
   it('diagnoses legacy GeoServer names once and identifies replacements', () => {
     const messages: string[] = []
-    const reportDiagnostics = createStartPublicEnvDiagnosticReporter((message) =>
-      messages.push(message)
+    const reportDiagnostics = createStartPublicEnvDiagnosticReporter(
+      (message) => messages.push(message)
     )
     const env = {
       NEXT_PUBLIC_GEOSERVER_URL: 'legacy-base-value',
@@ -68,8 +73,8 @@ describe('Start public environment exposure', () => {
       NEXT_PUBLIC_LUONNONMETSAKARTAT_GEOSERVER_WORKSPACE: 'legacy-forests',
     }
     const messages: string[] = []
-    const reportDiagnostics = createStartPublicEnvDiagnosticReporter((message) =>
-      messages.push(message)
+    const reportDiagnostics = createStartPublicEnvDiagnosticReporter(
+      (message) => messages.push(message)
     )
 
     reportDiagnostics(env)
@@ -88,8 +93,8 @@ describe('Start public environment exposure', () => {
 
   it('reports malformed canonical values without exposing them', () => {
     const messages: string[] = []
-    const reportDiagnostics = createStartPublicEnvDiagnosticReporter((message) =>
-      messages.push(message)
+    const reportDiagnostics = createStartPublicEnvDiagnosticReporter(
+      (message) => messages.push(message)
     )
     const invalidValue = 'https://private.example.test/undefined'
 
@@ -99,5 +104,40 @@ describe('Start public environment exposure', () => {
     expect(messages).toHaveLength(1)
     expect(messages[0]).toContain('PUBLIC_GEOSERVER_URL')
     expect(messages[0]).not.toContain(invalidValue)
+  })
+})
+
+it.each([undefined, '', 'https://configured.example.test/geoserver'])(
+  'executes the Energy GeoServer module without a process global (%s)',
+  async (value) => {
+    const code = readFileSync('src/applets/energy/layers/geoServer.ts', 'utf8')
+    const result = await transform(code, {
+      format: 'cjs',
+      define: getStartPublicEnvModuleDefines({
+        code,
+        env: { PUBLIC_ENERGIAKARTTA_GEOSERVER_URL: value },
+      }),
+    })
+    const context = {
+      module: { exports: {} as { ENERGYMAP_GEOSERVER_URL: string } },
+    }
+    runInNewContext(result.code, context)
+    expect(context.module.exports.ENERGYMAP_GEOSERVER_URL).toBe(
+      value || 'https://sandbox.gis.avoin.org/geoserver'
+    )
+  }
+)
+it('replaces only explicit public accesses, including unset optional values', () => {
+  expect(
+    getStartPublicEnvModuleDefines({
+      code: 'process.env.PUBLIC_ENERGY_AREA_API_ORIGIN; process.env.PUBLIC_GEOSERVER_URL; process.env.TOLGEE_API_KEY',
+      env: {
+        PUBLIC_ENERGY_AREA_API_ORIGIN: 'https://areas.example.test',
+        TOLGEE_API_KEY: 'private',
+      },
+    })
+  ).toEqual({
+    'process.env.PUBLIC_ENERGY_AREA_API_ORIGIN': '"https://areas.example.test"',
+    'process.env.PUBLIC_GEOSERVER_URL': 'undefined',
   })
 })

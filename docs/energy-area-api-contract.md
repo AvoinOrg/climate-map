@@ -11,7 +11,8 @@ for example `https://energy-api.example.test` (documentation example only).
 It is not an API prefix, GeoServer base or workspace. Leave it blank until the
 intended service is verified. Start embeds explicitly accessed `PUBLIC_*` values
 in browser code; do not put credentials in this setting. The setting is documented
-in `.env.template`; no `.env` or shared-runtime configuration was changed.
+in `.env.template`. `.env` is unchanged; browser verification uses only a bounded,
+doctor-managed temporary fixture origin and restores the ordinary runtime.
 
 An origin permits HTTP(S), an optional trailing root slash and surrounding
 configuration whitespace. Paths, credentials, query strings and fragments are
@@ -102,7 +103,7 @@ Keys are `['energyAreas', origin, 'metadata', releaseId ?? 'active']` and
 Neither locale, pan, zoom nor building filters participates. Every detail request
 explicitly sends `release_id`. Full postal geometry/tile shading never changes
 when `municipalityCode` restricts detail statistics; relations remain the full
-crosswalk. Global/manual postal navigation must clear this scope in F101.3.
+crosswalk. Global/manual postal navigation clears this scope.
 
 Metadata uses a 60-second stale window, normal focus/reconnect refetch and no
 interval. Intentional refresh inside that window can use `metadataQuery.refetch()`
@@ -283,17 +284,16 @@ release/level/code and has optional `municipalityCode` in the prerequisite contr
 F101.2 clicks omit it. Provenance must match the committed metadata. Tile feature
 states highlight every fragment of an area and retain metric fill meaning.
 
-`components/EnergyAreaDetailPanel.tsx` is the completed shared basic detail shell.
+`components/EnergyAreaDetailPanel.tsx` is the shared responsive detail shell.
 `EnergyHomePage` arbitrates this and building details through one existing sidebar
 extension provider/main panel. It includes identity, available localized source
 name, counts, coverage and provenance, plus loading/empty/error/retry/close. The
 same controls remain reachable in detail and closed-sidebar views; the compact
 floating view uses a keyboard-operable legend disclosure to keep the map reachable.
-There are no temporary distribution, relation, scope or navigation controls.
-F101.3 should extend this panel and request projection with selected postal scope
-and navigation, and use the existing query keys/owner. Global geography changes
-clear incompatible selection; the later sibling must also clear municipality scope
-on global postal navigation. Geometry and tile shading must stay whole-area.
+Its metric and navigation extensions reuse the same request projection, query
+keys and source owner. Global geography actions clear selection, municipality
+scope and navigation history, including choosing the already active postal mode.
+Geometry and tile shading always stay whole-area.
 
 MapLibre's native vector loader suppresses 404 as an empty tile. The narrowly
 registered `tileTransport.ts` uses its public protocol API and the shared tile
@@ -348,5 +348,108 @@ doctor restores the normal unset origin, use `--no-area-configuration` with the
 same harness for FI/EN desktop/mobile building-only checks. Its separate
 `no-configuration-evidence.json` records no area requests or owned sources, plus
 manual Buildings hint transitions below/at/above zoom 12 in home and floating
-controls on all four locale/layout combinations. The later sibling
-owns distributions, related/scoped drill-down/back and final family acceptance.
+controls on all four locale/layout combinations. The final integrated command
+below also covers distributions, related/scoped drill-down/back and return to
+the existing building detail flow.
+
+## Complete metric details and scoped navigation (F101.3)
+
+`detailPresentation.ts` projects the validated detail without changing cached
+service data. Overall coverage uses the supplied valid official count / all
+buildings in the selected statistics scope. The 2013 and 2018 charts use separate
+A–G maps and explicitly label their own valid-class denominators, plus the whole
+scope population. Sparse maps supply zero class counts; zero denominators and
+empty populations never produce class percentages. A missing official block is
+unavailable. Raw expiry/unknown-scale/validity/invalid-class diagnostics and
+modeled class/reason outputs are excluded from primary summaries. Official
+information availability is separately labeled; it is not validity.
+
+Heating method/source, ventilation, main purpose and construction period retain
+every service category and its readable count, with metric-specific known/unknown
+counts. Exact existing heating/purpose labels are reused; `0110` is not coerced
+into `01`. Arbitrary categories use localized numbered labels, without exposing
+raw codes. Ventilation `no_info` means unknown information. Floor area, gross
+floor area, total area and certificate heated net area are four separate m² sums
+with their own denominators. v1 accepts positive sums or null; missing/null sums
+stay unavailable rather than becoming zero. Empty areas and valid zero municipal
+intersections remain successful data responses.
+
+`navigation.ts` owns one transient trail per existing runtime. Frames contain only
+pinned request, requested mode, zoom and descriptor-generation signature. Shared
+`selectedFeatures` remains the single active identity. Programmatic navigation
+creates a validated identity-only placeholder, using promoted `area_id` and the
+advertised source/source-layer. It invents no geometry, tile metrics or names.
+Related records display their actual codes/counts and fetch only the selected
+detail; there is no name lookup fan-out or bounds request.
+
+Region → Municipality → Postal → Buildings uses the current center with zoom
+presets 6 / 8 / 11 / 12 (respecting advertised source minimum and map zoom limits;
+closer building zoom is preserved). Back restores mode/zoom/code/scope only within
+the current compatible generation. Direct map clicks, global selectors, automatic
+level changes, area close, release/descriptor/style replacement and applet exit
+invalidate old history. Within-level manual zoom and unchanged metadata preserve
+it. Deliberate Buildings navigation clears the area request and preserves the
+postal return; ordinary building selection and local Water editing continue to
+use the existing building shell. A compact accessible Back control is available
+when building details replace the home controls.
+
+Municipality → Postal adds `municipality_code` only to the detail request/key.
+The detail and visible compact legend explain “buildings in this municipality”
+and that polygon/tile shading still cover the full postal area. The whole-area
+action removes the scope without changing polygon identity, geometry, paint or
+crosswalk; Back can return to the scoped frame. Related postal municipalities
+always remain the full API crosswalk. A valid `00100:009` zero intersection is
+verified using test-only setup through the same placeholder seam; no zero-count
+relation is fabricated. Fuller bounds/geometric navigation requires separate
+backend work.
+
+Public configuration remains the optional HTTP(S) service origin
+`PUBLIC_ENERGY_AREA_API_ORIGIN`; the fixed API prefix is `/energy-data/areas`.
+No new setting, unverified deployment URL or fixture fallback was added. The
+Start serve/client transform resolves explicit `process.env.PUBLIC_*` values
+before browser module evaluation, matching build defines without depending on
+the Vite client-global initialization order. Unset optional values resolve to
+undefined; server-only keys are never exposed by this transform.
+
+## Final integrated verification commands
+
+Run against the existing doctor-managed runtime; setup/restoration of the bounded
+fixture origin belongs to runtime doctor. API and MVT interceptions are explicit
+test-only adapters, never application imports.
+
+```sh
+node utils/test/energyAreas/verify.mjs
+yarn test --runInBand src/applets/energy
+# Full actual-map family checks, including detail/navigation and a synthetic
+# rendered building MVT for information/consumption/Water regression:
+node utils/scripts/visual/energy-area-modes-smoke.mjs --no-start --base-url=http://localhost:6900 --details
+# Focused detail iteration, with optional --locale=en --viewport=desktop:
+node utils/scripts/visual/energy-area-modes-smoke.mjs --no-start --base-url=http://localhost:6900 --details --details-only
+yarn start:typecheck
+```
+
+Full-family actual-map artifacts are indexed under
+`.dev/visual-regression/energy-area-details-navigation/evidence.json`, with FI/EN
+desktop/mobile screenshots, requests, polygon feature-state and assertions.
+`utils/test/energyAreas/buildings.mjs` supplies isolated synthetic building MVT
+only for the building-return regression. The existing area API/MVT fixture data,
+provenance, scales and all four sum oracles remain unchanged. These checks prove
+local implementation behavior, not nationally published data or deployment.
+
+## Future live-release checklist (documentation only)
+
+1. Verify the intended public service origin, `/energy-data/areas` routing and
+   explicitly allowed frontend CORS origins.
+2. Verify an active validated `building-area-summary-v1` release, boundary/as-of
+   provenance and all three complete advertised descriptors; retain previous
+   validated releases.
+3. Fetch/decode representative real advertised immutable tiles: source layer,
+   XYZ/TMS scheme, legal zooms, stable string identity and null/zero semantics.
+4. Verify a real leading-zero selected detail against that pinned release,
+   separate official scales/denominators and all four area definitions.
+5. Verify a real crossing postal area, full crosswalk, municipal detail versus
+   full polygon shading, whole-area switch and successful valid zero intersection;
+   repeat FI/EN desktop/mobile acceptance in that serving environment.
+
+These future steps authorize no configuration deployment, national ETL,
+GeoServer/cache publication or release activation under this feature.

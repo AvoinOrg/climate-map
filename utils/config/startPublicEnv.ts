@@ -24,6 +24,24 @@ export const getStartPublicEnvDefines = (env: StartLoadedEnv) =>
       .map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)])
   )
 
+// Vite's dev client skips the define transform and initializes dotted defines
+// through @vite/client instead. Modules must also work before that global runs.
+export const getStartPublicEnvModuleDefines = ({
+  code,
+  env,
+}: {
+  code: string
+  env: StartLoadedEnv
+}) =>
+  Object.fromEntries(
+    [...new Set(code.match(/process\.env\.PUBLIC_[A-Z0-9_]+\b/g) ?? [])].map(
+      (key) => [
+        key,
+        JSON.stringify(env[key.slice('process.env.'.length)]) ?? 'undefined',
+      ]
+    )
+  )
+
 export const isStartDebugClientBuild = (env: StartLoadedEnv) =>
   env.PUBLIC_DEBUG_CLIENT_ERRORS === '1'
 
@@ -64,9 +82,7 @@ const getStartGeoServerDiagnostics = (
     }
   }
 
-  if (
-    env[PUBLIC_LUONNONMETSAKARTAT_GEOSERVER_WORKSPACE_ENV] !== undefined
-  ) {
+  if (env[PUBLIC_LUONNONMETSAKARTAT_GEOSERVER_WORKSPACE_ENV] !== undefined) {
     const workspaceResult = normalizePublicGeoServerWorkspace(
       env[PUBLIC_LUONNONMETSAKARTAT_GEOSERVER_WORKSPACE_ENV]
     )

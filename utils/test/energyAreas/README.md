@@ -12,6 +12,11 @@ Usage, exact exported seams, scenarios and provenance are documented in
 - `generate-data.cjs`, `generate-tiles.mjs`, `tiles.mjs`: reproducible offline
   authoring and real polygon tiling (no backend execution).
 - `verify.mjs`: independent codec/geometry/API/adapter/isolation checks.
+- `mapMock.ts`: shared MapLibre test double used with the real map/selection
+  stores and area owner in lifecycle and navigation integration tests.
+- `buildings.mjs`: explicitly intercepted synthetic building MVT/certificate
+  responses for the actual-map return-to-Buildings and local Water-edit check.
+  It uses the existing building source contract and is never an app fallback.
 
 There is no product import or fallback. Fixture origins are reserved test data,
 not a proposed deployment. Runtime configuration/lifecycle changes for later
