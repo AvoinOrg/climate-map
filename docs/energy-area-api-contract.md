@@ -247,3 +247,106 @@ explicit frontend CORS origins, validated active release, all advertised immutab
 source layers/zooms/schemes, a real leading-zero detail and scoped/zero intersection,
 retained-release access, then integrated FI/EN desktop/mobile checks. No deployment,
 backend ETL/publication or release configuration is authorized by this handoff.
+
+## F101.2 map and detail ownership (implemented intermediate slice)
+
+`EnergyAppletRuntime` mounts `components/EnergyAreaRuntime.tsx` once around the
+Energy routes. It uses the provider QueryClient and existing metadata/detail
+options. `common/areas/mapRuntime.ts` serializes registration and teardown through
+one lane, commits all three descriptors together, and publishes the metadata only
+after physical source/layer registration succeeds. A changed release or descriptor
+signature clears area/building selection and cancels obsolete details. Unchanged
+metadata does not churn sources. A failed metadata refresh retains a usable pinned
+release with an explicit refresh-failed message; an initial failure leaves Buildings
+usable. Style replacement reconciles only owned groups, and exit removes owned
+listeners, sources, layers and tile transport without changing building preferences.
+The same owner observes map zoom when area API configuration is absent or invalid;
+area queries remain disabled and no area sources are registered. Manual Buildings
+therefore retains its below-12 zoom hint in the building-only map too.
+
+`common/areas/mapModes.ts` owns requested mode, exact automatic ranges and metric
+bands. Automatic renders regions below 7, municipalities from 7 to below 10,
+postal areas from 10 to below 12, and Buildings from 12. Layer zoom ranges and
+selection projection use the same boundaries, including fractional zooms. Manual
+areas overzoom their advertised source maximum; their source minimum is respected.
+Manual Buildings below 12 explains the need to zoom in. The applet store holds
+small mode/metric/availability/zoom/applicability facts, never detail payloads or a
+second selection. Building filters have guarded actions and disabled home/menu
+controls; the original values and themes remain mounted.
+
+`common/areas/selection.ts` projects one validated whole-area identity from shared
+`useMapStore.selectedFeatures`. It validates promoted string ID, descriptor source
+and source layer, release, effective level and code, and deduplicates fragments.
+`AreaRuntimeContext` exposes the canonical `AreaDetailRequest`, validated detail,
+safe problem/status, close/retry, metadata refresh and tile retry. The request uses
+release/level/code and has optional `municipalityCode` in the prerequisite contract;
+F101.2 clicks omit it. Provenance must match the committed metadata. Tile feature
+states highlight every fragment of an area and retain metric fill meaning.
+
+`components/EnergyAreaDetailPanel.tsx` is the completed shared basic detail shell.
+`EnergyHomePage` arbitrates this and building details through one existing sidebar
+extension provider/main panel. It includes identity, available localized source
+name, counts, coverage and provenance, plus loading/empty/error/retry/close. The
+same controls remain reachable in detail and closed-sidebar views; the compact
+floating view uses a keyboard-operable legend disclosure to keep the map reachable.
+There are no temporary distribution, relation, scope or navigation controls.
+F101.3 should extend this panel and request projection with selected postal scope
+and navigation, and use the existing query keys/owner. Global geography changes
+clear incompatible selection; the later sibling must also clear municipality scope
+on global postal navigation. Geometry and tile shading must stay whole-area.
+
+MapLibre's native vector loader suppresses 404 as an empty tile. The narrowly
+registered `tileTransport.ts` uses its public protocol API and the shared tile
+request transform seam to preserve the exact advertised HTTP(S) URL, headers,
+coordinates, XYZ/TMS scheme and cache headers while making failed HTTP responses
+observable. It performs one request, with cancellation, and never adds a second
+detail/API client. The source descriptors still contain the advertised URLs.
+Owned per-tile failures clear only on successful tile content; retry reloads the
+same committed source without promoting metadata. Empty successful MVT stays valid.
+
+Fixed absolute bands (all levels/releases; magnitude blues, no A–G colors):
+
+| Building count | Color |
+| --- | --- |
+| 0 | `#EFF3FF` |
+| 1–99 | `#C6DBEF` |
+| 100–999 | `#9ECAE1` |
+| 1,000–9,999 | `#6BAED6` |
+| 10,000–99,999 | `#3182BD` |
+| 100,000 or more | `#08519C` |
+| Missing/null | `#BDBDBD` |
+
+| Coverage | Color |
+| --- | --- |
+| 0% to below 10% | `#EFF3FF` |
+| 10% to below 25% | `#BDD7E7` |
+| 25% to below 50% | `#6BAED6` |
+| 50% to below 75% | `#3182BD` |
+| 75% to 100% | `#08519C` |
+| Missing/null | `#BDBDBD` |
+
+FI/EN copy is under `energiakartta:sidebar.area_map.*`, authored via Tolgee and
+verified with real ICU resources. Counts, percentages, dates and legend ranges
+are locale formatted. Source names use the selected language, then an available
+FI/SV/EN name, then the string code. Release IDs and upstream diagnostics never
+enter product copy. The summary is the frozen all-building population; building
+filters, modeled classes and expired certificates never determine its shading.
+
+Actual product-route fixture command (inside the existing app container):
+
+```sh
+node utils/scripts/visual/energy-area-modes-smoke.mjs --no-start --base-url=http://localhost:6900
+```
+
+Obtain temporary fixture-origin setup and restoration through runtime doctor.
+The test-only harness installs the prerequisite API/genuine MVT route adapter
+before navigation and inspects the actual Energy map, including fractional zoom
+boundaries, hover state and promoted-ID fragments after pan. Artifacts and the evidence
+index are under `.dev/visual-regression/energy-area-modes/` and are fixture-backed;
+they establish no live area publication or national performance. After runtime
+doctor restores the normal unset origin, use `--no-area-configuration` with the
+same harness for FI/EN desktop/mobile building-only checks. Its separate
+`no-configuration-evidence.json` records no area requests or owned sources, plus
+manual Buildings hint transitions below/at/above zoom 12 in home and floating
+controls on all four locale/layout combinations. The later sibling
+owns distributions, related/scoped drill-down/back and final family acceptance.

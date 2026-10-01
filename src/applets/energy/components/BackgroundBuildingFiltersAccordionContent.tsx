@@ -1,6 +1,7 @@
 import React from 'react'
 import { useTranslate } from '@tolgee/react'
 
+import { EnergyAreaScope } from 'applets/energy/components/EnergyAreaControls'
 import { Box } from '#/common/style/theme'
 import type { DropDownValueChangeEvent } from '#/components/common/DropDownSelect'
 import DropDownSelectInset from '#/components/common/DropDownSelectInset'
@@ -51,6 +52,7 @@ const SWITCH_LABEL_SX = {
 }
 
 const BackgroundBuildingFiltersAccordionContent = () => {
+  const disabled = useAppletStore((state) => state.effectiveGeography !== 'buildings')
   const { t } = useTranslate('energiakartta')
   const buildingTypeFilter = useAppletStore((state) => state.buildingTypeFilter)
   const selectedConstructionDecade = useAppletStore(
@@ -140,7 +142,9 @@ const BackgroundBuildingFiltersAccordionContent = () => {
         gap: '1.625rem',
       }}
     >
+      {disabled && <EnergyAreaScope />}
       <DropDownSelectWithLabel
+        disabled={disabled}
         applyNegativeMargins
         value={buildingTypeFilter}
         options={buildingTypeOptions}
@@ -173,6 +177,7 @@ const BackgroundBuildingFiltersAccordionContent = () => {
       />
 
       <DropDownSelectInset
+        disabled={disabled}
         applyNegativeMargins
         value={constructionDecadeSelectValue}
         options={decadeOptions}
@@ -199,7 +204,7 @@ const BackgroundBuildingFiltersAccordionContent = () => {
           onChange={(event) =>
             setShowBuildingsFromSelectedDecade(event.target.checked)
           }
-          disabled={!hasSelectedConstructionDecade}
+          disabled={disabled || !hasSelectedConstructionDecade}
           sx={SWITCH_SX}
           controlSx={SWITCH_CONTROL_SX}
           labelSx={SWITCH_LABEL_SX}
@@ -213,7 +218,7 @@ const BackgroundBuildingFiltersAccordionContent = () => {
           )}
           inputProps={{ role: 'switch' }}
           onChange={(event) => setShowOnlySelectedDecade(event.target.checked)}
-          disabled={!hasSelectedConstructionDecade}
+          disabled={disabled || !hasSelectedConstructionDecade}
           sx={SWITCH_SX}
           controlSx={SWITCH_CONTROL_SX}
           labelSx={SWITCH_LABEL_SX}

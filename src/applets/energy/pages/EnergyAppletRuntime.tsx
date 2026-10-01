@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { BreadcrumbNav, SidebarBoundary } from '#/components/Sidebar'
+import EnergyAreaRuntime from 'applets/energy/components/EnergyAreaRuntime'
 import AppletWrapper from '#/components/common/AppletWrapper'
 import { listedLayerGroups } from '../common/constants'
 
@@ -36,7 +37,7 @@ const EnergyAppletRuntime = ({ children }: { children: React.ReactNode }) => {
           flexDirection: 'column',
         }}
       >
-        {children}
+        <EnergyAreaRuntime>{children}</EnergyAreaRuntime>
       </AppletWrapper>
     </SidebarBoundary>
   )

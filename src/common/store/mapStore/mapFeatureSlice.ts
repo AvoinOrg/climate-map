@@ -151,7 +151,7 @@ export const createMapFeatureSlice: (
 
       for (const selectedFeature of selectedFeatures) {
         if (!keptFeatures.includes(selectedFeature)) {
-          _map?.setFeatureState(
+          if (_map?.getSource(selectedFeature.source)) _map.setFeatureState(
             {
               source: selectedFeature.source,
               id: selectedFeature.id,
@@ -248,7 +248,7 @@ export const createMapFeatureSlice: (
           filteredFeatures,
           (feature: MapGeoJSONFeature) => {
             if (feature.sourceLayer) {
-              return `sl-${feature.id}-${feature.sourceLayer}`
+              return JSON.stringify([feature.source, feature.sourceLayer, feature.id])
             } else {
               return `s-${feature.id}-${feature.source}`
             }
@@ -317,7 +317,7 @@ export const createMapFeatureSlice: (
               }
             }
           }
-          if (f.id === filteredFeature.id) {
+          if (f.id === filteredFeature.id && isMatchingSource(f, filteredFeature)) {
             foundExisting = true
             return false
           }

@@ -1,5 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it, jest } from '@jest/globals'
 
+import { registerMapTileRequestTransform } from '#/common/utils/mapTileRequestTransforms'
+import type { ResourceType } from 'maplibre-gl'
 import { EMBEDDED_PARAMS_URL_PREFIX } from '#/common/types/map'
 
 const mockDecodeUrlAndParams = jest.fn()
@@ -163,4 +165,19 @@ describe('createMapTransformRequest', () => {
 
     expect(transformRequest(embeddedUrl)).toEqual({ url: originalUrl })
   })
+})
+
+it('composes an owned tile transport with authentication and preserves other request types and cleanup', () => {
+  const previous = process.env.PUBLIC_GEOSERVER_URL
+  process.env.PUBLIC_GEOSERVER_URL = 'https://gis.example.test/geoserver'
+  const url = 'https://gis.example.test/geoserver/areas/11/1166/592.pbf?requireToken=true'
+  const transform = createMapTransformRequest({ accessToken: 'test-access-token' })
+  const dispose = registerMapTileRequestTransform((request) => request.url === url ? { ...request, url: 'test-transport://area' } : undefined)
+  expect(transform(url, 'Tile' as ResourceType)).toEqual({ url: 'test-transport://area', headers: { Authorization: 'Bearer test-access-token' } })
+  expect(transform(url, 'Glyphs' as ResourceType)).toEqual({ url, headers: { Authorization: 'Bearer test-access-token' } })
+  expect(transform('https://other.test/tile.pbf', 'Tile' as ResourceType)).toBeUndefined()
+  dispose()
+  expect(transform(url, 'Tile' as ResourceType)?.url).toBe(url)
+  if (previous === undefined) delete process.env.PUBLIC_GEOSERVER_URL
+  else process.env.PUBLIC_GEOSERVER_URL = previous
 })

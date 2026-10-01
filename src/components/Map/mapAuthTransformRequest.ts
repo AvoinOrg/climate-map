@@ -1,3 +1,4 @@
+import { transformRegisteredMapTileRequest } from '#/common/utils/mapTileRequestTransforms'
 import type { RequestTransformFunction } from 'maplibre-gl'
 
 import {
@@ -18,7 +19,7 @@ export const createMapTransformRequest = ({
 }: CreateMapTransformRequestOptions): RequestTransformFunction => {
   const publicGeoServerBaseUrl = resolvePublicGeoServerBase()
 
-  return (url) => {
+  const transformAuthRequest: RequestTransformFunction = (url) => {
     if (url.startsWith(EMBEDDED_PARAMS_URL_PREFIX)) {
       const decoded = decodeUrlAndParams(url)
       if (decoded == null) {
@@ -66,5 +67,11 @@ export const createMapTransformRequest = ({
         headers: { Authorization: `Bearer ${accessToken}` },
       }
     }
+  }
+  return (url, resourceType) => {
+    const authenticated = transformAuthRequest(url, resourceType)
+    return resourceType === 'Tile'
+      ? transformRegisteredMapTileRequest(authenticated ?? { url }) ?? authenticated
+      : authenticated
   }
 }

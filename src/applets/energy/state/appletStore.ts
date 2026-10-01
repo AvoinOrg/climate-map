@@ -3,6 +3,11 @@ import { subscribeWithSelector, devtools } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
 import { commonDevtools } from '#/common/store/shared-devtools'
+import type {
+  AreaGeographyMode,
+  AreaMetric,
+  EffectiveGeography,
+} from 'applets/energy/common/areas/mapModes'
 import {
   ENERGYMAP_BUILDING_TYPE_FILTER_ALL,
   ENERGYMAP_DEFAULT_SELECTED_CONSTRUCTION_DECADE,
@@ -25,11 +30,19 @@ type SelectedBuildingState = {
   selectedBuilding: EnergymapSelectedBuilding | null
 }
 
-type Vars = EnergymapBuildingFilterState &
+type Vars = {
+  geographyMode: AreaGeographyMode
+  areaMetric: AreaMetric
+  effectiveGeography: EffectiveGeography
+  areaAvailable: boolean
+  areaZoom: number
+} & EnergymapBuildingFilterState &
   EnergyCertificateClassFilterState &
   SelectedBuildingState
 
 type Actions = {
+  setGeographyMode: (mode: AreaGeographyMode) => void
+  setAreaMetric: (metric: AreaMetric) => void
   setSelectedBuilding: (selectedBuilding: EnergymapSelectedBuilding) => void
   clearSelectedBuilding: () => void
   setBuildingTypeFilter: (
@@ -46,9 +59,7 @@ type Actions = {
     classCode: EnergyCertificateClassCode,
     isActive: boolean
   ) => void
-  toggleEnergyCertificateClass: (
-    classCode: EnergyCertificateClassCode
-  ) => void
+  toggleEnergyCertificateClass: (classCode: EnergyCertificateClassCode) => void
   setActiveEnergyCertificateClasses: (
     activeEnergyCertificateClasses: EnergyCertificateClassCode[]
   ) => void
@@ -59,6 +70,11 @@ type Actions = {
 export type State = Vars & Actions
 
 const initialBuildingFilterState: Vars = {
+  geographyMode: 'automatic',
+  areaMetric: 'certificate_coverage',
+  effectiveGeography: 'buildings',
+  areaAvailable: false,
+  areaZoom: 12,
   buildingTypeFilter: ENERGYMAP_BUILDING_TYPE_FILTER_ALL,
   selectedConstructionDecade: ENERGYMAP_DEFAULT_SELECTED_CONSTRUCTION_DECADE,
   showBuildingsFromSelectedDecade: false,
@@ -74,6 +90,8 @@ export const useAppletStore = create<State>()(
         const vars = initialBuildingFilterState
 
         const actions: Actions = {
+          setGeographyMode: (geographyMode) => set({ geographyMode }),
+          setAreaMetric: (areaMetric) => set({ areaMetric }),
           setSelectedBuilding: (selectedBuilding) => {
             set((state) => {
               if (
@@ -95,11 +113,13 @@ export const useAppletStore = create<State>()(
           },
           setBuildingTypeFilter: (buildingTypeFilter) => {
             set((state) => {
+              if (state.effectiveGeography !== 'buildings') return
               state.buildingTypeFilter = buildingTypeFilter
             })
           },
           setSelectedConstructionDecade: (selectedConstructionDecade) => {
             set((state) => {
+              if (state.effectiveGeography !== 'buildings') return
               state.selectedConstructionDecade = selectedConstructionDecade
 
               if (selectedConstructionDecade == null) {
@@ -112,6 +132,7 @@ export const useAppletStore = create<State>()(
             showBuildingsFromSelectedDecade
           ) => {
             set((state) => {
+              if (state.effectiveGeography !== 'buildings') return
               if (
                 !showBuildingsFromSelectedDecade ||
                 state.selectedConstructionDecade == null
@@ -127,6 +148,7 @@ export const useAppletStore = create<State>()(
           },
           setShowOnlySelectedDecade: (showOnlySelectedDecade) => {
             set((state) => {
+              if (state.effectiveGeography !== 'buildings') return
               if (
                 !showOnlySelectedDecade ||
                 state.selectedConstructionDecade == null
@@ -142,6 +164,7 @@ export const useAppletStore = create<State>()(
           },
           setEnergyCertificateClassActive: (classCode, isActive) => {
             set((state) => {
+              if (state.effectiveGeography !== 'buildings') return
               const classSet = new Set(state.activeEnergyCertificateClasses)
 
               if (isActive) {
@@ -158,6 +181,7 @@ export const useAppletStore = create<State>()(
           },
           toggleEnergyCertificateClass: (classCode) => {
             set((state) => {
+              if (state.effectiveGeography !== 'buildings') return
               const classSet = new Set(state.activeEnergyCertificateClasses)
 
               if (classSet.has(classCode)) {
@@ -176,6 +200,7 @@ export const useAppletStore = create<State>()(
             activeEnergyCertificateClasses
           ) => {
             set((state) => {
+              if (state.effectiveGeography !== 'buildings') return
               const classSet = new Set(activeEnergyCertificateClasses)
 
               state.activeEnergyCertificateClasses =
@@ -186,6 +211,7 @@ export const useAppletStore = create<State>()(
           },
           resetEnergyCertificateClassFilters: () => {
             set((state) => {
+              if (state.effectiveGeography !== 'buildings') return
               state.activeEnergyCertificateClasses = [
                 ...initialBuildingFilterState.activeEnergyCertificateClasses,
               ]
@@ -193,6 +219,7 @@ export const useAppletStore = create<State>()(
           },
           resetBuildingFilters: () => {
             set((state) => {
+              if (state.effectiveGeography !== 'buildings') return
               state.buildingTypeFilter =
                 initialBuildingFilterState.buildingTypeFilter
               state.selectedConstructionDecade =

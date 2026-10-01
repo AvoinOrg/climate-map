@@ -1,4 +1,7 @@
 import React from 'react'
+import EnergyAreaControls from 'applets/energy/components/EnergyAreaControls'
+import EnergyAreaDetailPanel from 'applets/energy/components/EnergyAreaDetailPanel'
+import { useEnergyAreaRuntime } from 'applets/energy/common/areas/AreaRuntimeContext'
 import { useTranslate } from '@tolgee/react'
 
 import { MAP_BOTTOM_LEFT_FLOATING_CONTROLS_SLOT } from '#/common/constants/map'
@@ -324,6 +327,9 @@ const HeatingAccordionContent = ({
   ) => React.ChangeEventHandler<HTMLInputElement>
 }) => {
   const { t } = useTranslate('energiakartta')
+  const disabled = useAppletStore(
+    (state) => state.effectiveGeography !== 'buildings'
+  )
 
   return (
     <Box
@@ -366,6 +372,7 @@ const HeatingAccordionContent = ({
             }}
           >
             <SquishedSwitchWithLabel
+              disabled={disabled}
               checked={heatingSwitchState[id]}
               checkedTrackColor={color}
               ariaLabel={t(keyName)}
@@ -407,6 +414,11 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
   const params = useAppParams<{ locale?: string | string[] }>()
   const locale =
     localeProp ?? (typeof params.locale === 'string' ? params.locale : 'fi')
+  const areaRuntime = useEnergyAreaRuntime()
+  const buildingApplicable = useAppletStore(
+    (state) => state.effectiveGeography === 'buildings'
+  )
+  const hasAreaInfo = !!areaRuntime.request
   const setFilter = useMapStore((state) => state.setFilter)
   const setLayoutProperty = useMapStore((state) => state.setLayoutProperty)
   const setPaintProperty = useMapStore((state) => state.setPaintProperty)
@@ -472,14 +484,15 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
     () => getHeatingEnergySourceFilter(activeHeatingFilterKeys),
     [activeHeatingFilterKeys]
   )
-  const activeVentilationCategories =
-    React.useMemo<EnergymapVentilationCategory[]>(
-      () =>
-        ENERGYMAP_VENTILATION_CATEGORY_VALUES.filter(
-          (id) => ventilationSwitchState[id]
-        ),
-      [ventilationSwitchState]
-    )
+  const activeVentilationCategories = React.useMemo<
+    EnergymapVentilationCategory[]
+  >(
+    () =>
+      ENERGYMAP_VENTILATION_CATEGORY_VALUES.filter(
+        (id) => ventilationSwitchState[id]
+      ),
+    [ventilationSwitchState]
+  )
   const ventilationFilter = React.useMemo(
     () => getVentilationCategoryFilter(activeVentilationCategories),
     [activeVentilationCategories]
@@ -509,10 +522,14 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
   )
   const selectedEnergymapBuilding = React.useMemo(
     () =>
-      selectedFeatures
+      (buildingApplicable ? selectedFeatures : [])
+        .filter(
+          (feature) =>
+            feature.source === ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID
+        )
         .map(toEnergymapSelectedBuilding)
         .find((building) => building != null) ?? null,
-    [selectedFeatures]
+    [selectedFeatures, buildingApplicable]
   )
   const { panels: buildingInfoPanels, missingData: buildingInfoMissingData } =
     React.useMemo(
@@ -567,15 +584,16 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
     isSharedBuildingLayerGroupVisible &&
     activeThematicMode === ENERGY_CERTIFICATE_THEMATIC_MODE
   const shouldShowMobileEnergyCertificateControls =
-    isMobile && !isSidebarOpen && isEnergyCertificateLayerVisible
+    buildingApplicable &&
+    isMobile &&
+    !isSidebarOpen &&
+    isEnergyCertificateLayerVisible
   const upcomingTooltip = t('sidebar.front_page.upcoming_tooltip')
   const toggleEnergyClassesAria = t(
     'sidebar.front_page.aria.toggle_energy_classes'
   )
   const toggleHeatingAria = t('sidebar.front_page.aria.toggle_heating')
-  const toggleVentilationAria = t(
-    'sidebar.front_page.aria.toggle_ventilation'
-  )
+  const toggleVentilationAria = t('sidebar.front_page.aria.toggle_ventilation')
   const footerLabel = t('sidebar.front_page.footer.edit_building_details')
   const buildingInfoAriaLabels = React.useMemo(
     () => ({
@@ -588,6 +606,7 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
   )
   const toggleThematicMode = React.useCallback(
     async (mode: EnergymapMainThematicMode) => {
+      if (useAppletStore.getState().effectiveGeography !== 'buildings') return
       const isModeCurrentlyVisible =
         isSharedBuildingLayerGroupVisible && activeThematicMode === mode
       const nextMode = isModeCurrentlyVisible ? null : mode
@@ -599,6 +618,7 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
         )
       }
 
+      if (useAppletStore.getState().effectiveGeography !== 'buildings') return
       setActiveThematicMode(nextMode)
     },
     [activeThematicMode, enableLayerGroup, isSharedBuildingLayerGroupVisible]
@@ -606,6 +626,7 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
   const handleHeatingSwitchChange =
     (id: HeatingSwitchKey): React.ChangeEventHandler<HTMLInputElement> =>
     (event) => {
+      if (useAppletStore.getState().effectiveGeography !== 'buildings') return
       setHeatingSwitchState((currentState) => ({
         ...currentState,
         [id]: event.target.checked,
@@ -616,6 +637,7 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
       id: EnergymapVentilationCategory
     ): React.ChangeEventHandler<HTMLInputElement> =>
     (event) => {
+      if (useAppletStore.getState().effectiveGeography !== 'buildings') return
       setVentilationSwitchState((currentState) => ({
         ...currentState,
         [id]: event.target.checked,
@@ -638,11 +660,7 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
       })
       setIsSidebarOpen(true)
     },
-    [
-      buildingInfoTopology.availableTabs,
-      selectedBuildingKey,
-      setIsSidebarOpen,
-    ]
+    [buildingInfoTopology.availableTabs, selectedBuildingKey, setIsSidebarOpen]
   )
   const handleBuildingInfoActiveTabChange = React.useCallback(
     (tabId: BuildingInfoTabId) => {
@@ -680,11 +698,7 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
       })
       setIsSidebarOpen(true)
     },
-    [
-      buildingInfoTopology.availableTabs,
-      selectedBuildingKey,
-      setIsSidebarOpen,
-    ]
+    [buildingInfoTopology.availableTabs, selectedBuildingKey, setIsSidebarOpen]
   )
   const handleCloseBuildingInfo = React.useCallback(() => {
     setIsSidebarOpen(true)
@@ -829,12 +843,15 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
     }
 
     const energyCertificatesVisible =
+      buildingApplicable &&
       isSharedBuildingLayerGroupVisible &&
       activeThematicMode === ENERGY_CERTIFICATE_THEMATIC_MODE
     const heatingVisible =
+      buildingApplicable &&
       isSharedBuildingLayerGroupVisible &&
       activeThematicMode === HEATING_THEMATIC_MODE
     const ventilationVisible =
+      buildingApplicable &&
       isSharedBuildingLayerGroupVisible &&
       activeThematicMode === VENTILATION_THEMATIC_MODE
 
@@ -905,10 +922,31 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
     ])
   }, [
     activeThematicMode,
+    buildingApplicable,
     isSharedBuildingLayerGroupRegistered,
     isSharedBuildingLayerGroupVisible,
     setLayoutProperty,
     setPaintProperty,
+  ])
+
+  React.useEffect(() => {
+    if (!isSharedBuildingLayerGroupRegistered) return
+    void Promise.all(
+      ENERGYMAP_BUILDING_POLYGONS_LAYER_IDS.map((layerId) =>
+        setLayoutProperty(
+          layerId,
+          'visibility',
+          buildingApplicable && isSharedBuildingLayerGroupVisible
+            ? 'visible'
+            : 'none'
+        )
+      )
+    )
+  }, [
+    buildingApplicable,
+    isSharedBuildingLayerGroupRegistered,
+    isSharedBuildingLayerGroupVisible,
+    setLayoutProperty,
   ])
 
   const buildingInfoActionRail =
@@ -945,8 +983,17 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
   return (
     <SidebarPanelExtensionProvider
       id="energiakartta-building-info-panel"
-      enabled={hasBuildingInfo}
-      runtimeOptions={buildingInfoPanelRuntimeOptions}
+      enabled={hasBuildingInfo || hasAreaInfo}
+      runtimeOptions={
+        hasAreaInfo
+          ? getEnergymapBuildingInfoPanelRuntimeOptions({
+              hasBuildingInfo: true,
+              isBuildingInfoCollapsed: false,
+              isMobileLayout: isMobile,
+              desktopContentWidthPx: 400,
+            })
+          : buildingInfoPanelRuntimeOptions
+      }
     >
       <IntoSidebarHeaderSlot>
         <SidebarHeader
@@ -972,6 +1019,11 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
           }
         />
       </IntoSidebarFooterSlot>
+      {hasAreaInfo && (
+        <IntoSidebarPanelExtensionPanelSlot panelId="main">
+          <EnergyAreaDetailPanel locale={locale} />
+        </IntoSidebarPanelExtensionPanelSlot>
+      )}
       {isBuildingInfoExpanded && buildingInfoPanels != null && (
         <IntoSidebarPanelExtensionPanelSlot panelId="main">
           <BuildingInfoTabPages
@@ -997,6 +1049,27 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
           {buildingInfoActionRail}
         </IntoSidebarPanelExtensionActionRailSlot>
       )}
+      {!isSidebarOpen && (
+        <IntoSlot name={MAP_BOTTOM_LEFT_FLOATING_CONTROLS_SLOT}>
+          <Box
+            sx={{
+              pointerEvents: 'auto',
+              backgroundColor: '#fff',
+              borderRadius: 2,
+              p: 1.5,
+              width: {
+                mobile: 'min(260px, calc(100vw - 100px))',
+                desktop: 280,
+              },
+              maxHeight: '50dvh',
+              overflowY: 'auto',
+              boxShadow: '0 2px 8px #0002',
+            }}
+          >
+            <EnergyAreaControls locale={locale} compact />
+          </Box>
+        </IntoSlot>
+      )}
       {shouldShowMobileEnergyCertificateControls && (
         <IntoSlot name={MAP_BOTTOM_LEFT_FLOATING_CONTROLS_SLOT}>
           <EnergyCertificateClassControls
@@ -1019,6 +1092,9 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
             flexDirection: 'column',
           }}
         >
+          <Box sx={{ mb: 3 }}>
+            <EnergyAreaControls locale={locale} />
+          </Box>
           <Box
             component="h1"
             sx={{
@@ -1064,6 +1140,7 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
             }}
           >
             <LayerToggleRowAccordion
+              disabled={!buildingApplicable}
               applyNegativeMargins
               label={
                 <TText
@@ -1081,6 +1158,7 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
               <EnergyClassesAccordionContent />
             </LayerToggleRowAccordion>
             <LayerToggleRowAccordion
+              disabled={!buildingApplicable}
               applyNegativeMargins
               label={
                 <TText
@@ -1101,6 +1179,7 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
               />
             </LayerToggleRowAccordion>
             <LayerToggleRowAccordion
+              disabled={!buildingApplicable}
               applyNegativeMargins
               label={
                 <TText

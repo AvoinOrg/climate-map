@@ -1,6 +1,7 @@
 import React from 'react'
 import '@testing-library/jest-dom'
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -204,4 +205,21 @@ describe('BackgroundBuildingFiltersAccordionContent', () => {
       ENERGYMAP_DEFAULT_SELECTED_CONSTRUCTION_DECADE
     )
   })
+it('disables all background filters in areas without changing their retained values', () => {
+  useAppletStore.setState({ effectiveGeography: 'buildings' })
+  useAppletStore.getState().setBuildingTypeFilter('01')
+  useAppletStore.getState().setSelectedConstructionDecade(1980)
+  useAppletStore.getState().setShowOnlySelectedDecade(true)
+  renderWithAppProvider(<BackgroundBuildingFiltersAccordionContent />)
+  act(() => useAppletStore.setState({ effectiveGeography: 'postal_code' }))
+  for (const select of screen.getAllByRole('combobox')) expect(select).toBeDisabled()
+  for (const control of screen.getAllByRole('switch')) expect(control).toBeDisabled()
+  fireEvent.click(screen.getAllByRole('switch')[0])
+  expect(useAppletStore.getState().showOnlySelectedDecade).toBe(true)
+  act(() => useAppletStore.setState({ effectiveGeography: 'buildings' }))
+  for (const select of screen.getAllByRole('combobox')) expect(select).not.toBeDisabled()
+  expect(useAppletStore.getState().buildingTypeFilter).toBe('01')
+  expect(useAppletStore.getState().selectedConstructionDecade).toBe(1980)
+})
+
 })
