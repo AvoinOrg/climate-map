@@ -24,7 +24,10 @@ import {
   resolveAreaGeography,
 } from 'applets/energy/common/areas/mapModes'
 import { ENERGYMAP_SHARED_BUILDING_LAYER_IDS } from 'applets/energy/layers/buildingPolygonsLayerConf'
-import { ENERGYMAP_BUILDING_POLYGONS_SOURCE_ID } from 'applets/energy/layers/buildingSource'
+import {
+  ENERGYMAP_BUILDING_POLYGONS_SOURCE_ID,
+  ENERGYMAP_BUILDING_POLYGONS_SOURCE_LAYER,
+} from 'applets/energy/layers/buildingSource'
 
 export type CommittedAreaGeneration = {
   descriptors: AreaSourceDescriptor[]
@@ -39,6 +42,7 @@ export class EnergyAreaMapRuntime {
   private revision = 0
   private committed?: CommittedAreaGeneration
   private installing = false
+  private selectionRestorePending = false
   private unregisterTransport?: () => void
   private buildingVisibility = new Map<string, 'visible' | 'none'>()
   private failedTiles = new Map<AreaLevel, Set<string>>()
@@ -63,8 +67,10 @@ export class EnergyAreaMapRuntime {
     map.on('zoom', this.sync)
     map.on('error', this.onError)
     map.on('sourcedata', this.onSourceData)
-    map.on('style.load', this.onStyle)
+    map.on('style.load', this.onStyleLoad)
     map.on('styledata', this.onStyle)
+    // Retained sources can still be loading during both early style events.
+    map.on('idle', this.onStyle)
     this.unsubscribe = useAppletStore.subscribe(
       (state) => state.areaMetric,
       this.sync
@@ -87,17 +93,9 @@ export class EnergyAreaMapRuntime {
       (includeBuildings &&
         feature.source === ENERGYMAP_BUILDING_POLYGONS_SOURCE_ID)
     if (store.selectedFeatures.some(owned)) {
-      // Style replacement may already have discarded feature state.
+      // The store deselects surviving sources. Removing their feature state
+      // first can break MapLibre's pending state update after style replacement.
       const keep = store.selectedFeatures.filter((feature) => !owned(feature))
-      for (const feature of store.selectedFeatures.filter(owned)) {
-        if (this.options.map.getSource(feature.source)) {
-          this.options.map.removeFeatureState({
-            source: feature.source,
-            sourceLayer: feature.sourceLayer,
-            id: feature.id,
-          })
-        }
-      }
       store.setSelectedFeatures(keep)
     }
     for (const descriptor of this.committed?.descriptors ?? [])
@@ -112,6 +110,7 @@ export class EnergyAreaMapRuntime {
     )
       this.options.map.removeFeatureState({
         source: ENERGYMAP_BUILDING_POLYGONS_SOURCE_ID,
+        sourceLayer: ENERGYMAP_BUILDING_POLYGONS_SOURCE_LAYER,
       })
     this.options.cancelDetails()
   }
@@ -129,10 +128,17 @@ export class EnergyAreaMapRuntime {
         this.options.map.removeSource(descriptor.sourceId)
     }
   }
-  install = (force = false) => {
+  private hasRegisteredAreas = () =>
+    this.committed?.descriptors.every(
+      (item) =>
+        this.options.map.getSource(item.sourceId) &&
+        areaLayerIds(item).every((id) => this.options.map.getLayer(id))
+    ) ?? false
+  install = () => {
+    if (!this.active || this.installing) return this.options.lane.pending
     const descriptors = createAreaSourceDescriptors()
     const signature = areaSourceDescriptorSignature(descriptors)
-    if (!force && this.committed?.signature === signature)
+    if (this.committed?.signature === signature && this.hasRegisteredAreas())
       return this.options.lane.pending
     const revision = ++this.revision
     const isCurrent = () =>
@@ -201,6 +207,7 @@ export class EnergyAreaMapRuntime {
         this.failedTiles.clear()
         useAppletStore.setState({ areaAvailable: true })
         this.sync()
+        this.selectionRestorePending = false
         this.restoreSelection()
         this.options.publish(this.committed, 'ready')
       } catch {
@@ -289,20 +296,32 @@ export class EnergyAreaMapRuntime {
     )
   }
   private restoreSelection = () => {
+    if (!this.active || useMapStore.getState().mapContext !== 'energy') return
     const descriptors = this.committed?.descriptors ?? []
     // Read current store state after queued installation. Never restore a captured
     // feature if the user closed, navigated or changed zoom during recovery.
-    for (const feature of useMapStore.getState().selectedFeatures) {
+    const selected = useMapStore.getState().selectedFeatures
+    const effective = useAppletStore.getState().effectiveGeography
+    const building =
+      effective === 'buildings'
+        ? selected.find(
+            (feature) =>
+              feature.source === ENERGYMAP_BUILDING_POLYGONS_SOURCE_ID &&
+              feature.sourceLayer === ENERGYMAP_BUILDING_POLYGONS_SOURCE_LAYER &&
+              (typeof feature.id === 'string' || typeof feature.id === 'number')
+          )
+        : undefined
+    for (const feature of selected) {
       const descriptor = descriptors.find(
         (item) =>
-          item.level === useAppletStore.getState().effectiveGeography &&
+          item.level === effective &&
           item.sourceId === feature.source &&
           item.sourceLayer === feature.sourceLayer
       )
       if (
-        descriptor &&
-        typeof feature.id === 'string' &&
-        this.options.map.getSource(descriptor.sourceId)
+        ((descriptor && typeof feature.id === 'string') ||
+          (feature === building && this.options.map.getLayer(feature.layer.id))) &&
+        this.options.map.getSource(feature.source)
       )
         this.options.map.setFeatureState(
           {
@@ -315,9 +334,10 @@ export class EnergyAreaMapRuntime {
     }
   }
   refreshTiles = () => {
-    if (!this.active) return
-    if (!this.committed) {
-      void this.install()
+    if (!this.active || this.installing) return
+    if (!this.hasRegisteredAreas()) {
+      if (this.committed) this.onStyle()
+      else void this.install()
       return
     }
     for (const descriptor of this.committed?.descriptors ?? [])
@@ -370,22 +390,30 @@ export class EnergyAreaMapRuntime {
     )
       this.options.map.refreshTiles(descriptor.sourceId)
   }
+  private onStyleLoad = () => {
+    // Full replacement clears feature state even when every source/layer survives.
+    this.selectionRestorePending = true
+    this.onStyle()
+  }
   private onStyle = () => {
     if (
       !this.active ||
       this.installing ||
       !this.committed ||
-      !this.options.map.isStyleLoaded()
+      useMapStore.getState().mapContext !== 'energy'
     )
       return
-    if (
-      this.committed.descriptors.some(
-        (item) =>
-          !this.options.map.getSource(item.sourceId) ||
-          areaLayerIds(item).some((id) => !this.options.map.getLayer(id))
-      )
+    if (!this.hasRegisteredAreas()) {
+      if (useAppletStore.getState().areaAvailable)
+        useAppletStore.setState({ areaAvailable: false })
+      if (this.options.map.isStyleLoaded()) void this.install()
+    } else if (
+      this.selectionRestorePending && this.options.map.isStyleLoaded()
     ) {
-      void this.install(true)
+      // Consume before writing state: setFeatureState itself can cause another idle.
+      this.selectionRestorePending = false
+      this.sync()
+      this.restoreSelection()
     }
   }
   dispose = () => {
@@ -398,8 +426,9 @@ export class EnergyAreaMapRuntime {
     map.off('zoom', this.sync)
     map.off('error', this.onError)
     map.off('sourcedata', this.onSourceData)
-    map.off('style.load', this.onStyle)
+    map.off('style.load', this.onStyleLoad)
     map.off('styledata', this.onStyle)
+    map.off('idle', this.onStyle)
     this.unsubscribe()
     this.mapUnsubscribe()
     this.options.invalidateNavigation?.('dispose')

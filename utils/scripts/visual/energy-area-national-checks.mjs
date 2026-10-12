@@ -216,6 +216,145 @@ export const checkEnergyAreaNational = async ({
       false
     )
   }
+  const waitForAreaRecovery = () =>
+    page.waitForFunction(() => {
+      const { map, appletStore, mapStore } = window.__energyModesTest
+      if (!map.isStyleLoaded()) return false
+      const style = map.getStyle()
+      if (!style) return false
+      const sources = Object.keys(style.sources).filter((id) =>
+        id.startsWith('energymap_areas_')
+      )
+      const layers = style.layers.filter((layer) =>
+        layer.source?.startsWith('energymap_areas_')
+      )
+      const effective = appletStore.getState().effectiveGeography
+      const rendered = [
+        ...new Set(
+          map.queryRenderedFeatures()
+            .filter((feature) => feature.source.startsWith('energymap_areas_'))
+            .map((feature) => feature.properties.level)
+        ),
+      ]
+      return (
+        appletStore.getState().areaAvailable &&
+        sources.length === 3 && layers.length === 6 &&
+        (effective === 'buildings'
+          ? rendered.length === 0
+          : rendered.length === 1 && rendered[0] === effective) &&
+        mapStore.getState().selectedFeatures
+          .filter((feature) =>
+            feature.source.startsWith('energymap_areas_') ||
+            (effective === 'buildings' &&
+              feature.source === 'energymap_building_polygons' &&
+              feature.sourceLayer === 'energymap_building_polygons')
+          )
+          .every((feature) =>
+            map.getFeatureState({
+              source: feature.source,
+              sourceLayer: feature.sourceLayer,
+              id: feature.id,
+            }).selected === true
+          )
+      )
+    })
+  const recoverRetainedStyle = async (label, retainAreas = false) => {
+    // Preserve the real base/building sources: an empty style misses the late
+    // readiness event ordering that previously stranded the area registration.
+    const before = await page.evaluate((retainAreas) => {
+      const { map, mapStore } = window.__energyModesTest
+      const style = map.getStyle()
+      if (!retainAreas) {
+        style.layers = style.layers.filter(
+          (layer) => !layer.source?.startsWith('energymap_areas_')
+        )
+        for (const id of Object.keys(style.sources))
+          if (id.startsWith('energymap_areas_')) delete style.sources[id]
+      }
+      const retained = {
+        sources: Object.keys(style.sources)
+          .filter((id) => !id.startsWith('energymap_areas_')).sort(),
+        layers: style.layers
+          .filter((layer) => !layer.source?.startsWith('energymap_areas_'))
+          .map((layer) => layer.id).sort(),
+        areaSources: Object.keys(style.sources)
+          .filter((id) => id.startsWith('energymap_areas_')).length,
+        selected: mapStore.getState().selectedFeatures.map((feature) => feature.id),
+      }
+      map.setStyle(style, { diff: false })
+      return retained
+    }, retainAreas)
+    assert(before.sources.length > 0, 'Keep ordinary sources during replacement')
+    assert.equal(before.areaSources, retainAreas ? 3 : 0)
+    await waitForAreaRecovery()
+    const after = await page.evaluate(() => {
+      const { map, appletStore, mapStore } = window.__energyModesTest
+      const style = map.getStyle()
+      return {
+        sources: Object.keys(style.sources)
+          .filter((id) => !id.startsWith('energymap_areas_'))
+          .sort(),
+        layers: style.layers
+          .filter((layer) => !layer.source?.startsWith('energymap_areas_'))
+          .map((layer) => layer.id)
+          .sort(),
+        selected: mapStore.getState().selectedFeatures.map((feature) => feature.id),
+        zoom: map.getZoom(),
+        effective: appletStore.getState().effectiveGeography,
+        selectedStates: mapStore.getState().selectedFeatures
+          .filter((feature) =>
+            feature.source.startsWith('energymap_areas_') ||
+            feature.source === 'energymap_building_polygons'
+          )
+          .map((feature) => ({
+            id: feature.id,
+            source: feature.source,
+            sourceLayer: feature.sourceLayer,
+            state: map.getFeatureState({
+              source: feature.source,
+              sourceLayer: feature.sourceLayer,
+              id: feature.id,
+            }),
+          })),
+        areaLayers: style.layers
+          .filter((layer) => layer.source?.startsWith('energymap_areas_'))
+          .map((layer) => ({
+            id: layer.id,
+            minzoom: layer.minzoom,
+            maxzoom: layer.maxzoom,
+          })),
+      }
+    })
+    assert.deepEqual(after.sources, before.sources)
+    assert.deepEqual(after.layers, before.layers)
+    assert.deepEqual(after.selected, before.selected)
+    assert(after.selectedStates.length > 0, 'Recovery must assert a selected feature')
+    for (const feature of after.selectedStates)
+      assert.equal(feature.state.selected, true, `Recovered selection ${feature.id}`)
+    if (label === 'buildings') {
+      assert.equal(after.selectedStates.length, 1)
+      assert.equal(after.selectedStates[0].source, 'energymap_building_polygons')
+      assert.equal(await page.getByTestId('building-info-tab-page-basic').isVisible(), true)
+    }
+    for (const layer of after.areaLayers) {
+      const ranges = layer.id.includes('postal_code')
+        ? [10, 12]
+        : layer.id.includes('municipality') ? [7, 10] : [0, 7]
+      assert.deepEqual([layer.minzoom, layer.maxzoom], ranges)
+    }
+    await assertAutomaticControls(page, locale)
+    const variant = retainAreas ? 'retained-all-style' : 'retained-style'
+    await snapshot(page, `${locale}-${viewportName}-${variant}-${label}`)
+    if (viewportName === 'mobile' && label === 'postal_code') {
+      await page.locator('.sidebar-toggle-button').click()
+      await snapshot(page, `${locale}-mobile-${variant}-postal-map`)
+      await page.locator('.sidebar-toggle-button').click()
+    }
+    evidence.checks.push({
+      unmocked: true, locale, viewportName,
+      retainedStyleRecovery: label, retainAreas, ...after,
+    })
+  }
   for (const zoom of [
     6.999, 7, 9.999, 10, 11.999, 12, 11.999, 10, 9.999, 7, 6.999,
   ]) {
@@ -266,6 +405,11 @@ export const checkEnergyAreaNational = async ({
       await panel.getByRole('alert').waitFor()
       assert.equal(await panel.locator('dl').count(), 0)
     } else await count({ code, buildings })
+    if (scenario === 'normal') {
+      await recoverRetainedStyle(level)
+      if (level === 'postal_code') await recoverRetainedStyle(level, true)
+      await count({ code, buildings })
+    }
     await assertAutomaticControls(page, locale)
     await snapshot(
       page,
@@ -309,6 +453,8 @@ export const checkEnergyAreaNational = async ({
       viewportName,
       realBuildingClick: buildingPoint,
     })
+    await recoverRetainedStyle('buildings')
+    await recoverRetainedStyle('buildings', true)
     await move({ page, zoom: 8, center: [24.94, 60.17] })
     if (viewportName === 'mobile')
       await page.locator('.sidebar-toggle-button').click()
@@ -348,42 +494,37 @@ export const checkEnergyAreaNational = async ({
         detailsBefore + 2
     )
     await count({ code: '00370', buildings: 655, scope: '091' })
-    await page.evaluate(() =>
-      window.__energyModesTest.map.setStyle({
-        version: 8,
-        sources: {},
-        layers: [
-          {
-            id: 'national-background',
-            type: 'background',
-            paint: { 'background-color': '#eef2f5' },
-          },
-        ],
-      })
-    )
-    await page.waitForFunction(
-      () =>
-        Object.keys(window.__energyModesTest.map.getStyle().sources).filter(
-          (id) => id.startsWith('energymap_areas_')
-        ).length === 3
-    )
-    await page.waitForTimeout(1000)
-    assert.equal(
-      await page.evaluate(() => {
-        const { map, mapStore } = window.__energyModesTest,
-          f = mapStore.getState().selectedFeatures[0]
-        return (
-          f &&
-          map.getFeatureState({
-            source: f.source,
-            sourceLayer: f.sourceLayer,
-            id: f.id,
-          }).selected
-        )
-      }),
-      true
-    )
+    await recoverRetainedStyle('scoped-postal')
+    await recoverRetainedStyle('scoped-postal', true)
     await count({ code: '00370', buildings: 655, scope: '091' })
+    for (const missing of ['source', 'layer']) {
+      // Click Refresh in the same browser task as removing the owned source or
+      // layer, before automatic idle recovery can mask a broken refresh path.
+      const absent = await page.evaluate(({ missing, refresh }) => {
+        const map = window.__energyModesTest.map
+        const source = 'energymap_areas_postal_code'
+        const fill = `${source}-fill`
+        map.removeLayer(fill)
+        if (missing === 'source') {
+          map.removeLayer(`${source}-outline`)
+          map.removeSource(source)
+        }
+        const absent = missing === 'source' ? !map.getSource(source) : !map.getLayer(fill)
+        const button = [...document.querySelectorAll('button')].find(
+          (node) => node.getAttribute('aria-label') === refresh && node.offsetParent
+        )
+        if (!button) throw new Error('Visible area Refresh button required')
+        button.click()
+        return absent
+      }, { missing, refresh: local.refresh })
+      assert(absent, `Remove owned ${missing} before Refresh`)
+      await waitForAreaRecovery()
+      await count({ code: '00370', buildings: 655, scope: '091' })
+      await assertAutomaticControls(page, locale)
+      evidence.checks.push({ unmocked: true, locale, viewportName,
+        refreshMissing: missing, scope: '091' })
+    }
+    await snapshot(page, `${locale}-${viewportName}-missing-owned-refresh-recovered`)
     await button(whole).click()
     await count({ code: '00370', buildings: 974 })
     await button(back).click()
