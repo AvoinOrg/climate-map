@@ -3,20 +3,12 @@ import maplibregl from 'maplibre-gl'
 import { registerAreaTileTransport } from './tileTransport'
 import { transformRegisteredMapTileRequest } from '#/common/utils/mapTileRequestTransforms'
 import { createAreaSourceDescriptors } from 'applets/energy/layers/areaSource'
-import { parseAreaMetadata } from './contract'
-import { resolveEnergyAreaApiConfig } from './config'
-import dataset from '../../../../../utils/test/energyAreas/dataset.json'
 
 jest.mock('maplibre-gl', () => ({
   __esModule: true,
   default: { addProtocol: jest.fn(), removeProtocol: jest.fn() },
 }))
-const descriptors = createAreaSourceDescriptors({
-  config: resolveEnergyAreaApiConfig({
-    origin: 'https://energy-areas.fixture.test',
-  }),
-  metadata: parseAreaMetadata(dataset.snapshots[0].metadata),
-})
+const descriptors = createAreaSourceDescriptors()
 it('fetches the exact advertised URL once, keeps headers/caching, exposes suppressed 404 and cleans only its registration', async () => {
   let active = true
   const dispose = registerAreaTileTransport({
@@ -41,13 +33,11 @@ it('fetches the exact advertised URL once, keeps headers/caching, exposes suppre
     maplibregl.addProtocol as jest.Mock
   ).mock.calls.at(-1)!
   const controller = new AbortController()
-  const fetchSpy = jest
-    .spyOn(globalThis, 'fetch')
-    .mockResolvedValue(
-      new Response(new Uint8Array([1, 2]), {
-        headers: { 'Cache-Control': 'public, max-age=31536000, immutable' },
-      })
-    )
+  const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+    new Response(new Uint8Array([1, 2]), {
+      headers: { 'Cache-Control': 'public, max-age=31536000, immutable' },
+    })
+  )
   const response = await handler(transformed, controller)
   expect(fetchSpy).toHaveBeenCalledTimes(1)
   expect(fetchSpy).toHaveBeenCalledWith(

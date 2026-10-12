@@ -11,7 +11,6 @@ import {
   parseAreaDetail,
   parseAreaDetailRequest,
   parseAreaMetadata,
-  parseAreaReleaseId,
 } from 'applets/energy/common/areas/contract'
 import { AreaApiError } from 'applets/energy/common/areas/errors'
 
@@ -88,25 +87,20 @@ const requestJson = async ({
 }
 export const fetchAreaMetadata = async ({
   config,
-  releaseId,
   signal,
   fetchFn = fetch,
 }: {
   config: AreaApiConfigResult
-  releaseId?: string
   signal?: AbortSignal
   fetchFn?: AreaFetch
 }) => {
   const { origin } = requireAreaApiConfig(config)
-  const pinned =
-    releaseId === undefined ? undefined : parseAreaReleaseId(releaseId)
-  const params = new URLSearchParams(pinned ? { release_id: pinned } : {})
   const payload = await requestJson({
-    url: `${origin}${ENERGY_AREA_API_PREFIX}/metadata${pinned ? `?${params}` : ''}`,
+    url: `${origin}${ENERGY_AREA_API_PREFIX}/metadata`,
     signal,
     fetchFn,
   })
-  const metadata = parseAreaMetadata(payload, { requestedReleaseId: pinned })
+  const metadata = parseAreaMetadata(payload)
   checkAborted(signal)
   return metadata
 }
@@ -122,16 +116,16 @@ export const fetchAreaDetail = async ({
   fetchFn?: AreaFetch
 }) => {
   const { origin } = requireAreaApiConfig(config)
-  const pinned = parseAreaDetailRequest(request)
-  const params = new URLSearchParams({ release_id: pinned.releaseId })
-  if (pinned.municipalityCode !== undefined)
-    params.set('municipality_code', pinned.municipalityCode)
+  const current = parseAreaDetailRequest(request)
+  const params = new URLSearchParams()
+  if (current.municipalityCode !== undefined)
+    params.set('municipality_code', current.municipalityCode)
   const payload = await requestJson({
-    url: `${origin}${ENERGY_AREA_API_PREFIX}/${pinned.level}/${pinned.areaCode}?${params}`,
+    url: `${origin}${ENERGY_AREA_API_PREFIX}/${current.level}/${current.areaCode}${params.toString() ? `?${params}` : ''}`,
     signal,
     fetchFn,
   })
-  const detail = parseAreaDetail(payload, { request: pinned })
+  const detail = parseAreaDetail(payload, { request: current })
   checkAborted(signal)
   return detail
 }

@@ -1,21 +1,8 @@
 import type { MapGeoJSONFeature } from 'maplibre-gl'
-import dataset from '../../../../../utils/test/energyAreas/dataset.json'
-import { parseAreaMetadata } from './contract'
-import { resolveEnergyAreaApiConfig } from './config'
 import { createAreaSourceDescriptors } from 'applets/energy/layers/areaSource'
-import {
-  projectAreaSelection,
-  detailMatchesMetadata,
-  createAreaSelection,
-} from './selection'
+import { projectAreaSelection, createAreaSelection } from './selection'
 
-const metadata = parseAreaMetadata(dataset.snapshots[0].metadata)
-const descriptors = createAreaSourceDescriptors({
-  metadata,
-  config: resolveEnergyAreaApiConfig({
-    origin: 'https://energy-areas.fixture.test',
-  }),
-})
+const descriptors = createAreaSourceDescriptors()
 const feature = (
   level: 'region' | 'municipality' | 'postal_code',
   code: string
@@ -26,7 +13,6 @@ const feature = (
     source: descriptor.sourceId,
     sourceLayer: descriptor.sourceLayer,
     properties: {
-      release_id: metadata.release_id,
       level,
       area_code: code,
       area_id: `${level}:${code}`,
@@ -54,7 +40,7 @@ it.each([
         descriptors,
         effective: level,
       })
-    ).toEqual({ releaseId: metadata.release_id, level, areaCode: code })
+    ).toEqual({ level, areaCode: code })
   }
 )
 it('rejects numerical IDs, malformed properties, wrong release/source/layer and inactive geography', () => {
@@ -64,7 +50,7 @@ it('rejects numerical IDs, malformed properties, wrong release/source/layer and 
     { source: 'building' },
     { sourceLayer: 'other' },
     { properties: { ...hit.properties, area_code: 100 } },
-    { properties: { ...hit.properties, release_id: dataset.releaseIds[1] } },
+    { properties: { ...hit.properties, area_id: 'postal_code:00200' } },
   ]) {
     expect(
       projectAreaSelection({
@@ -89,27 +75,9 @@ it('rejects numerical IDs, malformed properties, wrong release/source/layer and 
     })
   ).toBeUndefined()
 })
-it('prevents contradictory pinned provenance', () => {
-  const detail = {
-    release_id: metadata.release_id,
-    boundary_vintage: metadata.boundary_vintage,
-    as_of: metadata.as_of,
-  }
-  expect(detailMatchesMetadata({ metadata, detail })).toBe(true)
-  for (const changed of [
-    { release_id: dataset.releaseIds[1] },
-    { boundary_vintage: 2025 },
-    { as_of: '2025-01-01' },
-  ])
-    expect(
-      detailMatchesMetadata({ metadata, detail: { ...detail, ...changed } })
-    ).toBe(false)
-})
-
 it('accepts only validated internal scoped placeholders in the active descriptor and rejects fabricated identities', () => {
   const descriptor = descriptors.find((item) => item.level === 'postal_code')!
   const request = {
-    releaseId: metadata.release_id,
     level: 'postal_code' as const,
     areaCode: '00100',
     municipalityCode: '009',
@@ -140,7 +108,7 @@ it('accepts only validated internal scoped placeholders in the active descriptor
   expect(
     projectAreaSelection({
       features: [placeholder],
-      descriptors: [{ ...descriptor, releaseId: dataset.releaseIds[1] }],
+      descriptors: [{ ...descriptor, sourceId: 'other' }],
       effective: 'postal_code',
     })
   ).toBeUndefined()
@@ -153,7 +121,7 @@ it('accepts only validated internal scoped placeholders in the active descriptor
   expect(() =>
     createAreaSelection({
       descriptor,
-      request: { ...request, releaseId: dataset.releaseIds[1] },
+      request: { level: 'municipality', areaCode: '091' },
     })
   ).toThrow()
 })

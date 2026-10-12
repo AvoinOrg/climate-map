@@ -1,15 +1,18 @@
 {
-  "serviceRoot": "/host/home/xbexbex/git/avoin-energy-map-service",
-  "sha256": {
-    "src/api/areas.py": "47d7472d4284b348713136d9caa6c8e18ab22f8946f14d5341bc0f61bd6d528e",
-    "src/area_contract.py": "3d6ff913d6e89a595e3ba9d518763cc7da04efde2befd348ac724c4e05993452",
-    "src/etl/build_area_aggregates.py": "e3a9a0fad8c1358a1f4984fe92ebc3a38b3ac8453e8a75dc714df41b5506c64e",
-    "src/geoserver/publish_area_aggregates.py": "4a46cb8ef8b6507a4f6b1b5ad81a45e868e13ef66b23dd09e17a47cf2d1ab3f7",
-    "tests/test_area_aggregates.py": "90fe2770cf9d30d4f92db80026d92cdc3db562b8a880a8f3994f4742af48d1a4"
+  "historicalServiceEvidence": {
+    "serviceRoot": "/host/home/xbexbex/git/avoin-energy-map-service",
+    "sha256": {
+      "src/api/areas.py": "47d7472d4284b348713136d9caa6c8e18ab22f8946f14d5341bc0f61bd6d528e",
+      "src/area_contract.py": "3d6ff913d6e89a595e3ba9d518763cc7da04efde2befd348ac724c4e05993452",
+      "src/etl/build_area_aggregates.py": "e3a9a0fad8c1358a1f4984fe92ebc3a38b3ac8453e8a75dc714df41b5506c64e",
+      "src/geoserver/publish_area_aggregates.py": "4a46cb8ef8b6507a4f6b1b5ad81a45e868e13ef66b23dd09e17a47cf2d1ab3f7",
+      "tests/test_area_aggregates.py": "90fe2770cf9d30d4f92db80026d92cdc3db562b8a880a8f3994f4742af48d1a4"
+    }
   },
+  "contract": "/workspace/external/energymap/tasks/aggregate-building-data/latest-backend-contract.md",
   "synthetic": true,
   "generator": "generate-data.cjs",
-  "generatorSha256": "2bb027c852eb9d57ee64f6c8ff41964b9f4f8dece40af48f5b7f38c89018812d",
+  "generatorSha256": "5eeb480de61044efc62e83d3301093122422e68dd50e970e176749f9e6fa33e9",
   "codecVersions": {
     "geojson-vt": "4.0.2",
     "@maplibre/vt-pbf": "4.1.0",

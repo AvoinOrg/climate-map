@@ -5,15 +5,12 @@ import {
   parseAreaDetail,
   parseAreaDetailRequest,
   parseAreaMetadata,
-  parseAreaReleaseId,
   parseAreaTileProperties,
 } from 'applets/energy/common/areas/contract'
 import { AreaApiError } from 'applets/energy/common/areas/errors'
 import type { AreaDetailRequest } from 'applets/energy/common/types/areas'
 
-const releaseId = dataset.releaseIds[0]
 const request: AreaDetailRequest = {
-  releaseId,
   level: 'postal_code',
   areaCode: '00100',
 }
@@ -28,17 +25,14 @@ const kind = (fn: () => unknown, expected = 'malformed-contract') => {
   }
 }
 
-test('all service fixture metadata/details/metrics retain release context and identity', () => {
+test('all service fixture metadata/details/metrics validate latest context and identity', () => {
   for (const snapshot of dataset.snapshots) {
-    const metadata = parseAreaMetadata(snapshot.metadata, {
-      requestedReleaseId: snapshot.metadata.release_id.toUpperCase(),
-    })
+    const metadata = parseAreaMetadata(snapshot.metadata)
     expect(metadata.sources).toEqual(snapshot.metadata.sources)
     expect(metadata.validation).toEqual(snapshot.metadata.validation)
     for (const detail of Object.values(snapshot.details)) {
       const parsed = parseAreaDetail(detail, {
         request: {
-          releaseId: metadata.release_id,
           level: detail.level as AreaDetailRequest['level'],
           areaCode: detail.area_code,
         },
@@ -52,7 +46,7 @@ test('all service fixture metadata/details/metrics retain release context and id
 test('empty/sparse scales and optional names, metrics, arbitrary categories remain unchanged', () => {
   const municipality = dataset.snapshots[0].details['municipality:091']
   const parsed = parseAreaDetail(municipality, {
-    request: { releaseId, level: 'municipality', areaCode: '091' },
+    request: { level: 'municipality', areaCode: '091' },
   })
   expect(parsed.metrics.official_class?.valid_counts_by_scale).toEqual({
     '2013': { A: 1 },
@@ -130,10 +124,10 @@ test.each(['100', 100, '００１００', '0010', '001000', '00100 ', '-0100'])(
     )
   }
 )
-test('invalid release/level/ID, wrong context/scope/relations are rejected', () => {
+test('invalid latest/level/ID, wrong context/scope/relations are rejected', () => {
   for (const change of [
-    { release_id: 'bad' },
-    { release_id: dataset.releaseIds[1] },
+    { latest: undefined },
+    { latest: false },
     { level: 'city' },
     { area_id: 'postal_code:100' },
     { area_code: '00200', area_id: 'postal_code:00200' },
@@ -168,12 +162,6 @@ test('invalid release/level/ID, wrong context/scope/relations are rejected', () 
       }),
     'rejected-request'
   )
-  kind(() =>
-    parseAreaMetadata(dataset.snapshots[0].metadata, {
-      requestedReleaseId: dataset.releaseIds[1],
-    })
-  )
-  expect(parseAreaReleaseId(releaseId.toUpperCase())).toBe(releaseId)
 })
 test('required shape/version and numeric domains are enforced independently of fixture builder', () => {
   for (const payload of [
@@ -233,7 +221,6 @@ test('tile properties preserve strings, absent/null/zero coverage and repeated i
   for (const level of AREA_LEVELS) {
     const feature = dataset.snapshots[0].geometry[level].features[0]
     const parsed = parseAreaTileProperties(feature.properties, {
-      releaseId,
       level,
     })
     expect(parsed.area_id).toBe(`${level}:${parsed.area_code}`)
@@ -241,31 +228,24 @@ test('tile properties preserve strings, absent/null/zero coverage and repeated i
     expect(
       parseAreaTileProperties(
         { ...feature.properties, certificate_coverage: null },
-        { releaseId, level }
+        { level }
       ).certificate_coverage
     ).toBeNull()
     const { certificate_coverage: _coverage, ...without } = feature.properties
     expect(
-      parseAreaTileProperties(without, { releaseId, level })
-        .certificate_coverage
+      parseAreaTileProperties(without, { level }).certificate_coverage
     ).toBeUndefined()
     expect(
       parseAreaTileProperties(
         { ...without, certificate_coverage: 0 },
-        { releaseId, level }
+        { level }
       ).certificate_coverage
     ).toBe(0)
     kind(() =>
-      parseAreaTileProperties(
-        { ...without, release_id: dataset.releaseIds[1] },
-        { releaseId, level }
-      )
+      parseAreaTileProperties({ ...without, area_id: 'invalid' }, { level })
     )
     kind(() =>
-      parseAreaTileProperties(
-        { ...without, area_code: feature.id },
-        { releaseId, level }
-      )
+      parseAreaTileProperties({ ...without, area_code: feature.id }, { level })
     )
   }
 })

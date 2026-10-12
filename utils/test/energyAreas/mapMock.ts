@@ -53,7 +53,15 @@ export const mockAreaMap = () => {
       featureState.set(JSON.stringify(target), value)
     },
     removeFeatureState: (target: object) => {
-      featureState.delete(JSON.stringify(target))
+      for (const key of featureState.keys()) {
+        const ref = JSON.parse(key)
+        if (
+          Object.entries(target).every(
+            ([name, value]) => value === undefined || ref[name] === value
+          )
+        )
+          featureState.delete(key)
+      }
     },
     refreshTiles: jest.fn(),
     on: (name: string, ...args: unknown[]) => {

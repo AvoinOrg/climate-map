@@ -12,7 +12,6 @@ const detail = (code: string) =>
     ],
     {
       request: {
-        releaseId: dataset.releaseIds[0],
         level: 'postal_code',
         areaCode: code,
       },

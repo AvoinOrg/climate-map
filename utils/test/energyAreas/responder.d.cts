@@ -17,9 +17,7 @@ export const createFixtureGate: () => {
   promise: Promise<void>
   release: () => void
 }
-export const createEnergyAreaFixture: (options?: {
-  delivery?: 'native' | 'xyz' | 'tms'
-}) => {
+export const createEnergyAreaFixture: () => {
   requests: string[]
   matches: (url: URL) => boolean
   respond: (
@@ -28,6 +26,5 @@ export const createEnergyAreaFixture: (options?: {
   ) => Promise<FixtureResponse>
   fetch: typeof fetch
   setActiveRelease: (releaseId: string | null) => void
-  setDelivery: (value: 'native' | 'xyz' | 'tms') => void
   enqueue: (rule: FixtureRule) => void
 }

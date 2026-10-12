@@ -4,7 +4,6 @@ import { immer } from 'zustand/middleware/immer'
 
 import { commonDevtools } from '#/common/store/shared-devtools'
 import type {
-  AreaGeographyMode,
   AreaMetric,
   EffectiveGeography,
 } from 'applets/energy/common/areas/mapModes'
@@ -31,7 +30,6 @@ type SelectedBuildingState = {
 }
 
 type Vars = {
-  geographyMode: AreaGeographyMode
   areaMetric: AreaMetric
   effectiveGeography: EffectiveGeography
   areaAvailable: boolean
@@ -41,7 +39,6 @@ type Vars = {
   SelectedBuildingState
 
 type Actions = {
-  setGeographyMode: (mode: AreaGeographyMode) => void
   setAreaMetric: (metric: AreaMetric) => void
   setSelectedBuilding: (selectedBuilding: EnergymapSelectedBuilding) => void
   clearSelectedBuilding: () => void
@@ -70,7 +67,6 @@ type Actions = {
 export type State = Vars & Actions
 
 const initialBuildingFilterState: Vars = {
-  geographyMode: 'automatic',
   areaMetric: 'certificate_coverage',
   effectiveGeography: 'buildings',
   areaAvailable: false,
@@ -90,7 +86,6 @@ export const useAppletStore = create<State>()(
         const vars = initialBuildingFilterState
 
         const actions: Actions = {
-          setGeographyMode: (geographyMode) => set({ geographyMode }),
           setAreaMetric: (areaMetric) => set({ areaMetric }),
           setSelectedBuilding: (selectedBuilding) => {
             set((state) => {

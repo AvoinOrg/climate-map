@@ -11,11 +11,6 @@ export const AREA_METRIC_VERSION = 'building-area-summary-v1' as const
 const levelSchema = z.enum(AREA_LEVELS)
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)
 const coverage = z.number().min(0).max(1).nullable()
-// UUID syntax accepts service UUIDs including retained/test UUIDs of any version.
-const uuid = z
-  .string()
-  .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
-  .transform((value) => value.toLowerCase())
 const codePatterns: Record<AreaLevel, RegExp> = {
   postal_code: /^[0-9]{5}$/,
   municipality: /^[0-9]{3}$/,
@@ -63,8 +58,8 @@ export const areaMetricsSchema = z
     energy_certificate_heated_net_area: areaSum.optional(),
   })
   .passthrough()
-const releaseContext = {
-  release_id: uuid,
+const latestContext = {
+  latest: z.literal(true),
   boundary_vintage: count,
   as_of: z.iso.date(),
   metric_version: z.literal(AREA_METRIC_VERSION),
@@ -84,7 +79,7 @@ const descriptor = z
   .refine((v) => v.minzoom <= v.maxzoom)
 export const areaMetadataSchema = z
   .object({
-    ...releaseContext,
+    ...latestContext,
     metric_definitions: jsonObject,
     validation: jsonObject,
     sources: jsonObject,
@@ -113,7 +108,7 @@ const validIdentity = (v: {
   v.area_id === `${v.level}:${v.area_code}`
 export const areaDetailSchema = z
   .object({
-    ...releaseContext,
+    ...latestContext,
     ...identity,
     names,
     building_count: count,
@@ -150,7 +145,6 @@ export const areaDetailSchema = z
   })
 export const areaTilePropertiesSchema = z
   .object({
-    release_id: uuid,
     ...identity,
     name_fi: z.string().nullable().optional(),
     name_sv: z.string().nullable().optional(),
@@ -163,7 +157,6 @@ export const areaTilePropertiesSchema = z
   .refine(validIdentity)
 const requestSchema = z
   .object({
-    releaseId: uuid,
     level: levelSchema,
     areaCode: z.string(),
     municipalityCode: z.string().regex(codePatterns.municipality).optional(),
@@ -197,8 +190,6 @@ const validated = <T>({
     })
   return result.data
 }
-export const parseAreaReleaseId = (value: string) =>
-  validated({ schema: uuid, value, input: true })
 export const parseAreaDetailRequest = (value: AreaDetailRequest) =>
   validated({ schema: requestSchema, value, input: true })
 const requireVersion = (payload: unknown) => {
@@ -218,52 +209,40 @@ const requireVersion = (payload: unknown) => {
 const mismatch = () => {
   throw new AreaApiError({
     kind: 'malformed-contract',
-    diagnostic: 'Area response does not match its pinned request.',
+    diagnostic: 'Area response does not match its current request.',
   })
 }
-export const parseAreaMetadata = (
-  payload: unknown,
-  { requestedReleaseId }: { requestedReleaseId?: string } = {}
-) => {
+export const parseAreaMetadata = (payload: unknown) => {
   requireVersion(payload)
-  const metadata = validated({ schema: areaMetadataSchema, value: payload })
-  if (
-    requestedReleaseId !== undefined &&
-    metadata.release_id !== parseAreaReleaseId(requestedReleaseId)
-  )
-    mismatch()
-  return metadata
+  return validated({ schema: areaMetadataSchema, value: payload })
 }
 export const parseAreaDetail = (
   payload: unknown,
   { request }: { request: AreaDetailRequest }
 ) => {
-  const pinned = parseAreaDetailRequest(request)
+  const current = parseAreaDetailRequest(request)
   requireVersion(payload)
   const detail = validated({ schema: areaDetailSchema, value: payload })
   if (
-    detail.release_id !== pinned.releaseId ||
-    detail.level !== pinned.level ||
-    detail.area_code !== pinned.areaCode ||
-    detail.scope.municipality_code !== pinned.municipalityCode ||
+    detail.level !== current.level ||
+    detail.area_code !== current.areaCode ||
+    detail.scope.municipality_code !== current.municipalityCode ||
     detail.scope.geometry !==
-      (pinned.municipalityCode === undefined ? 'full_area' : 'full_postal_area')
+      (current.municipalityCode === undefined
+        ? 'full_area'
+        : 'full_postal_area')
   )
     mismatch()
   return detail
 }
 export const parseAreaTileProperties = (
   payload: unknown,
-  { releaseId, level }: { releaseId: string; level: AreaLevel }
+  { level }: { level: AreaLevel }
 ) => {
   const properties = validated({
     schema: areaTilePropertiesSchema,
     value: payload,
   })
-  if (
-    properties.release_id !== parseAreaReleaseId(releaseId) ||
-    properties.level !== level
-  )
-    mismatch()
+  if (properties.level !== level) mismatch()
   return properties
 }

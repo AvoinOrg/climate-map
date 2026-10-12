@@ -21,7 +21,7 @@ const tiles = []
 for (const releaseId of releaseIds)
   for (const sample of samples)
     for (const scheme of ['xyz', 'tms']) {
-      const sourceLayer = scheme === 'xyz' ? 'areas' : `fixture_${sample.level}`
+      const sourceLayer = `energymap_${sample.level}_areas`
       const row = scheme === 'tms' ? 2 ** sample.z - 1 - sample.y : sample.y
       const file = `tiles/${releaseId}/${scheme}/${sample.level}/${sample.z}-${sample.x}-${row}.pbf`
       const target = new URL(file, import.meta.url)
@@ -47,5 +47,5 @@ await fs.writeFile(
   ) + '\n'
 )
 console.log(
-  `Generated ${tiles.length} real coordinate-correct MVT samples (three releases, three levels, XYZ/TMS).`
+  `Generated ${tiles.length} real coordinate-correct MVT samples (three private snapshots, three levels, XYZ/TMS decoder coordinates).`
 )

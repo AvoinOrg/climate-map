@@ -5,7 +5,6 @@ import type {
   AreaDetailRequest,
   AreaLevel,
 } from 'applets/energy/common/types/areas'
-import type { AreaGeographyMode } from 'applets/energy/common/areas/mapModes'
 import type {
   CommittedAreaGeneration,
   AreaRuntimeStatus,
@@ -15,7 +14,6 @@ type AreaRuntimeContextValue = {
   generation?: CommittedAreaGeneration
   status: AreaRuntimeStatus
   problem?: AreaApiProblem['kind']
-  refreshFailed: boolean
   tileFailed: boolean
   request?: AreaDetailRequest
   detail?: AreaDetail
@@ -30,12 +28,10 @@ type AreaRuntimeContextValue = {
   navigateRelated: (target: { level: AreaLevel; areaCode: string }) => void
   showWholePostalArea: () => void
   showBuildings: () => void
-  selectMode: (mode: AreaGeographyMode) => void
 }
 export const AreaRuntimeContext = createContext<AreaRuntimeContextValue>({
   status: 'unavailable',
   problem: 'not-configured',
-  refreshFailed: false,
   tileFailed: false,
   detailLoading: false,
   refresh: () => {},
@@ -47,6 +43,5 @@ export const AreaRuntimeContext = createContext<AreaRuntimeContextValue>({
   navigateRelated: () => {},
   showWholePostalArea: () => {},
   showBuildings: () => {},
-  selectMode: () => {},
 })
 export const useEnergyAreaRuntime = () => useContext(AreaRuntimeContext)

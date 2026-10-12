@@ -13,7 +13,6 @@ export type AreaIdentity = {
   areaId: string
 }
 export type AreaDetailRequest = {
-  releaseId: string
   level: AreaLevel
   areaCode: string
   municipalityCode?: string

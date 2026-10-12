@@ -8,11 +8,7 @@ import { useMapStore } from '#/common/store/mapStore'
 import { registerAreaTileTransport } from 'applets/energy/common/areas/tileTransport'
 import { useAppletStore } from 'applets/energy/state/appletStore'
 import { LayerOrderLevel } from '#/common/types/map'
-import type {
-  AreaApiConfigResult,
-  AreaMetadata,
-  AreaLevel,
-} from 'applets/energy/common/types/areas'
+import type { AreaLevel } from 'applets/energy/common/types/areas'
 import {
   createAreaSourceDescriptors,
   areaSourceDescriptorSignature,
@@ -31,13 +27,12 @@ import { ENERGYMAP_SHARED_BUILDING_LAYER_IDS } from 'applets/energy/layers/build
 import { ENERGYMAP_BUILDING_POLYGONS_SOURCE_ID } from 'applets/energy/layers/buildingSource'
 
 export type CommittedAreaGeneration = {
-  metadata: AreaMetadata
   descriptors: AreaSourceDescriptor[]
   signature: string
 }
 export type AreaRuntimeStatus = 'loading' | 'updating' | 'ready' | 'unavailable'
 // A lane survives React effect/StrictMode re-entry. Old teardown completes before
-// a replacement owner can use the same release-qualified group IDs.
+// a replacement owner can use the same stable group IDs.
 export type AreaRegistrationLane = { pending: Promise<void> }
 export class EnergyAreaMapRuntime {
   private active = true
@@ -52,7 +47,6 @@ export class EnergyAreaMapRuntime {
   constructor(
     private readonly options: {
       map: MapLibreMap
-      config: AreaApiConfigResult
       lane: AreaRegistrationLane
       publish: (
         generation: CommittedAreaGeneration | undefined,
@@ -60,7 +54,9 @@ export class EnergyAreaMapRuntime {
       ) => void
       tileStatus: (failed: boolean) => void
       cancelDetails: () => void
-      invalidateNavigation?: (reason: 'level' | 'generation' | 'dispose') => void
+      invalidateNavigation?: (
+        reason: 'level' | 'generation' | 'dispose'
+      ) => void
     }
   ) {
     const { map } = options
@@ -70,9 +66,8 @@ export class EnergyAreaMapRuntime {
     map.on('style.load', this.onStyle)
     map.on('styledata', this.onStyle)
     this.unsubscribe = useAppletStore.subscribe(
-      (state) => [state.geographyMode, state.areaMetric],
-      this.sync,
-      { equalityFn: (a, b) => a[0] === b[0] && a[1] === b[1] }
+      (state) => state.areaMetric,
+      this.sync
     )
     // Listed building groups can be installed or enabled after the area owner.
     this.mapUnsubscribe = useMapStore.subscribe((state, previous) => {
@@ -111,6 +106,13 @@ export class EnergyAreaMapRuntime {
           source: descriptor.sourceId,
           sourceLayer: descriptor.sourceLayer,
         })
+    if (
+      includeBuildings &&
+      this.options.map.getSource(ENERGYMAP_BUILDING_POLYGONS_SOURCE_ID)
+    )
+      this.options.map.removeFeatureState({
+        source: ENERGYMAP_BUILDING_POLYGONS_SOURCE_ID,
+      })
     this.options.cancelDetails()
   }
   private remove = async (descriptors: readonly AreaSourceDescriptor[]) => {
@@ -127,11 +129,8 @@ export class EnergyAreaMapRuntime {
         this.options.map.removeSource(descriptor.sourceId)
     }
   }
-  promote = (metadata: AreaMetadata, force = false) => {
-    const descriptors = createAreaSourceDescriptors({
-      config: this.options.config,
-      metadata,
-    })
+  install = (force = false) => {
+    const descriptors = createAreaSourceDescriptors()
     const signature = areaSourceDescriptorSignature(descriptors)
     if (!force && this.committed?.signature === signature)
       return this.options.lane.pending
@@ -150,12 +149,16 @@ export class EnergyAreaMapRuntime {
         )
           useMapStore.getState()._setGroupVisibility(descriptor.sourceId, false)
       }
-    this.options.invalidateNavigation?.('generation')
-    this.clearSelection(true)
+    const compatible = previous?.signature === signature
+    if (!compatible) {
+      this.options.invalidateNavigation?.('generation')
+      this.clearSelection(true)
+    }
     this.unregisterTransport?.()
     this.unregisterTransport = undefined
-    this.committed = undefined
-    this.options.publish(undefined, 'updating')
+    // Preserve the canonical request/trail during compatible style recovery.
+    this.committed = compatible ? previous : undefined
+    this.options.publish(this.committed, 'updating')
     useAppletStore.setState({ areaAvailable: false })
     this.sync()
     this.installing = true
@@ -194,10 +197,11 @@ export class EnergyAreaMapRuntime {
           isCurrent: () =>
             this.active && this.committed?.signature === signature,
         })
-        this.committed = { metadata, descriptors, signature }
+        this.committed = { descriptors, signature }
         this.failedTiles.clear()
         useAppletStore.setState({ areaAvailable: true })
         this.sync()
+        this.restoreSelection()
         this.options.publish(this.committed, 'ready')
       } catch {
         await this.remove(descriptors)
@@ -217,9 +221,7 @@ export class EnergyAreaMapRuntime {
     const { map } = this.options
     const state = useAppletStore.getState()
     const effective = resolveAreaGeography({
-      mode: state.geographyMode,
       zoom: map.getZoom(),
-      available: !!this.committed,
     })
     if (effective !== state.effectiveGeography) {
       this.options.invalidateNavigation?.('level')
@@ -236,17 +238,9 @@ export class EnergyAreaMapRuntime {
     }
     if (this.committed) {
       for (const descriptor of this.committed.descriptors) {
-        const show =
-          state.geographyMode === 'automatic' || effective === descriptor.level
-        const range =
-          state.geographyMode === 'automatic'
-            ? AUTOMATIC_AREA_RANGES[descriptor.level]
-            : undefined
-        const min = Math.max(
-          descriptor.source.minzoom ?? 0,
-          range?.minzoom ?? 0
-        )
-        const max = range?.maxzoom ?? 24
+        const range = AUTOMATIC_AREA_RANGES[descriptor.level]
+        const min = Math.max(descriptor.source.minzoom ?? 0, range.minzoom)
+        const max = range.maxzoom
         // An advertised minimum above the automatic range yields no geometry.
         for (const id of areaLayerIds(descriptor)) {
           if (!map.getLayer(id)) continue
@@ -255,10 +249,10 @@ export class EnergyAreaMapRuntime {
         const group = useMapStore.getState()._layerGroups[descriptor.sourceId]
         if (
           group &&
-          group.isHidden === show &&
+          group.isHidden &&
           areaLayerIds(descriptor).every((id) => map.getLayer(id))
         ) {
-          useMapStore.getState()._setGroupVisibility(descriptor.sourceId, show)
+          useMapStore.getState()._setGroupVisibility(descriptor.sourceId, true)
         }
         const fill = areaLayerIds(descriptor)[0]
         if (map.getLayer(fill))
@@ -293,6 +287,43 @@ export class EnergyAreaMapRuntime {
     this.options.tileStatus(
       effective !== 'buildings' && !!this.failedTiles.get(effective)?.size
     )
+  }
+  private restoreSelection = () => {
+    const descriptors = this.committed?.descriptors ?? []
+    // Read current store state after queued installation. Never restore a captured
+    // feature if the user closed, navigated or changed zoom during recovery.
+    for (const feature of useMapStore.getState().selectedFeatures) {
+      const descriptor = descriptors.find(
+        (item) =>
+          item.level === useAppletStore.getState().effectiveGeography &&
+          item.sourceId === feature.source &&
+          item.sourceLayer === feature.sourceLayer
+      )
+      if (
+        descriptor &&
+        typeof feature.id === 'string' &&
+        this.options.map.getSource(descriptor.sourceId)
+      )
+        this.options.map.setFeatureState(
+          {
+            source: feature.source,
+            sourceLayer: feature.sourceLayer,
+            id: feature.id,
+          },
+          { selected: true }
+        )
+    }
+  }
+  refreshTiles = () => {
+    if (!this.active) return
+    if (!this.committed) {
+      void this.install()
+      return
+    }
+    for (const descriptor of this.committed?.descriptors ?? [])
+      if (this.options.map.getSource(descriptor.sourceId))
+        this.options.map.refreshTiles(descriptor.sourceId)
+    this.restoreSelection()
   }
   private activeDescriptor = () =>
     this.committed?.descriptors.find(
@@ -354,7 +385,7 @@ export class EnergyAreaMapRuntime {
           areaLayerIds(item).some((id) => !this.options.map.getLayer(id))
       )
     ) {
-      void this.promote(this.committed.metadata, true)
+      void this.install(true)
     }
   }
   dispose = () => {

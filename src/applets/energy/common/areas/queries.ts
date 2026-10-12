@@ -1,14 +1,11 @@
-import { queryOptions } from '@tanstack/react-query'
+import { queryOptions, type QueryClient } from '@tanstack/react-query'
 import type {
   AreaApiConfigResult,
   AreaDetailRequest,
   AreaFetch,
 } from 'applets/energy/common/types/areas'
 import { requireAreaApiConfig } from 'applets/energy/common/areas/config'
-import {
-  parseAreaDetailRequest,
-  parseAreaReleaseId,
-} from 'applets/energy/common/areas/contract'
+import { parseAreaDetailRequest } from 'applets/energy/common/areas/contract'
 import {
   fetchAreaDetail,
   fetchAreaMetadata,
@@ -16,21 +13,12 @@ import {
 import { AreaApiError } from 'applets/energy/common/areas/errors'
 
 export const AREA_METADATA_STALE_TIME = 60_000
+export const AREA_DETAIL_STALE_TIME = 30_000
+export const AREA_CACHE_TIME = 300_000
 export const areaQueryKeys = {
   all: ['energyAreas'] as const,
-  metadata: ({
-    config,
-    releaseId,
-  }: {
-    config: AreaApiConfigResult
-    releaseId?: string
-  }) =>
-    [
-      'energyAreas',
-      requireAreaApiConfig(config).origin,
-      'metadata',
-      releaseId === undefined ? 'active' : parseAreaReleaseId(releaseId),
-    ] as const,
+  metadata: ({ config }: { config: AreaApiConfigResult }) =>
+    ['energyAreas', requireAreaApiConfig(config).origin, 'metadata'] as const,
   details: ({ config }: { config: AreaApiConfigResult }) =>
     ['energyAreas', requireAreaApiConfig(config).origin, 'detail'] as const,
   detail: ({
@@ -40,13 +28,12 @@ export const areaQueryKeys = {
     config: AreaApiConfigResult
     request: AreaDetailRequest
   }) => {
-    const pinned = parseAreaDetailRequest(request)
+    const current = parseAreaDetailRequest(request)
     return [
       ...areaQueryKeys.details({ config }),
-      pinned.releaseId,
-      pinned.level,
-      pinned.areaCode,
-      pinned.municipalityCode ?? null,
+      current.level,
+      current.areaCode,
+      current.municipalityCode ?? null,
     ] as const
   },
 }
@@ -55,35 +42,28 @@ export const retryAreaQuery = (failureCount: number, error: unknown) =>
   error instanceof AreaApiError &&
   (error.problem.kind === 'network' || error.problem.kind === 'unavailable')
 
+const snapshotConfig = (config: AreaApiConfigResult): AreaApiConfigResult =>
+  config.ok ? { ok: true, config: requireAreaApiConfig(config) } : config
+
 export const areaMetadataQueryOptions = ({
   config,
-  releaseId,
   fetchFn,
 }: {
   config: AreaApiConfigResult
-  releaseId?: string
   fetchFn?: AreaFetch
 }) => {
-  const snapshot: AreaApiConfigResult = config.ok
-    ? { ok: true, config: requireAreaApiConfig(config) }
-    : config
-  const pinned =
-    releaseId === undefined ? undefined : parseAreaReleaseId(releaseId)
+  const snapshot = snapshotConfig(config)
   return queryOptions({
     queryKey: snapshot.ok
-      ? areaQueryKeys.metadata({ config: snapshot, releaseId: pinned })
-      : (['energyAreas', null, 'metadata', pinned ?? 'active'] as const),
+      ? areaQueryKeys.metadata({ config: snapshot })
+      : (['energyAreas', null, 'metadata'] as const),
     enabled: snapshot.ok,
     queryFn: ({ signal }) =>
-      fetchAreaMetadata({
-        config: snapshot,
-        releaseId: pinned,
-        signal,
-        fetchFn,
-      }),
+      fetchAreaMetadata({ config: snapshot, signal, fetchFn }),
     staleTime: AREA_METADATA_STALE_TIME,
+    gcTime: AREA_CACHE_TIME,
     refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
+    refetchOnReconnect: false,
     refetchInterval: false,
     retry: retryAreaQuery,
   })
@@ -97,37 +77,54 @@ export const areaDetailQueryOptions = ({
   request?: AreaDetailRequest
   fetchFn?: AreaFetch
 }) => {
-  const snapshot: AreaApiConfigResult = config.ok
-    ? { ok: true, config: requireAreaApiConfig(config) }
-    : config
-  const pinned =
+  const snapshot = snapshotConfig(config)
+  const current =
     request === undefined ? undefined : parseAreaDetailRequest(request)
   return queryOptions({
     queryKey:
-      snapshot.ok && pinned
-        ? areaQueryKeys.detail({ config: snapshot, request: pinned })
+      snapshot.ok && current
+        ? areaQueryKeys.detail({ config: snapshot, request: current })
         : ([
             'energyAreas',
             snapshot.ok ? snapshot.config.origin : null,
             'detail',
             'unselected',
           ] as const),
-    enabled: snapshot.ok && pinned !== undefined,
+    enabled: snapshot.ok && current !== undefined,
     queryFn: ({ signal }) => {
-      if (!pinned)
+      if (!current)
         throw new AreaApiError({
           kind: 'rejected-request',
           diagnostic: 'No area is selected.',
         })
       return fetchAreaDetail({
         config: snapshot,
-        request: pinned,
+        request: current,
         signal,
         fetchFn,
       })
     },
-    staleTime: Infinity,
+    staleTime: AREA_DETAIL_STALE_TIME,
+    gcTime: AREA_CACHE_TIME,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    // The provider owns one coordinated reconnect for tiles and all latest queries.
+    refetchOnReconnect: false,
     refetchInterval: false,
     retry: retryAreaQuery,
   })
+}
+// Cancellation precedes invalidation even for a first load. An obsolete same-key
+// response cannot overwrite a refresh; inactive scope/Back entries become stale.
+export const refreshAreaQueries = async ({
+  queryClient,
+  config,
+}: {
+  queryClient: QueryClient
+  config: AreaApiConfigResult
+}) => {
+  if (!config.ok) return
+  const queryKey = ['energyAreas', requireAreaApiConfig(config).origin] as const
+  await queryClient.cancelQueries({ queryKey })
+  await queryClient.invalidateQueries({ queryKey })
 }

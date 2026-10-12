@@ -6,8 +6,9 @@
   ],
   "snapshots": [
     {
+      "snapshotId": "11111111-1111-4111-8111-111111111111",
       "metadata": {
-        "release_id": "11111111-1111-4111-8111-111111111111",
+        "latest": true,
         "boundary_vintage": 2026,
         "as_of": "2026-10-01",
         "metric_version": "building-area-summary-v1",
@@ -45,20 +46,23 @@
         },
         "layers": {
           "postal_code": {
-            "url": "/energy-data/areas/11111111-1111-4111-8111-111111111111/postal_code/tiles/{z}/{x}/{y}.pbf",
-            "source_layer": "areas",
+            "url": "https://sandbox.gis.avoin.org/geoserver/gwc/service/tms/1.0.0/sandbox_energiakartta%3Aenergymap_postal_code_areas@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf",
+            "source_layer": "energymap_postal_code_areas",
+            "scheme": "tms",
             "minzoom": 0,
             "maxzoom": 14
           },
           "municipality": {
-            "url": "/energy-data/areas/11111111-1111-4111-8111-111111111111/municipality/tiles/{z}/{x}/{y}.pbf",
-            "source_layer": "areas",
+            "url": "https://sandbox.gis.avoin.org/geoserver/gwc/service/tms/1.0.0/sandbox_energiakartta%3Aenergymap_municipality_areas@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf",
+            "source_layer": "energymap_municipality_areas",
+            "scheme": "tms",
             "minzoom": 0,
             "maxzoom": 14
           },
           "region": {
-            "url": "/energy-data/areas/11111111-1111-4111-8111-111111111111/region/tiles/{z}/{x}/{y}.pbf",
-            "source_layer": "areas",
+            "url": "https://sandbox.gis.avoin.org/geoserver/gwc/service/tms/1.0.0/sandbox_energiakartta%3Aenergymap_region_areas@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf",
+            "source_layer": "energymap_region_areas",
+            "scheme": "tms",
             "minzoom": 0,
             "maxzoom": 14
           }
@@ -68,7 +72,7 @@
       },
       "details": {
         "postal_code:00100": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00100",
           "area_id": "postal_code:00100",
@@ -206,7 +210,7 @@
           "related_area_level": "municipality"
         },
         "postal_code:00200": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00200",
           "area_id": "postal_code:00200",
@@ -327,7 +331,7 @@
           "related_area_level": "municipality"
         },
         "postal_code:00300": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00300",
           "area_id": "postal_code:00300",
@@ -413,7 +417,7 @@
           "related_area_level": "municipality"
         },
         "postal_code:00400": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00400",
           "area_id": "postal_code:00400",
@@ -537,7 +541,7 @@
           "related_area_level": "municipality"
         },
         "municipality:005": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "municipality",
           "area_code": "005",
           "area_id": "municipality:005",
@@ -666,7 +670,7 @@
           "region_code": "01"
         },
         "municipality:091": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "municipality",
           "area_code": "091",
           "area_id": "municipality:091",
@@ -795,7 +799,7 @@
           "region_code": "01"
         },
         "municipality:009": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "municipality",
           "area_code": "009",
           "area_id": "municipality:009",
@@ -886,7 +890,7 @@
           "region_code": "02"
         },
         "municipality:006": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "municipality",
           "area_code": "006",
           "area_id": "municipality:006",
@@ -1011,7 +1015,7 @@
           "region_code": "03"
         },
         "region:01": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "region",
           "area_code": "01",
           "area_id": "region:01",
@@ -1149,7 +1153,7 @@
           "related_area_level": "municipality"
         },
         "region:02": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "region",
           "area_code": "02",
           "area_id": "region:02",
@@ -1244,7 +1248,7 @@
           "related_area_level": "municipality"
         },
         "region:03": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "region",
           "area_code": "03",
           "area_id": "region:03",
@@ -1370,7 +1374,7 @@
       },
       "intersections": {
         "00100:005": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00100",
           "area_id": "postal_code:00100",
@@ -1490,7 +1494,7 @@
           "related_area_level": "municipality"
         },
         "00100:091": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00100",
           "area_id": "postal_code:00100",
@@ -1616,7 +1620,7 @@
           "related_area_level": "municipality"
         },
         "00100:009": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00100",
           "area_id": "postal_code:00100",
@@ -1716,7 +1720,7 @@
           "related_area_level": "municipality"
         },
         "00100:006": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00100",
           "area_id": "postal_code:00100",
@@ -1816,7 +1820,7 @@
           "related_area_level": "municipality"
         },
         "00200:005": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00200",
           "area_id": "postal_code:00200",
@@ -1931,7 +1935,7 @@
           "related_area_level": "municipality"
         },
         "00200:091": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00200",
           "area_id": "postal_code:00200",
@@ -2046,7 +2050,7 @@
           "related_area_level": "municipality"
         },
         "00200:009": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00200",
           "area_id": "postal_code:00200",
@@ -2145,7 +2149,7 @@
           "related_area_level": "municipality"
         },
         "00200:006": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00200",
           "area_id": "postal_code:00200",
@@ -2244,7 +2248,7 @@
           "related_area_level": "municipality"
         },
         "00300:005": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00300",
           "area_id": "postal_code:00300",
@@ -2331,7 +2335,7 @@
           "related_area_level": "municipality"
         },
         "00300:091": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00300",
           "area_id": "postal_code:00300",
@@ -2418,7 +2422,7 @@
           "related_area_level": "municipality"
         },
         "00300:009": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00300",
           "area_id": "postal_code:00300",
@@ -2505,7 +2509,7 @@
           "related_area_level": "municipality"
         },
         "00300:006": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00300",
           "area_id": "postal_code:00300",
@@ -2592,7 +2596,7 @@
           "related_area_level": "municipality"
         },
         "00400:005": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00400",
           "area_id": "postal_code:00400",
@@ -2688,7 +2692,7 @@
           "related_area_level": "municipality"
         },
         "00400:091": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00400",
           "area_id": "postal_code:00400",
@@ -2784,7 +2788,7 @@
           "related_area_level": "municipality"
         },
         "00400:009": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00400",
           "area_id": "postal_code:00400",
@@ -2880,7 +2884,7 @@
           "related_area_level": "municipality"
         },
         "00400:006": {
-          "release_id": "11111111-1111-4111-8111-111111111111",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00400",
           "area_id": "postal_code:00400",
@@ -3013,7 +3017,6 @@
               "type": "Feature",
               "id": 100,
               "properties": {
-                "release_id": "11111111-1111-4111-8111-111111111111",
                 "level": "postal_code",
                 "area_code": "00100",
                 "area_id": "postal_code:00100",
@@ -3056,7 +3059,6 @@
               "type": "Feature",
               "id": 200,
               "properties": {
-                "release_id": "11111111-1111-4111-8111-111111111111",
                 "level": "postal_code",
                 "area_code": "00200",
                 "area_id": "postal_code:00200",
@@ -3097,7 +3099,6 @@
               "type": "Feature",
               "id": 300,
               "properties": {
-                "release_id": "11111111-1111-4111-8111-111111111111",
                 "level": "postal_code",
                 "area_code": "00300",
                 "area_id": "postal_code:00300",
@@ -3136,7 +3137,6 @@
               "type": "Feature",
               "id": 400,
               "properties": {
-                "release_id": "11111111-1111-4111-8111-111111111111",
                 "level": "postal_code",
                 "area_code": "00400",
                 "area_id": "postal_code:00400",
@@ -3184,7 +3184,6 @@
               "type": "Feature",
               "id": 5,
               "properties": {
-                "release_id": "11111111-1111-4111-8111-111111111111",
                 "level": "municipality",
                 "area_code": "005",
                 "area_id": "municipality:005",
@@ -3227,7 +3226,6 @@
               "type": "Feature",
               "id": 91,
               "properties": {
-                "release_id": "11111111-1111-4111-8111-111111111111",
                 "level": "municipality",
                 "area_code": "091",
                 "area_id": "municipality:091",
@@ -3270,7 +3268,6 @@
               "type": "Feature",
               "id": 9,
               "properties": {
-                "release_id": "11111111-1111-4111-8111-111111111111",
                 "level": "municipality",
                 "area_code": "009",
                 "area_id": "municipality:009",
@@ -3312,7 +3309,6 @@
               "type": "Feature",
               "id": 6,
               "properties": {
-                "release_id": "11111111-1111-4111-8111-111111111111",
                 "level": "municipality",
                 "area_code": "006",
                 "area_id": "municipality:006",
@@ -3360,7 +3356,6 @@
               "type": "Feature",
               "id": 1,
               "properties": {
-                "release_id": "11111111-1111-4111-8111-111111111111",
                 "level": "region",
                 "area_code": "01",
                 "area_id": "region:01",
@@ -3403,7 +3398,6 @@
               "type": "Feature",
               "id": 2,
               "properties": {
-                "release_id": "11111111-1111-4111-8111-111111111111",
                 "level": "region",
                 "area_code": "02",
                 "area_id": "region:02",
@@ -3445,7 +3439,6 @@
               "type": "Feature",
               "id": 3,
               "properties": {
-                "release_id": "11111111-1111-4111-8111-111111111111",
                 "level": "region",
                 "area_code": "03",
                 "area_id": "region:03",
@@ -3489,8 +3482,9 @@
       }
     },
     {
+      "snapshotId": "22222222-2222-4222-8222-222222222222",
       "metadata": {
-        "release_id": "22222222-2222-4222-8222-222222222222",
+        "latest": true,
         "boundary_vintage": 2026,
         "as_of": "2026-09-01",
         "metric_version": "building-area-summary-v1",
@@ -3528,20 +3522,23 @@
         },
         "layers": {
           "postal_code": {
-            "url": "/energy-data/areas/22222222-2222-4222-8222-222222222222/postal_code/tiles/{z}/{x}/{y}.pbf",
-            "source_layer": "areas",
+            "url": "https://sandbox.gis.avoin.org/geoserver/gwc/service/tms/1.0.0/sandbox_energiakartta%3Aenergymap_postal_code_areas@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf",
+            "source_layer": "energymap_postal_code_areas",
+            "scheme": "tms",
             "minzoom": 0,
             "maxzoom": 14
           },
           "municipality": {
-            "url": "/energy-data/areas/22222222-2222-4222-8222-222222222222/municipality/tiles/{z}/{x}/{y}.pbf",
-            "source_layer": "areas",
+            "url": "https://sandbox.gis.avoin.org/geoserver/gwc/service/tms/1.0.0/sandbox_energiakartta%3Aenergymap_municipality_areas@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf",
+            "source_layer": "energymap_municipality_areas",
+            "scheme": "tms",
             "minzoom": 0,
             "maxzoom": 14
           },
           "region": {
-            "url": "/energy-data/areas/22222222-2222-4222-8222-222222222222/region/tiles/{z}/{x}/{y}.pbf",
-            "source_layer": "areas",
+            "url": "https://sandbox.gis.avoin.org/geoserver/gwc/service/tms/1.0.0/sandbox_energiakartta%3Aenergymap_region_areas@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf",
+            "source_layer": "energymap_region_areas",
+            "scheme": "tms",
             "minzoom": 0,
             "maxzoom": 14
           }
@@ -3551,7 +3548,7 @@
       },
       "details": {
         "postal_code:00100": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00100",
           "area_id": "postal_code:00100",
@@ -3687,7 +3684,7 @@
           "related_area_level": "municipality"
         },
         "postal_code:00200": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00200",
           "area_id": "postal_code:00200",
@@ -3808,7 +3805,7 @@
           "related_area_level": "municipality"
         },
         "postal_code:00300": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00300",
           "area_id": "postal_code:00300",
@@ -3894,7 +3891,7 @@
           "related_area_level": "municipality"
         },
         "postal_code:00400": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00400",
           "area_id": "postal_code:00400",
@@ -4018,7 +4015,7 @@
           "related_area_level": "municipality"
         },
         "municipality:005": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "municipality",
           "area_code": "005",
           "area_id": "municipality:005",
@@ -4147,7 +4144,7 @@
           "region_code": "01"
         },
         "municipality:091": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "municipality",
           "area_code": "091",
           "area_id": "municipality:091",
@@ -4276,7 +4273,7 @@
           "region_code": "01"
         },
         "municipality:009": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "municipality",
           "area_code": "009",
           "area_id": "municipality:009",
@@ -4367,7 +4364,7 @@
           "region_code": "02"
         },
         "municipality:006": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "municipality",
           "area_code": "006",
           "area_id": "municipality:006",
@@ -4492,7 +4489,7 @@
           "region_code": "03"
         },
         "region:01": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "region",
           "area_code": "01",
           "area_id": "region:01",
@@ -4630,7 +4627,7 @@
           "related_area_level": "municipality"
         },
         "region:02": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "region",
           "area_code": "02",
           "area_id": "region:02",
@@ -4725,7 +4722,7 @@
           "related_area_level": "municipality"
         },
         "region:03": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "region",
           "area_code": "03",
           "area_id": "region:03",
@@ -4851,7 +4848,7 @@
       },
       "intersections": {
         "00100:005": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00100",
           "area_id": "postal_code:00100",
@@ -4971,7 +4968,7 @@
           "related_area_level": "municipality"
         },
         "00100:091": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00100",
           "area_id": "postal_code:00100",
@@ -5097,7 +5094,7 @@
           "related_area_level": "municipality"
         },
         "00100:009": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00100",
           "area_id": "postal_code:00100",
@@ -5197,7 +5194,7 @@
           "related_area_level": "municipality"
         },
         "00100:006": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00100",
           "area_id": "postal_code:00100",
@@ -5297,7 +5294,7 @@
           "related_area_level": "municipality"
         },
         "00200:005": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00200",
           "area_id": "postal_code:00200",
@@ -5412,7 +5409,7 @@
           "related_area_level": "municipality"
         },
         "00200:091": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00200",
           "area_id": "postal_code:00200",
@@ -5527,7 +5524,7 @@
           "related_area_level": "municipality"
         },
         "00200:009": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00200",
           "area_id": "postal_code:00200",
@@ -5626,7 +5623,7 @@
           "related_area_level": "municipality"
         },
         "00200:006": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00200",
           "area_id": "postal_code:00200",
@@ -5725,7 +5722,7 @@
           "related_area_level": "municipality"
         },
         "00300:005": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00300",
           "area_id": "postal_code:00300",
@@ -5812,7 +5809,7 @@
           "related_area_level": "municipality"
         },
         "00300:091": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00300",
           "area_id": "postal_code:00300",
@@ -5899,7 +5896,7 @@
           "related_area_level": "municipality"
         },
         "00300:009": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00300",
           "area_id": "postal_code:00300",
@@ -5986,7 +5983,7 @@
           "related_area_level": "municipality"
         },
         "00300:006": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00300",
           "area_id": "postal_code:00300",
@@ -6073,7 +6070,7 @@
           "related_area_level": "municipality"
         },
         "00400:005": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00400",
           "area_id": "postal_code:00400",
@@ -6169,7 +6166,7 @@
           "related_area_level": "municipality"
         },
         "00400:091": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00400",
           "area_id": "postal_code:00400",
@@ -6265,7 +6262,7 @@
           "related_area_level": "municipality"
         },
         "00400:009": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00400",
           "area_id": "postal_code:00400",
@@ -6361,7 +6358,7 @@
           "related_area_level": "municipality"
         },
         "00400:006": {
-          "release_id": "22222222-2222-4222-8222-222222222222",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00400",
           "area_id": "postal_code:00400",
@@ -6494,7 +6491,6 @@
               "type": "Feature",
               "id": 100,
               "properties": {
-                "release_id": "22222222-2222-4222-8222-222222222222",
                 "level": "postal_code",
                 "area_code": "00100",
                 "area_id": "postal_code:00100",
@@ -6537,7 +6533,6 @@
               "type": "Feature",
               "id": 200,
               "properties": {
-                "release_id": "22222222-2222-4222-8222-222222222222",
                 "level": "postal_code",
                 "area_code": "00200",
                 "area_id": "postal_code:00200",
@@ -6578,7 +6573,6 @@
               "type": "Feature",
               "id": 300,
               "properties": {
-                "release_id": "22222222-2222-4222-8222-222222222222",
                 "level": "postal_code",
                 "area_code": "00300",
                 "area_id": "postal_code:00300",
@@ -6617,7 +6611,6 @@
               "type": "Feature",
               "id": 400,
               "properties": {
-                "release_id": "22222222-2222-4222-8222-222222222222",
                 "level": "postal_code",
                 "area_code": "00400",
                 "area_id": "postal_code:00400",
@@ -6665,7 +6658,6 @@
               "type": "Feature",
               "id": 5,
               "properties": {
-                "release_id": "22222222-2222-4222-8222-222222222222",
                 "level": "municipality",
                 "area_code": "005",
                 "area_id": "municipality:005",
@@ -6708,7 +6700,6 @@
               "type": "Feature",
               "id": 91,
               "properties": {
-                "release_id": "22222222-2222-4222-8222-222222222222",
                 "level": "municipality",
                 "area_code": "091",
                 "area_id": "municipality:091",
@@ -6751,7 +6742,6 @@
               "type": "Feature",
               "id": 9,
               "properties": {
-                "release_id": "22222222-2222-4222-8222-222222222222",
                 "level": "municipality",
                 "area_code": "009",
                 "area_id": "municipality:009",
@@ -6793,7 +6783,6 @@
               "type": "Feature",
               "id": 6,
               "properties": {
-                "release_id": "22222222-2222-4222-8222-222222222222",
                 "level": "municipality",
                 "area_code": "006",
                 "area_id": "municipality:006",
@@ -6841,7 +6830,6 @@
               "type": "Feature",
               "id": 1,
               "properties": {
-                "release_id": "22222222-2222-4222-8222-222222222222",
                 "level": "region",
                 "area_code": "01",
                 "area_id": "region:01",
@@ -6884,7 +6872,6 @@
               "type": "Feature",
               "id": 2,
               "properties": {
-                "release_id": "22222222-2222-4222-8222-222222222222",
                 "level": "region",
                 "area_code": "02",
                 "area_id": "region:02",
@@ -6926,7 +6913,6 @@
               "type": "Feature",
               "id": 3,
               "properties": {
-                "release_id": "22222222-2222-4222-8222-222222222222",
                 "level": "region",
                 "area_code": "03",
                 "area_id": "region:03",
@@ -6970,8 +6956,9 @@
       }
     },
     {
+      "snapshotId": "33333333-3333-4333-8333-333333333333",
       "metadata": {
-        "release_id": "33333333-3333-4333-8333-333333333333",
+        "latest": true,
         "boundary_vintage": 2026,
         "as_of": "2026-08-01",
         "metric_version": "building-area-summary-v1",
@@ -7009,20 +6996,23 @@
         },
         "layers": {
           "postal_code": {
-            "url": "/energy-data/areas/33333333-3333-4333-8333-333333333333/postal_code/tiles/{z}/{x}/{y}.pbf",
-            "source_layer": "areas",
+            "url": "https://sandbox.gis.avoin.org/geoserver/gwc/service/tms/1.0.0/sandbox_energiakartta%3Aenergymap_postal_code_areas@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf",
+            "source_layer": "energymap_postal_code_areas",
+            "scheme": "tms",
             "minzoom": 0,
             "maxzoom": 14
           },
           "municipality": {
-            "url": "/energy-data/areas/33333333-3333-4333-8333-333333333333/municipality/tiles/{z}/{x}/{y}.pbf",
-            "source_layer": "areas",
+            "url": "https://sandbox.gis.avoin.org/geoserver/gwc/service/tms/1.0.0/sandbox_energiakartta%3Aenergymap_municipality_areas@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf",
+            "source_layer": "energymap_municipality_areas",
+            "scheme": "tms",
             "minzoom": 0,
             "maxzoom": 14
           },
           "region": {
-            "url": "/energy-data/areas/33333333-3333-4333-8333-333333333333/region/tiles/{z}/{x}/{y}.pbf",
-            "source_layer": "areas",
+            "url": "https://sandbox.gis.avoin.org/geoserver/gwc/service/tms/1.0.0/sandbox_energiakartta%3Aenergymap_region_areas@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf",
+            "source_layer": "energymap_region_areas",
+            "scheme": "tms",
             "minzoom": 0,
             "maxzoom": 14
           }
@@ -7032,7 +7022,7 @@
       },
       "details": {
         "postal_code:00100": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00100",
           "area_id": "postal_code:00100",
@@ -7168,7 +7158,7 @@
           "related_area_level": "municipality"
         },
         "postal_code:00200": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00200",
           "area_id": "postal_code:00200",
@@ -7289,7 +7279,7 @@
           "related_area_level": "municipality"
         },
         "postal_code:00300": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00300",
           "area_id": "postal_code:00300",
@@ -7375,7 +7365,7 @@
           "related_area_level": "municipality"
         },
         "postal_code:00400": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00400",
           "area_id": "postal_code:00400",
@@ -7496,7 +7486,7 @@
           "related_area_level": "municipality"
         },
         "municipality:005": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "municipality",
           "area_code": "005",
           "area_id": "municipality:005",
@@ -7625,7 +7615,7 @@
           "region_code": "01"
         },
         "municipality:091": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "municipality",
           "area_code": "091",
           "area_id": "municipality:091",
@@ -7754,7 +7744,7 @@
           "region_code": "01"
         },
         "municipality:009": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "municipality",
           "area_code": "009",
           "area_id": "municipality:009",
@@ -7845,7 +7835,7 @@
           "region_code": "02"
         },
         "municipality:006": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "municipality",
           "area_code": "006",
           "area_id": "municipality:006",
@@ -7967,7 +7957,7 @@
           "region_code": "03"
         },
         "region:01": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "region",
           "area_code": "01",
           "area_id": "region:01",
@@ -8105,7 +8095,7 @@
           "related_area_level": "municipality"
         },
         "region:02": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "region",
           "area_code": "02",
           "area_id": "region:02",
@@ -8200,7 +8190,7 @@
           "related_area_level": "municipality"
         },
         "region:03": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "region",
           "area_code": "03",
           "area_id": "region:03",
@@ -8323,7 +8313,7 @@
       },
       "intersections": {
         "00100:005": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00100",
           "area_id": "postal_code:00100",
@@ -8443,7 +8433,7 @@
           "related_area_level": "municipality"
         },
         "00100:091": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00100",
           "area_id": "postal_code:00100",
@@ -8569,7 +8559,7 @@
           "related_area_level": "municipality"
         },
         "00100:009": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00100",
           "area_id": "postal_code:00100",
@@ -8669,7 +8659,7 @@
           "related_area_level": "municipality"
         },
         "00100:006": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00100",
           "area_id": "postal_code:00100",
@@ -8769,7 +8759,7 @@
           "related_area_level": "municipality"
         },
         "00200:005": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00200",
           "area_id": "postal_code:00200",
@@ -8884,7 +8874,7 @@
           "related_area_level": "municipality"
         },
         "00200:091": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00200",
           "area_id": "postal_code:00200",
@@ -8999,7 +8989,7 @@
           "related_area_level": "municipality"
         },
         "00200:009": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00200",
           "area_id": "postal_code:00200",
@@ -9098,7 +9088,7 @@
           "related_area_level": "municipality"
         },
         "00200:006": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00200",
           "area_id": "postal_code:00200",
@@ -9197,7 +9187,7 @@
           "related_area_level": "municipality"
         },
         "00300:005": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00300",
           "area_id": "postal_code:00300",
@@ -9284,7 +9274,7 @@
           "related_area_level": "municipality"
         },
         "00300:091": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00300",
           "area_id": "postal_code:00300",
@@ -9371,7 +9361,7 @@
           "related_area_level": "municipality"
         },
         "00300:009": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00300",
           "area_id": "postal_code:00300",
@@ -9458,7 +9448,7 @@
           "related_area_level": "municipality"
         },
         "00300:006": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00300",
           "area_id": "postal_code:00300",
@@ -9545,7 +9535,7 @@
           "related_area_level": "municipality"
         },
         "00400:005": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00400",
           "area_id": "postal_code:00400",
@@ -9641,7 +9631,7 @@
           "related_area_level": "municipality"
         },
         "00400:091": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00400",
           "area_id": "postal_code:00400",
@@ -9737,7 +9727,7 @@
           "related_area_level": "municipality"
         },
         "00400:009": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00400",
           "area_id": "postal_code:00400",
@@ -9833,7 +9823,7 @@
           "related_area_level": "municipality"
         },
         "00400:006": {
-          "release_id": "33333333-3333-4333-8333-333333333333",
+          "latest": true,
           "level": "postal_code",
           "area_code": "00400",
           "area_id": "postal_code:00400",
@@ -9963,7 +9953,6 @@
               "type": "Feature",
               "id": 100,
               "properties": {
-                "release_id": "33333333-3333-4333-8333-333333333333",
                 "level": "postal_code",
                 "area_code": "00100",
                 "area_id": "postal_code:00100",
@@ -10006,7 +9995,6 @@
               "type": "Feature",
               "id": 200,
               "properties": {
-                "release_id": "33333333-3333-4333-8333-333333333333",
                 "level": "postal_code",
                 "area_code": "00200",
                 "area_id": "postal_code:00200",
@@ -10047,7 +10035,6 @@
               "type": "Feature",
               "id": 300,
               "properties": {
-                "release_id": "33333333-3333-4333-8333-333333333333",
                 "level": "postal_code",
                 "area_code": "00300",
                 "area_id": "postal_code:00300",
@@ -10086,7 +10073,6 @@
               "type": "Feature",
               "id": 400,
               "properties": {
-                "release_id": "33333333-3333-4333-8333-333333333333",
                 "level": "postal_code",
                 "area_code": "00400",
                 "area_id": "postal_code:00400",
@@ -10134,7 +10120,6 @@
               "type": "Feature",
               "id": 5,
               "properties": {
-                "release_id": "33333333-3333-4333-8333-333333333333",
                 "level": "municipality",
                 "area_code": "005",
                 "area_id": "municipality:005",
@@ -10177,7 +10162,6 @@
               "type": "Feature",
               "id": 91,
               "properties": {
-                "release_id": "33333333-3333-4333-8333-333333333333",
                 "level": "municipality",
                 "area_code": "091",
                 "area_id": "municipality:091",
@@ -10220,7 +10204,6 @@
               "type": "Feature",
               "id": 9,
               "properties": {
-                "release_id": "33333333-3333-4333-8333-333333333333",
                 "level": "municipality",
                 "area_code": "009",
                 "area_id": "municipality:009",
@@ -10262,7 +10245,6 @@
               "type": "Feature",
               "id": 6,
               "properties": {
-                "release_id": "33333333-3333-4333-8333-333333333333",
                 "level": "municipality",
                 "area_code": "006",
                 "area_id": "municipality:006",
@@ -10310,7 +10292,6 @@
               "type": "Feature",
               "id": 1,
               "properties": {
-                "release_id": "33333333-3333-4333-8333-333333333333",
                 "level": "region",
                 "area_code": "01",
                 "area_id": "region:01",
@@ -10353,7 +10334,6 @@
               "type": "Feature",
               "id": 2,
               "properties": {
-                "release_id": "33333333-3333-4333-8333-333333333333",
                 "level": "region",
                 "area_code": "02",
                 "area_id": "region:02",
@@ -10395,7 +10375,6 @@
               "type": "Feature",
               "id": 3,
               "properties": {
-                "release_id": "33333333-3333-4333-8333-333333333333",
                 "level": "region",
                 "area_code": "03",
                 "area_id": "region:03",

@@ -12,11 +12,10 @@ import {
   createAreaSelection,
   projectAreaSelection,
 } from 'applets/energy/common/areas/selection'
-import type { AreaGeographyMode } from 'applets/energy/common/areas/mapModes'
+import { resolveAreaGeography } from 'applets/energy/common/areas/mapModes'
 
 type Frame = {
   request?: AreaDetailRequest
-  mode: AreaGeographyMode
   zoom: number
   signature: string
 }
@@ -35,7 +34,6 @@ export class EnergyAreaNavigation {
   private buildingsReturn = false
   private active = true
   private unsubscribeSelection: () => void
-  private unsubscribeMode: () => void
   constructor(
     private readonly options: {
       map: MapLibreMap
@@ -59,13 +57,6 @@ export class EnergyAreaNavigation {
         this.options.cancelDetails()
       }
     })
-    this.unsubscribeMode = useAppletStore.subscribe(
-      (state) => state.geographyMode,
-      () => {
-        if (!this.controlled)
-          this.selectMode(useAppletStore.getState().geographyMode)
-      }
-    )
   }
   invalidate = (reason?: 'level' | 'generation' | 'dispose') => {
     if (reason === 'level' && this.controlled) return
@@ -90,7 +81,6 @@ export class EnergyAreaNavigation {
     if (!request && !this.buildingsReturn) return
     return {
       request,
-      mode: state.geographyMode,
       zoom: this.options.map.getZoom(),
       signature: generation.signature,
     }
@@ -114,20 +104,33 @@ export class EnergyAreaNavigation {
         ? createAreaSelection({ request: frame.request, descriptor })
         : undefined
     if (frame.request && !feature) return
+    const target = frame.request?.level ?? 'buildings'
+    const zoom = Math.min(
+      this.options.map.getMaxZoom(),
+      Math.max(
+        this.options.map.getMinZoom(),
+        frame.zoom,
+        descriptor?.source.minzoom ?? 0
+      )
+    )
+    // A constrained map/source may not reach the target band. Never install
+    // details for an invisible geography, or widen its render range.
+    if (resolveAreaGeography({ zoom }) !== target) {
+      this.invalidate()
+      return
+    }
     this.controlled = true
     try {
       this.options.cancelDetails()
       useMapStore.getState().setSelectedFeatures([])
-      useAppletStore.getState().setGeographyMode(frame.mode)
-      // Keep the current center. Advertised source min zoom is respected; tiles
-      // never supply full-area bounds. Manual overzoom remains supported.
-      const zoom = Math.max(frame.zoom, descriptor?.source.minzoom ?? 0)
-      this.options.map.jumpTo({
-        zoom: Math.min(
-          this.options.map.getMaxZoom(),
-          Math.max(this.options.map.getMinZoom(), zoom)
-        ),
-      })
+      // Keep the center; tiles do not supply full-area bounds.
+      this.options.map.jumpTo({ zoom })
+      if (
+        resolveAreaGeography({ zoom: this.options.map.getZoom() }) !== target
+      ) {
+        this.invalidate()
+        return
+      }
       this.buildingsReturn = !frame.request
       if (feature) useMapStore.getState().setSelectedFeatures([feature])
       this.options.changed(this.trail.length > 0)
@@ -145,7 +148,6 @@ export class EnergyAreaNavigation {
     const frame = this.current()
     if (!frame?.request) return
     const request: AreaDetailRequest = {
-      releaseId: frame.request.releaseId,
       level,
       areaCode,
       ...(frame.request.level === 'municipality' && level === 'postal_code'
@@ -161,7 +163,6 @@ export class EnergyAreaNavigation {
     this.trail.push(frame)
     this.install({
       request,
-      mode: level,
       zoom: navigationZoom[level],
       signature: frame.signature,
     })
@@ -182,7 +183,6 @@ export class EnergyAreaNavigation {
     if (frame?.request?.level !== 'postal_code') return
     this.trail.push(frame)
     this.install({
-      mode: 'buildings',
       zoom: Math.max(navigationZoom.buildings, frame.zoom),
       signature: frame.signature,
     })
@@ -191,21 +191,9 @@ export class EnergyAreaNavigation {
     const frame = this.trail.pop()
     if (frame) this.install(frame)
   }
-  selectMode = (mode: AreaGeographyMode) => {
-    this.invalidate()
-    this.controlled = true
-    try {
-      this.options.cancelDetails()
-      useMapStore.getState().setSelectedFeatures([])
-      useAppletStore.getState().setGeographyMode(mode)
-    } finally {
-      this.controlled = false
-    }
-  }
   dispose = () => {
     this.active = false
     this.unsubscribeSelection()
-    this.unsubscribeMode()
     this.invalidate()
   }
 }

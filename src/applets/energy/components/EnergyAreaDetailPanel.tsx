@@ -30,12 +30,7 @@ const EnergyAreaDetailPanel = ({ locale }: { locale: string }) => {
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
     heading.current?.focus({ preventScroll: true })
-  }, [
-    request?.releaseId,
-    request?.level,
-    request?.areaCode,
-    request?.municipalityCode,
-  ])
+  }, [request?.level, request?.areaCode, request?.municipalityCode])
   if (!request) return null
   const number = new Intl.NumberFormat(locale)
   const percent = new Intl.NumberFormat(locale, {

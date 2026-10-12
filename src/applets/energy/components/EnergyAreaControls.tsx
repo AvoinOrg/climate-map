@@ -1,4 +1,3 @@
-import { ENERGYMAP_BUILDING_POLYGONS_LAYER_MIN_ZOOM } from 'applets/energy/layers/buildingSource'
 import { useTranslate } from '@tolgee/react'
 import { Box } from '#/common/style/theme'
 import TText from '#/components/common/TText'
@@ -7,10 +6,8 @@ import { Button } from '#/components/common/Button'
 import { useAppletStore } from 'applets/energy/state/appletStore'
 import { useEnergyAreaRuntime } from 'applets/energy/common/areas/AreaRuntimeContext'
 import {
-  AREA_GEOGRAPHY_MODES,
   AREA_METRIC_BANDS,
   AREA_UNAVAILABLE_COLOR,
-  type AreaGeographyMode,
   type AreaMetric,
 } from 'applets/energy/common/areas/mapModes'
 
@@ -31,11 +28,8 @@ const EnergyAreaControls = ({
   compact?: boolean
 }) => {
   const { t } = useTranslate(ns)
-  const mode = useAppletStore((state) => state.geographyMode)
   const metric = useAppletStore((state) => state.areaMetric)
   const effective = useAppletStore((state) => state.effectiveGeography)
-  const zoom = useAppletStore((state) => state.areaZoom)
-  const available = useAppletStore((state) => state.areaAvailable)
   const runtime = useEnergyAreaRuntime()
   const format = new Intl.NumberFormat(
     locale,
@@ -43,23 +37,6 @@ const EnergyAreaControls = ({
       ? { style: 'percent', maximumFractionDigits: 0 }
       : {}
   )
-  const minzoom =
-    runtime.generation?.descriptors.find((item) => item.level === effective)
-      ?.source.minzoom ?? 0
-  const statusKey = runtime.refreshFailed
-    ? 'refresh_failed'
-    : runtime.status === 'updating'
-      ? 'updating'
-      : runtime.status === 'loading'
-        ? 'loading'
-        : 'unavailable'
-  const unavailableKey =
-    !available &&
-    ['unsupported-contract', 'malformed-contract'].includes(
-      runtime.problem ?? ''
-    )
-      ? `error.${runtime.problem}`
-      : statusKey
   return (
     <Box
       data-testid="energy-area-controls"
@@ -72,41 +49,15 @@ const EnergyAreaControls = ({
       }}
     >
       {(compact || !runtime.request) && <EnergyAreaBackButton />}
-      <DropDownSelectWithLabel
-        value={mode}
-        label={t(`${prefix}geography`)}
-        ariaLabel={t(`${prefix}geography`)}
-        options={AREA_GEOGRAPHY_MODES.map((value) => ({
-          value,
-          label: t(`${prefix}mode.${value}`),
-        }))}
-        onChange={(event) =>
-          runtime.selectMode(event.target.value as AreaGeographyMode)
-        }
-      />
-      {(!available || runtime.refreshFailed) && (
-        <Box role="status" sx={{ my: 1 }}>
-          <TText ns={ns} keyName={`${prefix}${unavailableKey}`} />
-        </Box>
+      {runtime.status !== 'loading' && runtime.status !== 'updating' && (
+        <Button
+          size="small"
+          onClick={runtime.refresh}
+          aria-label={t(`${prefix}refresh`)}
+        >
+          <TText ns={ns} keyName={`${prefix}refresh`} />
+        </Button>
       )}
-      {runtime.status !== 'loading' &&
-        runtime.status !== 'updating' &&
-        runtime.problem !== 'not-configured' &&
-        runtime.problem !== 'invalid-config' && (
-          <Button
-            size="small"
-            onClick={runtime.refresh}
-            aria-label={t(`${prefix}refresh`)}
-          >
-            <TText ns={ns} keyName={`${prefix}refresh`} />
-          </Button>
-        )}
-      {mode === 'buildings' &&
-        zoom < ENERGYMAP_BUILDING_POLYGONS_LAYER_MIN_ZOOM && (
-          <Box role="status" sx={{ my: 1 }}>
-            <TText ns={ns} keyName={`${prefix}zoom_buildings`} />
-          </Box>
-        )}
       {effective !== 'buildings' && (
         <>
           <Box sx={{ my: 1 }}>
@@ -116,11 +67,6 @@ const EnergyAreaControls = ({
               params={{ level: t(`${prefix}mode.${effective}`) }}
             />
           </Box>
-          {zoom < minzoom && (
-            <Box role="status">
-              <TText ns={ns} keyName={`${prefix}zoom_area`} />
-            </Box>
-          )}
           {runtime.request?.municipalityCode && (
             <Box
               component="p"

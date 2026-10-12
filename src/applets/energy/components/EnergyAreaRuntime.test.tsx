@@ -1,10 +1,9 @@
 import React from 'react'
 import '@testing-library/jest-dom'
-import { act, cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Tolgee, TolgeeProvider } from '@tolgee/react'
 import { FormatIcu } from '@tolgee/format-icu'
-import type { Map as MapLibreMap } from 'maplibre-gl'
 import { AppThemeProvider } from '#/common/style/theme'
 import { useMapStore } from '#/common/store/mapStore'
 import { useMapInstanceStore } from '#/common/store/mapStore/mapInstanceStore'
@@ -12,6 +11,7 @@ import { useAppletStore } from 'applets/energy/state/appletStore'
 import * as client from 'applets/energy/common/areas/client'
 import fi from '@i18n/energiakartta/fi.json'
 import en from '@i18n/energiakartta/en.json'
+import { mockAreaMap } from '../../../../utils/test/energyAreas/mapMock'
 import EnergyAreaRuntime from './EnergyAreaRuntime'
 import EnergyAreaControls from './EnergyAreaControls'
 
@@ -33,47 +33,27 @@ jest.mock('maplibre_symbol_utils', () => ({ canvasFill: jest.fn() }))
 
 const originalOrigin = process.env.PUBLIC_ENERGY_AREA_API_ORIGIN
 let queryClient: QueryClient
-let mapZoom: number
-let listeners: Map<string, Set<() => void>>
-const map = {
-  getZoom: () => mapZoom,
-  getSource: jest.fn(),
-  getLayer: jest.fn(),
-  addSource: jest.fn(),
-  on: jest.fn((event: string, listener: () => void) => {
-    if (!listeners.has(event)) listeners.set(event, new Set())
-    listeners.get(event)!.add(listener)
-  }),
-  off: jest.fn((event: string, listener: () => void) => {
-    listeners.get(event)?.delete(listener)
-  }),
-}
-const zoomTo = (zoom: number) =>
-  act(() => {
-    mapZoom = zoom
-    listeners.get('zoom')?.forEach((listener) => listener())
-  })
+let current: ReturnType<typeof mockAreaMap>
+const zoomTo = (zoom: number) => act(() => current.zoom(zoom))
 
 beforeEach(() => {
   jest.clearAllMocks()
-  mapZoom = 11
-  listeners = new Map()
+  current = mockAreaMap()
+  current.zoom(11)
   queryClient = new QueryClient()
   useMapStore.setState({
     ...useMapStore.getInitialState(),
     mapContext: 'energy',
     isLoaded: true,
   })
-  useMapInstanceStore.setState({ _map: map as unknown as MapLibreMap })
-  useAppletStore.setState({
-    ...useAppletStore.getInitialState(),
-    geographyMode: 'buildings',
-  })
+  useMapInstanceStore.setState({ _map: current.map })
+  useAppletStore.setState(useAppletStore.getInitialState())
   jest.spyOn(client, 'fetchAreaMetadata')
   jest.spyOn(client, 'fetchAreaDetail')
 })
-afterEach(() => {
+afterEach(async () => {
   cleanup()
+  await waitFor(() => expect(current.sources.size).toBe(0))
   queryClient.clear()
   jest.restoreAllMocks()
   useMapInstanceStore.setState({ _map: null })
@@ -93,7 +73,7 @@ describe.each([undefined, 'invalid-origin'])(
       ['en', false],
       ['en', true],
     ] as const)(
-      'tracks actual zoom for the manual Buildings hint (%s, compact=%s)',
+      'tracks automatic geography without global fallback copy (%s, compact=%s)',
       async (locale, compact) => {
         if (origin === undefined)
           delete process.env.PUBLIC_ENERGY_AREA_API_ORIGIN
@@ -117,27 +97,53 @@ describe.each([undefined, 'invalid-origin'])(
           </QueryClientProvider>
         )
         const controls = await screen.findByTestId('energy-area-controls')
-        const hint =
-          locale === 'fi'
-            ? 'Lähennä karttaa nähdäksesi rakennukset.'
-            : 'Zoom in to see buildings.'
-        // The runtime must read the map; the stored default is zoom 12.
-        expect(controls).toHaveTextContent(hint)
+        expect(controls).not.toHaveTextContent(
+          /building map remains|rakennuskartta toimii/i
+        )
+        expect(
+          screen.queryByRole('combobox', {
+            name: locale === 'fi' ? 'Aluetaso' : 'Geography',
+          })
+        ).not.toBeInTheDocument()
         expect(useAppletStore.getState().areaZoom).toBe(11)
-        for (const zoom of [11.999, 12, 12.001, 11.5]) {
+        for (const [zoom, geography] of [
+          [6.999, 'region'],
+          [7, 'municipality'],
+          [9.999, 'municipality'],
+          [10, 'postal_code'],
+          [11.999, 'postal_code'],
+          [12, 'buildings'],
+          [12.001, 'buildings'],
+          [11.5, 'postal_code'],
+          [9, 'municipality'],
+          [6, 'region'],
+        ] as const) {
           zoomTo(zoom)
           expect(useAppletStore.getState().areaZoom).toBe(zoom)
-          if (zoom < 12) expect(controls).toHaveTextContent(hint)
-          else expect(controls).not.toHaveTextContent(hint)
-          expect(useAppletStore.getState().geographyMode).toBe('buildings')
-          expect(useAppletStore.getState().effectiveGeography).toBe('buildings')
+          expect(useAppletStore.getState().effectiveGeography).toBe(geography)
+          expect(controls).not.toHaveTextContent(
+            /building map remains|rakennuskartta toimii/i
+          )
         }
-        expect(useAppletStore.getState().areaAvailable).toBe(false)
+        await act(async () => {
+          await Promise.resolve()
+          await Promise.resolve()
+        })
+        expect(useAppletStore.getState().areaAvailable).toBe(true)
+        expect(current.sources.size).toBe(3)
+        expect(
+          screen.getAllByRole('button', {
+            name: locale === 'fi' ? 'Päivitä aluetiedot' : 'Refresh area data',
+          }).length
+        ).toBeGreaterThan(0)
         expect(client.fetchAreaMetadata).not.toHaveBeenCalled()
         expect(client.fetchAreaDetail).not.toHaveBeenCalled()
-        expect(map.addSource).not.toHaveBeenCalled()
         view.unmount()
-        expect([...listeners.values()].every((set) => set.size === 0)).toBe(true)
+        await waitFor(() =>
+          expect(
+            [...current.listeners.values()].every((set) => set.size === 0)
+          ).toBe(true)
+        )
         zoomTo(10)
         expect(useAppletStore.getState().areaZoom).toBe(12)
       }

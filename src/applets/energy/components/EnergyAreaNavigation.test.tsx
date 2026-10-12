@@ -135,7 +135,6 @@ const select = (level: AreaLevel, areaCode: string) =>
       id: `${level}:${areaCode}`,
       layer: { id: `${descriptor.sourceId}-fill` },
       properties: {
-        release_id: descriptor.releaseId,
         level,
         area_code: areaCode,
         area_id: `${level}:${areaCode}`,
@@ -189,7 +188,7 @@ it('integrates region → municipality → scoped postal → whole → Buildings
       JSON.stringify({
         source: useMapStore.getState().selectedFeatures[0].source,
         id: 'postal_code:00100',
-        sourceLayer: 'areas',
+        sourceLayer: 'energymap_postal_code_areas',
       })
     )
   ).toEqual({ selected: true })
@@ -232,7 +231,7 @@ it('integrates region → municipality → scoped postal → whole → Buildings
     true
   )
 })
-it('preserves manual within-level zoom but clears trail/scope for global same-mode selection, direct clicks, automatic transition and close', async () => {
+it('retains scope within a band and clears obsolete trail on user zoom, direct clicks and close', async () => {
   await mount()
   select('region', '01')
   await expectRequest('region', '01')
@@ -245,9 +244,10 @@ it('preserves manual within-level zoom but clears trail/scope for global same-mo
   act(() => current.zoom(11.7))
   expect(runtime.canGoBack).toBe(true)
   expect(runtime.request?.municipalityCode).toBe('091')
-  act(() => runtime.selectMode('postal_code'))
+  act(() => current.zoom(12))
   expect(runtime.request).toBeUndefined()
   expect(runtime.canGoBack).toBe(false)
+  act(() => current.zoom(11))
   select('postal_code', '00100')
   await expectRequest('postal_code', '00100', undefined, 5)
   act(() => runtime.navigateRelated({ level: 'municipality', areaCode: '005' }))
@@ -263,7 +263,6 @@ it('preserves manual within-level zoom but clears trail/scope for global same-mo
   act(() => runtime.back())
   expect(runtime.request).toBeUndefined()
   expect(runtime.canGoBack).toBe(false)
-  act(() => runtime.selectMode('automatic'))
   act(() => current.zoom(6.999))
   select('region', '01')
   await expectRequest('region', '01')
@@ -274,12 +273,11 @@ it('preserves manual within-level zoom but clears trail/scope for global same-mo
 it('handles valid zero intersection successfully through the same selected-feature seam', async () => {
   await mount()
   act(() => {
-    runtime.selectMode('postal_code')
+    current.zoom(11)
     const descriptor = runtime.generation!.descriptors.find(
       (item) => item.level === 'postal_code'
     )!
     const request: AreaDetailRequest = {
-      releaseId: descriptor.releaseId,
       level: 'postal_code',
       areaCode: '00100',
       municipalityCode: '009',
@@ -330,52 +328,38 @@ it('cancels gated noncooperative responses across rapid navigation/back and clos
   act(() => runtime.back())
   expect(runtime.request).toBeUndefined()
 })
-it('invalidates history on metadata promotion, same-release descriptor/style replacement and applet exit', async () => {
+it('retains request, history and selected outline across refresh/reconnect/style recovery; invalidates on exit', async () => {
   const view = await mount()
   select('region', '01')
   await expectRequest('region', '01')
   act(() => runtime.navigateRelated({ level: 'municipality', areaCode: '091' }))
   await expectRequest('municipality', '091')
-  // Same generation refresh retains the current detail and history.
   act(() => runtime.refresh())
   await waitFor(() =>
     expect(
-      fixture.requests.filter((url: string) => url.endsWith('/metadata')).length
-    ).toBe(2)
+      fixture.requests.filter((url) => url.endsWith('/metadata'))
+    ).toHaveLength(2)
   )
   expect(runtime.canGoBack).toBe(true)
-  fixture.setDelivery('tms')
-  act(() => runtime.refresh())
+  expect(current.map.refreshTiles).toHaveBeenCalledTimes(3)
+  act(() => window.dispatchEvent(new Event('online')))
   await waitFor(() =>
-    expect(runtime.generation?.descriptors[0].source.scheme).toBe('tms')
+    expect(
+      fixture.requests.filter((url) => url.endsWith('/metadata'))
+    ).toHaveLength(3)
   )
-  expect(runtime.canGoBack).toBe(false)
-  expect(runtime.request).toBeUndefined()
-  act(() => runtime.selectMode('region'))
-  select('region', '01')
-  await expectRequest('region', '01')
-  act(() => runtime.navigateRelated({ level: 'municipality', areaCode: '091' }))
-  await expectRequest('municipality', '091')
+  expect(current.map.refreshTiles).toHaveBeenCalledTimes(6)
   current.sources.clear()
   current.layers.clear()
+  current.featureState.clear()
   act(() => current.fire('style.load'))
   await waitFor(() => expect(runtime.status).toBe('ready'))
-  expect(runtime.canGoBack).toBe(false)
-  expect(runtime.request).toBeUndefined()
+  expect(runtime.canGoBack).toBe(true)
+  await expectRequest('municipality', '091')
+  expect([...current.featureState.values()]).toContainEqual({ selected: true })
   act(() => useMapStore.setState({ mapContext: 'main' }))
   expect(runtime.request).toBeUndefined()
-  act(() => runtime.back())
-  expect(runtime.request).toBeUndefined()
   view.unmount()
-  await act(async () => {
-    await Promise.resolve()
-    await Promise.resolve()
-  })
-  await waitFor(() =>
-    expect([...current.listeners.values()].every((set) => set.size === 0)).toBe(
-      true
-    )
-  )
 })
 
 it('never displays obsolete scoped statistics after gated whole-area switching/back, cancellation or release promotion', async () => {
@@ -410,22 +394,111 @@ it('never displays obsolete scoped statistics after gated whole-area switching/b
   expect(runtime.detail?.building_count).toBe(5)
   act(() => runtime.back())
   await expectRequest('postal_code', '00100', '091', 2)
-  const originalRelease = runtime.generation!.metadata.release_id
-  const nextRelease = '22222222-2222-4222-8222-222222222222'
-  fixture.setActiveRelease(nextRelease)
+  fixture.setActiveRelease('22222222-2222-4222-8222-222222222222')
   act(() => runtime.refresh())
-  await waitFor(() =>
-    expect(runtime.generation?.metadata.release_id).toBe(nextRelease)
+  await waitFor(() => expect(runtime.detail?.as_of).toBe('2026-09-01'))
+  expect(runtime.request?.municipalityCode).toBe('091')
+  expect(runtime.canGoBack).toBe(true)
+  expect(fixture.requests.every((url) => !url.includes('release_id'))).toBe(
+    true
   )
+})
+
+it('ignores a legacy manual preference in rendering and selected request projection', async () => {
+  const legacy = { geographyMode: 'region' }
+  useAppletStore.setState(
+    legacy as Partial<ReturnType<typeof useAppletStore.getState>>
+  )
+  current.zoom(11)
+  await mount()
+  expect(useAppletStore.getState().effectiveGeography).toBe('postal_code')
+  select('region', '01')
+  expect(runtime.request).toBeUndefined()
+  select('postal_code', '00100')
+  await expectRequest('postal_code', '00100', undefined, 5)
+  act(() => current.zoom(8))
+  expect(runtime.request).toBeUndefined()
+  expect(useAppletStore.getState().effectiveGeography).toBe('municipality')
+})
+it('does not install an invisible postal request when the map cannot reach its band', async () => {
+  await mount()
+  select('region', '01')
+  await expectRequest('region', '01')
+  act(() => runtime.navigateRelated({ level: 'municipality', areaCode: '091' }))
+  await expectRequest('municipality', '091')
+  const max = jest.spyOn(current.map, 'getMaxZoom').mockReturnValue(9)
+  act(() =>
+    runtime.navigateRelated({ level: 'postal_code', areaCode: '00100' })
+  )
+  expect(current.map.getZoom()).toBe(8)
+  expect(runtime.request?.level).toBe('municipality')
+  expect(runtime.canGoBack).toBe(false)
+  max.mockRestore()
+})
+it('cancels a pending scoped response when user zoom crosses into buildings after navigation', async () => {
+  await mount()
+  select('region', '01')
+  await expectRequest('region', '01')
+  act(() => runtime.navigateRelated({ level: 'municipality', areaCode: '091' }))
+  await expectRequest('municipality', '091')
+  const gate = createFixtureGate()
+  fixture.enqueue({
+    match: (url: URL) => url.searchParams.get('municipality_code') === '091',
+    gate: gate.promise,
+    ignoreAbort: true,
+  })
+  act(() =>
+    runtime.navigateRelated({ level: 'postal_code', areaCode: '00100' })
+  )
+  await waitFor(() => expect(runtime.detailLoading).toBe(true))
+  act(() => current.zoom(12))
   expect(runtime.request).toBeUndefined()
   expect(runtime.canGoBack).toBe(false)
-  act(() => runtime.back())
-  expect(runtime.request).toBeUndefined()
-  expect(
-    fixture.requests.every(
-      (url: string) =>
-        !url.includes('/postal_code/00100') ||
-        url.includes(`release_id=${originalRelease}`)
-    )
-  ).toBe(true)
+  gate.release()
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 10))
+  })
+  expect(runtime.detail).toBeUndefined()
+  expect(screen.getByTestId('detail')).not.toHaveTextContent('00100')
+})
+
+it('malformed optional metadata never gates stable coverage or independently valid latest details', async () => {
+  fixture.enqueue({
+    match: (url) => url.pathname.endsWith('/metadata'),
+    transform: () => ({ bad: true }),
+  })
+  await mount()
+  expect(current.sources.size).toBe(3)
+  select('region', '01')
+  await expectRequest('region', '01')
+  expect(runtime.status).toBe('ready')
+  expect(runtime.detailProblem).toBeUndefined()
+})
+it('missing origin keeps clicked identity and map selection with a truthful unavailable detail', async () => {
+  delete process.env.PUBLIC_ENERGY_AREA_API_ORIGIN
+  await mount()
+  select('region', '01')
+  await waitFor(() => expect(runtime.request?.areaCode).toBe('01'))
+  expect(runtime.detailProblem).toBe('not-configured')
+  expect(runtime.detail).toBeUndefined()
+  expect(current.sources.size).toBe(3)
+  act(() => runtime.refresh())
+  expect(current.map.refreshTiles).toHaveBeenCalledTimes(3)
+  expect(fixture.requests).toEqual([])
+})
+it('a failed selected refresh suppresses last-good statistics and leaves polygons and scope selected', async () => {
+  await mount()
+  select('region', '01')
+  await expectRequest('region', '01')
+  fixture.enqueue({
+    match: (url) => url.pathname.endsWith('/region/01'),
+    response: { status: 404, headers: {}, body: Buffer.from('{}') },
+  })
+  act(() => runtime.refresh())
+  await waitFor(() => expect(runtime.detailProblem).toBe('not-found'))
+  expect(runtime.detail).toBeUndefined()
+  expect(runtime.request?.areaCode).toBe('01')
+  expect(current.sources.size).toBe(3)
+  act(() => runtime.retryDetail())
+  await expectRequest('region', '01')
 })

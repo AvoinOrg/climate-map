@@ -1,23 +1,30 @@
-# Isolated Energy area fixtures
+# Energy latest-area fixtures
 
-Usage, exact exported seams, scenarios and provenance are documented in
-[the frontend area contract](../../../docs/energy-area-api-contract.md).
+Explicit test-only synthetic data and real binary MVTs. Application code never
+imports this folder. `releaseIds`/`snapshotId` are private fixture-controller
+identifiers, retained to minimize churn in the original evidence; they are absent
+from API responses, stable tile properties, source IDs and public request URLs.
 
-- `dataset.json`: three canonical release snapshots, full and scoped detail,
-  structured empty metrics and synthetic geometry.
-- `provenance.json`: checksums of the inspected read-only service implementation.
-- `manifest.json` / `tiles/**/*.pbf`: representative XYZ/TMS coordinate samples.
-- `responder.cjs`: explicitly installed Node fetch/API/tile responder and gates.
-- `playwright.mjs`: route installer using the same responder and binary bodies.
-- `generate-data.cjs`, `generate-tiles.mjs`, `tiles.mjs`: reproducible offline
-  authoring and real polygon tiling (no backend execution).
-- `verify.mjs`: independent codec/geometry/API/adapter/isolation checks.
-- `mapMock.ts`: shared MapLibre test double used with the real map/selection
-  stores and area owner in lifecycle and navigation integration tests.
-- `buildings.mjs`: explicitly intercepted synthetic building MVT/certificate
-  responses for the actual-map return-to-Buildings and local Water-edit check.
-  It uses the existing building source contract and is never an app fallback.
+`createEnergyAreaFixture().setActiveRelease(id)` switches the current synthetic
+snapshot. Normal requests always read that snapshot at dispatch. Gates,
+`ignoreAbort`, transforms, HTTP and network errors exercise obsolete requests.
+The responder rejects version query parameters and intercepts only its test API
+origin and the exact three sandbox stable GeoServer TMS area paths. Optional
+metadata does not supply the application's rendering descriptors.
 
-There is no product import or fallback. Fixture origins are reserved test data,
-not a proposed deployment. Runtime configuration/lifecycle changes for later
-browser checks belong to runtime doctor; use the existing runtime with `--no-start`.
+Regenerate offline with `node utils/test/energyAreas/generate-data.cjs` and
+`node utils/test/energyAreas/generate-tiles.mjs`; no backend mount or execution is
+needed. Historical backend hash evidence is retained under
+`provenance.json.historicalServiceEvidence`, without claiming current backend
+provenance. The named latest contract and synthetic authoring are the current
+basis. Recorded XYZ coordinates are decoder evidence for the same synthetic
+geometry; product delivery is stable TMS only.
+
+Run `node utils/test/energyAreas/verify.mjs` for independent binary decoding,
+identity/count/coverage/name/scope oracles, adjacent clipped fragments, exact
+stable routes, private snapshot switching and browser-adapter isolation. Use the
+existing `energy-area-modes-smoke.mjs --no-start` actual-map runner for FI/EN
+ desktop/mobile controls, wheel/pinch, detail/Back/building interactions, refresh
+and style checks. `--national` runs a separate unmocked acceptance path. Pass a
+unique `--output=` for each run. Runtime setup/recovery is delegated to
+`runtime_doctor` and live checks reuse its verified server.

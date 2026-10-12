@@ -1,7 +1,6 @@
 import { createPropertyExpression } from '@maplibre/maplibre-gl-style-spec'
 import {
   resolveAreaGeography,
-  AREA_GEOGRAPHY_MODES,
   AREA_METRIC_BANDS,
   areaMetricColorExpression,
   AREA_UNAVAILABLE_COLOR,
@@ -24,22 +23,17 @@ it.each([...expected, ...[...expected].reverse()])(
   'automatic zoom %s resolves to %s',
   (zoom, geography) => {
     expect(
-      resolveAreaGeography({ mode: 'automatic', zoom, available: true })
+      resolveAreaGeography({ zoom })
     ).toBe(geography)
   }
 )
-it.each(AREA_GEOGRAPHY_MODES.filter((mode) => mode !== 'automatic'))(
-  'manual %s persists through every zoom',
-  (mode) => {
-    for (const [zoom] of expected)
-      expect(resolveAreaGeography({ mode, zoom, available: true })).toBe(mode)
+it('ignores legacy override and API availability properties', () => {
+  for (const [zoom, geography] of expected) {
+    for (const mode of ['region', 'municipality', 'postal_code', 'buildings']) {
+      const legacy = { zoom, mode, available: false }
+      expect(resolveAreaGeography(legacy)).toBe(geography)
+    }
   }
-)
-it('unavailable metadata leaves every preference usable as Buildings', () => {
-  for (const mode of AREA_GEOGRAPHY_MODES)
-    expect(resolveAreaGeography({ mode, zoom: 6, available: false })).toBe(
-      'buildings'
-    )
 })
 it.each(['building_count', 'certificate_coverage'] as const)(
   '%s evaluates exact stable bands with real MapLibre expressions',

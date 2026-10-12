@@ -84,20 +84,3 @@ export const isAreaTileTemplate = (value: string) => {
     return false
   }
 }
-
-export const resolveAreaTileUrl = ({
-  config,
-  template,
-}: {
-  config: AreaApiConfigResult
-  template: string
-}) => {
-  const { origin } = requireAreaApiConfig(config)
-  if (!isAreaTileTemplate(template))
-    throw new AreaApiError({
-      kind: 'malformed-contract',
-      diagnostic: 'Invalid advertised area tile template.',
-    })
-  // Validate with URL, but never serialize its href: braces/escapes must survive.
-  return template.startsWith('/') ? `${origin}${template}` : template
-}

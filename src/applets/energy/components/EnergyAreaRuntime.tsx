@@ -9,12 +9,10 @@ import {
   areaMetadataQueryOptions,
   areaDetailQueryOptions,
   areaQueryKeys,
+  refreshAreaQueries,
 } from 'applets/energy/common/areas/queries'
 import { AreaApiError } from 'applets/energy/common/areas/errors'
-import {
-  projectAreaSelection,
-  detailMatchesMetadata,
-} from 'applets/energy/common/areas/selection'
+import { projectAreaSelection } from 'applets/energy/common/areas/selection'
 import { resolveAreaGeography } from 'applets/energy/common/areas/mapModes'
 import {
   EnergyAreaMapRuntime,
@@ -29,12 +27,11 @@ const EnergyAreaRuntime = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient()
   const map = useMapInstanceStore((state) => state._map)
   const mapContext = useMapStore((state) => state.mapContext)
-  const metadata = useQuery({
+  useQuery({
     ...areaMetadataQueryOptions({ config }),
     enabled: config.ok && mapContext === 'energy',
   })
   const selectedFeatures = useMapStore((state) => state.selectedFeatures)
-  const mode = useAppletStore((state) => state.geographyMode)
   const zoom = useAppletStore((state) => state.areaZoom)
   const [generation, setGeneration] = React.useState<CommittedAreaGeneration>()
   const [status, setStatus] = React.useState<AreaRuntimeStatus>('loading')
@@ -55,7 +52,6 @@ const EnergyAreaRuntime = ({ children }: { children: React.ReactNode }) => {
     if (!map || mapContext !== 'energy') return
     const runtime = new EnergyAreaMapRuntime({
       map,
-      config,
       lane: lane.current,
       publish: (next, nextStatus) => {
         committed.current = next
@@ -75,6 +71,7 @@ const EnergyAreaRuntime = ({ children }: { children: React.ReactNode }) => {
     owner.current = runtime
     setGeneration(undefined)
     setStatus('loading')
+    void runtime.install()
     return () => {
       navigation.current?.dispose()
       navigation.current = undefined
@@ -87,50 +84,38 @@ const EnergyAreaRuntime = ({ children }: { children: React.ReactNode }) => {
         })
     }
   }, [map, mapContext, config, cancelDetails, queryClient])
-  React.useEffect(() => {
-    if (metadata.data && owner.current)
-      void owner.current.promote(metadata.data)
-  }, [metadata.data, metadata.dataUpdatedAt, map, mapContext, cancelDetails])
   const request = React.useMemo(
     () =>
       projectAreaSelection({
         features: selectedFeatures,
         descriptors: generation?.descriptors ?? [],
         effective: resolveAreaGeography({
-          mode,
           zoom: map?.getZoom() ?? zoom,
-          available: !!generation,
         }),
       }),
-    [selectedFeatures, generation, mode, zoom, map]
+    [selectedFeatures, generation, zoom, map]
   )
   const detailQuery = useQuery(areaDetailQueryOptions({ config, request }))
-  const detail =
-    detailQuery.data &&
-    generation &&
-    detailMatchesMetadata({
-      detail: detailQuery.data,
-      metadata: generation.metadata,
-    })
-      ? detailQuery.data
-      : undefined
+  // The origin-keyed query and request parser are the response guard. Metadata
+  // and details are independent latest reads, not an atomic dataset snapshot.
+  const detail = detailQuery.isError ? undefined : detailQuery.data
   const detailProblem =
-    detailQuery.error instanceof AreaApiError
-      ? detailQuery.error.problem.kind
-      : detailQuery.isError
-        ? 'network'
-        : detailQuery.data && !detail
-          ? 'malformed-contract'
+    request && !config.ok
+      ? config.problem.kind
+      : detailQuery.error instanceof AreaApiError
+        ? detailQuery.error.problem.kind
+        : detailQuery.isError
+          ? 'network'
           : undefined
-  const problem = !config.ok
-    ? config.problem.kind
-    : metadata.error instanceof AreaApiError
-      ? metadata.error.problem.kind
-      : metadata.isError
-        ? 'network'
-        : status === 'unavailable'
-          ? 'unavailable'
-          : undefined
+  const refresh = React.useCallback(() => {
+    owner.current?.refreshTiles()
+    void refreshAreaQueries({ queryClient, config })
+  }, [config, queryClient])
+  React.useEffect(() => {
+    if (!map || mapContext !== 'energy') return
+    window.addEventListener('online', refresh)
+    return () => window.removeEventListener('online', refresh)
+  }, [map, mapContext, refresh])
   React.useEffect(() => {
     if (request) useUIStore.getState().setIsSidebarOpen(true)
   }, [request])
@@ -144,20 +129,14 @@ const EnergyAreaRuntime = ({ children }: { children: React.ReactNode }) => {
     <AreaRuntimeContext.Provider
       value={{
         generation,
-        status:
-          !config.ok || (!generation && metadata.isError)
-            ? 'unavailable'
-            : status,
-        problem,
-        refreshFailed: !!generation && metadata.isError,
+        status,
+        problem: status === 'unavailable' ? 'unavailable' : undefined,
         tileFailed,
         request,
         detail,
         detailProblem,
         detailLoading: !!request && !detail && !detailProblem,
-        refresh: () => {
-          void metadata.refetch()
-        },
+        refresh,
         retryTiles: () => owner.current?.retryTiles(),
         retryDetail: () => {
           void detailQuery.refetch()
@@ -165,10 +144,10 @@ const EnergyAreaRuntime = ({ children }: { children: React.ReactNode }) => {
         close,
         canGoBack,
         back: () => navigation.current?.back(),
-        navigateRelated: (target) => navigation.current?.navigateRelated(target),
+        navigateRelated: (target) =>
+          navigation.current?.navigateRelated(target),
         showWholePostalArea: () => navigation.current?.showWholePostalArea(),
         showBuildings: () => navigation.current?.showBuildings(),
-        selectMode: (nextMode) => navigation.current?.selectMode(nextMode),
       }}
     >
       {children}

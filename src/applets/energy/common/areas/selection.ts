@@ -1,8 +1,5 @@
 import type { MapGeoJSONFeature } from 'maplibre-gl'
-import type {
-  AreaDetailRequest,
-  AreaMetadata,
-} from 'applets/energy/common/types/areas'
+import type { AreaDetailRequest } from 'applets/energy/common/types/areas'
 import type { AreaSourceDescriptor } from 'applets/energy/layers/areaSource'
 import type { EffectiveGeography } from 'applets/energy/common/areas/mapModes'
 import {
@@ -22,21 +19,18 @@ export const createAreaSelection = ({
   request: AreaDetailRequest
   descriptor: AreaSourceDescriptor
 }): MapGeoJSONFeature => {
-  const pinned = parseAreaDetailRequest(request)
-  if (
-    pinned.releaseId !== descriptor.releaseId ||
-    pinned.level !== descriptor.level
-  )
-    throw new Error('Incompatible area navigation generation')
+  const current = parseAreaDetailRequest(request)
+  if (current.level !== descriptor.level)
+    throw new Error('Incompatible area navigation level')
   const feature = {
     source: descriptor.sourceId,
     sourceLayer: descriptor.sourceLayer,
-    id: `${pinned.level}:${pinned.areaCode}`,
+    id: `${current.level}:${current.areaCode}`,
     isPlaceholder: true,
     // Also makes scope-only changes observable to the store's equality check.
-    areaDetailRequest: pinned,
+    areaDetailRequest: current,
   } as unknown as ExtendedMapGeoJSONFeature
-  navigationRequests.set(feature, pinned)
+  navigationRequests.set(feature, current)
   return feature
 }
 
@@ -63,22 +57,19 @@ export const projectAreaSelection = ({
     try {
       const internal = navigationRequests.get(feature)
       if (internal) {
-        const pinned = parseAreaDetailRequest(internal)
+        const current = parseAreaDetailRequest(internal)
         if (
-          pinned.releaseId === descriptor.releaseId &&
-          pinned.level === descriptor.level &&
-          feature.id === `${pinned.level}:${pinned.areaCode}`
+          current.level === descriptor.level &&
+          feature.id === `${current.level}:${current.areaCode}`
         )
-          requests.set(String(feature.id), pinned)
+          requests.set(String(feature.id), current)
         continue
       }
       const properties = parseAreaTileProperties(feature.properties, {
-        releaseId: descriptor.releaseId,
         level: descriptor.level,
       })
       if (feature.id !== properties.area_id) continue
       requests.set(properties.area_id, {
-        releaseId: descriptor.releaseId,
         level: descriptor.level,
         areaCode: properties.area_code,
       })
@@ -88,13 +79,3 @@ export const projectAreaSelection = ({
   }
   return requests.size === 1 ? [...requests.values()][0] : undefined
 }
-export const detailMatchesMetadata = ({
-  detail,
-  metadata,
-}: {
-  detail: { release_id: string; boundary_vintage: number; as_of: string }
-  metadata: AreaMetadata
-}) =>
-  detail.release_id === metadata.release_id &&
-  detail.boundary_vintage === metadata.boundary_vintage &&
-  detail.as_of === metadata.as_of

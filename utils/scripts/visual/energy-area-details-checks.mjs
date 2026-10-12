@@ -12,7 +12,6 @@ export const checkEnergyAreaDetails = async ({
   viewportName,
   copy,
   move,
-  choose,
   clickArea,
   snapshot,
   evidence,
@@ -87,7 +86,6 @@ export const checkEnergyAreaDetails = async ({
       await page.waitForTimeout(500)
     }
   }
-  await choose({ page, label: local.geography, value: local.region })
   await revealMobileMap()
   await move({ page, zoom: 6 })
   await clickArea({ page, level: 'region', code: '01' })
@@ -307,36 +305,24 @@ export const checkEnergyAreaDetails = async ({
   // Test-only setup of a truthful zero-intersection request through the same
   // production selection seam. No false relation is added to the crosswalk.
   await page.evaluate(async () => {
-    const { createAreaSelection } =
-      await import('/src/applets/energy/common/areas/selection.ts')
+    // Vite's HMR timestamp is part of module identity. Use the same selection
+    // module as the running provider so its private WeakMap seam is shared.
+    const runtimeModule = await (
+      await fetch('/src/applets/energy/components/EnergyAreaRuntime.tsx')
+    ).text()
+    const selectionUrl = runtimeModule.match(
+      /from "([^"\n]*\/areas\/selection\.ts[^"\n]*)"/
+    )[1]
+    const { createAreaSelection } = await import(selectionUrl)
     const { createAreaSourceDescriptors } =
       await import('/src/applets/energy/layers/areaSource.ts')
-    const { parseAreaMetadata } =
-      await import('/src/applets/energy/common/areas/contract.ts')
-    const metadata = parseAreaMetadata(
-      await (
-        await fetch(
-          'https://energy-areas.fixture.test/energy-data/areas/metadata'
-        )
-      ).json()
-    )
-    const descriptors = createAreaSourceDescriptors({
-      config: {
-        ok: true,
-        config: { origin: 'https://energy-areas.fixture.test' },
-      },
-      metadata,
-    })
-    window.__energyModesTest.appletStore
-      .getState()
-      .setGeographyMode('postal_code')
+    const descriptors = createAreaSourceDescriptors()
     window.__energyModesTest.map.jumpTo({ zoom: 11 })
     const descriptor = descriptors.find((d) => d.level === 'postal_code')
     window.__energyModesTest.mapStore.getState().setSelectedFeatures([
       createAreaSelection({
         descriptor,
         request: {
-          releaseId: metadata.release_id,
           level: 'postal_code',
           areaCode: '00100',
           municipalityCode: '009',
@@ -364,7 +350,6 @@ export const checkEnergyAreaDetails = async ({
   await button(local.close).click()
   // Promote while a real scoped trail exists, then exercise a noncooperative
   // scoped response against a whole-area action in the new release.
-  await choose({ page, label: local.geography, value: local.region })
   await revealMobileMap()
   await move({ page, zoom: 6 })
   await clickArea({ page, level: 'region', code: '01' })
@@ -374,21 +359,23 @@ export const checkEnergyAreaDetails = async ({
   const nextRelease = '22222222-2222-4222-8222-222222222222'
   fixture.setActiveRelease(nextRelease)
   await button(local.refresh).click()
-  await page.waitForFunction(
-    (release) =>
-        Object.keys(window.__energyModesTest.map.getStyle().sources).some(
-        (id) => id.includes(release)
-      ),
-    nextRelease
+  await panel
+    .getByText(
+      new Intl.DateTimeFormat(locale, {
+        dateStyle: 'medium',
+        timeZone: 'UTC',
+      }).format(new Date('2026-09-01T00:00:00Z')),
+      { exact: true }
+    )
+    .waitFor()
+  assert.deepEqual(await identity(), ['postal_code:00100'])
+  assert.equal(await button(backName).count(), 1)
+  await snapshot(
+    page,
+    `${locale}-${viewportName}-latest-refresh-preserves-scope`
   )
-  await panel.waitFor({ state: 'detached' })
-  assert.deepEqual(await identity(), [])
-  assert.equal(await button(backName).count(), 0)
-  await snapshot(page, `${locale}-${viewportName}-obsolete-back-cleared`)
   fixture.enqueue({
-    match: (url) =>
-      url.pathname.endsWith('/region/01') &&
-      url.searchParams.get('release_id') === nextRelease,
+    match: (url) => url.pathname.endsWith('/region/01'),
     transform: (payload) => ({
       ...payload,
       names: {
@@ -398,7 +385,6 @@ export const checkEnergyAreaDetails = async ({
       },
     }),
   })
-  await choose({ page, label: local.geography, value: local.region })
   await revealMobileMap()
   await move({ page, zoom: 6 })
   await clickArea({ page, level: 'region', code: '01' })
@@ -412,16 +398,24 @@ export const checkEnergyAreaDetails = async ({
   )
   await snapshot(page, `${locale}-${viewportName}-long-source-name`)
   await related('municipality', '091')
+  await related('postal_code', '00100')
+  await expectDetail({ code: '00100', count: 2, scoped: true })
   const gate = createFixtureGate()
+  let gatedStarted = false
   fixture.enqueue({
-    match: (url) =>
-      url.pathname.endsWith('/postal_code/00100') &&
-      url.searchParams.get('municipality_code') === '091',
+    match: (url) => {
+      const matches =
+        url.pathname.endsWith('/postal_code/00100') &&
+        url.searchParams.get('municipality_code') === '091'
+      if (matches) gatedStarted = true
+      return matches
+    },
     gate: gate.promise,
     ignoreAbort: true,
   })
-  await button(relatedName('postal_code', '00100')).click()
-  await page.waitForFunction(() => document.querySelector('[aria-busy="true"]'))
+  await button(local.refresh).click()
+  for (let i = 0; i < 100 && !gatedStarted; i++) await page.waitForTimeout(50)
+  assert(gatedStarted, 'Scoped latest refresh dispatched')
   await button(wholeName).click()
   await expectDetail({ code: '00100', count: 4 })
   gate.release()
@@ -446,7 +440,7 @@ export const checkEnergyAreaDetails = async ({
     backReachableExpandedAndCollapsed: true,
     regionCodeAndCrosswalkActions: true,
     staleScopedResponseIgnored: true,
-    obsoleteReleaseBackCleared: true,
+    latestRefreshRetainsScopeAndBack: true,
     longSourceNameWraps: true,
     zeroIntersectionSetup:
       'createAreaSelection identity placeholder, municipality 009; no invented relation',

@@ -5,7 +5,6 @@ import ts from 'typescript'
 import {
   getEnergyAreaApiConfig,
   isAreaTileTemplate,
-  resolveAreaTileUrl,
   resolveEnergyAreaApiConfig,
 } from 'applets/energy/common/areas/config'
 import { getStartPublicEnvDefines } from '../../../../../utils/config/startPublicEnv'
@@ -84,12 +83,7 @@ test('Start public define and unset browser read work without exposing a secret'
 test('tile templates keep absolute spelling, escapes and placeholders in paths/queries', () => {
   const absolute =
     'https://TILES.example.test:443/gwc/fixture%3Aareas@EPSG%3A900913/{z}/{x}/{y}.pbf?row={y}&x={x}&other=%2F'
-  expect(resolveAreaTileUrl({ config, template: absolute })).toBe(absolute)
-  const relative =
-    '/energy-data/areas/release/region/tiles/{z}/{x}/{y}.pbf?y={y}'
-  expect(resolveAreaTileUrl({ config, template: relative })).toBe(
-    `https://api.example.test${relative}`
-  )
+  expect(isAreaTileTemplate(absolute)).toBe(true)
   for (const template of [
     '//elsewhere.test/{z}/{x}/{y}',
     'tiles/{z}/{x}/{y}',

@@ -22,7 +22,6 @@ jest.mock('overlayscrollbars-react', () => ({
   ),
 }))
 const request = {
-  releaseId: dataset.releaseIds[0],
   level: 'postal_code' as const,
   areaCode: '00100',
 }
@@ -36,7 +35,6 @@ const refresh = jest.fn()
 const retryTiles = jest.fn()
 const base = {
   status: 'ready' as const,
-  refreshFailed: false,
   tileFailed: false,
   request,
   detailLoading: false,
@@ -46,7 +44,6 @@ const base = {
   navigateRelated: jest.fn(),
   showWholePostalArea: jest.fn(),
   showBuildings: jest.fn(),
-  selectMode: jest.fn(),
   retryDetail,
   refresh,
   retryTiles,
@@ -190,9 +187,8 @@ it('uses only actually available source names, skipping empty names and falling 
     })
   ).toBe('00100')
 })
-it('keeps Buildings operable without configuration and explains manual low zoom', async () => {
+it('omits geographic controls and fallback hints without configuration', async () => {
   useAppletStore.setState({
-    geographyMode: 'buildings',
     effectiveGeography: 'buildings',
     areaAvailable: false,
     areaZoom: 11.999,
@@ -206,37 +202,35 @@ it('keeps Buildings operable without configuration and explains manual low zoom'
     },
     controlsOnly: true,
   })
-  expect(await screen.findByTestId('energy-area-controls')).toHaveTextContent(
-    'The building map remains available'
-  )
-  expect(screen.getByTestId('energy-area-controls')).toHaveTextContent(
+  expect(
+    await screen.findByTestId('energy-area-controls')
+  ).not.toHaveTextContent('The building map remains available')
+  expect(screen.getByTestId('energy-area-controls')).not.toHaveTextContent(
     'Zoom in to see buildings'
   )
   expect(
     screen.queryByRole('button', { name: 'Refresh area data' })
-  ).not.toBeInTheDocument()
+  ).toBeInTheDocument()
 })
-it('retains the current release on refresh failure and exposes separate tile retry', async () => {
+it('omits failed-refresh fallback copy and exposes specific tile retry', async () => {
   useAppletStore.setState({
-    geographyMode: 'region',
     effectiveGeography: 'region',
     areaAvailable: true,
   })
   mount({
     locale: 'en',
-    value: { refreshFailed: true, tileFailed: true },
+    value: { problem: 'network', tileFailed: true },
     controlsOnly: true,
   })
-  expect(await screen.findByTestId('energy-area-controls')).toHaveTextContent(
-    'previously loaded release'
-  )
+  expect(
+    await screen.findByTestId('energy-area-controls')
+  ).not.toHaveTextContent('previously loaded release')
   fireEvent.click(screen.getByRole('button', { name: 'Retry area tiles' }))
   expect(retryTiles).toHaveBeenCalled()
 })
 
 it('keeps the frozen all-building scope visible when the compact legend is closed', async () => {
   useAppletStore.setState({
-    geographyMode: 'postal_code',
     effectiveGeography: 'postal_code',
     areaAvailable: true,
   })
@@ -342,5 +336,37 @@ it.each(['fi', 'en'])(
       })[0]
     )
     expect(base.back).toHaveBeenCalled()
+  }
+)
+
+it.each(['loading', 'metadata-error', 'detail-error', 'refresh-error'])(
+  'has no geographic picker or generic notice in compact and desktop controls for %s',
+  async (scenario) => {
+    useAppletStore.setState({
+      effectiveGeography: 'postal_code',
+      areaAvailable: false,
+      areaZoom: 11,
+    })
+    mount({
+      locale: 'en',
+      value: {
+        status: scenario === 'loading' ? 'loading' : 'unavailable',
+        problem: scenario === 'metadata-error' ? 'network' : undefined,
+        detailProblem: scenario === 'detail-error' ? 'network' : undefined,
+      },
+      controlsOnly: true,
+      compact: scenario !== 'loading',
+    })
+    const controls = await screen.findByTestId('energy-area-controls')
+    expect(
+      screen.queryByRole('combobox', { name: 'Geography' })
+    ).not.toBeInTheDocument()
+    expect(controls).not.toHaveTextContent(
+      /building map remains|previously loaded release|area data is currently unavailable/i
+    )
+    expect(controls.querySelector('[role="status"]')).toBeNull()
+    expect(
+      screen.getByRole('combobox', { name: 'Area shading' })
+    ).toBeInTheDocument()
   }
 )

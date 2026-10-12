@@ -9,8 +9,11 @@ import { installEnergyAreaFixtureRoutes } from './playwright.mjs'
 const require = createRequire(import.meta.url)
 const dataset = require('./dataset.json')
 const manifest = require('./manifest.json')
-const { API_ORIGIN, createEnergyAreaFixture, createFixtureGate } =
-  require('./responder.cjs')
+const {
+  API_ORIGIN,
+  createEnergyAreaFixture,
+  createFixtureGate,
+} = require('./responder.cjs')
 const decode = (bytes) => new VectorTile(new Pbf(bytes))
 let decodedFeatures = 0
 const fragments = []
@@ -25,7 +28,7 @@ for (const sample of manifest.tiles) {
   assert(layer && layer.length > 0, `nonempty ${sample.file}`)
   assert.deepEqual(Object.keys(tile.layers), [sample.sourceLayer])
   const snapshot = dataset.snapshots.find(
-    (s) => s.metadata.release_id === sample.releaseId
+    (s) => s.snapshotId === sample.releaseId
   )
   for (let index = 0; index < layer.length; index++) {
     const feature = layer.feature(index),
@@ -48,7 +51,7 @@ for (const sample of manifest.tiles) {
     )
     const full = snapshot.details[properties.area_id]
     assert(full)
-    assert.equal(properties.release_id, full.release_id)
+    assert(!Object.hasOwn(properties, 'release_id'))
     assert.equal(properties.level, full.level)
     assert.equal(properties.area_code, full.area_code)
     assert.equal(
@@ -115,71 +118,52 @@ assert(
     (p) => p[0] > manifest.municipalityBorderLongitude
   )
 )
-// Verify arbitrary coordinates through the shared responder, not just recorded samples.
-for (const delivery of ['native', 'xyz', 'tms']) {
-  const fixture = createEnergyAreaFixture({ delivery })
-  for (const releaseId of dataset.releaseIds) {
-    const metadataResponse = await fixture.respond(
-      `${API_ORIGIN}/energy-data/areas/metadata?release_id=${releaseId}`
-    )
-    assert.equal(metadataResponse.headers['Cache-Control'], 'no-cache')
-    const metadata = JSON.parse(metadataResponse.body)
-    for (const level of ['postal_code', 'municipality', 'region']) {
-      const descriptor = metadata.layers[level]
-      const sample = manifest.tiles.find(
-        (t) =>
-          t.releaseId === releaseId &&
-          t.level === level &&
-          t.scheme === (delivery === 'tms' ? 'tms' : 'xyz')
-      )
-      const template = descriptor.url.startsWith('/')
-        ? API_ORIGIN + descriptor.url
-        : descriptor.url
-      const url = template
-        .replaceAll('{z}', sample.z)
-        .replaceAll('{x}', sample.x)
-        .replaceAll('{y}', sample.row)
-      const response = await fixture.respond(url)
-      assert.equal(response.status, 200)
-      assert.equal(response.headers['X-Energy-Map-Release'], releaseId)
-      assert.match(response.headers['Cache-Control'], /immutable/)
-      assert.equal(
-        response.headers['Content-Type'],
-        'application/vnd.mapbox-vector-tile'
-      )
-      assert(decode(response.body).layers[descriptor.source_layer].length > 0)
-    }
-    for (const detail of Object.values(
-      dataset.snapshots.find((s) => s.metadata.release_id === releaseId).details
-    )) {
-      const response = await fixture.respond(
-        `${API_ORIGIN}/energy-data/areas/${detail.level}/${detail.area_code}?release_id=${releaseId}`
-      )
-      assert.deepEqual(JSON.parse(response.body), detail)
-    }
-  }
-}
+// Latest HTTP and stable tiles are independent of advertised metadata.
 const fixture = createEnergyAreaFixture()
 const prefix = `${API_ORIGIN}/energy-data/areas`
-for (const [path, status] of [
-  ['/metadata?release_id=bad', 422],
-  ['/metadata?release_id=ffffffff-ffff-4fff-8fff-ffffffffffff', 404],
-  ['/city/00100', 422],
-  ['/municipality/5', 422],
-  ['/municipality/091?municipality_code=005', 422],
-  ['/postal_code/00100?municipality_code=999', 404],
-  [`/${dataset.releaseIds[0]}/region/tiles/15/0/0.pbf`, 422],
-  [`/${dataset.releaseIds[0]}/region/tiles/2/4/0.pbf`, 422],
-])
-  assert.equal((await fixture.respond(prefix + path)).status, status)
-for (let z = 0; z <= 14; z++) {
-  const response = await fixture.respond(
-    `${prefix}/${dataset.releaseIds[0]}/postal_code/tiles/${z}/0/0.pbf`
+const stableTemplate = (level) =>
+  `https://sandbox.gis.avoin.org/geoserver/gwc/service/tms/1.0.0/sandbox_energiakartta%3Aenergymap_${level}_areas@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf`
+for (const releaseId of dataset.releaseIds) {
+  fixture.setActiveRelease(releaseId)
+  const snapshot = dataset.snapshots.find((s) => s.snapshotId === releaseId)
+  const metadata = JSON.parse(
+    (await fixture.respond(`${prefix}/metadata`)).body
   )
-  assert.equal(response.status, 200)
-  const tile = decode(response.body)
-  if (z > 0) assert.deepEqual(tile.layers, {})
+  assert.equal(metadata.latest, true)
+  assert(!Object.hasOwn(metadata, 'release_id'))
+  for (const level of ['postal_code', 'municipality', 'region']) {
+    const sample = manifest.tiles.find(
+      (t) =>
+        t.releaseId === releaseId && t.level === level && t.scheme === 'tms'
+    )
+    const url = stableTemplate(level)
+      .replace('{z}', sample.z)
+      .replace('{x}', sample.x)
+      .replace('{y}', sample.row)
+    const response = await fixture.respond(url)
+    assert.equal(response.status, 200)
+    assert.match(response.headers['Cache-Control'], /no-cache/)
+    assert(decode(response.body).layers[`energymap_${level}_areas`].length > 0)
+  }
+  for (const detail of Object.values(snapshot.details)) {
+    const response = await fixture.respond(
+      `${prefix}/${detail.level}/${detail.area_code}`
+    )
+    assert.deepEqual(JSON.parse(response.body), detail)
+    assert.equal(detail.latest, true)
+    assert(!Object.hasOwn(detail, 'release_id'))
+  }
+  const scoped = JSON.parse(
+    (await fixture.respond(`${prefix}/postal_code/00100?municipality_code=091`))
+      .body
+  )
+  assert.deepEqual(scoped, snapshot.intersections['00100:091'])
 }
+fixture.setActiveRelease(dataset.releaseIds[0])
+assert.equal(
+  (await fixture.respond(`${prefix}/postal_code/00100?release_id=bad`)).status,
+  422
+)
 // Nonempty valid zero and empty absence on coordinate-correct tiles at z=12.
 const coord = ({ lon, lat, z }) => ({
   z,
@@ -195,7 +179,7 @@ const zeroTile = decode(
     level: 'postal_code',
     ...sample,
   })
-).layers.areas
+).layers.energymap_postal_code_areas
 assert(zeroTile)
 assert(
   Array.from(
@@ -214,7 +198,7 @@ const emptyTile = decode(
     level: 'postal_code',
     ...coord({ lon: 25.15, lat: 60.16, z: 12 }),
   })
-).layers.areas
+).layers.energymap_postal_code_areas
 assert(
   Array.from(
     { length: emptyTile.length },
@@ -252,7 +236,10 @@ assert.equal(
   405
 )
 let fulfilled, aborted
-const tileUrl = `${prefix}/${dataset.releaseIds[0]}/postal_code/tiles/11/1165/592.pbf`
+const tileUrl = stableTemplate('postal_code')
+  .replace('{z}', '11')
+  .replace('{x}', '1165')
+  .replace('{y}', '1455')
 const route = {
   request: () => ({ url: () => tileUrl, method: () => 'GET' }),
   fulfill: async (response) => {
@@ -264,7 +251,7 @@ const route = {
 }
 await registrations[0].handler(route)
 assert(Buffer.isBuffer(fulfilled.body))
-assert(decode(fulfilled.body).layers.areas)
+assert(decode(fulfilled.body).layers.energymap_postal_code_areas)
 fixture.enqueue({ match: () => true, network: true })
 await registrations[0].handler(route)
 assert.equal(aborted, 'failed')
@@ -312,5 +299,5 @@ assert(
     !sourceFactory.includes('.fixture.test')
 )
 console.log(
-  `PASS: ${manifest.tiles.length} recorded MVT files, ${decodedFeatures} decoded polygons; native/XYZ/TMS API routing, fragments, three releases, empty/zero/scoped data, binary browser adapter, errors/delays and isolation.`
+  `PASS: ${manifest.tiles.length} recorded MVT files, ${decodedFeatures} decoded polygons; stable TMS/latest API routing, fragments, three private snapshots, empty/zero/scoped data, binary browser adapter, errors/delays and isolation.`
 )

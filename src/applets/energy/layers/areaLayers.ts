@@ -1,6 +1,9 @@
 import type { LayerConf, ExtendedLayerSpecification } from '#/common/types/map'
 import type { AreaSourceDescriptor } from 'applets/energy/layers/areaSource'
-import { areaMetricColorExpression } from 'applets/energy/common/areas/mapModes'
+import {
+  AUTOMATIC_AREA_RANGES,
+  areaMetricColorExpression,
+} from 'applets/energy/common/areas/mapModes'
 
 export const areaLayerIds = (descriptor: AreaSourceDescriptor) =>
   [
@@ -11,14 +14,18 @@ export const createAreaLayerConf = (
   descriptor: AreaSourceDescriptor
 ): LayerConf => {
   const [fill, outline] = areaLayerIds(descriptor)
+  const range = AUTOMATIC_AREA_RANGES[descriptor.level]
   const shared = {
     source: descriptor.sourceId,
     'source-layer': descriptor.sourceLayer,
-    minzoom: descriptor.source.minzoom,
+    minzoom: Math.min(
+      range.maxzoom,
+      Math.max(descriptor.source.minzoom ?? 0, range.minzoom)
+    ),
+    maxzoom: range.maxzoom,
     selectable: true,
     filter: [
       'all',
-      ['==', ['get', 'release_id'], descriptor.releaseId],
       ['==', ['get', 'level'], descriptor.level],
       ['==', ['typeof', ['get', 'area_id']], 'string'],
     ],

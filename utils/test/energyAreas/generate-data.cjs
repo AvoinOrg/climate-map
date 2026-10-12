@@ -178,7 +178,7 @@ const snapshots = releaseIds.map((release_id, index) => {
   )
   const as_of = ['2026-10-01', '2026-09-01', '2026-08-01'][index]
   const metadata = {
-    release_id,
+    latest: true,
     boundary_vintage: 2026,
     as_of,
     metric_version: 'building-area-summary-v1',
@@ -219,8 +219,9 @@ const snapshots = releaseIds.map((release_id, index) => {
       levels.map((level) => [
         level,
         {
-          url: `/energy-data/areas/${release_id}/${level}/tiles/{z}/{x}/{y}.pbf`,
-          source_layer: 'areas',
+          url: `https://sandbox.gis.avoin.org/geoserver/gwc/service/tms/1.0.0/sandbox_energiakartta%3Aenergymap_${level}_areas@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf`,
+          source_layer: `energymap_${level}_areas`,
+          scheme: 'tms',
           minzoom: 0,
           maxzoom: 14,
         },
@@ -262,7 +263,7 @@ const snapshots = releaseIds.map((release_id, index) => {
             : r.building_count > 0
         )
       const detail = {
-        release_id,
+        latest: true,
         level,
         area_code: code,
         area_id: `${level}:${code}`,
@@ -298,7 +299,6 @@ const snapshots = releaseIds.map((release_id, index) => {
         certificate_coverage,
       } = detail
       const properties = {
-        release_id,
         level,
         area_code: code,
         area_id: detail.area_id,
@@ -319,24 +319,10 @@ const snapshots = releaseIds.map((release_id, index) => {
       })
     }
   }
-  return { metadata, details, intersections, geometry }
+  return { snapshotId: release_id, metadata, details, intersections, geometry }
 })
-const serviceRoot = '/host/home/xbexbex/git/avoin-energy-map-service'
-const serviceFiles = [
-  'src/api/areas.py',
-  'src/area_contract.py',
-  'src/etl/build_area_aggregates.py',
-  'src/geoserver/publish_area_aggregates.py',
-  'tests/test_area_aggregates.py',
-]
-const provenance = Object.fromEntries(
-  serviceFiles.map((file) => [
-    file,
-    crypto
-      .createHash('sha256')
-      .update(fs.readFileSync(path.join(serviceRoot, file)))
-      .digest('hex'),
-  ])
+const historical = JSON.parse(
+  fs.readFileSync(path.join(directory, 'provenance.json'))
 )
 fs.writeFileSync(
   path.join(directory, 'dataset.json'),
@@ -350,8 +336,12 @@ fs.writeFileSync(
   path.join(directory, 'provenance.json'),
   JSON.stringify(
     {
-      serviceRoot,
-      sha256: provenance,
+      historicalServiceEvidence: historical.historicalServiceEvidence ?? {
+        serviceRoot: historical.serviceRoot,
+        sha256: historical.sha256,
+      },
+      contract:
+        '/workspace/external/energymap/tasks/aggregate-building-data/latest-backend-contract.md',
       synthetic: true,
       generator: 'generate-data.cjs',
       generatorSha256: crypto
@@ -370,5 +360,5 @@ fs.writeFileSync(
   ) + '\n'
 )
 console.log(
-  'Authored three immutable synthetic snapshots; no backend executed.'
+  'Authored three private latest-data synthetic snapshots; no backend executed.'
 )

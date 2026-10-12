@@ -10,11 +10,11 @@ export const fixtureTile = ({
   z,
   x,
   y,
-  sourceLayer = 'areas',
+  sourceLayer = `energymap_${level}_areas`,
 }) => {
   const key = `${releaseId}:${level}`
   if (!indexes.has(key)) {
-    const snapshot = snapshots.find((s) => s.metadata.release_id === releaseId)
+    const snapshot = snapshots.find((s) => s.snapshotId === releaseId)
     if (!snapshot?.geometry[level])
       throw new Error('Unknown fixture release/level')
     indexes.set(

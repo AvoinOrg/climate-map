@@ -17,32 +17,16 @@ import type {
 
 const config = resolveEnergyAreaApiConfig({ origin: API_ORIGIN })
 const request: AreaDetailRequest = {
-  releaseId: dataset.releaseIds[0],
   level: 'postal_code',
   areaCode: '00100',
 }
 const settle = () => new Promise<void>((resolve) => setImmediate(resolve))
-test('active/candidate/retained metadata and pinned full/scoped detail use truthful service URLs', async () => {
-  const fixture = createEnergyAreaFixture()
-  const fetchFn = fixture.fetch
-  expect((await fetchAreaMetadata({ config, fetchFn })).release_id).toBe(
-    dataset.releaseIds[0]
-  )
-  expect(new URL(fixture.requests[0]).search).toBe('')
-  for (const releaseId of dataset.releaseIds) {
-    expect(
-      (await fetchAreaMetadata({ config, releaseId, fetchFn })).release_id
-    ).toBe(releaseId)
-    expect(
-      (
-        await fetchAreaDetail({
-          config,
-          request: { ...request, releaseId },
-          fetchFn,
-        })
-      ).release_id
-    ).toBe(releaseId)
-  }
+test('latest metadata and full/scoped details use only normal unversioned URLs', async () => {
+  const fixture = createEnergyAreaFixture(),
+    fetchFn = fixture.fetch
+  const metadata = await fetchAreaMetadata({ config, fetchFn })
+  expect(metadata.latest).toBe(true)
+  expect(metadata).not.toHaveProperty('release_id')
   const full = await fetchAreaDetail({ config, request, fetchFn })
   const scoped = await fetchAreaDetail({
     config,
@@ -61,19 +45,16 @@ test('active/candidate/retained metadata and pinned full/scoped detail use truth
   ]).toEqual([5, 2, 0])
   expect(scoped.related_areas).toEqual(full.related_areas)
   expect(zero.metrics).toEqual(dataset.emptyMetrics)
-  const scopedUrl = new URL(fixture.requests.at(-2)!)
-  expect(scopedUrl.pathname).toBe('/energy-data/areas/postal_code/00100')
-  expect(Object.fromEntries(scopedUrl.searchParams)).toEqual({
-    release_id: request.releaseId,
-    municipality_code: '091',
-  })
+  expect(fixture.requests).toEqual([
+    `${API_ORIGIN}/energy-data/areas/metadata`,
+    `${API_ORIGIN}/energy-data/areas/postal_code/00100`,
+    `${API_ORIGIN}/energy-data/areas/postal_code/00100?municipality_code=091`,
+    `${API_ORIGIN}/energy-data/areas/postal_code/00100?municipality_code=009`,
+  ])
   fixture.setActiveRelease(dataset.releaseIds[1])
-  expect((await fetchAreaMetadata({ config, fetchFn })).release_id).toBe(
-    dataset.releaseIds[1]
-  )
   expect(
     (await fetchAreaDetail({ config, request, fetchFn })).building_count
-  ).toBe(5)
+  ).toBe(4)
 })
 test('missing/invalid config and invalid identities reject before transport; fixtures never selected implicitly', async () => {
   const fetchFn = jest.fn<ReturnType<AreaFetch>, Parameters<AreaFetch>>()
@@ -162,10 +143,10 @@ test('service not-found/unavailable, network, invalid JSON, shape and version ar
       problem: { kind },
     })
 })
-test('wrong echoed release, area and scope never satisfy the pinned detail', async () => {
+test('wrong latest marker, area and scope never satisfy the current detail', async () => {
   const fixture = createEnergyAreaFixture()
   for (const change of [
-    { release_id: dataset.releaseIds[1] },
+    { latest: false },
     { area_code: '00200', area_id: 'postal_code:00200' },
     { level: 'municipality', area_code: '091', area_id: 'municipality:091' },
     { scope: { geometry: 'full_postal_area', municipality_code: '091' } },
@@ -178,20 +159,6 @@ test('wrong echoed release, area and scope never satisfy the pinned detail', asy
       fetchAreaDetail({ config, request, fetchFn: fixture.fetch })
     ).rejects.toMatchObject({ problem: { kind: 'malformed-contract' } })
   }
-  fixture.enqueue({
-    match: () => true,
-    transform: (payload) => ({
-      ...(payload as object),
-      release_id: dataset.releaseIds[1],
-    }),
-  })
-  await expect(
-    fetchAreaMetadata({
-      config,
-      releaseId: request.releaseId,
-      fetchFn: fixture.fetch,
-    })
-  ).rejects.toMatchObject({ problem: { kind: 'malformed-contract' } })
 })
 test('abort reaches transport and prevents late noncooperative transport/body success', async () => {
   for (const bodyDelay of [false, true]) {
@@ -243,4 +210,14 @@ test('body stream failure is network failure, while AbortError remains cancellat
       aborted ? { name: 'AbortError' } : { problem: { kind: 'network' } }
     )
   }
+})
+
+test('an already-aborted request never reaches transport', async () => {
+  const controller = new AbortController(),
+    fetchFn = jest.fn()
+  controller.abort()
+  await expect(
+    fetchAreaDetail({ config, request, fetchFn, signal: controller.signal })
+  ).rejects.toMatchObject({ name: 'AbortError' })
+  expect(fetchFn).not.toHaveBeenCalled()
 })
