@@ -15,3 +15,6 @@
 
 [context."luonnonmetsakartat-test_deploy"]
   environment = { PUBLIC_COMPILED_APPLETS = "luonnonmetsakartat" }
+
+[context."energiakartta-test_deploy"]
+  environment = { PUBLIC_COMPILED_APPLETS = "energy" }
