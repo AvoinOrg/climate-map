@@ -124,6 +124,13 @@ describe.each([undefined, 'invalid-origin'])(
           expect(controls).not.toHaveTextContent(
             /building map remains|rakennuskartta toimii/i
           )
+          expect(
+            screen.queryByRole('button', {
+              name: locale === 'fi' ? 'Päivitä aluetiedot' : 'Refresh area data',
+              hidden: true,
+            })
+          ).not.toBeInTheDocument()
+          expect(controls).not.toHaveTextContent('sidebar.area_map.refresh')
         }
         await act(async () => {
           await Promise.resolve()
@@ -132,10 +139,11 @@ describe.each([undefined, 'invalid-origin'])(
         expect(useAppletStore.getState().areaAvailable).toBe(true)
         expect(current.sources.size).toBe(3)
         expect(
-          screen.getAllByRole('button', {
+          screen.queryByRole('button', {
             name: locale === 'fi' ? 'Päivitä aluetiedot' : 'Refresh area data',
-          }).length
-        ).toBeGreaterThan(0)
+            hidden: true,
+          })
+        ).not.toBeInTheDocument()
         expect(client.fetchAreaMetadata).not.toHaveBeenCalled()
         expect(client.fetchAreaDetail).not.toHaveBeenCalled()
         view.unmount()

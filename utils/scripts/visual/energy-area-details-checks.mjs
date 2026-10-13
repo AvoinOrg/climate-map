@@ -358,7 +358,7 @@ export const checkEnergyAreaDetails = async ({
   await expectDetail({ code: '00100', count: 2, scoped: true })
   const nextRelease = '22222222-2222-4222-8222-222222222222'
   fixture.setActiveRelease(nextRelease)
-  await button(local.refresh).click()
+  await page.evaluate(() => window.dispatchEvent(new Event('online')))
   await panel
     .getByText(
       new Intl.DateTimeFormat(locale, {
@@ -372,7 +372,7 @@ export const checkEnergyAreaDetails = async ({
   assert.equal(await button(backName).count(), 1)
   await snapshot(
     page,
-    `${locale}-${viewportName}-latest-refresh-preserves-scope`
+    `${locale}-${viewportName}-latest-reconnect-preserves-scope`
   )
   fixture.enqueue({
     match: (url) => url.pathname.endsWith('/region/01'),
@@ -413,9 +413,9 @@ export const checkEnergyAreaDetails = async ({
     gate: gate.promise,
     ignoreAbort: true,
   })
-  await button(local.refresh).click()
+  await page.evaluate(() => window.dispatchEvent(new Event('online')))
   for (let i = 0; i < 100 && !gatedStarted; i++) await page.waitForTimeout(50)
-  assert(gatedStarted, 'Scoped latest refresh dispatched')
+  assert(gatedStarted, 'Scoped latest reconnect refresh dispatched')
   await button(wholeName).click()
   await expectDetail({ code: '00100', count: 4 })
   gate.release()
@@ -440,7 +440,7 @@ export const checkEnergyAreaDetails = async ({
     backReachableExpandedAndCollapsed: true,
     regionCodeAndCrosswalkActions: true,
     staleScopedResponseIgnored: true,
-    latestRefreshRetainsScopeAndBack: true,
+    latestReconnectRetainsScopeAndBack: true,
     longSourceNameWraps: true,
     zeroIntersectionSetup:
       'createAreaSelection identity placeholder, municipality 009; no invented relation',

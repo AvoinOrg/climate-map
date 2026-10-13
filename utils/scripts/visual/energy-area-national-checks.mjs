@@ -33,6 +33,15 @@ export const checkEnergyAreaNational = async ({
       message: e.message,
     })
   )
+  page.on('console', (message) => {
+    if (message.type() === 'error')
+      evidence.consoleErrors.push({
+        scenario,
+        locale,
+        viewportName,
+        message: message.text(),
+      })
+  })
   page.on('request', (r) => {
     if (
       /energy-data\/areas|energymap_(postal_code|municipality|region)_areas/.test(
@@ -476,12 +485,12 @@ export const checkEnergyAreaNational = async ({
     assert.equal(await related('municipality', '049').count(), 1)
     assert.equal(await related('municipality', '091').count(), 1)
     await snapshot(page, `${locale}-${viewportName}-national-scoped-091`)
-    // Refresh/reconnect deliberately request loaded tiles without dropping scope.
+    // Two reconnect cycles request fresh details and loaded tiles without dropping scope.
     const tilesBefore = requests.filter((u) => u.includes('@pbf/')).length
     const detailsBefore = requests.filter((u) =>
       u.includes('/postal_code/00370')
     ).length
-    await button(local.refresh).click()
+    await page.evaluate(() => window.dispatchEvent(new Event('online')))
     await page.waitForFunction(
       () => !document.querySelector('[aria-busy="true"]')
     )
@@ -498,9 +507,9 @@ export const checkEnergyAreaNational = async ({
     await recoverRetainedStyle('scoped-postal', true)
     await count({ code: '00370', buildings: 655, scope: '091' })
     for (const missing of ['source', 'layer']) {
-      // Click Refresh in the same browser task as removing the owned source or
-      // layer, before automatic idle recovery can mask a broken refresh path.
-      const absent = await page.evaluate(({ missing, refresh }) => {
+      // Reconnect in the same browser task as removing the owned source or
+      // layer, before automatic idle recovery can mask a broken reconnect path.
+      const absent = await page.evaluate(({ missing }) => {
         const map = window.__energyModesTest.map
         const source = 'energymap_areas_postal_code'
         const fill = `${source}-fill`
@@ -510,21 +519,17 @@ export const checkEnergyAreaNational = async ({
           map.removeSource(source)
         }
         const absent = missing === 'source' ? !map.getSource(source) : !map.getLayer(fill)
-        const button = [...document.querySelectorAll('button')].find(
-          (node) => node.getAttribute('aria-label') === refresh && node.offsetParent
-        )
-        if (!button) throw new Error('Visible area Refresh button required')
-        button.click()
+        window.dispatchEvent(new Event('online'))
         return absent
-      }, { missing, refresh: local.refresh })
-      assert(absent, `Remove owned ${missing} before Refresh`)
+      }, { missing })
+      assert(absent, `Remove owned ${missing} before reconnect`)
       await waitForAreaRecovery()
       await count({ code: '00370', buildings: 655, scope: '091' })
       await assertAutomaticControls(page, locale)
       evidence.checks.push({ unmocked: true, locale, viewportName,
-        refreshMissing: missing, scope: '091' })
+        reconnectMissing: missing, scope: '091' })
     }
-    await snapshot(page, `${locale}-${viewportName}-missing-owned-refresh-recovered`)
+    await snapshot(page, `${locale}-${viewportName}-missing-owned-reconnect-recovered`)
     await button(whole).click()
     await count({ code: '00370', buildings: 974 })
     await button(back).click()
@@ -542,13 +547,13 @@ export const checkEnergyAreaNational = async ({
       viewportName,
       scopedCounts: [655, 319],
       global: 974,
-      refresh: true,
+      reconnectCycles: 2,
       reconnect: true,
       styleSelected: true,
       back: true,
     })
   } else {
-    await button(local.refresh).click()
+    await page.evaluate(() => window.dispatchEvent(new Event('online')))
     await page.waitForTimeout(300)
     await assertAutomaticControls(page, locale)
     assert.equal(

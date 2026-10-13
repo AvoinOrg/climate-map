@@ -96,6 +96,23 @@ const copy = {
 const assertAutomaticControls = async (page, locale) => {
   assert.equal(
     await page
+      .getByRole('button', {
+        name: /Päivitä aluetiedot|Refresh area data|sidebar\.area_map\.refresh/i,
+        includeHidden: true,
+      })
+      .count(),
+    0
+  )
+  assert.equal(
+    await page.getByText(copy[locale].refresh, { exact: true }).count(),
+    0
+  )
+  assert.equal(
+    await page.getByText('sidebar.area_map.refresh', { exact: true }).count(),
+    0
+  )
+  assert.equal(
+    await page
       .getByRole('combobox', { name: copy[locale].geography, exact: true })
       .count(),
     0
@@ -111,6 +128,10 @@ const assertAutomaticControls = async (page, locale) => {
       }))
     )
   for (const surface of surfaces) {
+    assert.doesNotMatch(
+      surface.text,
+      /Päivitä aluetiedot|Refresh area data|sidebar\.area_map\.refresh/i
+    )
     assert.doesNotMatch(
       surface.text,
       /building map remains|rakennuskartta toimii|previously loaded release|aiemmin ladattua|Zoom in to see buildings|Lähennä karttaa nähdäksesi rakennukset/i
@@ -448,7 +469,12 @@ try {
           await context.close()
           continue
         }
-        await page.getByTestId('energy-area-controls').first().waitFor()
+        // Building-mode controls can be empty after removing manual refresh.
+        await page
+          .getByTestId('energy-area-controls')
+          .first()
+          .waitFor({ state: 'attached' })
+        await assertAutomaticControls(page, locale)
         if (viewportName === 'mobile')
           await page.locator('.sidebar-toggle-button').click()
         await checkGestures({ page, viewportName })
@@ -816,18 +842,10 @@ try {
         gate: metadataGate.promise,
         ignoreAbort: true,
       })
-      await page
-        .getByRole('button', { name: copy.en.refresh, exact: true })
-        .filter({ visible: true })
-        .first()
-        .click()
+      await page.evaluate(() => window.dispatchEvent(new Event('online')))
       await page.waitForTimeout(150)
       fixture.setActiveRelease(releaseIds[2])
-      await page
-        .getByRole('button', { name: copy.en.refresh, exact: true })
-        .filter({ visible: true })
-        .first()
-        .click()
+      await page.evaluate(() => window.dispatchEvent(new Event('online')))
       await page.waitForFunction(
         () =>
           Object.keys(window.__energyModesTest.map.getStyle().sources).filter(
@@ -880,11 +898,7 @@ try {
       await page
         .getByRole('button', { name: copy.en.close, exact: true })
         .click()
-      await page
-        .getByRole('button', { name: copy.en.refresh, exact: true })
-        .filter({ visible: true })
-        .first()
-        .click()
+      await page.evaluate(() => window.dispatchEvent(new Event('online')))
       await page.waitForFunction(
         () =>
           Object.values(window.__energyModesTest.map.getStyle().sources).filter(
@@ -989,11 +1003,7 @@ try {
       ]) {
         await move({ page, zoom: scenario.zoom, center: scenario.center })
         // Each error case intentionally invalidates any fresh cached visit.
-        await page
-          .getByRole('button', { name: copy.en.refresh, exact: true })
-          .filter({ visible: true })
-          .first()
-          .click()
+        await page.evaluate(() => window.dispatchEvent(new Event('online')))
         await page.waitForTimeout(100)
         const rule = {
           match: (url) =>
@@ -1232,9 +1242,13 @@ try {
         await snapshot(page, `en-mobile-metadata-${scenario}`)
         await move({ page, zoom: 12 })
         fixture.setActiveRelease(releaseIds[0])
-        await page
-          .getByRole('button', { name: copy.en.refresh, exact: true })
-          .click()
+        const recoveredMetadata = page.waitForResponse(async (response) =>
+          response.url().endsWith('/energy-data/areas/metadata') &&
+          response.status() === 200 &&
+          (await response.json()).metric_version === 'building-area-summary-v1'
+        )
+        await page.evaluate(() => window.dispatchEvent(new Event('online')))
+        await recoveredMetadata
         await page.waitForFunction(
           () => window.__energyModesTest.appletStore.getState().areaAvailable
         )

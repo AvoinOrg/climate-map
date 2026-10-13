@@ -49,15 +49,6 @@ const EnergyAreaControls = ({
       }}
     >
       {(compact || !runtime.request) && <EnergyAreaBackButton />}
-      {runtime.status !== 'loading' && runtime.status !== 'updating' && (
-        <Button
-          size="small"
-          onClick={runtime.refresh}
-          aria-label={t(`${prefix}refresh`)}
-        >
-          <TText ns={ns} keyName={`${prefix}refresh`} />
-        </Button>
-      )}
       {effective !== 'buildings' && (
         <>
           <Box sx={{ my: 1 }}>

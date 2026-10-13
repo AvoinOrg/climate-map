@@ -81,6 +81,18 @@ const mount = ({
   )
 }
 afterEach(cleanup)
+const expectNoManualRefresh = () => {
+  expect(
+    screen.queryByRole('button', {
+      name: /Päivitä aluetiedot|Refresh area data|sidebar\.area_map\.refresh/i,
+      hidden: true,
+    })
+  ).not.toBeInTheDocument()
+  for (const controls of screen.getAllByTestId('energy-area-controls'))
+    expect(controls).not.toHaveTextContent(
+      /Päivitä aluetiedot|Refresh area data|sidebar\.area_map\.refresh/i
+    )
+}
 it.each(['fi', 'en'])(
   'renders localized whole-area summary, all-building scope, legend and provenance (%s)',
   async (locale) => {
@@ -92,6 +104,7 @@ it.each(['fi', 'en'])(
     expect(await screen.findByTestId('energy-area-detail')).toHaveTextContent(
       locale === 'fi' ? '5 rakennusta' : '5 buildings'
     )
+    expectNoManualRefresh()
     expect(screen.getByTestId('energy-area-detail')).toHaveTextContent('60')
     expect(screen.getByTestId('energy-area-detail')).toHaveTextContent('2026')
     expect(screen.getByTestId('energy-area-detail')).not.toHaveTextContent(
@@ -115,6 +128,7 @@ it.each(['fi', 'en'])(
     expect(await screen.findByTestId('energy-area-detail')).toHaveTextContent(
       locale === 'fi' ? 'ladataan' : 'Loading'
     )
+    expectNoManualRefresh()
     cleanup()
     mount({
       locale,
@@ -167,6 +181,7 @@ it.each([
     expect(await screen.findByRole('alert')).not.toHaveTextContent(
       /sidebar\.|UUID|SQL|diagnostic/
     )
+    expectNoManualRefresh()
     fireEvent.click(screen.getByRole('button', { name: 'Retry area details' }))
     expect(retryDetail).toHaveBeenCalled()
   }
@@ -187,47 +202,57 @@ it('uses only actually available source names, skipping empty names and falling 
     })
   ).toBe('00100')
 })
-it('omits geographic controls and fallback hints without configuration', async () => {
-  useAppletStore.setState({
-    effectiveGeography: 'buildings',
-    areaAvailable: false,
-    areaZoom: 11.999,
-  })
-  mount({
-    locale: 'en',
-    value: {
-      status: 'unavailable',
-      problem: 'not-configured',
-      request: undefined,
-    },
-    controlsOnly: true,
-  })
-  expect(
-    await screen.findByTestId('energy-area-controls')
-  ).not.toHaveTextContent('The building map remains available')
-  expect(screen.getByTestId('energy-area-controls')).not.toHaveTextContent(
-    'Zoom in to see buildings'
-  )
-  expect(
-    screen.queryByRole('button', { name: 'Refresh area data' })
-  ).toBeInTheDocument()
-})
-it('omits failed-refresh fallback copy and exposes specific tile retry', async () => {
-  useAppletStore.setState({
-    effectiveGeography: 'region',
-    areaAvailable: true,
-  })
-  mount({
-    locale: 'en',
-    value: { problem: 'network', tileFailed: true },
-    controlsOnly: true,
-  })
-  expect(
-    await screen.findByTestId('energy-area-controls')
-  ).not.toHaveTextContent('previously loaded release')
-  fireEvent.click(screen.getByRole('button', { name: 'Retry area tiles' }))
-  expect(retryTiles).toHaveBeenCalled()
-})
+it.each(['fi', 'en'])(
+  'omits geographic controls and fallback hints without configuration (%s)',
+  async (locale) => {
+    useAppletStore.setState({
+      effectiveGeography: 'buildings',
+      areaAvailable: false,
+      areaZoom: 11.999,
+    })
+    mount({
+      locale,
+      value: {
+        status: 'unavailable',
+        problem: 'not-configured',
+        request: undefined,
+      },
+      controlsOnly: true,
+    })
+    expect(
+      await screen.findByTestId('energy-area-controls')
+    ).not.toHaveTextContent('The building map remains available')
+    expect(screen.getByTestId('energy-area-controls')).not.toHaveTextContent(
+      'Zoom in to see buildings'
+    )
+    expectNoManualRefresh()
+  }
+)
+it.each(['fi', 'en'])(
+  'omits failed-refresh fallback copy and exposes specific tile retry (%s)',
+  async (locale) => {
+    useAppletStore.setState({
+      effectiveGeography: 'region',
+      areaAvailable: true,
+    })
+    mount({
+      locale,
+      value: { problem: 'network', tileFailed: true },
+      controlsOnly: true,
+    })
+    expect(
+      await screen.findByTestId('energy-area-controls')
+    ).not.toHaveTextContent('previously loaded release')
+    expectNoManualRefresh()
+    fireEvent.click(
+      screen.getByRole('button', {
+        name:
+          locale === 'fi' ? 'Lataa aluekartta uudelleen' : 'Retry area tiles',
+      })
+    )
+    expect(retryTiles).toHaveBeenCalled()
+  }
+)
 
 it('keeps the frozen all-building scope visible when the compact legend is closed', async () => {
   useAppletStore.setState({
@@ -339,34 +364,58 @@ it.each(['fi', 'en'])(
   }
 )
 
-it.each(['loading', 'metadata-error', 'detail-error', 'refresh-error'])(
-  'has no geographic picker or generic notice in compact and desktop controls for %s',
-  async (scenario) => {
-    useAppletStore.setState({
-      effectiveGeography: 'postal_code',
-      areaAvailable: false,
-      areaZoom: 11,
-    })
-    mount({
-      locale: 'en',
-      value: {
-        status: scenario === 'loading' ? 'loading' : 'unavailable',
-        problem: scenario === 'metadata-error' ? 'network' : undefined,
-        detailProblem: scenario === 'detail-error' ? 'network' : undefined,
-      },
-      controlsOnly: true,
-      compact: scenario !== 'loading',
-    })
-    const controls = await screen.findByTestId('energy-area-controls')
-    expect(
-      screen.queryByRole('combobox', { name: 'Geography' })
-    ).not.toBeInTheDocument()
-    expect(controls).not.toHaveTextContent(
-      /building map remains|previously loaded release|area data is currently unavailable/i
-    )
-    expect(controls.querySelector('[role="status"]')).toBeNull()
-    expect(
-      screen.getByRole('combobox', { name: 'Area shading' })
-    ).toBeInTheDocument()
-  }
-)
+describe.each([
+  ['fi', false],
+  ['fi', true],
+  ['en', false],
+  ['en', true],
+] as const)('automatic controls (%s, compact=%s)', (locale, compact) => {
+  it.each([
+    'loading',
+    'updating',
+    'ready',
+    'metadata-error',
+    'detail-error',
+    'refresh-error',
+  ] as const)(
+    'has no manual refresh, geographic picker or generic notice for %s',
+    async (scenario) => {
+      useAppletStore.setState({
+        effectiveGeography: 'postal_code',
+        areaAvailable: false,
+        areaZoom: 11,
+      })
+      mount({
+        locale,
+        value: {
+          status:
+            scenario === 'loading' ||
+            scenario === 'updating' ||
+            scenario === 'ready'
+              ? scenario
+              : 'unavailable',
+          problem: scenario === 'metadata-error' ? 'network' : undefined,
+          detailProblem: scenario === 'detail-error' ? 'network' : undefined,
+        },
+        controlsOnly: true,
+        compact,
+      })
+      const controls = await screen.findByTestId('energy-area-controls')
+      expectNoManualRefresh()
+      expect(
+        screen.queryByRole('combobox', {
+          name: locale === 'fi' ? 'Aluetaso' : 'Geography',
+        })
+      ).not.toBeInTheDocument()
+      expect(controls).not.toHaveTextContent(
+        /building map remains|rakennuskartta toimii|previously loaded release|aiemmin ladattua|area data is currently unavailable|aluetiedot eivät ole tällä hetkellä käytettävissä/i
+      )
+      expect(controls.querySelector('[role="status"]')).toBeNull()
+      expect(
+        screen.getByRole('combobox', {
+          name: locale === 'fi' ? 'Alueen väritys' : 'Area shading',
+        })
+      ).toBeInTheDocument()
+    }
+  )
+})
