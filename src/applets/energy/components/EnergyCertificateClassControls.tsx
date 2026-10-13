@@ -36,7 +36,6 @@ const EnergyCertificateClassControls = ({
   orientation = 'horizontal',
   sx,
 }: Props) => {
-  const disabled = useAppletStore((state) => state.effectiveGeography !== 'buildings')
   const { t } = useTranslate('energiakartta')
   const activeEnergyCertificateClasses = useAppletStore(
     (state) => state.activeEnergyCertificateClasses
@@ -95,8 +94,6 @@ const EnergyCertificateClassControls = ({
             <PolymorphicBox
               component="button"
               type="button"
-              disabled={disabled}
-              aria-disabled={disabled}
               aria-label={getClassButtonAriaLabel({
                 layerLabel,
                 classCode,
@@ -112,8 +109,7 @@ const EnergyCertificateClassControls = ({
                 border: 0,
                 borderRadius: '0.3125rem',
                 appearance: 'none',
-                cursor: disabled ? 'default' : 'pointer',
-                opacity: disabled ? .5 : 1,
+                cursor: 'pointer',
                 backgroundColor: tileBackground,
                 display: 'inline-flex',
                 alignItems: 'center',

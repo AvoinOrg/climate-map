@@ -51,7 +51,10 @@ beforeEach(() => {
     isLoaded: true,
   })
   useMapInstanceStore.setState({ _map: current.map })
-  useAppletStore.setState(useAppletStore.getInitialState())
+  useAppletStore.setState({
+    ...useAppletStore.getInitialState(),
+    activeThematicMode: 'energyCertificates',
+  })
   generation = undefined
   status = 'loading'
   lane = { pending: Promise.resolve() }
@@ -270,7 +273,7 @@ it('recovers a replaced style without losing other registrations, then cleans up
   expect(Object.keys(useMapStore.getState()._layerGroups)).toHaveLength(0)
   expect(useAppletStore.getState().effectiveGeography).toBe('buildings')
 })
-it('preserves building visibility and every filter while controls are inapplicable', async () => {
+it('does not rewrite physical building visibility; retains purpose filters and allows shared classes', async () => {
   current.zoom(12)
   useAppletStore.getState().setBuildingTypeFilter('01')
   useAppletStore.getState().setSelectedConstructionDecade(1980)
@@ -293,7 +296,7 @@ it('preserves building visibility and every filter while controls are inapplicab
   current.zoom(6)
   await runtime.install()
   for (const id of ENERGYMAP_SHARED_BUILDING_LAYER_IDS)
-    expect(current.map.getLayoutProperty(id, 'visibility')).toBe('none')
+    expect(current.map.getLayoutProperty(id, 'visibility')).toBe(before[id])
   useAppletStore.getState().setBuildingTypeFilter('02')
   useAppletStore.getState().setSelectedConstructionDecade(2000)
   useAppletStore.getState().setShowOnlySelectedDecade(false)
@@ -302,9 +305,11 @@ it('preserves building visibility and every filter while controls are inapplicab
     'buildingTypeFilter',
     'selectedConstructionDecade',
     'showOnlySelectedDecade',
-    'activeEnergyCertificateClasses',
   ] as const)
     expect(useAppletStore.getState()[key]).toEqual(preferences[key])
+  expect(
+    useAppletStore.getState().activeEnergyCertificateClasses
+  ).not.toContain('B')
   current.zoom(12)
   for (const id of ENERGYMAP_SHARED_BUILDING_LAYER_IDS)
     expect(current.map.getLayoutProperty(id, 'visibility')).toBe(before[id])
@@ -451,7 +456,9 @@ it.each([6, 8, 11, 12])(
       current.map.removeSource(descriptor.sourceId)
     }
     current.featureState.clear()
-    const loaded = jest.spyOn(current.map, 'isStyleLoaded').mockReturnValue(false)
+    const loaded = jest
+      .spyOn(current.map, 'isStyleLoaded')
+      .mockReturnValue(false)
     runtime.refreshTiles()
     current.fire('style.load')
     current.fire('styledata')
@@ -482,11 +489,13 @@ it.each([6, 8, 11, 12])(
       }
     if (selected)
       expect(
-        current.featureState.get(JSON.stringify({
-          source: selected.source,
-          sourceLayer: selected.sourceLayer,
-          id: selected.id,
-        }))
+        current.featureState.get(
+          JSON.stringify({
+            source: selected.source,
+            sourceLayer: selected.sourceLayer,
+            id: selected.id,
+          })
+        )
       ).toEqual({ selected: true })
     for (const event of ['style.load', 'styledata', 'idle'])
       expect(current.listeners.get(event)?.size).toBe(1)
@@ -523,7 +532,9 @@ it.each(['source', 'layer'] as const)(
     expect(current.layers.size).toBe(6)
     expect(status).toBe('ready')
     expect(useMapStore.getState().selectedFeatures).toEqual([selected])
-    expect([...current.featureState.values()]).toContainEqual({ selected: true })
+    expect([...current.featureState.values()]).toContainEqual({
+      selected: true,
+    })
     const count = (current.map.addSource as jest.Mock).mock.calls.length
     current.fire('idle')
     runtime.refreshTiles()
@@ -583,9 +594,10 @@ it.each(['postal_code', 'buildings'] as const)(
       type: 'geojson',
       data: { type: 'FeatureCollection', features: [] },
     })
-    const selected = level === 'buildings'
-      ? buildingHit('current')
-      : hit('postal_code', '00370')
+    const selected =
+      level === 'buildings'
+        ? buildingHit('current')
+        : hit('postal_code', '00370')
     const unrelated = { ...selected, source: 'unrelated' }
     useMapStore.getState().setSelectedFeatures([selected, unrelated])
     // setStyle(getStyle(), { diff: false }) retains registration but clears state.
@@ -594,7 +606,9 @@ it.each(['postal_code', 'buildings'] as const)(
     const layers = new Map(current.layers)
     const sourceCount = (current.map.addSource as jest.Mock).mock.calls.length
     const restore = jest.spyOn(current.map, 'setFeatureState')
-    const loaded = jest.spyOn(current.map, 'isStyleLoaded').mockReturnValue(false)
+    const loaded = jest
+      .spyOn(current.map, 'isStyleLoaded')
+      .mockReturnValue(false)
     current.fire('style.load')
     current.fire('styledata')
     current.fire('idle')
@@ -602,13 +616,19 @@ it.each(['postal_code', 'buildings'] as const)(
     loaded.mockReturnValue(true)
     current.fire('idle')
     expect(restore).toHaveBeenCalledTimes(1)
-    expect(current.featureState.get(JSON.stringify(featureTarget(selected))))
-      .toEqual({ selected: true })
-    expect(current.featureState.has(JSON.stringify(featureTarget(unrelated))))
-      .toBe(false)
-    expect(useMapStore.getState().selectedFeatures).toEqual([selected, unrelated])
+    expect(
+      current.featureState.get(JSON.stringify(featureTarget(selected)))
+    ).toEqual({ selected: true })
+    expect(
+      current.featureState.has(JSON.stringify(featureTarget(unrelated)))
+    ).toBe(false)
+    expect(useMapStore.getState().selectedFeatures).toEqual([
+      selected,
+      unrelated,
+    ])
     expect(current.map.addSource).toHaveBeenCalledTimes(sourceCount)
-    for (const [id, source] of sources) expect(current.sources.get(id)).toBe(source)
+    for (const [id, source] of sources)
+      expect(current.sources.get(id)).toBe(source)
     for (const [id, layer] of layers) expect(current.layers.get(id)).toBe(layer)
     current.fire('styledata')
     current.fire('idle')
@@ -617,8 +637,9 @@ it.each(['postal_code', 'buildings'] as const)(
     current.featureState.clear()
     current.fire('style.load')
     expect(restore).toHaveBeenCalledTimes(2)
-    expect(current.featureState.get(JSON.stringify(featureTarget(selected))))
-      .toEqual({ selected: true })
+    expect(
+      current.featureState.get(JSON.stringify(featureTarget(selected)))
+    ).toEqual({ selected: true })
     loaded.mockRestore()
     restore.mockRestore()
   }
@@ -627,7 +648,15 @@ it.each(['postal_code', 'buildings'] as const)(
 describe.each(['postal_code', 'buildings'] as const)(
   'retained-all style readiness with current %s selection',
   (level) => {
-    it.each(['close', 'new-selection', 'zoom', 'back', 'navigation', 'exit', 'dispose'] as const)(
+    it.each([
+      'close',
+      'new-selection',
+      'zoom',
+      'back',
+      'navigation',
+      'exit',
+      'dispose',
+    ] as const)(
       'does not restore the obsolete selection after %s',
       async (action) => {
         current.zoom(8)
@@ -656,31 +685,40 @@ describe.each(['postal_code', 'buildings'] as const)(
         }
         const selected = useMapStore.getState().selectedFeatures[0]
         current.featureState.clear()
-        const loaded = jest.spyOn(current.map, 'isStyleLoaded').mockReturnValue(false)
+        const loaded = jest
+          .spyOn(current.map, 'isStyleLoaded')
+          .mockReturnValue(false)
         current.fire('style.load')
         current.fire('styledata')
         if (action === 'close') useMapStore.getState().setSelectedFeatures([])
         else if (action === 'new-selection')
-          useMapStore.getState().setSelectedFeatures([
-            level === 'buildings' ? buildingHit('new') : hit('postal_code', '00100'),
-          ])
+          useMapStore
+            .getState()
+            .setSelectedFeatures([
+              level === 'buildings'
+                ? buildingHit('new')
+                : hit('postal_code', '00100'),
+            ])
         else if (action === 'zoom') current.zoom(6)
         else if (action === 'back') navigation.back()
         else if (action === 'navigation') {
           if (level === 'buildings') navigation.back()
           navigation.navigateRelated({ level: 'municipality', areaCode: '049' })
-        } else if (action === 'exit') useMapStore.setState({ mapContext: 'main' })
+        } else if (action === 'exit')
+          useMapStore.setState({ mapContext: 'main' })
         else void runtime.dispose()
         current.featureState.clear()
         loaded.mockReturnValue(true)
         current.fire('idle')
         await lane.pending
-        expect(current.featureState.has(JSON.stringify(featureTarget(selected))))
-          .toBe(false)
+        expect(
+          current.featureState.has(JSON.stringify(featureTarget(selected)))
+        ).toBe(false)
         if (['new-selection', 'back', 'navigation'].includes(action)) {
           const next = useMapStore.getState().selectedFeatures[0]
-          expect(current.featureState.get(JSON.stringify(featureTarget(next))))
-            .toEqual({ selected: true })
+          expect(
+            current.featureState.get(JSON.stringify(featureTarget(next)))
+          ).toEqual({ selected: true })
         }
         navigation.dispose()
         loaded.mockRestore()
@@ -688,6 +726,29 @@ describe.each(['postal_code', 'buildings'] as const)(
     )
   }
 )
+
+it('restores availability when shared style recovery completes the temporarily missing layers', async () => {
+  await runtime.install()
+  const originalGeneration = generation
+  const selected = hit('region', '01')
+  useMapStore.getState().setSelectedFeatures([selected])
+  let ready = false
+  current.map.isStyleLoaded = () => ready
+  const id = areaLayerIds(generation!.descriptors[0])[0]
+  const layer = current.layers.get(id)!
+  current.layers.delete(id)
+  current.featureState.clear()
+  current.fire('style.load')
+  expect(useAppletStore.getState().areaAvailable).toBe(false)
+  // The shared map owner can restore the missing layer before our next event.
+  current.layers.set(id, layer)
+  ready = true
+  current.fire('idle')
+  expect(useAppletStore.getState().areaAvailable).toBe(true)
+  expect(generation).toBe(originalGeneration)
+  expect(useMapStore.getState().selectedFeatures).toEqual([selected])
+  expect([...current.featureState.values()]).toContainEqual({ selected: true })
+})
 
 it('restores only the current Energy building highlight after retained-source style replacement', async () => {
   current.zoom(16)
@@ -715,7 +776,9 @@ it('restores only the current Energy building highlight after retained-source st
   expect(status).toBe('ready')
   expect(useAppletStore.getState().effectiveGeography).toBe('buildings')
   expect(useMapStore.getState().selectedFeatures).toEqual([
-    selected, extra, unrelated,
+    selected,
+    extra,
+    unrelated,
   ])
   expect(
     current.featureState.get(JSON.stringify(featureTarget(selected)))
@@ -732,8 +795,15 @@ it('restores only the current Energy building highlight after retained-source st
 })
 
 it.each([
-  'close', 'new-selection', 'zoom', 'back', 'navigation', 'exit', 'dispose',
-  'missing-source', 'missing-layer',
+  'close',
+  'new-selection',
+  'zoom',
+  'back',
+  'navigation',
+  'exit',
+  'dispose',
+  'missing-source',
+  'missing-layer',
 ] as const)(
   'does not restore stale or unavailable building state during queued recovery: %s',
   async (action) => {
@@ -784,7 +854,9 @@ it.each([
     ).not.toEqual({ selected: true })
     if (action === 'new-selection')
       expect(
-        current.featureState.get(JSON.stringify(featureTarget(buildingHit('new'))))
+        current.featureState.get(
+          JSON.stringify(featureTarget(buildingHit('new')))
+        )
       ).toEqual({ selected: true })
     if (action === 'back') {
       expect(useAppletStore.getState().effectiveGeography).toBe('postal_code')
@@ -879,3 +951,118 @@ it.each(['close', 'new-selection', 'zoom'] as const)(
     add.mockRestore()
   }
 )
+
+it('hides null theme groups, ignores hidden hits, and reapplies current shared choices to every level', async () => {
+  useAppletStore.getState().setActiveThematicMode(null)
+  await runtime.install()
+  for (const descriptor of generation!.descriptors)
+    for (const id of areaLayerIds(descriptor))
+      expect(current.map.getLayoutProperty(id, 'visibility')).toBe('none')
+  const feature = hit('region', '01')
+  expect(
+    projectAreaSelection({
+      features: [feature],
+      descriptors: generation!.descriptors,
+      effective: 'region',
+    })
+  ).toBeUndefined()
+  useAppletStore.getState().setActiveThematicMode('energyCertificates')
+  const before = current.map.getPaintProperty(feature.layer.id, 'fill-color')
+  useMapStore.getState().setSelectedFeatures([feature])
+  useAppletStore.getState().toggleEnergyCertificateClass('A')
+  for (const descriptor of generation!.descriptors) {
+    const fill = areaLayerIds(descriptor)[0]
+    expect(current.map.getLayoutProperty(fill, 'visibility')).toBe('visible')
+    expect(current.map.getPaintProperty(fill, 'fill-color')).not.toEqual(before)
+  }
+  expect(useMapStore.getState().selectedFeatures).toEqual([feature])
+  useAppletStore.getState().setActiveThematicMode('heating')
+  for (const category of [
+    'geothermal',
+    'districtHeating',
+    'electricity',
+    'solar',
+    'other',
+  ] as const)
+    useAppletStore.getState().setHeatingCategoryActive(category, false)
+  expect(useMapStore.getState().selectedFeatures).toEqual([])
+  for (const descriptor of generation!.descriptors)
+    for (const id of areaLayerIds(descriptor))
+      expect(current.map.getLayoutProperty(id, 'visibility')).toBe('none')
+  useAppletStore.getState().setHeatingCategoryActive('other', true)
+  current.fire('style.load')
+  runtime.refreshTiles()
+  for (const descriptor of generation!.descriptors)
+    expect(
+      current.map.getLayoutProperty(areaLayerIds(descriptor)[0], 'visibility')
+    ).toBe('visible')
+})
+it('queued registration applies latest category/theme intent and never flashes the old coverage paint', async () => {
+  let release!: () => void
+  const gate = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const add = jest
+    .spyOn(useMapStore.getState(), 'addLayerGroup')
+    .mockImplementationOnce(async (id, options) => {
+      await gate
+      return useMapStore.getInitialState().addLayerGroup(id, options)
+    })
+  const pending = runtime.install()
+  await Promise.resolve()
+  useAppletStore.getState().setActiveThematicMode('ventilation')
+  useAppletStore.getState().setVentilationCategoryActive('mechanical', false)
+  release()
+  await pending
+  for (const descriptor of generation!.descriptors) {
+    const paint = JSON.stringify(
+      current.map.getPaintProperty(areaLayerIds(descriptor)[0], 'fill-color')
+    )
+    expect(paint).toContain('ventilation_gravity_count')
+    expect(paint).not.toContain('certificate_coverage')
+    expect(paint).not.toContain('#06A4C0')
+  }
+  add.mockRestore()
+})
+
+it('rejects a saved postal Back frame when the current categorical choices hide its population', async () => {
+  current.zoom(11)
+  await runtime.install()
+  const postal = hit('postal_code', '00100')
+  postal.properties = {
+    ...postal.properties,
+    thematic_contract_version: 1,
+    ...Object.fromEntries(
+      [...'ABCDEFG'].map((code) => [
+        `energy_class_${code.toLowerCase()}_count`,
+        code === 'A' ? 5 : 0,
+      ])
+    ),
+    energy_class_unknown_count: 0,
+    energy_class_official_count: 3,
+    energy_class_modeled_count: 2,
+    heating_geothermal_count: 0,
+    heating_district_count: 0,
+    heating_electricity_count: 0,
+    heating_solar_count: 0,
+    heating_other_count: 5,
+    ventilation_mechanical_count: 0,
+    ventilation_gravity_count: 0,
+    ventilation_other_count: 0,
+    ventilation_no_info_count: 5,
+  }
+  useMapStore.getState().setSelectedFeatures([postal])
+  const navigation = new EnergyAreaNavigation({
+    map: current.map,
+    generation: () => generation,
+    cancelDetails,
+    changed: () => {},
+  })
+  navigation.showBuildings()
+  useAppletStore.getState().setActiveThematicMode('heating')
+  useAppletStore.getState().setHeatingCategoryActive('other', false)
+  navigation.back()
+  expect(useMapStore.getState().selectedFeatures).toEqual([])
+  expect(useAppletStore.getState().effectiveGeography).toBe('buildings')
+  navigation.dispose()
+})

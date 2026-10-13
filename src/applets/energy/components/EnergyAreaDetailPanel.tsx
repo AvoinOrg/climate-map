@@ -5,7 +5,6 @@ import { Button } from '#/components/common/Button'
 import TText from '#/components/common/TText'
 import { SidebarPanelExtensionPageContainer } from '#/components/Sidebar/SidebarPanelExtensionPageContainer'
 import { useEnergyAreaRuntime } from 'applets/energy/common/areas/AreaRuntimeContext'
-import EnergyAreaControls from 'applets/energy/components/EnergyAreaControls'
 import EnergyAreaMetrics from 'applets/energy/components/EnergyAreaMetrics'
 import EnergyAreaBackButton from 'applets/energy/components/EnergyAreaBackButton'
 
@@ -194,88 +193,68 @@ const EnergyAreaDetailPanel = ({ locale }: { locale: string }) => {
                   }}
                 />
               </Box>
-              <Box component="section" data-testid="energy-area-relations">
-                <Box component="h2" sx={{ fontSize: '1rem', mt: 3 }}>
-                  <TText
-                    ns={ns}
-                    keyName={`${prefix}related.${detail.related_area_level}`}
-                  />
-                </Box>
-                {detail.region_code && (
-                  <Button
-                    size="small"
-                    onClick={() =>
-                      runtime.navigateRelated({
-                        level: 'region',
-                        areaCode: detail.region_code!,
-                      })
-                    }
-                    aria-label={t(`${prefix}open_related`, {
-                      level: t(`${prefix}mode.region`),
-                      code: detail.region_code,
-                    })}
-                  >
+              {detail.level === 'postal_code' && (
+                <Box component="section" data-testid="energy-area-relations">
+                  <Box component="h2" sx={{ fontSize: '1rem', mt: 3 }}>
                     <TText
                       ns={ns}
-                      keyName={`${prefix}region_code`}
-                      params={{ code: detail.region_code }}
+                      keyName={`${prefix}related.${detail.related_area_level}`}
                     />
-                  </Button>
-                )}
-                <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
-                  {detail.related_areas.map((related) => (
-                    <Box
-                      component="li"
-                      key={related.area_code}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: 1,
-                        my: 1,
-                      }}
-                    >
-                      <Button
-                        size="small"
-                        onClick={() =>
-                          runtime.navigateRelated({
-                            level: detail.related_area_level,
-                            areaCode: related.area_code,
-                          })
-                        }
-                        aria-label={t(`${prefix}open_related`, {
-                          level: t(
-                            `${prefix}mode.${detail.related_area_level}`
-                          ),
-                          code: related.area_code,
-                        })}
+                  </Box>
+                  <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
+                    {detail.related_areas.map((related) => (
+                      <Box
+                        component="li"
+                        key={related.area_code}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                          gap: 1,
+                          my: 1,
+                        }}
                       >
-                        {related.area_code}
-                      </Button>
-                      <TText
-                        ns={ns}
-                        keyName={`${prefix}${detail.level === 'region' ? 'buildings' : 'intersection_count'}`}
-                        params={{ count: related.building_count }}
-                      />
-                    </Box>
-                  ))}
+                        <Button
+                          size="small"
+                          onClick={() =>
+                            runtime.navigateRelated({
+                              level: detail.related_area_level,
+                              areaCode: related.area_code,
+                            })
+                          }
+                          aria-label={t(`${prefix}open_related`, {
+                            level: t(
+                              `${prefix}mode.${detail.related_area_level}`
+                            ),
+                            code: related.area_code,
+                          })}
+                        >
+                          {related.area_code}
+                        </Button>
+                        <TText
+                          ns={ns}
+                          keyName={`${prefix}${detail.level === 'region' ? 'buildings' : 'intersection_count'}`}
+                          params={{ count: related.building_count }}
+                        />
+                      </Box>
+                    ))}
+                  </Box>
+                  {detail.level === 'postal_code' && (
+                    <Button
+                      size="small"
+                      onClick={runtime.showBuildings}
+                      aria-label={t(`${prefix}show_buildings`)}
+                    >
+                      <TText ns={ns} keyName={`${prefix}show_buildings`} />
+                    </Button>
+                  )}
                 </Box>
-                {detail.level === 'postal_code' && (
-                  <Button
-                    size="small"
-                    onClick={runtime.showBuildings}
-                    aria-label={t(`${prefix}show_buildings`)}
-                  >
-                    <TText ns={ns} keyName={`${prefix}show_buildings`} />
-                  </Button>
-                )}
-              </Box>
+              )}
               <EnergyAreaMetrics detail={detail} locale={locale} />
             </>
           )}
         </Box>
       </Box>
-      <EnergyAreaControls locale={locale} />
     </SidebarPanelExtensionPageContainer>
   )
 }

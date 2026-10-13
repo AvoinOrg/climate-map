@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { Box } from '#/common/style/theme'
+import { SIDEBAR_CONTENT_BOX_PADDING_X } from '#/common/style/theme/constants'
 import { Button } from '#/components/common/Button'
 import TText from '#/components/common/TText'
 import { Cross } from '#/components/icons'
@@ -76,7 +77,9 @@ export const BuildingInfoProvenanceView = ({
     data-missing-data-locale={locale}
     sx={{
       minWidth: 0,
-      px: { mobile: '1rem', desktop: '1.5rem' },
+      px: forceMobileLayout
+        ? SIDEBAR_CONTENT_BOX_PADDING_X.mobile
+        : { mobile: SIDEBAR_CONTENT_BOX_PADDING_X.mobile, desktop: '1.5rem' },
       pt: forceMobileLayout ? '1rem' : { mobile: '1rem', desktop: '6.25rem' },
       pb: { mobile: '8rem', desktop: '1.5rem' },
       backgroundColor: '#f9f9f9',

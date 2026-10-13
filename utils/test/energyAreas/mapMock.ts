@@ -45,6 +45,11 @@ export const mockAreaMap = () => {
       const layer = layers.get(id)!
       layer.layout = { ...layer.layout, [name]: value } as never
     },
+    getFilter: (id: string) => (layers.get(id) as { filter?: unknown })?.filter,
+    setFilter: (id: string, value: unknown) =>
+      Object.assign(layers.get(id)!, { filter: value }),
+    getPaintProperty: (id: string, name: string) =>
+      (layers.get(id)?.paint as Record<string, unknown>)?.[name],
     setPaintProperty: (id: string, name: string, value: unknown) => {
       const layer = layers.get(id)!
       layer.paint = { ...layer.paint, [name]: value } as never

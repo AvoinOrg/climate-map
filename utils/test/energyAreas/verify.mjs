@@ -60,6 +60,35 @@ for (const sample of manifest.tiles) {
       'numeric fid deliberately loses leading zeroes'
     )
     assert.equal(properties.building_count, full.building_count)
+    assert.equal(properties.thematic_contract_version, 1)
+    const recognized = [...'ABCDEFG'].reduce((total, code) => {
+      const count = properties[`energy_class_${code.toLowerCase()}_count`]
+      assert.equal(count, full.metrics.energy_class.counts[code] ?? 0)
+      return total + count
+    }, 0)
+    assert.equal(
+      recognized + properties.energy_class_unknown_count,
+      full.building_count
+    )
+    assert.equal(
+      properties.energy_class_official_count +
+        properties.energy_class_modeled_count,
+      recognized
+    )
+    assert.equal(
+      ['geothermal', 'district', 'electricity', 'solar', 'other'].reduce(
+        (total, key) => total + properties[`heating_${key}_count`],
+        0
+      ),
+      full.building_count
+    )
+    assert.equal(
+      ['mechanical', 'gravity', 'other', 'no_info'].reduce(
+        (total, key) => total + properties[`ventilation_${key}_count`],
+        0
+      ),
+      full.building_count
+    )
     assert.equal(
       properties.valid_official_class_count,
       full.valid_official_class_count

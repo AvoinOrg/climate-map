@@ -16,7 +16,9 @@
           "population": "Distinct nonempty building_key values in the frozen main snapshot",
           "certificate_coverage": "Valid A-G official classes on the 2013 or 2018 scale / all buildings",
           "official_class": "counts are scale:validity:class diagnostics; valid_counts_by_scale is the default A-G distribution",
-          "modeled_class": "Diagnostic only; source model version unavailable",
+          "energy_class": "Synthetic official-first building-effective class, including modeled fallback once per unique row",
+          "energy_class_source": "Synthetic effective provenance; not extra class votes",
+          "modeled_class": "Separate diagnostics; source model version unavailable",
           "floor_area": "Separate positive finite known sums for each definition",
           "filters": [
             "postal_code within municipality"
@@ -88,6 +90,24 @@
           "valid_official_class_count": 3,
           "certificate_coverage": 0.6,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 2,
+                "B": 1,
+                "A": 1,
+                "D": 1
+              },
+              "known_building_count": 5,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 4,
+                "modeled": 1
+              },
+              "known_building_count": 5,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "2018:valid:C": 2,
@@ -134,11 +154,14 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 3,
-                "02": 2
+                "10": 1,
+                "09": 1,
+                "01": 1,
+                "04": 1,
+                "unknown": 1
               },
-              "known_building_count": 2,
-              "unknown_building_count": 3
+              "known_building_count": 4,
+              "unknown_building_count": 1
             },
             "ventilation": {
               "counts": {
@@ -225,6 +248,21 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "D": 1,
+                "C": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:D": 1,
@@ -261,11 +299,11 @@
             },
             "heating_energy_source": {
               "counts": {
-                "02": 1,
-                "unknown": 1
+                "09": 1,
+                "01": 1
               },
-              "known_building_count": 1,
-              "unknown_building_count": 1
+              "known_building_count": 2,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -343,6 +381,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -433,6 +481,24 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "unknown": 1,
+                "D": 2
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2,
+                "unknown": 1,
+                "modeled": 1
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:C": 1,
@@ -471,11 +537,13 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 2,
-                "02": 2
+                "10": 1,
+                "unknown": 1,
+                "09": 1,
+                "01": 1
               },
-              "known_building_count": 2,
-              "unknown_building_count": 2
+              "known_building_count": 3,
+              "unknown_building_count": 1
             },
             "ventilation": {
               "counts": {
@@ -557,6 +625,23 @@
           "valid_official_class_count": 1,
           "certificate_coverage": 0.3333333333333333,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "D": 1,
+                "unknown": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2,
+                "unknown": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "2018:valid:C": 1,
@@ -598,11 +683,11 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 1,
-                "02": 2
+                "09": 2,
+                "04": 1
               },
-              "known_building_count": 2,
-              "unknown_building_count": 1
+              "known_building_count": 3,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -686,6 +771,22 @@
           "valid_official_class_count": 1,
           "certificate_coverage": 0.3333333333333333,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "B": 1,
+                "A": 1,
+                "C": 1
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 3
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "2018:expired:B": 1,
@@ -727,11 +828,11 @@
             },
             "heating_energy_source": {
               "counts": {
-                "02": 1,
-                "unknown": 2
+                "01": 2,
+                "04": 1
               },
-              "known_building_count": 1,
-              "unknown_building_count": 2
+              "known_building_count": 3,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -815,6 +916,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -906,6 +1017,24 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "unknown": 1,
+                "D": 2
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2,
+                "unknown": 1,
+                "modeled": 1
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:C": 1,
@@ -944,11 +1073,13 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 2,
-                "02": 2
+                "10": 1,
+                "unknown": 1,
+                "09": 1,
+                "01": 1
               },
-              "known_building_count": 2,
-              "unknown_building_count": 2
+              "known_building_count": 3,
+              "unknown_building_count": 1
             },
             "ventilation": {
               "counts": {
@@ -1031,6 +1162,25 @@
           "valid_official_class_count": 2,
           "certificate_coverage": 0.3333333333333333,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 2,
+                "B": 1,
+                "A": 1,
+                "D": 1,
+                "unknown": 1
+              },
+              "known_building_count": 5,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 5,
+                "unknown": 1
+              },
+              "known_building_count": 5,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "2018:valid:C": 1,
@@ -1078,11 +1228,12 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 3,
-                "02": 3
+                "09": 2,
+                "01": 2,
+                "04": 2
               },
-              "known_building_count": 3,
-              "unknown_building_count": 3
+              "known_building_count": 6,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -1169,6 +1320,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -1264,6 +1425,24 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "unknown": 1,
+                "D": 2
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2,
+                "unknown": 1,
+                "modeled": 1
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:C": 1,
@@ -1302,11 +1481,13 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 2,
-                "02": 2
+                "10": 1,
+                "unknown": 1,
+                "09": 1,
+                "01": 1
               },
-              "known_building_count": 2,
-              "unknown_building_count": 2
+              "known_building_count": 3,
+              "unknown_building_count": 1
             },
             "ventilation": {
               "counts": {
@@ -1390,6 +1571,20 @@
           "valid_official_class_count": 1,
           "certificate_coverage": 1,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "2018:valid:C": 1
@@ -1426,10 +1621,10 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 1
+                "09": 1
               },
-              "known_building_count": 0,
-              "unknown_building_count": 1
+              "known_building_count": 1,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -1510,6 +1705,21 @@
           "valid_official_class_count": 1,
           "certificate_coverage": 0.5,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "B": 1,
+                "A": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "2018:expired:B": 1,
@@ -1549,11 +1759,11 @@
             },
             "heating_energy_source": {
               "counts": {
-                "02": 1,
-                "unknown": 1
+                "01": 1,
+                "04": 1
               },
-              "known_building_count": 1,
-              "unknown_building_count": 1
+              "known_building_count": 2,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -1636,6 +1846,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -1736,6 +1956,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -1835,6 +2065,20 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "D": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:D": 1
@@ -1867,7 +2111,7 @@
             },
             "heating_energy_source": {
               "counts": {
-                "02": 1
+                "09": 1
               },
               "known_building_count": 1,
               "unknown_building_count": 0
@@ -1950,6 +2194,20 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "2018:unknown_validity:C": 1
@@ -1982,10 +2240,10 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 1
+                "01": 1
               },
-              "known_building_count": 0,
-              "unknown_building_count": 1
+              "known_building_count": 1,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -2065,6 +2323,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -2164,6 +2432,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -2260,6 +2538,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -2347,6 +2635,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -2434,6 +2732,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -2521,6 +2829,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -2612,6 +2930,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -2708,6 +3036,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -2804,6 +3142,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -2900,6 +3248,24 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "unknown": 1,
+                "D": 2
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2,
+                "unknown": 1,
+                "modeled": 1
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:C": 1,
@@ -2938,11 +3304,13 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 2,
-                "02": 2
+                "10": 1,
+                "unknown": 1,
+                "09": 1,
+                "01": 1
               },
-              "known_building_count": 2,
-              "unknown_building_count": 2
+              "known_building_count": 3,
+              "unknown_building_count": 1
             },
             "ventilation": {
               "counts": {
@@ -3022,6 +3390,26 @@
                 "area_id": "postal_code:00100",
                 "building_count": 5,
                 "valid_official_class_count": 3,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 1,
+                "energy_class_b_count": 1,
+                "energy_class_c_count": 2,
+                "energy_class_d_count": 1,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 4,
+                "energy_class_modeled_count": 1,
+                "heating_geothermal_count": 1,
+                "heating_district_count": 1,
+                "heating_electricity_count": 1,
+                "heating_solar_count": 1,
+                "heating_other_count": 1,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 2,
+                "ventilation_other_count": 1,
+                "ventilation_no_info_count": 1,
                 "certificate_coverage": 0.6,
                 "name_fi": "Testialue 00100",
                 "name_sv": "Testområde 00100",
@@ -3064,6 +3452,26 @@
                 "area_id": "postal_code:00200",
                 "building_count": 2,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 1,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 2,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 1,
+                "heating_district_count": 1,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 0,
+                "ventilation_other_count": 1,
+                "ventilation_no_info_count": 0,
                 "certificate_coverage": 0,
                 "name_sv": "Syntetiskt postområde"
               },
@@ -3103,7 +3511,27 @@
                 "area_code": "00300",
                 "area_id": "postal_code:00300",
                 "building_count": 0,
-                "valid_official_class_count": 0
+                "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 0,
+                "energy_class_d_count": 0,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 0,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 0,
+                "heating_district_count": 0,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 0,
+                "ventilation_gravity_count": 0,
+                "ventilation_other_count": 0,
+                "ventilation_no_info_count": 0
               },
               "geometry": {
                 "type": "Polygon",
@@ -3142,6 +3570,26 @@
                 "area_id": "postal_code:00400",
                 "building_count": 4,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 2,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 1,
+                "energy_class_official_count": 2,
+                "energy_class_modeled_count": 1,
+                "heating_geothermal_count": 1,
+                "heating_district_count": 1,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 1,
+                "heating_other_count": 1,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 1,
+                "ventilation_other_count": 1,
+                "ventilation_no_info_count": 1,
                 "certificate_coverage": 0,
                 "name_fi": "Testialue 00400",
                 "name_sv": "Testområde 00400",
@@ -3189,6 +3637,26 @@
                 "area_id": "municipality:005",
                 "building_count": 3,
                 "valid_official_class_count": 1,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 1,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 1,
+                "energy_class_official_count": 2,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 2,
+                "heating_district_count": 0,
+                "heating_electricity_count": 1,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 1,
+                "ventilation_other_count": 0,
+                "ventilation_no_info_count": 1,
                 "certificate_coverage": 0.3333333333333333,
                 "name_fi": "Testialue 005",
                 "name_sv": "Testområde 005",
@@ -3231,6 +3699,26 @@
                 "area_id": "municipality:091",
                 "building_count": 3,
                 "valid_official_class_count": 1,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 1,
+                "energy_class_b_count": 1,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 0,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 3,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 0,
+                "heating_district_count": 2,
+                "heating_electricity_count": 1,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 0,
+                "ventilation_other_count": 2,
+                "ventilation_no_info_count": 0,
                 "certificate_coverage": 0.3333333333333333,
                 "name_fi": "Testialue 091",
                 "name_sv": "Testområde 091",
@@ -3273,6 +3761,26 @@
                 "area_id": "municipality:009",
                 "building_count": 0,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 0,
+                "energy_class_d_count": 0,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 0,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 0,
+                "heating_district_count": 0,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 0,
+                "ventilation_gravity_count": 0,
+                "ventilation_other_count": 0,
+                "ventilation_no_info_count": 0,
                 "name_fi": "Testialue 009",
                 "name_sv": "Testområde 009",
                 "name_en": "Fixture municipality 009"
@@ -3314,6 +3822,26 @@
                 "area_id": "municipality:006",
                 "building_count": 4,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 2,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 1,
+                "energy_class_official_count": 2,
+                "energy_class_modeled_count": 1,
+                "heating_geothermal_count": 1,
+                "heating_district_count": 1,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 1,
+                "heating_other_count": 1,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 1,
+                "ventilation_other_count": 1,
+                "ventilation_no_info_count": 1,
                 "certificate_coverage": 0,
                 "name_fi": "Testialue 006",
                 "name_sv": "Testområde 006",
@@ -3361,6 +3889,26 @@
                 "area_id": "region:01",
                 "building_count": 6,
                 "valid_official_class_count": 2,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 1,
+                "energy_class_b_count": 1,
+                "energy_class_c_count": 2,
+                "energy_class_d_count": 1,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 1,
+                "energy_class_official_count": 5,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 2,
+                "heating_district_count": 2,
+                "heating_electricity_count": 2,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 2,
+                "ventilation_gravity_count": 1,
+                "ventilation_other_count": 2,
+                "ventilation_no_info_count": 1,
                 "certificate_coverage": 0.3333333333333333,
                 "name_fi": "Testialue 01",
                 "name_sv": "Testområde 01",
@@ -3403,6 +3951,26 @@
                 "area_id": "region:02",
                 "building_count": 0,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 0,
+                "energy_class_d_count": 0,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 0,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 0,
+                "heating_district_count": 0,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 0,
+                "ventilation_gravity_count": 0,
+                "ventilation_other_count": 0,
+                "ventilation_no_info_count": 0,
                 "name_fi": "Testialue 02",
                 "name_sv": "Testområde 02",
                 "name_en": "Fixture region 02"
@@ -3444,6 +4012,26 @@
                 "area_id": "region:03",
                 "building_count": 4,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 2,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 1,
+                "energy_class_official_count": 2,
+                "energy_class_modeled_count": 1,
+                "heating_geothermal_count": 1,
+                "heating_district_count": 1,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 1,
+                "heating_other_count": 1,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 1,
+                "ventilation_other_count": 1,
+                "ventilation_no_info_count": 1,
                 "certificate_coverage": 0,
                 "name_fi": "Testialue 03",
                 "name_sv": "Testområde 03",
@@ -3492,7 +4080,9 @@
           "population": "Distinct nonempty building_key values in the frozen main snapshot",
           "certificate_coverage": "Valid A-G official classes on the 2013 or 2018 scale / all buildings",
           "official_class": "counts are scale:validity:class diagnostics; valid_counts_by_scale is the default A-G distribution",
-          "modeled_class": "Diagnostic only; source model version unavailable",
+          "energy_class": "Synthetic official-first building-effective class, including modeled fallback once per unique row",
+          "energy_class_source": "Synthetic effective provenance; not extra class votes",
+          "modeled_class": "Separate diagnostics; source model version unavailable",
           "floor_area": "Separate positive finite known sums for each definition",
           "filters": [
             "postal_code within municipality"
@@ -3564,6 +4154,24 @@
           "valid_official_class_count": 2,
           "certificate_coverage": 0.5,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "B": 1,
+                "A": 1,
+                "D": 1
+              },
+              "known_building_count": 4,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 3,
+                "modeled": 1
+              },
+              "known_building_count": 4,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "2018:valid:C": 1,
@@ -3610,11 +4218,13 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 3,
-                "02": 1
+                "09": 1,
+                "01": 1,
+                "04": 1,
+                "unknown": 1
               },
-              "known_building_count": 1,
-              "unknown_building_count": 3
+              "known_building_count": 3,
+              "unknown_building_count": 1
             },
             "ventilation": {
               "counts": {
@@ -3699,6 +4309,21 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "D": 1,
+                "C": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:D": 1,
@@ -3735,11 +4360,11 @@
             },
             "heating_energy_source": {
               "counts": {
-                "02": 1,
-                "unknown": 1
+                "09": 1,
+                "01": 1
               },
-              "known_building_count": 1,
-              "unknown_building_count": 1
+              "known_building_count": 2,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -3817,6 +4442,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -3907,6 +4542,24 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "unknown": 1,
+                "D": 2
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2,
+                "unknown": 1,
+                "modeled": 1
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:C": 1,
@@ -3945,11 +4598,13 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 2,
-                "02": 2
+                "10": 1,
+                "unknown": 1,
+                "09": 1,
+                "01": 1
               },
-              "known_building_count": 2,
-              "unknown_building_count": 2
+              "known_building_count": 3,
+              "unknown_building_count": 1
             },
             "ventilation": {
               "counts": {
@@ -4031,6 +4686,23 @@
           "valid_official_class_count": 1,
           "certificate_coverage": 0.3333333333333333,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "D": 1,
+                "unknown": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2,
+                "unknown": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "2018:valid:C": 1,
@@ -4072,11 +4744,11 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 1,
-                "02": 2
+                "09": 2,
+                "04": 1
               },
-              "known_building_count": 2,
-              "unknown_building_count": 1
+              "known_building_count": 3,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -4160,6 +4832,22 @@
           "valid_official_class_count": 1,
           "certificate_coverage": 0.3333333333333333,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "B": 1,
+                "A": 1,
+                "C": 1
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 3
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "2018:expired:B": 1,
@@ -4201,11 +4889,11 @@
             },
             "heating_energy_source": {
               "counts": {
-                "02": 1,
-                "unknown": 2
+                "01": 2,
+                "04": 1
               },
-              "known_building_count": 1,
-              "unknown_building_count": 2
+              "known_building_count": 3,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -4289,6 +4977,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -4380,6 +5078,24 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "unknown": 1,
+                "D": 2
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2,
+                "unknown": 1,
+                "modeled": 1
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:C": 1,
@@ -4418,11 +5134,13 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 2,
-                "02": 2
+                "10": 1,
+                "unknown": 1,
+                "09": 1,
+                "01": 1
               },
-              "known_building_count": 2,
-              "unknown_building_count": 2
+              "known_building_count": 3,
+              "unknown_building_count": 1
             },
             "ventilation": {
               "counts": {
@@ -4505,6 +5223,25 @@
           "valid_official_class_count": 2,
           "certificate_coverage": 0.3333333333333333,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 2,
+                "B": 1,
+                "A": 1,
+                "D": 1,
+                "unknown": 1
+              },
+              "known_building_count": 5,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 5,
+                "unknown": 1
+              },
+              "known_building_count": 5,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "2018:valid:C": 1,
@@ -4552,11 +5289,12 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 3,
-                "02": 3
+                "09": 2,
+                "01": 2,
+                "04": 2
               },
-              "known_building_count": 3,
-              "unknown_building_count": 3
+              "known_building_count": 6,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -4643,6 +5381,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -4738,6 +5486,24 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "unknown": 1,
+                "D": 2
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2,
+                "unknown": 1,
+                "modeled": 1
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:C": 1,
@@ -4776,11 +5542,13 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 2,
-                "02": 2
+                "10": 1,
+                "unknown": 1,
+                "09": 1,
+                "01": 1
               },
-              "known_building_count": 2,
-              "unknown_building_count": 2
+              "known_building_count": 3,
+              "unknown_building_count": 1
             },
             "ventilation": {
               "counts": {
@@ -4864,6 +5632,20 @@
           "valid_official_class_count": 1,
           "certificate_coverage": 1,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "2018:valid:C": 1
@@ -4900,10 +5682,10 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 1
+                "09": 1
               },
-              "known_building_count": 0,
-              "unknown_building_count": 1
+              "known_building_count": 1,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -4984,6 +5766,21 @@
           "valid_official_class_count": 1,
           "certificate_coverage": 0.5,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "B": 1,
+                "A": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "2018:expired:B": 1,
@@ -5023,11 +5820,11 @@
             },
             "heating_energy_source": {
               "counts": {
-                "02": 1,
-                "unknown": 1
+                "01": 1,
+                "04": 1
               },
-              "known_building_count": 1,
-              "unknown_building_count": 1
+              "known_building_count": 2,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -5110,6 +5907,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -5210,6 +6017,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -5309,6 +6126,20 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "D": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:D": 1
@@ -5341,7 +6172,7 @@
             },
             "heating_energy_source": {
               "counts": {
-                "02": 1
+                "09": 1
               },
               "known_building_count": 1,
               "unknown_building_count": 0
@@ -5424,6 +6255,20 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "2018:unknown_validity:C": 1
@@ -5456,10 +6301,10 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 1
+                "01": 1
               },
-              "known_building_count": 0,
-              "unknown_building_count": 1
+              "known_building_count": 1,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -5539,6 +6384,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -5638,6 +6493,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -5734,6 +6599,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -5821,6 +6696,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -5908,6 +6793,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -5995,6 +6890,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -6086,6 +6991,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -6182,6 +7097,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -6278,6 +7203,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -6374,6 +7309,24 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "unknown": 1,
+                "D": 2
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2,
+                "unknown": 1,
+                "modeled": 1
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:C": 1,
@@ -6412,11 +7365,13 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 2,
-                "02": 2
+                "10": 1,
+                "unknown": 1,
+                "09": 1,
+                "01": 1
               },
-              "known_building_count": 2,
-              "unknown_building_count": 2
+              "known_building_count": 3,
+              "unknown_building_count": 1
             },
             "ventilation": {
               "counts": {
@@ -6496,6 +7451,26 @@
                 "area_id": "postal_code:00100",
                 "building_count": 4,
                 "valid_official_class_count": 2,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 1,
+                "energy_class_b_count": 1,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 1,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 3,
+                "energy_class_modeled_count": 1,
+                "heating_geothermal_count": 1,
+                "heating_district_count": 1,
+                "heating_electricity_count": 1,
+                "heating_solar_count": 0,
+                "heating_other_count": 1,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 2,
+                "ventilation_other_count": 1,
+                "ventilation_no_info_count": 0,
                 "certificate_coverage": 0.5,
                 "name_fi": "Testialue 00100",
                 "name_sv": "Testområde 00100",
@@ -6538,6 +7513,26 @@
                 "area_id": "postal_code:00200",
                 "building_count": 2,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 1,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 2,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 1,
+                "heating_district_count": 1,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 0,
+                "ventilation_other_count": 1,
+                "ventilation_no_info_count": 0,
                 "certificate_coverage": 0,
                 "name_sv": "Syntetiskt postområde"
               },
@@ -6577,7 +7572,27 @@
                 "area_code": "00300",
                 "area_id": "postal_code:00300",
                 "building_count": 0,
-                "valid_official_class_count": 0
+                "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 0,
+                "energy_class_d_count": 0,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 0,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 0,
+                "heating_district_count": 0,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 0,
+                "ventilation_gravity_count": 0,
+                "ventilation_other_count": 0,
+                "ventilation_no_info_count": 0
               },
               "geometry": {
                 "type": "Polygon",
@@ -6616,6 +7631,26 @@
                 "area_id": "postal_code:00400",
                 "building_count": 4,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 2,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 1,
+                "energy_class_official_count": 2,
+                "energy_class_modeled_count": 1,
+                "heating_geothermal_count": 1,
+                "heating_district_count": 1,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 1,
+                "heating_other_count": 1,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 1,
+                "ventilation_other_count": 1,
+                "ventilation_no_info_count": 1,
                 "certificate_coverage": 0,
                 "name_fi": "Testialue 00400",
                 "name_sv": "Testområde 00400",
@@ -6663,6 +7698,26 @@
                 "area_id": "municipality:005",
                 "building_count": 3,
                 "valid_official_class_count": 1,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 1,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 1,
+                "energy_class_official_count": 2,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 2,
+                "heating_district_count": 0,
+                "heating_electricity_count": 1,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 1,
+                "ventilation_other_count": 0,
+                "ventilation_no_info_count": 1,
                 "certificate_coverage": 0.3333333333333333,
                 "name_fi": "Testialue 005",
                 "name_sv": "Testområde 005",
@@ -6705,6 +7760,26 @@
                 "area_id": "municipality:091",
                 "building_count": 3,
                 "valid_official_class_count": 1,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 1,
+                "energy_class_b_count": 1,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 0,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 3,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 0,
+                "heating_district_count": 2,
+                "heating_electricity_count": 1,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 0,
+                "ventilation_other_count": 2,
+                "ventilation_no_info_count": 0,
                 "certificate_coverage": 0.3333333333333333,
                 "name_fi": "Testialue 091",
                 "name_sv": "Testområde 091",
@@ -6747,6 +7822,26 @@
                 "area_id": "municipality:009",
                 "building_count": 0,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 0,
+                "energy_class_d_count": 0,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 0,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 0,
+                "heating_district_count": 0,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 0,
+                "ventilation_gravity_count": 0,
+                "ventilation_other_count": 0,
+                "ventilation_no_info_count": 0,
                 "name_fi": "Testialue 009",
                 "name_sv": "Testområde 009",
                 "name_en": "Fixture municipality 009"
@@ -6788,6 +7883,26 @@
                 "area_id": "municipality:006",
                 "building_count": 4,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 2,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 1,
+                "energy_class_official_count": 2,
+                "energy_class_modeled_count": 1,
+                "heating_geothermal_count": 1,
+                "heating_district_count": 1,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 1,
+                "heating_other_count": 1,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 1,
+                "ventilation_other_count": 1,
+                "ventilation_no_info_count": 1,
                 "certificate_coverage": 0,
                 "name_fi": "Testialue 006",
                 "name_sv": "Testområde 006",
@@ -6835,6 +7950,26 @@
                 "area_id": "region:01",
                 "building_count": 6,
                 "valid_official_class_count": 2,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 1,
+                "energy_class_b_count": 1,
+                "energy_class_c_count": 2,
+                "energy_class_d_count": 1,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 1,
+                "energy_class_official_count": 5,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 2,
+                "heating_district_count": 2,
+                "heating_electricity_count": 2,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 2,
+                "ventilation_gravity_count": 1,
+                "ventilation_other_count": 2,
+                "ventilation_no_info_count": 1,
                 "certificate_coverage": 0.3333333333333333,
                 "name_fi": "Testialue 01",
                 "name_sv": "Testområde 01",
@@ -6877,6 +8012,26 @@
                 "area_id": "region:02",
                 "building_count": 0,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 0,
+                "energy_class_d_count": 0,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 0,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 0,
+                "heating_district_count": 0,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 0,
+                "ventilation_gravity_count": 0,
+                "ventilation_other_count": 0,
+                "ventilation_no_info_count": 0,
                 "name_fi": "Testialue 02",
                 "name_sv": "Testområde 02",
                 "name_en": "Fixture region 02"
@@ -6918,6 +8073,26 @@
                 "area_id": "region:03",
                 "building_count": 4,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 2,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 1,
+                "energy_class_official_count": 2,
+                "energy_class_modeled_count": 1,
+                "heating_geothermal_count": 1,
+                "heating_district_count": 1,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 1,
+                "heating_other_count": 1,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 1,
+                "ventilation_other_count": 1,
+                "ventilation_no_info_count": 1,
                 "certificate_coverage": 0,
                 "name_fi": "Testialue 03",
                 "name_sv": "Testområde 03",
@@ -6966,7 +8141,9 @@
           "population": "Distinct nonempty building_key values in the frozen main snapshot",
           "certificate_coverage": "Valid A-G official classes on the 2013 or 2018 scale / all buildings",
           "official_class": "counts are scale:validity:class diagnostics; valid_counts_by_scale is the default A-G distribution",
-          "modeled_class": "Diagnostic only; source model version unavailable",
+          "energy_class": "Synthetic official-first building-effective class, including modeled fallback once per unique row",
+          "energy_class_source": "Synthetic effective provenance; not extra class votes",
+          "modeled_class": "Separate diagnostics; source model version unavailable",
           "floor_area": "Separate positive finite known sums for each definition",
           "filters": [
             "postal_code within municipality"
@@ -7038,6 +8215,24 @@
           "valid_official_class_count": 2,
           "certificate_coverage": 0.5,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "B": 1,
+                "A": 1,
+                "D": 1
+              },
+              "known_building_count": 4,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 3,
+                "modeled": 1
+              },
+              "known_building_count": 4,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "2018:valid:C": 1,
@@ -7084,11 +8279,13 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 3,
-                "02": 1
+                "09": 1,
+                "01": 1,
+                "04": 1,
+                "unknown": 1
               },
-              "known_building_count": 1,
-              "unknown_building_count": 3
+              "known_building_count": 3,
+              "unknown_building_count": 1
             },
             "ventilation": {
               "counts": {
@@ -7173,6 +8370,21 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "D": 1,
+                "C": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:D": 1,
@@ -7209,11 +8421,11 @@
             },
             "heating_energy_source": {
               "counts": {
-                "02": 1,
-                "unknown": 1
+                "09": 1,
+                "01": 1
               },
-              "known_building_count": 1,
-              "unknown_building_count": 1
+              "known_building_count": 2,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -7291,6 +8503,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -7381,6 +8603,24 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "unknown": 1,
+                "D": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 1,
+                "unknown": 1,
+                "modeled": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:C": 1,
@@ -7418,11 +8658,12 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 2,
-                "02": 1
+                "10": 1,
+                "unknown": 1,
+                "09": 1
               },
-              "known_building_count": 1,
-              "unknown_building_count": 2
+              "known_building_count": 2,
+              "unknown_building_count": 1
             },
             "ventilation": {
               "counts": {
@@ -7502,6 +8743,23 @@
           "valid_official_class_count": 1,
           "certificate_coverage": 0.3333333333333333,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "D": 1,
+                "unknown": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2,
+                "unknown": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "2018:valid:C": 1,
@@ -7543,11 +8801,11 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 1,
-                "02": 2
+                "09": 2,
+                "04": 1
               },
-              "known_building_count": 2,
-              "unknown_building_count": 1
+              "known_building_count": 3,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -7631,6 +8889,22 @@
           "valid_official_class_count": 1,
           "certificate_coverage": 0.3333333333333333,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "B": 1,
+                "A": 1,
+                "C": 1
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 3
+              },
+              "known_building_count": 3,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "2018:expired:B": 1,
@@ -7672,11 +8946,11 @@
             },
             "heating_energy_source": {
               "counts": {
-                "02": 1,
-                "unknown": 2
+                "01": 2,
+                "04": 1
               },
-              "known_building_count": 1,
-              "unknown_building_count": 2
+              "known_building_count": 3,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -7760,6 +9034,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -7851,6 +9135,24 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "unknown": 1,
+                "D": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 1,
+                "unknown": 1,
+                "modeled": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:C": 1,
@@ -7888,11 +9190,12 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 2,
-                "02": 1
+                "10": 1,
+                "unknown": 1,
+                "09": 1
               },
-              "known_building_count": 1,
-              "unknown_building_count": 2
+              "known_building_count": 2,
+              "unknown_building_count": 1
             },
             "ventilation": {
               "counts": {
@@ -7973,6 +9276,25 @@
           "valid_official_class_count": 2,
           "certificate_coverage": 0.3333333333333333,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 2,
+                "B": 1,
+                "A": 1,
+                "D": 1,
+                "unknown": 1
+              },
+              "known_building_count": 5,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 5,
+                "unknown": 1
+              },
+              "known_building_count": 5,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "2018:valid:C": 1,
@@ -8020,11 +9342,12 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 3,
-                "02": 3
+                "09": 2,
+                "01": 2,
+                "04": 2
               },
-              "known_building_count": 3,
-              "unknown_building_count": 3
+              "known_building_count": 6,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -8111,6 +9434,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -8206,6 +9539,24 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "unknown": 1,
+                "D": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 1,
+                "unknown": 1,
+                "modeled": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:C": 1,
@@ -8243,11 +9594,12 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 2,
-                "02": 1
+                "10": 1,
+                "unknown": 1,
+                "09": 1
               },
-              "known_building_count": 1,
-              "unknown_building_count": 2
+              "known_building_count": 2,
+              "unknown_building_count": 1
             },
             "ventilation": {
               "counts": {
@@ -8329,6 +9681,20 @@
           "valid_official_class_count": 1,
           "certificate_coverage": 1,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "2018:valid:C": 1
@@ -8365,10 +9731,10 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 1
+                "09": 1
               },
-              "known_building_count": 0,
-              "unknown_building_count": 1
+              "known_building_count": 1,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -8449,6 +9815,21 @@
           "valid_official_class_count": 1,
           "certificate_coverage": 0.5,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "B": 1,
+                "A": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 2
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "2018:expired:B": 1,
@@ -8488,11 +9869,11 @@
             },
             "heating_energy_source": {
               "counts": {
-                "02": 1,
-                "unknown": 1
+                "01": 1,
+                "04": 1
               },
-              "known_building_count": 1,
-              "unknown_building_count": 1
+              "known_building_count": 2,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -8575,6 +9956,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -8675,6 +10066,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -8774,6 +10175,20 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "D": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:D": 1
@@ -8806,7 +10221,7 @@
             },
             "heating_energy_source": {
               "counts": {
-                "02": 1
+                "09": 1
               },
               "known_building_count": 1,
               "unknown_building_count": 0
@@ -8889,6 +10304,20 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 1
+              },
+              "known_building_count": 1,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {
                 "2018:unknown_validity:C": 1
@@ -8921,10 +10350,10 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 1
+                "01": 1
               },
-              "known_building_count": 0,
-              "unknown_building_count": 1
+              "known_building_count": 1,
+              "unknown_building_count": 0
             },
             "ventilation": {
               "counts": {
@@ -9004,6 +10433,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -9103,6 +10542,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -9199,6 +10648,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -9286,6 +10745,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -9373,6 +10842,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -9460,6 +10939,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -9551,6 +11040,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -9647,6 +11146,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -9743,6 +11252,16 @@
           "valid_official_class_count": 0,
           "certificate_coverage": null,
           "metrics": {
+            "energy_class": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
+            "energy_class_source": {
+              "counts": {},
+              "known_building_count": 0,
+              "unknown_building_count": 0
+            },
             "official_class": {
               "counts": {},
               "known_building_count": 0,
@@ -9839,6 +11358,24 @@
           "valid_official_class_count": 0,
           "certificate_coverage": 0,
           "metrics": {
+            "energy_class": {
+              "counts": {
+                "C": 1,
+                "unknown": 1,
+                "D": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 1
+            },
+            "energy_class_source": {
+              "counts": {
+                "official": 1,
+                "unknown": 1,
+                "modeled": 1
+              },
+              "known_building_count": 2,
+              "unknown_building_count": 1
+            },
             "official_class": {
               "counts": {
                 "unknown_scale:valid:C": 1,
@@ -9876,11 +11413,12 @@
             },
             "heating_energy_source": {
               "counts": {
-                "unknown": 2,
-                "02": 1
+                "10": 1,
+                "unknown": 1,
+                "09": 1
               },
-              "known_building_count": 1,
-              "unknown_building_count": 2
+              "known_building_count": 2,
+              "unknown_building_count": 1
             },
             "ventilation": {
               "counts": {
@@ -9958,6 +11496,26 @@
                 "area_id": "postal_code:00100",
                 "building_count": 4,
                 "valid_official_class_count": 2,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 1,
+                "energy_class_b_count": 1,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 1,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 3,
+                "energy_class_modeled_count": 1,
+                "heating_geothermal_count": 1,
+                "heating_district_count": 1,
+                "heating_electricity_count": 1,
+                "heating_solar_count": 0,
+                "heating_other_count": 1,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 2,
+                "ventilation_other_count": 1,
+                "ventilation_no_info_count": 0,
                 "certificate_coverage": 0.5,
                 "name_fi": "Testialue 00100",
                 "name_sv": "Testområde 00100",
@@ -10000,6 +11558,26 @@
                 "area_id": "postal_code:00200",
                 "building_count": 2,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 1,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 2,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 1,
+                "heating_district_count": 1,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 0,
+                "ventilation_other_count": 1,
+                "ventilation_no_info_count": 0,
                 "certificate_coverage": 0,
                 "name_sv": "Syntetiskt postområde"
               },
@@ -10039,7 +11617,27 @@
                 "area_code": "00300",
                 "area_id": "postal_code:00300",
                 "building_count": 0,
-                "valid_official_class_count": 0
+                "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 0,
+                "energy_class_d_count": 0,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 0,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 0,
+                "heating_district_count": 0,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 0,
+                "ventilation_gravity_count": 0,
+                "ventilation_other_count": 0,
+                "ventilation_no_info_count": 0
               },
               "geometry": {
                 "type": "Polygon",
@@ -10078,6 +11676,26 @@
                 "area_id": "postal_code:00400",
                 "building_count": 3,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 1,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 1,
+                "energy_class_official_count": 1,
+                "energy_class_modeled_count": 1,
+                "heating_geothermal_count": 1,
+                "heating_district_count": 0,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 1,
+                "heating_other_count": 1,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 1,
+                "ventilation_other_count": 1,
+                "ventilation_no_info_count": 0,
                 "certificate_coverage": 0,
                 "name_fi": "Testialue 00400",
                 "name_sv": "Testområde 00400",
@@ -10125,6 +11743,26 @@
                 "area_id": "municipality:005",
                 "building_count": 3,
                 "valid_official_class_count": 1,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 1,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 1,
+                "energy_class_official_count": 2,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 2,
+                "heating_district_count": 0,
+                "heating_electricity_count": 1,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 1,
+                "ventilation_other_count": 0,
+                "ventilation_no_info_count": 1,
                 "certificate_coverage": 0.3333333333333333,
                 "name_fi": "Testialue 005",
                 "name_sv": "Testområde 005",
@@ -10167,6 +11805,26 @@
                 "area_id": "municipality:091",
                 "building_count": 3,
                 "valid_official_class_count": 1,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 1,
+                "energy_class_b_count": 1,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 0,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 3,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 0,
+                "heating_district_count": 2,
+                "heating_electricity_count": 1,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 0,
+                "ventilation_other_count": 2,
+                "ventilation_no_info_count": 0,
                 "certificate_coverage": 0.3333333333333333,
                 "name_fi": "Testialue 091",
                 "name_sv": "Testområde 091",
@@ -10209,6 +11867,26 @@
                 "area_id": "municipality:009",
                 "building_count": 0,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 0,
+                "energy_class_d_count": 0,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 0,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 0,
+                "heating_district_count": 0,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 0,
+                "ventilation_gravity_count": 0,
+                "ventilation_other_count": 0,
+                "ventilation_no_info_count": 0,
                 "name_fi": "Testialue 009",
                 "name_sv": "Testområde 009",
                 "name_en": "Fixture municipality 009"
@@ -10250,6 +11928,26 @@
                 "area_id": "municipality:006",
                 "building_count": 3,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 1,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 1,
+                "energy_class_official_count": 1,
+                "energy_class_modeled_count": 1,
+                "heating_geothermal_count": 1,
+                "heating_district_count": 0,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 1,
+                "heating_other_count": 1,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 1,
+                "ventilation_other_count": 1,
+                "ventilation_no_info_count": 0,
                 "certificate_coverage": 0,
                 "name_fi": "Testialue 006",
                 "name_sv": "Testområde 006",
@@ -10297,6 +11995,26 @@
                 "area_id": "region:01",
                 "building_count": 6,
                 "valid_official_class_count": 2,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 1,
+                "energy_class_b_count": 1,
+                "energy_class_c_count": 2,
+                "energy_class_d_count": 1,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 1,
+                "energy_class_official_count": 5,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 2,
+                "heating_district_count": 2,
+                "heating_electricity_count": 2,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 2,
+                "ventilation_gravity_count": 1,
+                "ventilation_other_count": 2,
+                "ventilation_no_info_count": 1,
                 "certificate_coverage": 0.3333333333333333,
                 "name_fi": "Testialue 01",
                 "name_sv": "Testområde 01",
@@ -10339,6 +12057,26 @@
                 "area_id": "region:02",
                 "building_count": 0,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 0,
+                "energy_class_d_count": 0,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 0,
+                "energy_class_official_count": 0,
+                "energy_class_modeled_count": 0,
+                "heating_geothermal_count": 0,
+                "heating_district_count": 0,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 0,
+                "heating_other_count": 0,
+                "ventilation_mechanical_count": 0,
+                "ventilation_gravity_count": 0,
+                "ventilation_other_count": 0,
+                "ventilation_no_info_count": 0,
                 "name_fi": "Testialue 02",
                 "name_sv": "Testområde 02",
                 "name_en": "Fixture region 02"
@@ -10380,6 +12118,26 @@
                 "area_id": "region:03",
                 "building_count": 3,
                 "valid_official_class_count": 0,
+                "thematic_contract_version": 1,
+                "energy_class_a_count": 0,
+                "energy_class_b_count": 0,
+                "energy_class_c_count": 1,
+                "energy_class_d_count": 1,
+                "energy_class_e_count": 0,
+                "energy_class_f_count": 0,
+                "energy_class_g_count": 0,
+                "energy_class_unknown_count": 1,
+                "energy_class_official_count": 1,
+                "energy_class_modeled_count": 1,
+                "heating_geothermal_count": 1,
+                "heating_district_count": 0,
+                "heating_electricity_count": 0,
+                "heating_solar_count": 1,
+                "heating_other_count": 1,
+                "ventilation_mechanical_count": 1,
+                "ventilation_gravity_count": 1,
+                "ventilation_other_count": 1,
+                "ventilation_no_info_count": 0,
                 "certificate_coverage": 0,
                 "name_fi": "Testialue 03",
                 "name_sv": "Testområde 03",
@@ -10419,6 +12177,16 @@
     }
   ],
   "emptyMetrics": {
+    "energy_class": {
+      "counts": {},
+      "known_building_count": 0,
+      "unknown_building_count": 0
+    },
+    "energy_class_source": {
+      "counts": {},
+      "known_building_count": 0,
+      "unknown_building_count": 0
+    },
     "official_class": {
       "counts": {},
       "known_building_count": 0,

@@ -89,7 +89,10 @@ beforeEach(() => {
     isLoaded: true,
   })
   useMapInstanceStore.setState({ _map: current.map })
-  useAppletStore.setState(useAppletStore.getInitialState())
+  useAppletStore.setState({
+    ...useAppletStore.getInitialState(),
+    activeThematicMode: 'energyCertificates',
+  })
 })
 afterEach(async () => {
   cleanup()

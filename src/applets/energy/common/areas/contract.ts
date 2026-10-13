@@ -44,6 +44,8 @@ const areaSum = z
   .passthrough()
 export const areaMetricsSchema = z
   .object({
+    energy_class: category.optional(),
+    energy_class_source: category.optional(),
     official_class: officialClass.optional(),
     modeled_class: category.optional(),
     modeled_reason: category.optional(),
@@ -58,11 +60,15 @@ export const areaMetricsSchema = z
     energy_certificate_heated_net_area: areaSum.optional(),
   })
   .passthrough()
+const supportedMetricVersion = z.enum([
+  AREA_METRIC_VERSION,
+  'building-area-summary-v2',
+])
 const latestContext = {
   latest: z.literal(true),
   boundary_vintage: count,
   as_of: z.iso.date(),
-  metric_version: z.literal(AREA_METRIC_VERSION),
+  metric_version: supportedMetricVersion,
 }
 const descriptor = z
   .object({
@@ -198,7 +204,7 @@ const requireVersion = (payload: unknown) => {
     typeof payload === 'object' &&
     'metric_version' in payload &&
     typeof payload.metric_version === 'string' &&
-    payload.metric_version !== AREA_METRIC_VERSION
+    !supportedMetricVersion.safeParse(payload.metric_version).success
   ) {
     throw new AreaApiError({
       kind: 'unsupported-contract',

@@ -674,6 +674,34 @@
         "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
+        "id": "information-footer-sparse-fi",
+        "label": "Sparse information footer FI",
+        "locale": "fi",
+        "description": "Sparse Water panel, information footer and provenance with the shared mobile gutter.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "information-footer-sparse-forced-mobile-fi",
+        "label": "Sparse information footer forced mobile FI",
+        "locale": "fi",
+        "description": "Sparse Water panel, information footer and provenance with the shared mobile gutter.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "information-footer-sparse-en",
+        "label": "Sparse information footer EN",
+        "locale": "en",
+        "description": "Sparse Water panel, information footer and provenance with the shared mobile gutter.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
+        "id": "information-footer-sparse-forced-mobile-en",
+        "label": "Sparse information footer forced mobile EN",
+        "locale": "en",
+        "description": "Sparse Water panel, information footer and provenance with the shared mobile gutter.",
+        "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
+      },
+      {
         "id": "information-footer-renovation-fi",
         "label": "Renovation details footer FI",
         "locale": "fi",

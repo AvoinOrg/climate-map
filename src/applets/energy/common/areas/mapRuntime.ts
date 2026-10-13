@@ -3,6 +3,7 @@ import type {
   MapGeoJSONFeature,
   MapSourceDataEvent,
   ErrorEvent,
+  FilterSpecification,
 } from 'maplibre-gl'
 import { useMapStore } from '#/common/store/mapStore'
 import { registerAreaTileTransport } from 'applets/energy/common/areas/tileTransport'
@@ -20,10 +21,14 @@ import {
 } from 'applets/energy/layers/areaLayers'
 import {
   AUTOMATIC_AREA_RANGES,
-  areaMetricColorExpression,
   resolveAreaGeography,
 } from 'applets/energy/common/areas/mapModes'
-import { ENERGYMAP_SHARED_BUILDING_LAYER_IDS } from 'applets/energy/layers/buildingPolygonsLayerConf'
+import { shallow } from 'zustand/shallow'
+import {
+  areaThemeSelection,
+  areaThemeStyle,
+  isAreaThemeEligible,
+} from 'applets/energy/common/areas/thematicStyle'
 import {
   ENERGYMAP_BUILDING_POLYGONS_SOURCE_ID,
   ENERGYMAP_BUILDING_POLYGONS_SOURCE_LAYER,
@@ -44,7 +49,7 @@ export class EnergyAreaMapRuntime {
   private installing = false
   private selectionRestorePending = false
   private unregisterTransport?: () => void
-  private buildingVisibility = new Map<string, 'visible' | 'none'>()
+  private themeSelection = areaThemeSelection(useAppletStore.getState())
   private failedTiles = new Map<AreaLevel, Set<string>>()
   private unsubscribe: () => void
   private mapUnsubscribe: () => void
@@ -71,10 +76,9 @@ export class EnergyAreaMapRuntime {
     map.on('styledata', this.onStyle)
     // Retained sources can still be loading during both early style events.
     map.on('idle', this.onStyle)
-    this.unsubscribe = useAppletStore.subscribe(
-      (state) => state.areaMetric,
-      this.sync
-    )
+    this.unsubscribe = useAppletStore.subscribe(areaThemeSelection, this.sync, {
+      equalityFn: shallow,
+    })
     // Listed building groups can be installed or enabled after the area owner.
     this.mapUnsubscribe = useMapStore.subscribe((state, previous) => {
       if (state._layerGroups !== previous._layerGroups) this.sync()
@@ -191,7 +195,9 @@ export class EnergyAreaMapRuntime {
               (id) => !this.options.map.getLayer(id)
             )
           ) {
-            throw new Error('Area registration incomplete')
+            throw new Error(
+              `Area registration incomplete: ${descriptor.sourceId}; source=${!!this.options.map.getSource(descriptor.sourceId)}; layers=${areaLayerIds(descriptor).map((id) => !!this.options.map.getLayer(id))}; group=${!!useMapStore.getState()._layerGroups[descriptor.sourceId]}`
+            )
           }
         }
         if (!isCurrent()) {
@@ -210,12 +216,14 @@ export class EnergyAreaMapRuntime {
         this.selectionRestorePending = false
         this.restoreSelection()
         this.options.publish(this.committed, 'ready')
-      } catch {
+      } catch (error) {
+        console.warn('Energy area layer registration failed', error)
         await this.remove(descriptors)
         if (isCurrent()) {
           this.committed = undefined
           useAppletStore.setState({ areaAvailable: false })
           this.sync()
+          this.options.tileStatus(true)
           this.options.publish(undefined, 'unavailable')
         }
       } finally {
@@ -243,6 +251,12 @@ export class EnergyAreaMapRuntime {
         areaZoom: map.getZoom(),
       })
     }
+    const themeChanged = !shallow(
+      this.themeSelection,
+      areaThemeSelection(state)
+    )
+    this.themeSelection = areaThemeSelection(state)
+    const theme = areaThemeStyle(state)
     if (this.committed) {
       for (const descriptor of this.committed.descriptors) {
         const range = AUTOMATIC_AREA_RANGES[descriptor.level]
@@ -254,41 +268,55 @@ export class EnergyAreaMapRuntime {
           map.setLayerZoomRange(id, Math.min(min, max), max)
         }
         const group = useMapStore.getState()._layerGroups[descriptor.sourceId]
-        if (
-          group &&
-          group.isHidden &&
-          areaLayerIds(descriptor).every((id) => map.getLayer(id))
-        ) {
-          useMapStore.getState()._setGroupVisibility(descriptor.sourceId, true)
+        // Apply current paint/filter before any group becomes visible. Store
+        // visibility writes notify synchronously, so only change intent once.
+        for (const id of areaLayerIds(descriptor)) {
+          if (!map.getLayer(id)) continue
+          const filter: FilterSpecification = [
+            'all',
+            ['==', ['get', 'level'], descriptor.level],
+            ['==', ['typeof', ['get', 'area_id']], 'string'],
+            theme.eligibility,
+          ]
+          if (JSON.stringify(map.getFilter(id)) !== JSON.stringify(filter))
+            map.setFilter(id, filter)
         }
         const fill = areaLayerIds(descriptor)[0]
-        if (map.getLayer(fill))
-          map.setPaintProperty(
-            fill,
-            'fill-color',
-            areaMetricColorExpression(state.areaMetric)
-          )
-      }
-    }
-    for (const id of ENERGYMAP_SHARED_BUILDING_LAYER_IDS) {
-      if (!map.getLayer(id)) continue
-      if (effective !== 'buildings') {
-        if (!this.buildingVisibility.has(id))
-          this.buildingVisibility.set(
-            id,
-            map.getLayoutProperty(id, 'visibility') === 'none'
-              ? 'none'
-              : 'visible'
-          )
-        if (map.getLayoutProperty(id, 'visibility') !== 'none')
-          map.setLayoutProperty(id, 'visibility', 'none')
-      } else if (this.buildingVisibility.has(id)) {
-        map.setLayoutProperty(
-          id,
-          'visibility',
-          this.buildingVisibility.get(id)!
+        if (
+          map.getLayer(fill) &&
+          JSON.stringify(map.getPaintProperty(fill, 'fill-color')) !==
+            JSON.stringify(theme.color)
         )
-        this.buildingVisibility.delete(id)
+          map.setPaintProperty(fill, 'fill-color', theme.color)
+        if (
+          group &&
+          group.isHidden === theme.visible &&
+          areaLayerIds(descriptor).every((id) => map.getLayer(id))
+        )
+          useMapStore
+            .getState()
+            ._setGroupVisibility(descriptor.sourceId, theme.visible)
+      }
+      const hiddenSelection = useMapStore
+        .getState()
+        .selectedFeatures.some(
+          (feature) =>
+            feature.source.startsWith('energymap_areas_') &&
+            !isAreaThemeEligible(feature.properties, state)
+        )
+      if (hiddenSelection || (!theme.visible && themeChanged)) {
+        this.options.invalidateNavigation?.('generation')
+        this.clearSelection()
+      } else if (themeChanged) {
+        // Clear stale hover on newly excluded polygons, then restore only a
+        // still eligible current selection. Details stay canonical full totals.
+        for (const descriptor of this.committed.descriptors)
+          if (map.getSource(descriptor.sourceId))
+            map.removeFeatureState({
+              source: descriptor.sourceId,
+              sourceLayer: descriptor.sourceLayer,
+            })
+        this.restoreSelection()
       }
     }
     this.options.tileStatus(
@@ -307,7 +335,8 @@ export class EnergyAreaMapRuntime {
         ? selected.find(
             (feature) =>
               feature.source === ENERGYMAP_BUILDING_POLYGONS_SOURCE_ID &&
-              feature.sourceLayer === ENERGYMAP_BUILDING_POLYGONS_SOURCE_LAYER &&
+              feature.sourceLayer ===
+                ENERGYMAP_BUILDING_POLYGONS_SOURCE_LAYER &&
               (typeof feature.id === 'string' || typeof feature.id === 'number')
           )
         : undefined
@@ -319,8 +348,11 @@ export class EnergyAreaMapRuntime {
           item.sourceLayer === feature.sourceLayer
       )
       if (
-        ((descriptor && typeof feature.id === 'string') ||
-          (feature === building && this.options.map.getLayer(feature.layer.id))) &&
+        ((descriptor &&
+          isAreaThemeEligible(feature.properties, useAppletStore.getState()) &&
+          typeof feature.id === 'string') ||
+          (feature === building &&
+            this.options.map.getLayer(feature.layer.id))) &&
         this.options.map.getSource(feature.source)
       )
         this.options.map.setFeatureState(
@@ -382,6 +414,12 @@ export class EnergyAreaMapRuntime {
     this.failedTiles.get(level)!.add(key)
   }
   retryTiles = () => {
+    if (!this.active) return
+    if (!this.hasRegisteredAreas()) {
+      if (this.committed) this.onStyle()
+      else void this.install()
+      return
+    }
     const descriptor = this.activeDescriptor()
     if (
       descriptor &&
@@ -408,10 +446,15 @@ export class EnergyAreaMapRuntime {
         useAppletStore.setState({ areaAvailable: false })
       if (this.options.map.isStyleLoaded()) void this.install()
     } else if (
-      this.selectionRestorePending && this.options.map.isStyleLoaded()
+      this.selectionRestorePending &&
+      this.options.map.isStyleLoaded()
     ) {
       // Consume before writing state: setFeatureState itself can cause another idle.
       this.selectionRestorePending = false
+      // Shared style recovery may restore all layers before this owner needs
+      // to reinstall them. Clear the temporary unavailable state in that case.
+      if (!useAppletStore.getState().areaAvailable)
+        useAppletStore.setState({ areaAvailable: true })
       this.sync()
       this.restoreSelection()
     }
@@ -435,8 +478,6 @@ export class EnergyAreaMapRuntime {
     this.clearSelection()
     const descriptors = this.committed?.descriptors ?? []
     this.committed = undefined
-    for (const [id, visibility] of this.buildingVisibility)
-      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', visibility)
     useAppletStore.setState({
       areaAvailable: false,
       effectiveGeography: 'buildings',

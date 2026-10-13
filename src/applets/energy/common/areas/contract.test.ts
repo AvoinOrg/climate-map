@@ -193,7 +193,7 @@ test('required shape/version and numeric domains are enforced independently of f
   kind(
     () =>
       parseAreaDetail(
-        { ...full, metric_version: 'building-area-summary-v2' },
+        { ...full, metric_version: 'building-area-summary-v3' },
         { request }
       ),
     'unsupported-contract'
@@ -202,7 +202,7 @@ test('required shape/version and numeric domains are enforced independently of f
     () =>
       parseAreaMetadata({
         ...dataset.snapshots[0].metadata,
-        metric_version: 'building-area-summary-v2',
+        metric_version: 'building-area-summary-v3',
       }),
     'unsupported-contract'
   )
@@ -248,4 +248,14 @@ test('tile properties preserve strings, absent/null/zero coverage and repeated i
       parseAreaTileProperties({ ...without, area_code: feature.id }, { level })
     )
   }
+})
+
+it('accepts the additive live v2 effective class metrics without requiring them for older details', () => {
+  const full = dataset.snapshots[0].details['postal_code:00100']
+  expect(
+    parseAreaDetail(
+      { ...full, metric_version: 'building-area-summary-v2' },
+      { request: { level: 'postal_code', areaCode: '00100' } }
+    ).metrics.energy_class
+  ).toEqual(full.metrics.energy_class)
 })

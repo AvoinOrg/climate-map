@@ -6,6 +6,7 @@ import { useTranslate } from '@tolgee/react'
 import { MAP_CONTROL_EDGE_GUTTER_PX } from '#/common/constants/map'
 import { useLocaleFormatter } from '#/common/hooks/useLocaleFormatter'
 import { useIsMobile } from '#/common/hooks/ui/useIsMobile'
+import { SIDEBAR_CONTENT_BOX_PADDING_X } from '#/common/style/theme/constants'
 import {
   Box,
   type AppSxProps,
@@ -2829,18 +2830,15 @@ const getTabPagePanelAccentColor = ({
     : PANEL_ACCENTS[panelId]
 
 const getStackedTabPagePanelContentSx = ({
-  panelId,
   index,
   panelCount,
 }: {
-  panelId: EnergymapBuildingInfoPanelId
   index: number
   panelCount: number
 }): AppSxProps => ({
-  width: {
-    mobile: 'min(16.25rem, calc(100vw - 6rem))',
-    desktop: `min(${PANEL_CONTENT_WIDTHS[panelId]}, calc(100% - 5rem))`,
-  },
+  // Stacked pages also serve forced mobile layouts on desktop. Their parent
+  // owns no gutter, so use the shared mobile inset once, relative to the panel.
+  width: `calc(100% - 2 * ${SIDEBAR_CONTENT_BOX_PADDING_X.mobile})`,
   maxWidth: '100%',
   mx: 'auto',
   pt: {
@@ -2955,7 +2953,6 @@ const BuildingInfoStackedTabPageSection = ({
         panel={panel}
         tabId={tabId}
         bodySx={getStackedTabPagePanelContentSx({
-          panelId: panel.id,
           index,
           panelCount,
         })}
@@ -3385,7 +3382,12 @@ const BuildingInfoTabPageContent = ({
       {!tab.panels.some((panel) => panel.id === 'buildingDetails') && (
         <Box
           data-testid="building-info-page-footer"
-          sx={{ px: '1.5rem', pb: { mobile: '8rem', desktop: '2rem' } }}
+          sx={{
+            px: useMobileLayout
+              ? SIDEBAR_CONTENT_BOX_PADDING_X.mobile
+              : '1.5rem',
+            pb: { mobile: '8rem', desktop: '2rem' },
+          }}
         >
           {detailsFooter}
         </Box>

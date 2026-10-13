@@ -382,6 +382,7 @@ describe('EnergyHomePage', () => {
     mockTranslationLocale = undefined
     mockVisibleLayerGroupIds = [ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID]
     mockMapState._layerGroups = createRegisteredSharedBuildingLayerGroup()
+    useAppletStore.setState(useAppletStore.getInitialState())
     useAppletStore.getState().resetBuildingFilters()
     useAppletStore.getState().resetEnergyCertificateClassFilters()
     useAppletStore.getState().clearSelectedBuilding()
@@ -1405,25 +1406,44 @@ describe('EnergyHomePage', () => {
       ]?.runtimeOptions.desktopMainPanelWidth
     ).toBeUndefined()
   })
-it('keeps building themes and switches inapplicable during area selection and restores them', async () => {
-  const view = renderPage()
-  fireEvent.click(screen.getByRole('button', { name: 'sidebar.front_page.aria.toggle_heating' }))
-  const switches = screen.getAllByRole('switch')
-  fireEvent.click(switches[0])
-  expect(switches[0]).not.toBeChecked()
-  mockMapState.selectedFeatures = [{ id: 'postal_code:00100', source: 'energymap_areas_release_postal_code', sourceLayer: 'areas', layer: { id: 'area-fill' }, properties: { level: 'postal_code', area_code: '00100' } } as MapGeoJSONFeature]
-  act(() => useAppletStore.setState({ effectiveGeography: 'postal_code', areaAvailable: true }))
-  view.rerender(createPageElement())
-  expect(useAppletStore.getState().selectedBuilding).toBeNull()
-  expect(screen.getByRole('button', { name: 'sidebar.front_page.aria.toggle_heating' })).toHaveAttribute('aria-disabled', 'true')
-  for (const control of screen.getAllByRole('switch')) expect(control).toBeDisabled()
-  fireEvent.click(screen.getByRole('button', { name: 'sidebar.front_page.aria.toggle_ventilation' }))
-  fireEvent.click(switches[0])
-  expect(switches[0]).not.toBeChecked()
-  act(() => useAppletStore.setState({ effectiveGeography: 'buildings' }))
-  expect(screen.getAllByRole('switch')[0]).not.toBeChecked()
-  expect(screen.getAllByRole('switch')[0]).not.toBeDisabled()
-  expect(screen.getByRole('button', { name: 'sidebar.front_page.aria.toggle_heating' })).not.toHaveAttribute('aria-disabled', 'true')
-})
-
+  it('keeps shared themes and categories usable through area zoom and page remount', async () => {
+    const view = renderPage()
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'sidebar.front_page.aria.toggle_heating',
+      })
+    )
+    fireEvent.click(screen.getAllByRole('switch')[0])
+    act(() =>
+      useAppletStore.setState({
+        effectiveGeography: 'postal_code',
+        areaAvailable: true,
+      })
+    )
+    view.rerender(createPageElement())
+    expect(
+      screen.getByRole('button', {
+        name: 'sidebar.front_page.aria.toggle_heating',
+      })
+    ).not.toHaveAttribute('aria-disabled', 'true')
+    for (const control of screen.getAllByRole('switch'))
+      expect(control).not.toBeDisabled()
+    expect(screen.getAllByRole('switch')[0]).not.toBeChecked()
+    expect(document.body).not.toHaveTextContent(
+      /sidebar.area_map.(current_level|metric|scope|legend|refresh)/
+    )
+    expect(screen.queryByTestId('energy-area-controls')).not.toBeInTheDocument()
+    view.unmount()
+    renderPage()
+    expect(screen.getAllByRole('switch')[0]).not.toBeChecked()
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'sidebar.front_page.aria.toggle_ventilation',
+      })
+    )
+    expect(useAppletStore.getState().activeThematicMode).toBe('ventilation')
+    fireEvent.click(screen.getAllByRole('switch')[0])
+    act(() => useAppletStore.setState({ effectiveGeography: 'buildings' }))
+    expect(screen.getAllByRole('switch')[0]).not.toBeChecked()
+  })
 })

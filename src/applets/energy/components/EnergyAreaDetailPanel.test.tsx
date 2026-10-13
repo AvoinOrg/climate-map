@@ -14,7 +14,7 @@ import dataset from '../../../../utils/test/energyAreas/dataset.json'
 import EnergyAreaDetailPanel, {
   getAreaSourceName,
 } from './EnergyAreaDetailPanel'
-import EnergyAreaControls from './EnergyAreaControls'
+import EnergyAreaTileError from './EnergyAreaTileError'
 
 jest.mock('overlayscrollbars-react', () => ({
   OverlayScrollbarsComponent: ({ children }: { children: React.ReactNode }) => (
@@ -52,12 +52,10 @@ const mount = ({
   locale,
   value,
   controlsOnly = false,
-  compact = false,
 }: {
   locale: string
   value: Partial<React.ContextType<typeof AreaRuntimeContext>>
   controlsOnly?: boolean
-  compact?: boolean
 }) => {
   const tolgee = Tolgee()
     .use(FormatIcu())
@@ -71,7 +69,7 @@ const mount = ({
       <AppThemeProvider disableCssBaseline>
         <AreaRuntimeContext.Provider value={{ ...base, ...value }}>
           {controlsOnly ? (
-            <EnergyAreaControls locale={locale} compact={compact} />
+            <EnergyAreaTileError />
           ) : (
             <EnergyAreaDetailPanel locale={locale} />
           )}
@@ -88,7 +86,7 @@ const expectNoManualRefresh = () => {
       hidden: true,
     })
   ).not.toBeInTheDocument()
-  for (const controls of screen.getAllByTestId('energy-area-controls'))
+  for (const controls of screen.queryAllByTestId('energy-area-controls'))
     expect(controls).not.toHaveTextContent(
       /Päivitä aluetiedot|Refresh area data|sidebar\.area_map\.refresh/i
     )
@@ -110,9 +108,6 @@ it.each(['fi', 'en'])(
     expect(screen.getByTestId('energy-area-detail')).not.toHaveTextContent(
       /sidebar\.|11111111|modeled|diagnostic/
     )
-    expect(
-      screen.getByRole('list', { name: /legend|selite/ })
-    ).toHaveTextContent(locale === 'fi' ? 'Ei saatavilla' : 'Unavailable')
     fireEvent.click(
       screen.getByRole('button', {
         name: locale === 'fi' ? 'Sulje aluetiedot' : 'Close area details',
@@ -219,12 +214,10 @@ it.each(['fi', 'en'])(
       },
       controlsOnly: true,
     })
-    expect(
-      await screen.findByTestId('energy-area-controls')
-    ).not.toHaveTextContent('The building map remains available')
-    expect(screen.getByTestId('energy-area-controls')).not.toHaveTextContent(
-      'Zoom in to see buildings'
+    expect(document.body).not.toHaveTextContent(
+      'The building map remains available'
     )
+    expect(document.body).not.toHaveTextContent('Zoom in to see buildings')
     expectNoManualRefresh()
   }
 )
@@ -240,9 +233,7 @@ it.each(['fi', 'en'])(
       value: { problem: 'network', tileFailed: true },
       controlsOnly: true,
     })
-    expect(
-      await screen.findByTestId('energy-area-controls')
-    ).not.toHaveTextContent('previously loaded release')
+    expect(document.body).not.toHaveTextContent('previously loaded release')
     expectNoManualRefresh()
     fireEvent.click(
       screen.getByRole('button', {
@@ -253,23 +244,6 @@ it.each(['fi', 'en'])(
     expect(retryTiles).toHaveBeenCalled()
   }
 )
-
-it('keeps the frozen all-building scope visible when the compact legend is closed', async () => {
-  useAppletStore.setState({
-    effectiveGeography: 'postal_code',
-    areaAvailable: true,
-  })
-  mount({ locale: 'en', value: {}, controlsOnly: true, compact: true })
-  const explanation = await screen.findByText(
-    'Area summaries cover all buildings in the frozen snapshot. Building themes and filters do not apply to areas.'
-  )
-  expect(explanation).toBeVisible()
-  expect(
-    screen
-      .getByText('Valid energy certificate coverage – legend')
-      .closest('details')
-  ).not.toHaveAttribute('open')
-})
 
 it.each(['fi', 'en'])(
   'renders complete scale/category/sum details through Tolgee ICU (%s)',
@@ -364,58 +338,35 @@ it.each(['fi', 'en'])(
   }
 )
 
-describe.each([
-  ['fi', false],
-  ['fi', true],
-  ['en', false],
-  ['en', true],
-] as const)('automatic controls (%s, compact=%s)', (locale, compact) => {
-  it.each([
-    'loading',
-    'updating',
-    'ready',
-    'metadata-error',
-    'detail-error',
-    'refresh-error',
-  ] as const)(
-    'has no manual refresh, geographic picker or generic notice for %s',
-    async (scenario) => {
-      useAppletStore.setState({
-        effectiveGeography: 'postal_code',
-        areaAvailable: false,
-        areaZoom: 11,
-      })
+it.each(['fi', 'en'])(
+  'removes official and related sections only for region/municipality (%s)',
+  async (locale) => {
+    for (const level of ['region', 'municipality'] as const) {
       mount({
         locale,
         value: {
-          status:
-            scenario === 'loading' ||
-            scenario === 'updating' ||
-            scenario === 'ready'
-              ? scenario
-              : 'unavailable',
-          problem: scenario === 'metadata-error' ? 'network' : undefined,
-          detailProblem: scenario === 'detail-error' ? 'network' : undefined,
+          request: { level, areaCode: level === 'region' ? '01' : '091' },
+          detail: { ...detail, level },
         },
-        controlsOnly: true,
-        compact,
       })
-      const controls = await screen.findByTestId('energy-area-controls')
-      expectNoManualRefresh()
+      const panel = await screen.findByTestId('energy-area-detail')
       expect(
-        screen.queryByRole('combobox', {
-          name: locale === 'fi' ? 'Aluetaso' : 'Geography',
-        })
+        screen.queryByTestId('energy-area-relations')
       ).not.toBeInTheDocument()
-      expect(controls).not.toHaveTextContent(
-        /building map remains|rakennuskartta toimii|previously loaded release|aiemmin ladattua|area data is currently unavailable|aluetiedot eivät ole tällä hetkellä käytettävissä/i
-      )
-      expect(controls.querySelector('[role="status"]')).toBeNull()
       expect(
-        screen.getByRole('combobox', {
-          name: locale === 'fi' ? 'Alueen väritys' : 'Area shading',
-        })
+        screen.queryByTestId('energy-area-scale-2013')
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId('energy-area-scale-2018')
+      ).not.toBeInTheDocument()
+      expect(panel).not.toHaveTextContent(
+        /Official energy classes|Viralliset energialuokat|Related areas|Liittyvät|Current geography|Nykyinen aluetaso|Area shading|Alueen väritys/
+      )
+      expect(
+        screen.getByTestId('energy-area-metric-ventilation')
       ).toBeInTheDocument()
+      expectNoManualRefresh()
+      cleanup()
     }
-  )
-})
+  }
+)

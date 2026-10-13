@@ -58,87 +58,95 @@ const EnergyAreaMetrics = ({
       data-testid="energy-area-metrics"
       sx={{ minWidth: 0, overflowWrap: 'anywhere' }}
     >
-      <Box component="h2" sx={headingSx}>
-        <TText ns={ns} keyName={`${prefix}official_classes`} />
-      </Box>
-      <Box component="p" sx={{ fontSize: '.8rem' }}>
-        <TText ns={ns} keyName={`${prefix}official_exclusions`} />
-      </Box>
-      {official && <Availability summary={official} official />}
-      {(['2013', '2018'] as const).map((scale) => {
-        const summary = officialScaleSummary({ detail, scale })
-        return (
-          <Box
-            component="section"
-            key={scale}
-            data-testid={`energy-area-scale-${scale}`}
-          >
-            <Box component="h3" sx={{ ...headingSx, mt: 2 }}>
-              <TText ns={ns} keyName={`${prefix}scale`} params={{ scale }} />
-            </Box>
-            {summary ? (
-              <>
-                <Box component="p" sx={{ fontSize: '.8rem' }}>
+      {detail.level === 'postal_code' && (
+        <>
+          <Box component="h2" sx={headingSx}>
+            <TText ns={ns} keyName={`${prefix}official_classes`} />
+          </Box>
+          <Box component="p" sx={{ fontSize: '.8rem' }}>
+            <TText ns={ns} keyName={`${prefix}official_exclusions`} />
+          </Box>
+          {official && <Availability summary={official} official />}
+          {(['2013', '2018'] as const).map((scale) => {
+            const summary = officialScaleSummary({ detail, scale })
+            return (
+              <Box
+                component="section"
+                key={scale}
+                data-testid={`energy-area-scale-${scale}`}
+              >
+                <Box component="h3" sx={{ ...headingSx, mt: 2 }}>
                   <TText
                     ns={ns}
-                    keyName={`${prefix}scale_denominator`}
-                    params={{
-                      count: summary.denominator,
-                      population: summary.population,
-                    }}
+                    keyName={`${prefix}scale`}
+                    params={{ scale }}
                   />
                 </Box>
-                {summary.denominator === 0 && (
-                  <Box component="p">
-                    <TText ns={ns} keyName={`${prefix}no_valid_classes`} />
-                  </Box>
-                )}
-                <Box component="dl" sx={rowsSx}>
-                  {summary.rows.map((row) => (
-                    <Box key={row.key} sx={{ display: 'contents' }}>
-                      <Box
-                        component="dt"
-                        sx={{ position: 'relative', py: 0.5 }}
-                      >
-                        <Box
-                          aria-hidden="true"
-                          sx={{
-                            position: 'absolute',
-                            inset: '0 auto 0 0',
-                            width: `${(row.fraction ?? 0) * 100}%`,
-                            bgcolor: '#e1edf6',
-                            zIndex: 0,
-                          }}
-                        />
-                        <Box
-                          component="span"
-                          sx={{ position: 'relative', px: 0.5 }}
-                        >
-                          <TText
-                            ns={ns}
-                            keyName={`${prefix}class`}
-                            params={{ letter: row.key }}
-                          />
-                        </Box>
-                      </Box>
-                      <Box component="dd" sx={{ py: 0.5 }}>
-                        {number.format(row.count)} ·{' '}
-                        {row.fraction == null ? (
-                          <Unavailable />
-                        ) : (
-                          percent.format(row.fraction)
-                        )}
-                      </Box>
+                {summary ? (
+                  <>
+                    <Box component="p" sx={{ fontSize: '.8rem' }}>
+                      <TText
+                        ns={ns}
+                        keyName={`${prefix}scale_denominator`}
+                        params={{
+                          count: summary.denominator,
+                          population: summary.population,
+                        }}
+                      />
                     </Box>
-                  ))}
-                </Box>
-              </>
-            ) : (
-              <Unavailable />
-            )}
-          </Box>
-        )
-      })}
+                    {summary.denominator === 0 && (
+                      <Box component="p">
+                        <TText ns={ns} keyName={`${prefix}no_valid_classes`} />
+                      </Box>
+                    )}
+                    <Box component="dl" sx={rowsSx}>
+                      {summary.rows.map((row) => (
+                        <Box key={row.key} sx={{ display: 'contents' }}>
+                          <Box
+                            component="dt"
+                            sx={{ position: 'relative', py: 0.5 }}
+                          >
+                            <Box
+                              aria-hidden="true"
+                              sx={{
+                                position: 'absolute',
+                                inset: '0 auto 0 0',
+                                width: `${(row.fraction ?? 0) * 100}%`,
+                                bgcolor: '#e1edf6',
+                                zIndex: 0,
+                              }}
+                            />
+                            <Box
+                              component="span"
+                              sx={{ position: 'relative', px: 0.5 }}
+                            >
+                              <TText
+                                ns={ns}
+                                keyName={`${prefix}class`}
+                                params={{ letter: row.key }}
+                              />
+                            </Box>
+                          </Box>
+                          <Box component="dd" sx={{ py: 0.5 }}>
+                            {number.format(row.count)} ·{' '}
+                            {row.fraction == null ? (
+                              <Unavailable />
+                            ) : (
+                              percent.format(row.fraction)
+                            )}
+                          </Box>
+                        </Box>
+                      ))}
+                    </Box>
+                  </>
+                ) : (
+                  <Unavailable />
+                )}
+              </Box>
+            )
+          })}
+        </>
+      )}
       {AREA_DISTRIBUTIONS.map((metric) => {
         const summary = detail.metrics[metric]
         return (

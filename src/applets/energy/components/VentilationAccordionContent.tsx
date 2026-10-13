@@ -1,5 +1,4 @@
 import React from 'react'
-import { useAppletStore } from 'applets/energy/state/appletStore'
 import { useTranslate } from '@tolgee/react'
 
 import { Box } from '#/common/style/theme'
@@ -41,7 +40,6 @@ const VentilationAccordionContent = ({
     id: EnergymapVentilationCategory
   ) => React.ChangeEventHandler<HTMLInputElement>
 }) => {
-  const disabled = useAppletStore((state) => state.effectiveGeography !== 'buildings')
   const { t } = useTranslate('energiakartta')
 
   return (
@@ -89,7 +87,6 @@ const VentilationAccordionContent = ({
             }}
           >
             <SquishedSwitchWithLabel
-              disabled={disabled}
               checked={ventilationSwitchState[id]}
               checkedTrackColor={color}
               ariaLabel={t(keyName)}

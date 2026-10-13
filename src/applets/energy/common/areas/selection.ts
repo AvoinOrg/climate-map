@@ -1,3 +1,5 @@
+import { useAppletStore } from 'applets/energy/state/appletStore'
+import { isAreaThemeEligible } from 'applets/energy/common/areas/thematicStyle'
 import type { MapGeoJSONFeature } from 'maplibre-gl'
 import type { AreaDetailRequest } from 'applets/energy/common/types/areas'
 import type { AreaSourceDescriptor } from 'applets/energy/layers/areaSource'
@@ -50,6 +52,7 @@ export const projectAreaSelection = ({
   const requests = new Map<string, AreaDetailRequest>()
   for (const feature of features) {
     if (
+      !isAreaThemeEligible(feature.properties, useAppletStore.getState()) ||
       feature.source !== descriptor.sourceId ||
       feature.sourceLayer !== descriptor.sourceLayer
     )

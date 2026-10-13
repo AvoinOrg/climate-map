@@ -12,7 +12,7 @@
   "contract": "/workspace/external/energymap/tasks/aggregate-building-data/latest-backend-contract.md",
   "synthetic": true,
   "generator": "generate-data.cjs",
-  "generatorSha256": "5eeb480de61044efc62e83d3301093122422e68dd50e970e176749f9e6fa33e9",
+  "generatorSha256": "ffad6a8fee0962a4ebfff96fb4c04c84610d7e71dd0a6b6abb2e10f3ef3c64e5",
   "codecVersions": {
     "geojson-vt": "4.0.2",
     "@maplibre/vt-pbf": "4.1.0",

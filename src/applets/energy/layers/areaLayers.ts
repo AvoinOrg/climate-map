@@ -1,9 +1,8 @@
+import { areaThemeStyle } from 'applets/energy/common/areas/thematicStyle'
+import { useAppletStore } from 'applets/energy/state/appletStore'
 import type { LayerConf, ExtendedLayerSpecification } from '#/common/types/map'
 import type { AreaSourceDescriptor } from 'applets/energy/layers/areaSource'
-import {
-  AUTOMATIC_AREA_RANGES,
-  areaMetricColorExpression,
-} from 'applets/energy/common/areas/mapModes'
+import { AUTOMATIC_AREA_RANGES } from 'applets/energy/common/areas/mapModes'
 
 export const areaLayerIds = (descriptor: AreaSourceDescriptor) =>
   [
@@ -13,6 +12,7 @@ export const areaLayerIds = (descriptor: AreaSourceDescriptor) =>
 export const createAreaLayerConf = (
   descriptor: AreaSourceDescriptor
 ): LayerConf => {
+  const theme = areaThemeStyle(useAppletStore.getState())
   const [fill, outline] = areaLayerIds(descriptor)
   const range = AUTOMATIC_AREA_RANGES[descriptor.level]
   const shared = {
@@ -24,10 +24,12 @@ export const createAreaLayerConf = (
     ),
     maxzoom: range.maxzoom,
     selectable: true,
+    layout: { visibility: theme.visible ? 'visible' : 'none' },
     filter: [
       'all',
       ['==', ['get', 'level'], descriptor.level],
       ['==', ['typeof', ['get', 'area_id']], 'string'],
+      theme.eligibility,
     ],
   }
   return {
@@ -41,7 +43,7 @@ export const createAreaLayerConf = (
           id: fill,
           type: 'fill',
           paint: {
-            'fill-color': areaMetricColorExpression('certificate_coverage'),
+            'fill-color': theme.color,
             'fill-opacity': 0.72,
           },
         },

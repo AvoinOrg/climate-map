@@ -5,6 +5,8 @@ const crypto = require('node:crypto')
 const directory = __dirname
 const levels = ['postal_code', 'municipality', 'region']
 const categories = [
+  'energy_class',
+  'energy_class_source',
   'official_class',
   'modeled_class',
   'modeled_reason',
@@ -65,6 +67,7 @@ const facts = [
   ['00400', '006', 'invalid_class'],
   ['00400', '006', '2018:expired:D'],
 ].map(([postal, municipality, official_class], index) => ({
+  building_key: `fixture-building-${index}`,
   postal,
   municipality,
   official_class,
@@ -72,7 +75,17 @@ const facts = [
   modeled_reason: index % 2 ? 'unknown' : 'fixture_unrecognized_reason',
   heating_method:
     index === 4 ? 'future_heating_code' : index % 3 ? '01' : 'unknown',
-  heating_energy_source: index % 2 ? '02' : 'unknown',
+  heating_energy_source: ['09', '01', '04', '10', 'unknown'][index % 5],
+  energy_class: /^[^:]+:[^:]+:[A-G]$/.test(official_class)
+    ? official_class.split(':')[2]
+    : index % 2
+      ? 'unknown'
+      : 'D',
+  energy_class_source: /^[^:]+:[^:]+:[A-G]$/.test(official_class)
+    ? 'official'
+    : index % 2
+      ? 'unknown'
+      : 'modeled',
   ventilation: ['gravity', 'mechanical', 'other', 'no_info'][index % 4],
   main_purpose: index === 4 ? 'unrecognized_purpose' : '0110',
   construction_period: [
@@ -189,7 +202,11 @@ const snapshots = releaseIds.map((release_id, index) => {
         'Valid A-G official classes on the 2013 or 2018 scale / all buildings',
       official_class:
         'counts are scale:validity:class diagnostics; valid_counts_by_scale is the default A-G distribution',
-      modeled_class: 'Diagnostic only; source model version unavailable',
+      energy_class:
+        'Synthetic official-first building-effective class, including modeled fallback once per unique row',
+      energy_class_source:
+        'Synthetic effective provenance; not extra class votes',
+      modeled_class: 'Separate diagnostics; source model version unavailable',
       floor_area: 'Separate positive finite known sums for each definition',
       filters: ['postal_code within municipality'],
     },
@@ -304,6 +321,39 @@ const snapshots = releaseIds.map((release_id, index) => {
         area_id: detail.area_id,
         building_count,
         valid_official_class_count,
+        thematic_contract_version: 1,
+        ...Object.fromEntries(
+          [...'ABCDEFG'].map((c) => [
+            `energy_class_${c.toLowerCase()}_count`,
+            detail.metrics.energy_class.counts[c] ?? 0,
+          ])
+        ),
+        energy_class_unknown_count:
+          detail.metrics.energy_class.unknown_building_count,
+        energy_class_official_count:
+          detail.metrics.energy_class_source.counts.official ?? 0,
+        energy_class_modeled_count:
+          detail.metrics.energy_class_source.counts.modeled ?? 0,
+        ...Object.fromEntries(
+          Object.entries({
+            geothermal: '09',
+            district: '01',
+            electricity: '04',
+            solar: '10',
+          }).map(([category, code]) => [
+            `heating_${category}_count`,
+            detail.metrics.heating_energy_source.counts[code] ?? 0,
+          ])
+        ),
+        heating_other_count: selected.filter(
+          (row) => !['09', '01', '04', '10'].includes(row.heating_energy_source)
+        ).length,
+        ...Object.fromEntries(
+          ['mechanical', 'gravity', 'other', 'no_info'].map((category) => [
+            `ventilation_${category}_count`,
+            detail.metrics.ventilation.counts[category] ?? 0,
+          ])
+        ),
         ...(certificate_coverage === null ? {} : { certificate_coverage }),
         ...Object.fromEntries(
           Object.entries(detail.names)

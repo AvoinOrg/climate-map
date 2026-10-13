@@ -32,6 +32,7 @@ const EnergyAreaRuntime = ({ children }: { children: React.ReactNode }) => {
     enabled: config.ok && mapContext === 'energy',
   })
   const selectedFeatures = useMapStore((state) => state.selectedFeatures)
+  const activeThematicMode = useAppletStore((state) => state.activeThematicMode)
   const zoom = useAppletStore((state) => state.areaZoom)
   const [generation, setGeneration] = React.useState<CommittedAreaGeneration>()
   const [status, setStatus] = React.useState<AreaRuntimeStatus>('loading')
@@ -86,14 +87,16 @@ const EnergyAreaRuntime = ({ children }: { children: React.ReactNode }) => {
   }, [map, mapContext, config, cancelDetails, queryClient])
   const request = React.useMemo(
     () =>
-      projectAreaSelection({
-        features: selectedFeatures,
-        descriptors: generation?.descriptors ?? [],
-        effective: resolveAreaGeography({
-          zoom: map?.getZoom() ?? zoom,
-        }),
-      }),
-    [selectedFeatures, generation, zoom, map]
+      activeThematicMode
+        ? projectAreaSelection({
+            features: selectedFeatures,
+            descriptors: generation?.descriptors ?? [],
+            effective: resolveAreaGeography({
+              zoom: map?.getZoom() ?? zoom,
+            }),
+          })
+        : undefined,
+    [selectedFeatures, generation, zoom, map, activeThematicMode]
   )
   const detailQuery = useQuery(areaDetailQueryOptions({ config, request }))
   // The origin-keyed query and request parser are the response guard. Metadata
@@ -116,9 +119,14 @@ const EnergyAreaRuntime = ({ children }: { children: React.ReactNode }) => {
     window.addEventListener('online', refresh)
     return () => window.removeEventListener('online', refresh)
   }, [map, mapContext, refresh])
+  // Passive zoom/style/query updates can reconstruct the same request. Open
+  // details only when the selected area or postal scope actually changes.
+  const detailSelectionKey = request
+    ? `${request.level}:${request.areaCode}:${request.municipalityCode ?? ''}`
+    : undefined
   React.useEffect(() => {
-    if (request) useUIStore.getState().setIsSidebarOpen(true)
-  }, [request])
+    if (detailSelectionKey) useUIStore.getState().setIsSidebarOpen(true)
+  }, [detailSelectionKey])
   const close = React.useCallback(() => {
     navigation.current?.invalidate()
     useMapStore.getState().setSelectedFeatures([])

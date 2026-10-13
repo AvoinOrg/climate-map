@@ -1,3 +1,7 @@
+import {
+  areaThemeStyle,
+  isAreaThemeEligible,
+} from 'applets/energy/common/areas/thematicStyle'
 import { ENERGYMAP_BUILDING_POLYGONS_LAYER_MIN_ZOOM } from 'applets/energy/layers/buildingSource'
 import { parseAreaDetailRequest } from 'applets/energy/common/areas/contract'
 import type { Map as MapLibreMap } from 'maplibre-gl'
@@ -16,6 +20,7 @@ import { resolveAreaGeography } from 'applets/energy/common/areas/mapModes'
 
 type Frame = {
   request?: AreaDetailRequest
+  properties?: Record<string, unknown>
   zoom: number
   signature: string
 }
@@ -81,6 +86,13 @@ export class EnergyAreaNavigation {
     if (!request && !this.buildingsReturn) return
     return {
       request,
+      properties: request
+        ? useMapStore
+            .getState()
+            .selectedFeatures.find(
+              (feature) => feature.id === `${request.level}:${request.areaCode}`
+            )?.properties
+        : undefined,
       zoom: this.options.map.getZoom(),
       signature: generation.signature,
     }
@@ -91,7 +103,13 @@ export class EnergyAreaNavigation {
       !this.active ||
       !generation ||
       generation.signature !== frame.signature ||
-      useMapStore.getState().mapContext !== 'energy'
+      useMapStore.getState().mapContext !== 'energy' ||
+      (frame.request &&
+        (!areaThemeStyle(useAppletStore.getState()).visible ||
+          !isAreaThemeEligible(
+            frame.properties ?? {},
+            useAppletStore.getState()
+          )))
     ) {
       this.invalidate()
       return
@@ -104,6 +122,8 @@ export class EnergyAreaNavigation {
         ? createAreaSelection({ request: frame.request, descriptor })
         : undefined
     if (frame.request && !feature) return
+    if (feature && frame.properties)
+      feature.properties = { ...feature.properties, ...frame.properties }
     const target = frame.request?.level ?? 'buildings'
     const zoom = Math.min(
       this.options.map.getMaxZoom(),

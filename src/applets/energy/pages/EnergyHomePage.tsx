@@ -1,6 +1,7 @@
 import EnergyAreaBackButton from 'applets/energy/components/EnergyAreaBackButton'
 import React from 'react'
-import EnergyAreaControls from 'applets/energy/components/EnergyAreaControls'
+import EnergyAreaTileError from 'applets/energy/components/EnergyAreaTileError'
+import type { EnergyThematicMode } from 'applets/energy/common/types/themes'
 import EnergyAreaDetailPanel from 'applets/energy/components/EnergyAreaDetailPanel'
 import { useEnergyAreaRuntime } from 'applets/energy/common/areas/AreaRuntimeContext'
 import { useTranslate } from '@tolgee/react'
@@ -25,9 +26,7 @@ import {
   SidebarContentBox,
   SidebarHeader,
 } from '#/components/Sidebar'
-import VentilationAccordionContent, {
-  type VentilationSwitchState,
-} from 'applets/energy/components/VentilationAccordionContent'
+import VentilationAccordionContent from 'applets/energy/components/VentilationAccordionContent'
 import EnergyCertificateClassControls from '../components/EnergyCertificateClassControls'
 import EnergyClassesAccordionContent from '../components/EnergyClassesAccordionContent'
 import {
@@ -140,32 +139,10 @@ type HeatingSwitchKey = (typeof HEATING_SWITCH_ITEMS)[number]['id']
 
 type HeatingSwitchState = Record<HeatingSwitchKey, boolean>
 
-const INITIAL_HEATING_SWITCH_STATE = HEATING_SWITCH_ITEMS.reduce(
-  (state, { id }) => ({
-    ...state,
-    [id]: true,
-  }),
-  {} as HeatingSwitchState
-)
-
-const INITIAL_VENTILATION_SWITCH_STATE =
-  ENERGYMAP_VENTILATION_CATEGORY_VALUES.reduce(
-    (state, id) => ({
-      ...state,
-      [id]: true,
-    }),
-    {} as VentilationSwitchState
-  )
-
-type EnergymapMainThematicMode =
-  | 'energyCertificates'
-  | 'heating'
-  | 'ventilation'
-
-const ENERGY_CERTIFICATE_THEMATIC_MODE: EnergymapMainThematicMode =
+const ENERGY_CERTIFICATE_THEMATIC_MODE: EnergyThematicMode =
   'energyCertificates'
-const HEATING_THEMATIC_MODE: EnergymapMainThematicMode = 'heating'
-const VENTILATION_THEMATIC_MODE: EnergymapMainThematicMode = 'ventilation'
+const HEATING_THEMATIC_MODE: EnergyThematicMode = 'heating'
+const VENTILATION_THEMATIC_MODE: EnergyThematicMode = 'ventilation'
 const INACTIVE_THEMATIC_OPACITY = 0
 const PolymorphicBox = Box as React.ElementType
 
@@ -328,9 +305,6 @@ const HeatingAccordionContent = ({
   ) => React.ChangeEventHandler<HTMLInputElement>
 }) => {
   const { t } = useTranslate('energiakartta')
-  const disabled = useAppletStore(
-    (state) => state.effectiveGeography !== 'buildings'
-  )
 
   return (
     <Box
@@ -373,7 +347,6 @@ const HeatingAccordionContent = ({
             }}
           >
             <SquishedSwitchWithLabel
-              disabled={disabled}
               checked={heatingSwitchState[id]}
               checkedTrackColor={color}
               ariaLabel={t(keyName)}
@@ -459,14 +432,17 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
     (state) => state.clearSelectedBuilding
   )
   const visibleLayerGroupIds = useVisibleLayerGroupIds()
-  const [heatingSwitchState, setHeatingSwitchState] = React.useState(
-    INITIAL_HEATING_SWITCH_STATE
+  const heatingSwitchState = useAppletStore((state) => state.heatingSwitchState)
+  const ventilationSwitchState = useAppletStore(
+    (state) => state.ventilationSwitchState
   )
-  const [ventilationSwitchState, setVentilationSwitchState] = React.useState(
-    INITIAL_VENTILATION_SWITCH_STATE
+  const activeThematicMode = useAppletStore((state) => state.activeThematicMode)
+  const setHeatingCategoryActive = useAppletStore(
+    (state) => state.setHeatingCategoryActive
   )
-  const [activeThematicMode, setActiveThematicMode] =
-    React.useState<EnergymapMainThematicMode | null>(null)
+  const setVentilationCategoryActive = useAppletStore(
+    (state) => state.setVentilationCategoryActive
+  )
   const [buildingInfoShellState, setBuildingInfoShellState] =
     React.useState<BuildingInfoShellState>(INITIAL_BUILDING_INFO_SHELL_STATE)
   const energyCertificateFillColorExpression = React.useMemo(
@@ -575,20 +551,13 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
   const isSharedBuildingLayerGroupVisible = visibleLayerGroupIds.includes(
     ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID
   )
-  const isHeatingLayerVisible =
-    isSharedBuildingLayerGroupVisible &&
-    activeThematicMode === HEATING_THEMATIC_MODE
+  const isHeatingLayerVisible = activeThematicMode === HEATING_THEMATIC_MODE
   const isVentilationLayerVisible =
-    isSharedBuildingLayerGroupVisible &&
     activeThematicMode === VENTILATION_THEMATIC_MODE
   const isEnergyCertificateLayerVisible =
-    isSharedBuildingLayerGroupVisible &&
     activeThematicMode === ENERGY_CERTIFICATE_THEMATIC_MODE
   const shouldShowMobileEnergyCertificateControls =
-    buildingApplicable &&
-    isMobile &&
-    !isSidebarOpen &&
-    isEnergyCertificateLayerVisible
+    isMobile && !isSidebarOpen && isEnergyCertificateLayerVisible
   const upcomingTooltip = t('sidebar.front_page.upcoming_tooltip')
   const toggleEnergyClassesAria = t(
     'sidebar.front_page.aria.toggle_energy_classes'
@@ -605,45 +574,30 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
     }),
     [t]
   )
-  const toggleThematicMode = React.useCallback(
-    async (mode: EnergymapMainThematicMode) => {
-      if (useAppletStore.getState().effectiveGeography !== 'buildings') return
-      const isModeCurrentlyVisible =
-        isSharedBuildingLayerGroupVisible && activeThematicMode === mode
-      const nextMode = isModeCurrentlyVisible ? null : mode
-
-      if (nextMode && !isSharedBuildingLayerGroupVisible) {
-        await enableLayerGroup(
-          ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID,
-          listedBackgroundBuildingFiltersAccordion.addOptions
-        )
-      }
-
-      if (useAppletStore.getState().effectiveGeography !== 'buildings') return
-      setActiveThematicMode(nextMode)
-    },
-    [activeThematicMode, enableLayerGroup, isSharedBuildingLayerGroupVisible]
-  )
+  const toggleThematicMode = React.useCallback((mode: EnergyThematicMode) => {
+    const store = useAppletStore.getState()
+    // Commit intent before asynchronous group installation; its completion must
+    // never overwrite a newer selection or depend on the current geography.
+    store.setActiveThematicMode(store.activeThematicMode === mode ? null : mode)
+  }, [])
+  React.useEffect(() => {
+    if (activeThematicMode && !isSharedBuildingLayerGroupVisible) {
+      void enableLayerGroup(
+        ENERGYMAP_BUILDING_POLYGONS_LAYER_GROUP_ID,
+        listedBackgroundBuildingFiltersAccordion.addOptions
+      )
+    }
+  }, [activeThematicMode, enableLayerGroup, isSharedBuildingLayerGroupVisible])
   const handleHeatingSwitchChange =
     (id: HeatingSwitchKey): React.ChangeEventHandler<HTMLInputElement> =>
-    (event) => {
-      if (useAppletStore.getState().effectiveGeography !== 'buildings') return
-      setHeatingSwitchState((currentState) => ({
-        ...currentState,
-        [id]: event.target.checked,
-      }))
-    }
+    (event) =>
+      setHeatingCategoryActive(id, event.target.checked)
   const handleVentilationSwitchChange =
     (
       id: EnergymapVentilationCategory
     ): React.ChangeEventHandler<HTMLInputElement> =>
-    (event) => {
-      if (useAppletStore.getState().effectiveGeography !== 'buildings') return
-      setVentilationSwitchState((currentState) => ({
-        ...currentState,
-        [id]: event.target.checked,
-      }))
-    }
+    (event) =>
+      setVentilationCategoryActive(id, event.target.checked)
   const handleBuildingInfoModeChange = React.useCallback(
     (mode: BuildingInfoDesktopMode) => {
       const nextTab = buildingInfoTopology.availableTabs.find(
@@ -1051,27 +1005,6 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
           {buildingInfoActionRail}
         </IntoSidebarPanelExtensionActionRailSlot>
       )}
-      {!isSidebarOpen && (
-        <IntoSlot name={MAP_BOTTOM_LEFT_FLOATING_CONTROLS_SLOT}>
-          <Box
-            sx={{
-              pointerEvents: 'auto',
-              backgroundColor: '#fff',
-              borderRadius: 2,
-              p: 1.5,
-              width: {
-                mobile: 'min(260px, calc(100vw - 100px))',
-                desktop: 280,
-              },
-              maxHeight: '50dvh',
-              overflowY: 'auto',
-              boxShadow: '0 2px 8px #0002',
-            }}
-          >
-            <EnergyAreaControls locale={locale} compact />
-          </Box>
-        </IntoSlot>
-      )}
       {shouldShowMobileEnergyCertificateControls && (
         <IntoSlot name={MAP_BOTTOM_LEFT_FLOATING_CONTROLS_SLOT}>
           <EnergyCertificateClassControls
@@ -1094,9 +1027,8 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
             flexDirection: 'column',
           }}
         >
-          <Box sx={{ mb: 3 }}>
-            <EnergyAreaControls locale={locale} />
-          </Box>
+          <EnergyAreaBackButton />
+          <EnergyAreaTileError />
           <Box
             component="h1"
             sx={{
@@ -1142,7 +1074,6 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
             }}
           >
             <LayerToggleRowAccordion
-              disabled={!buildingApplicable}
               applyNegativeMargins
               label={
                 <TText
@@ -1160,7 +1091,6 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
               <EnergyClassesAccordionContent />
             </LayerToggleRowAccordion>
             <LayerToggleRowAccordion
-              disabled={!buildingApplicable}
               applyNegativeMargins
               label={
                 <TText
@@ -1181,7 +1111,6 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
               />
             </LayerToggleRowAccordion>
             <LayerToggleRowAccordion
-              disabled={!buildingApplicable}
               applyNegativeMargins
               label={
                 <TText

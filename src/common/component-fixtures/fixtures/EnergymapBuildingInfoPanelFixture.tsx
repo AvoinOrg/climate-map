@@ -1948,6 +1948,25 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
         />
       ),
     },
+    ...(['fi', 'en'] as const).flatMap((locale) =>
+      [false, true].map((forceMobileLayout) => ({
+        id: `information-footer-sparse-${forceMobileLayout ? 'forced-mobile-' : ''}${locale}`,
+        label: `Sparse information footer ${forceMobileLayout ? 'forced mobile ' : ''}${locale.toUpperCase()}`,
+        locale,
+        description:
+          'Sparse Water panel, information footer and provenance with the shared mobile gutter.',
+        waitFor:
+          '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
+        render: () => (
+          <BuildingInfoPanelFixtureState
+            locale={locale}
+            forceMobileLayout={forceMobileLayout}
+            provenanceVariant="waterOnly"
+            interaction="information-footer"
+          />
+        ),
+      }))
+    ),
 
     {
       id: 'information-footer-renovation-fi',

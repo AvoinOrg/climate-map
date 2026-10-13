@@ -1,12 +1,12 @@
+import type { EnergyThematicMode } from 'applets/energy/common/types/themes'
+import type { HeatingEnergySourceFilterKey } from 'applets/energy/layers/heatingLayerConf'
+import type { EnergymapVentilationCategory } from 'applets/energy/common/ventilation'
 import { create } from 'zustand'
 import { subscribeWithSelector, devtools } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
 import { commonDevtools } from '#/common/store/shared-devtools'
-import type {
-  AreaMetric,
-  EffectiveGeography,
-} from 'applets/energy/common/areas/mapModes'
+import type { EffectiveGeography } from 'applets/energy/common/areas/mapModes'
 import {
   ENERGYMAP_BUILDING_TYPE_FILTER_ALL,
   ENERGYMAP_DEFAULT_SELECTED_CONSTRUCTION_DECADE,
@@ -30,7 +30,9 @@ type SelectedBuildingState = {
 }
 
 type Vars = {
-  areaMetric: AreaMetric
+  activeThematicMode: EnergyThematicMode | null
+  heatingSwitchState: Record<HeatingEnergySourceFilterKey, boolean>
+  ventilationSwitchState: Record<EnergymapVentilationCategory, boolean>
   effectiveGeography: EffectiveGeography
   areaAvailable: boolean
   areaZoom: number
@@ -39,7 +41,15 @@ type Vars = {
   SelectedBuildingState
 
 type Actions = {
-  setAreaMetric: (metric: AreaMetric) => void
+  setActiveThematicMode: (mode: EnergyThematicMode | null) => void
+  setHeatingCategoryActive: (
+    category: HeatingEnergySourceFilterKey,
+    active: boolean
+  ) => void
+  setVentilationCategoryActive: (
+    category: EnergymapVentilationCategory,
+    active: boolean
+  ) => void
   setSelectedBuilding: (selectedBuilding: EnergymapSelectedBuilding) => void
   clearSelectedBuilding: () => void
   setBuildingTypeFilter: (
@@ -67,7 +77,20 @@ type Actions = {
 export type State = Vars & Actions
 
 const initialBuildingFilterState: Vars = {
-  areaMetric: 'certificate_coverage',
+  activeThematicMode: null,
+  heatingSwitchState: {
+    geothermal: true,
+    districtHeating: true,
+    electricity: true,
+    solar: true,
+    other: true,
+  },
+  ventilationSwitchState: {
+    mechanical: true,
+    gravity: true,
+    other: true,
+    no_info: true,
+  },
   effectiveGeography: 'buildings',
   areaAvailable: false,
   areaZoom: 12,
@@ -86,7 +109,16 @@ export const useAppletStore = create<State>()(
         const vars = initialBuildingFilterState
 
         const actions: Actions = {
-          setAreaMetric: (areaMetric) => set({ areaMetric }),
+          setActiveThematicMode: (activeThematicMode) =>
+            set({ activeThematicMode }),
+          setHeatingCategoryActive: (category, active) =>
+            set((state) => {
+              state.heatingSwitchState[category] = active
+            }),
+          setVentilationCategoryActive: (category, active) =>
+            set((state) => {
+              state.ventilationSwitchState[category] = active
+            }),
           setSelectedBuilding: (selectedBuilding) => {
             set((state) => {
               if (
@@ -159,7 +191,6 @@ export const useAppletStore = create<State>()(
           },
           setEnergyCertificateClassActive: (classCode, isActive) => {
             set((state) => {
-              if (state.effectiveGeography !== 'buildings') return
               const classSet = new Set(state.activeEnergyCertificateClasses)
 
               if (isActive) {
@@ -176,7 +207,6 @@ export const useAppletStore = create<State>()(
           },
           toggleEnergyCertificateClass: (classCode) => {
             set((state) => {
-              if (state.effectiveGeography !== 'buildings') return
               const classSet = new Set(state.activeEnergyCertificateClasses)
 
               if (classSet.has(classCode)) {
@@ -195,7 +225,6 @@ export const useAppletStore = create<State>()(
             activeEnergyCertificateClasses
           ) => {
             set((state) => {
-              if (state.effectiveGeography !== 'buildings') return
               const classSet = new Set(activeEnergyCertificateClasses)
 
               state.activeEnergyCertificateClasses =
@@ -206,7 +235,6 @@ export const useAppletStore = create<State>()(
           },
           resetEnergyCertificateClassFilters: () => {
             set((state) => {
-              if (state.effectiveGeography !== 'buildings') return
               state.activeEnergyCertificateClasses = [
                 ...initialBuildingFilterState.activeEnergyCertificateClasses,
               ]

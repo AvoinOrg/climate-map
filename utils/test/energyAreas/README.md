@@ -21,10 +21,18 @@ basis. Recorded XYZ coordinates are decoder evidence for the same synthetic
 geometry; product delivery is stable TMS only.
 
 Run `node utils/test/energyAreas/verify.mjs` for independent binary decoding,
-identity/count/coverage/name/scope oracles, adjacent clipped fragments, exact
+identity/count/coverage/name/scope and thematic reconciliation oracles, adjacent clipped fragments, exact
 stable routes, private snapshot switching and browser-adapter isolation. Use the
 existing `energy-area-modes-smoke.mjs --no-start` actual-map runner for FI/EN
- desktop/mobile controls, wheel/pinch, detail/Back/building interactions, refresh
-and style checks. `--national` runs a separate unmocked acceptance path. Pass a
+desktop/mobile shared theme/category controls, clicked details, postal scope/Back,
+building parity, API independence and style/reconnect checks. `--national` runs a separate unmocked acceptance path. Pass a
 unique `--output=` for each run. Runtime setup/recovery is delegated to
 `runtime_doctor` and live checks reuse its verified server.
+
+The synthetic `energy_class` and `energy_class_source` histograms are authored
+from one fact per building. Recognized official projection values take precedence;
+existing synthetic modeled classes fill missing values. These are separate from
+valid certificate coverage/scales. Flat thematic fields have version 1 and
+reconcile every class/unknown, provenance, heating and ventilation population.
+Heating uses the canonical 09/01/04/10/other mapping (including missing in other).
+Ventilation has distinct other/no_info buckets. No fixture total is national data.

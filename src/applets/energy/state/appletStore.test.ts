@@ -130,9 +130,7 @@ describe('Energiakartta applet store building filters', () => {
 
     useAppletStore.getState().setSelectedBuilding(selectedBuilding)
 
-    expect(useAppletStore.getState().selectedBuilding).toEqual(
-      selectedBuilding
-    )
+    expect(useAppletStore.getState().selectedBuilding).toEqual(selectedBuilding)
 
     useAppletStore.getState().clearSelectedBuilding()
 
@@ -161,3 +159,51 @@ describe('Energiakartta applet store building filters', () => {
     expect(state.showOnlySelectedDecade).toBe(false)
   })
 })
+
+it.each(['region', 'municipality', 'postal_code'] as const)(
+  'shares themes/categories at %s zoom while purpose filters remain building-only',
+  (effectiveGeography) => {
+    useAppletStore.setState({
+      ...useAppletStore.getInitialState(),
+      effectiveGeography,
+    })
+    const state = useAppletStore.getState()
+    state.setActiveThematicMode('heating')
+    state.setHeatingCategoryActive('other', false)
+    state.setVentilationCategoryActive('no_info', false)
+    state.setActiveEnergyCertificateClasses(['G', 'A', 'A'])
+    expect(useAppletStore.getState().activeEnergyCertificateClasses).toEqual([
+      'A',
+      'G',
+    ])
+    state.toggleEnergyCertificateClass('G')
+    state.setEnergyCertificateClassActive('B', true)
+    expect(useAppletStore.getState().activeEnergyCertificateClasses).toEqual([
+      'A',
+      'B',
+    ])
+    state.setBuildingTypeFilter('02')
+    state.setSelectedConstructionDecade(2000)
+    state.setShowOnlySelectedDecade(true)
+    expect(useAppletStore.getState().buildingTypeFilter).toBe(
+      useAppletStore.getInitialState().buildingTypeFilter
+    )
+    expect(useAppletStore.getState().selectedConstructionDecade).toBeNull()
+    expect(useAppletStore.getState().showOnlySelectedDecade).toBe(false)
+    useAppletStore.setState({ effectiveGeography: 'buildings' })
+    expect(useAppletStore.getState().activeThematicMode).toBe('heating')
+    expect(useAppletStore.getState().heatingSwitchState.other).toBe(false)
+    expect(useAppletStore.getState().ventilationSwitchState.no_info).toBe(false)
+    state.resetEnergyCertificateClassFilters()
+    expect(useAppletStore.getState().activeEnergyCertificateClasses).toEqual([
+      'A',
+      'B',
+      'C',
+      'D',
+      'E',
+      'F',
+      'G',
+    ])
+    useAppletStore.setState(useAppletStore.getInitialState())
+  }
+)

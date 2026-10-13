@@ -1,3 +1,7 @@
+import { useAppletStore } from 'applets/energy/state/appletStore'
+beforeEach(() =>
+  useAppletStore.setState({ activeThematicMode: 'energyCertificates' })
+)
 import type { MapGeoJSONFeature } from 'maplibre-gl'
 import { createAreaSourceDescriptors } from 'applets/energy/layers/areaSource'
 import { projectAreaSelection, createAreaSelection } from './selection'
