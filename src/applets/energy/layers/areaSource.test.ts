@@ -7,6 +7,17 @@ import { createAreaLayerConf } from './areaLayers'
 
 test('exact stable GeoServer descriptors use published layers, TMS, promoted strings and bounded IDs', () => {
   const sources = createAreaSourceDescriptors()
+  const publishedBounds = {
+    postal_code: [
+      19.472262255092012, 59.72203320748324, 31.586703941366043, 70.0922932130507,
+    ],
+    municipality: [
+      19.08320007149181, 59.45415035126564, 31.58670343629741, 70.09209972105862,
+    ],
+    region: [
+      19.304133798774988, 59.75809870539337, 31.58670343691126, 70.09266042096007,
+    ],
+  }
   expect(sources).toHaveLength(3)
   for (const d of sources) {
     expect(d.sourceId).toBe(`energymap_areas_${d.level}`)
@@ -17,6 +28,7 @@ test('exact stable GeoServer descriptors use published layers, TMS, promoted str
       promoteId: 'area_id',
       minzoom: 0,
       maxzoom: 14,
+      bounds: publishedBounds[d.level],
       tiles: [
         `https://sandbox.gis.avoin.org/geoserver/gwc/service/tms/1.0.0/sandbox_energiakartta%3Aenergymap_${d.level}_areas@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf`,
       ],
