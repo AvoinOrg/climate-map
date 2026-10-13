@@ -18,6 +18,7 @@ interface Props {
   title: React.ReactNode
   backgroundImage?: string
   backgroundSx?: SidebarStyleProps
+  titlePaddingX?: { mobile: string; desktop: string }
   sx?: SidebarStyleProps
 }
 
@@ -26,6 +27,7 @@ const SidebarHeader = ({
   title,
   backgroundImage,
   backgroundSx,
+  titlePaddingX = SIDEBAR_HEADER_TITLE_PADDING_X,
   sx,
 }: Props) => {
   return (
@@ -84,7 +86,7 @@ const SidebarHeader = ({
             zIndex: 1,
             display: 'flex',
             alignItems: 'center',
-            px: SIDEBAR_HEADER_TITLE_PADDING_X,
+            px: titlePaddingX,
           }}
         >
           <Box
@@ -108,8 +110,8 @@ const SidebarHeader = ({
           <Box
             sx={{
               position: 'absolute',
-              left: SIDEBAR_HEADER_TITLE_PADDING_X,
-              right: SIDEBAR_HEADER_TITLE_PADDING_X,
+              left: titlePaddingX,
+              right: titlePaddingX,
               bottom: { mobile: '0.5rem', desktop: '0.625rem' },
               zIndex: 2,
               display: 'flex',

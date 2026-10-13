@@ -11,6 +11,12 @@ import { useVisibleLayerGroupIds } from '#/common/hooks/map/useVisibleLayerGroup
 import { useIsMobile } from '#/common/hooks/ui/useIsMobile'
 import { useAppParams } from '#/common/navigation/navigation'
 import { Box } from '#/common/style/theme'
+import {
+  MOBILE_SIDEBAR_PADDING_REM,
+  SIDEBAR_CONTENT_BOX_PADDING_X,
+  SIDEBAR_HEADER_EDGE_INSET_REM,
+  SIDEBAR_HEADER_TITLE_PADDING_X,
+} from '#/common/style/theme/constants'
 import { useMapStore, useUIStore } from '#/common/store'
 import { LayerToggleRowAccordion } from '#/components/common/LayerToggleRow'
 import AppTooltip, { type AppTooltipSide } from '#/components/common/AppTooltip'
@@ -93,6 +99,12 @@ import { useAppletStore } from '../state/appletStore'
 const SIDEBAR_CONTENT_VERTICAL_PADDING = {
   mobile: '2.25rem',
   desktop: '3.0625rem',
+}
+
+// On mobile the status slot plus its existing 12px gap matches the 32px
+// indentation of the expanded content. Desktop keeps the shared slot width.
+const THEME_STATUS_ICON_SX = {
+  width: { mobile: '1.25rem', desktop: '2rem' },
 }
 
 const ACCORDION_TEXT_SX = {
@@ -311,7 +323,7 @@ const HeatingAccordionContent = ({
       sx={{
         pt: '2.125rem',
         mx: '2rem',
-        maxWidth: '15.875rem',
+        maxWidth: { mobile: 'none', desktop: '15.875rem' },
       }}
     >
       <Box
@@ -952,6 +964,10 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
     >
       <IntoSidebarHeaderSlot>
         <SidebarHeader
+          titlePaddingX={{
+            mobile: `${MOBILE_SIDEBAR_PADDING_REM - SIDEBAR_HEADER_EDGE_INSET_REM}rem`,
+            desktop: SIDEBAR_HEADER_TITLE_PADDING_X.desktop,
+          }}
           title={
             <TText
               keyName="sidebar.front_page.header.title"
@@ -1017,6 +1033,11 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
         scrollbarSide="left"
         sxInner={{
           height: '100%',
+          minWidth: 0,
+          px: {
+            mobile: `${MOBILE_SIDEBAR_PADDING_REM}rem`,
+            desktop: SIDEBAR_CONTENT_BOX_PADDING_X.desktop,
+          },
         }}
       >
         <Box
@@ -1033,7 +1054,7 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
             component="h1"
             sx={{
               m: 0,
-              maxWidth: '18.1875rem',
+              maxWidth: { mobile: '100%', desktop: '18.1875rem' },
               color: '#111111',
               fontSize: '0.75rem',
               fontWeight: 700,
@@ -1050,7 +1071,7 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
             sx={{
               m: 0,
               mt: { mobile: '3rem', desktop: '3.75rem' },
-              maxWidth: '18.1875rem',
+              maxWidth: { mobile: '100%', desktop: '18.1875rem' },
               color: '#111111',
               fontSize: '0.75rem',
               fontWeight: 400,
@@ -1070,11 +1091,19 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
               display: 'flex',
               flexDirection: 'column',
               gap: '2.25rem',
-              maxWidth: '19.625rem',
+              maxWidth: { mobile: '100%', desktop: '19.625rem' },
             }}
           >
             <LayerToggleRowAccordion
               applyNegativeMargins
+              iconSx={THEME_STATUS_ICON_SX}
+              contentSx={{
+                // Keep the class-strip focus rings inside the clipping boundary.
+                mx: { mobile: '-0.375rem', desktop: 0 },
+                px: { mobile: '0.375rem', desktop: 0 },
+                width: { mobile: 'calc(100% + 0.75rem)', desktop: '100%' },
+                boxSizing: 'border-box',
+              }}
               label={
                 <TText
                   keyName="sidebar.front_page.layers.energy_classes"
@@ -1092,6 +1121,7 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
             </LayerToggleRowAccordion>
             <LayerToggleRowAccordion
               applyNegativeMargins
+              iconSx={THEME_STATUS_ICON_SX}
               label={
                 <TText
                   keyName="sidebar.front_page.layers.heating"
@@ -1112,6 +1142,7 @@ const EnergyHomePage = ({ locale: localeProp }: EnergyHomePageProps) => {
             </LayerToggleRowAccordion>
             <LayerToggleRowAccordion
               applyNegativeMargins
+              iconSx={THEME_STATUS_ICON_SX}
               label={
                 <TText
                   keyName="sidebar.front_page.layers.ventilation"

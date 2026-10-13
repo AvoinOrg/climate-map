@@ -632,6 +632,7 @@
       "src/applets/energy/common/buildingInfo.ts",
       "src/applets/energy/common/buildingInfo.test.ts",
       "src/applets/energy/common/buildingInfoPanelRuntime.ts",
+      "src/applets/energy/common/layoutConstants.ts",
       "src/applets/energy/common/buildingInfoPanelTopology.ts",
       "src/applets/energy/common/buildingInfoPanelTopology.test.ts",
       "src/applets/energy/common/buildingInfoProvenance.ts",
@@ -677,28 +678,28 @@
         "id": "information-footer-sparse-fi",
         "label": "Sparse information footer FI",
         "locale": "fi",
-        "description": "Sparse Water panel, information footer and provenance with the shared mobile gutter.",
+        "description": "Sparse Water panel, information footer and provenance with the independent Energy 32px mobile gutter.",
         "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "information-footer-sparse-forced-mobile-fi",
         "label": "Sparse information footer forced mobile FI",
         "locale": "fi",
-        "description": "Sparse Water panel, information footer and provenance with the shared mobile gutter.",
+        "description": "Sparse Water panel, information footer and provenance with the independent Energy 32px mobile gutter.",
         "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "information-footer-sparse-en",
         "label": "Sparse information footer EN",
         "locale": "en",
-        "description": "Sparse Water panel, information footer and provenance with the shared mobile gutter.",
+        "description": "Sparse Water panel, information footer and provenance with the independent Energy 32px mobile gutter.",
         "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {
         "id": "information-footer-sparse-forced-mobile-en",
         "label": "Sparse information footer forced mobile EN",
         "locale": "en",
-        "description": "Sparse Water panel, information footer and provenance with the shared mobile gutter.",
+        "description": "Sparse Water panel, information footer and provenance with the independent Energy 32px mobile gutter.",
         "waitFor": "[data-fixture-building-key]:has([data-testid=\"building-info-fixture-interaction-ready\"])"
       },
       {

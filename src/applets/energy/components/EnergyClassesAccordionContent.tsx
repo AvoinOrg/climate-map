@@ -26,15 +26,17 @@ const EnergyClassesAccordionContent = () => {
       sx={{
         pt: '2.125rem',
         mx: '2rem',
-        maxWidth: '15.875rem',
+        maxWidth: { mobile: 'none', desktop: '15.875rem' },
       }}
     >
       <EnergyCertificateClassControls
         sx={{
           mb: '2.75rem',
           ml: '-2rem',
-          width: '20.125rem',
+          width: { mobile: 'calc(100% + 4rem)', desktop: '20.125rem' },
           maxWidth: 'calc(100% + 4rem)',
+          flexWrap: { mobile: 'wrap', desktop: 'nowrap' },
+          rowGap: { mobile: '0.5rem', desktop: 0 },
         }}
       />
 

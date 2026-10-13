@@ -1865,6 +1865,7 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
     'src/applets/energy/common/buildingInfo.ts',
     'src/applets/energy/common/buildingInfo.test.ts',
     'src/applets/energy/common/buildingInfoPanelRuntime.ts',
+    'src/applets/energy/common/layoutConstants.ts',
     'src/applets/energy/common/buildingInfoPanelTopology.ts',
     'src/applets/energy/common/buildingInfoPanelTopology.test.ts',
     'src/applets/energy/common/buildingInfoProvenance.ts',
@@ -1954,7 +1955,7 @@ export const energymapBuildingInfoPanelFixture: ComponentFixture = {
         label: `Sparse information footer ${forceMobileLayout ? 'forced mobile ' : ''}${locale.toUpperCase()}`,
         locale,
         description:
-          'Sparse Water panel, information footer and provenance with the shared mobile gutter.',
+          'Sparse Water panel, information footer and provenance with the independent Energy 32px mobile gutter.',
         waitFor:
           '[data-fixture-building-key]:has([data-testid="building-info-fixture-interaction-ready"])',
         render: () => (

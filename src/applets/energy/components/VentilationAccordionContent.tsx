@@ -47,7 +47,7 @@ const VentilationAccordionContent = ({
       sx={{
         pt: '2.125rem',
         mx: '2rem',
-        maxWidth: '15.875rem',
+        maxWidth: { mobile: 'none', desktop: '15.875rem' },
       }}
     >
       <Box

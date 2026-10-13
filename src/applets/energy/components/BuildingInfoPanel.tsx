@@ -6,7 +6,7 @@ import { useTranslate } from '@tolgee/react'
 import { MAP_CONTROL_EDGE_GUTTER_PX } from '#/common/constants/map'
 import { useLocaleFormatter } from '#/common/hooks/useLocaleFormatter'
 import { useIsMobile } from '#/common/hooks/ui/useIsMobile'
-import { SIDEBAR_CONTENT_BOX_PADDING_X } from '#/common/style/theme/constants'
+import { BUILDING_INFO_MOBILE_PADDING_X } from 'applets/energy/common/layoutConstants'
 import {
   Box,
   type AppSxProps,
@@ -2317,6 +2317,7 @@ const BuildingInfoEnergyConsumptionSectionContent = ({
           data-testid="building-info-primary-metric-row"
           sx={{
             display: 'flex',
+            flexWrap: 'wrap',
             alignItems: 'center',
             gap: '5px',
             width: '284px',
@@ -2837,8 +2838,8 @@ const getStackedTabPagePanelContentSx = ({
   panelCount: number
 }): AppSxProps => ({
   // Stacked pages also serve forced mobile layouts on desktop. Their parent
-  // owns no gutter, so use the shared mobile inset once, relative to the panel.
-  width: `calc(100% - 2 * ${SIDEBAR_CONTENT_BOX_PADDING_X.mobile})`,
+  // owns no gutter, so apply the Energy content inset once, relative to the panel.
+  width: `calc(100% - 2 * ${BUILDING_INFO_MOBILE_PADDING_X})`,
   maxWidth: '100%',
   mx: 'auto',
   pt: {
@@ -3384,7 +3385,7 @@ const BuildingInfoTabPageContent = ({
           data-testid="building-info-page-footer"
           sx={{
             px: useMobileLayout
-              ? SIDEBAR_CONTENT_BOX_PADDING_X.mobile
+              ? BUILDING_INFO_MOBILE_PADDING_X
               : '1.5rem',
             pb: { mobile: '8rem', desktop: '2rem' },
           }}
